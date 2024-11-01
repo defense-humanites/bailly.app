@@ -1,1 +1,1 @@
-web: deno -A --env-file src/index.ts
+web: deno --allow-env --allow-ffi --allow-net --allow-read --allow-run --allow-write src/index.ts
