@@ -1,0 +1,1 @@
+web: deno -A --env-file src/index.ts

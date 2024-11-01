@@ -1,0 +1,12 @@
+. ./.env;
+
+if ! [ -f "${DB_FILE_PATH}.gz" ]; then
+    if [ -f "$DB_FILE_PATH" ]; then
+        echo "Compressing $DB_FILE_PATH"
+        gzip -f -k -5 $DB_FILE_PATH
+    else
+        echo "No database file found at '$DB_FILE_PATH'"
+    fi
+else
+    echo "Database file already compressed at '${DB_FILE_PATH}.gz'"
+fi
