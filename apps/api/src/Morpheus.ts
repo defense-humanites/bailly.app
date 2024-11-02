@@ -1,6 +1,10 @@
-import { KeyType, toGreek } from "greek-conversion";
+import { KeyType, toBetaCode, toGreek } from "greek-conversion";
 import fs from "node:fs";
-import type { MorpheusData, MorpheusDataItem } from "./definitions.ts";
+import type {
+  ApiLookupParams,
+  MorpheusData,
+  MorpheusDataItem
+} from "./definitions.ts";
 import { SpecialChar } from "./enums.ts";
 import { runTimeLimitedPromise } from "./helpers.ts";
 import { Settings } from "./Settings.ts";
@@ -78,17 +82,17 @@ export class Morpheus {
     return Morpheus.instance;
   }
 
-  private async call(q: string): Promise<string> {
-    // -S: case insensitive; -n: ignore accents; -d: dictionary format.
+  private async call(betaCodeStr: string): Promise<string> {
+    // -n: ignore accents; -d: dictionary format.
     const process = new Deno.Command("morpheus/cruncher", {
-      args: ["-S", "-n", "-d"],
+      args: ["-n", "-d"],
       env: { MORPHLIB: "morpheus/stemlib" },
       stdin: "piped",
       stdout: "piped"
     }).spawn();
 
     const writer = process.stdin.getWriter();
-    writer.write(new TextEncoder().encode(q));
+    writer.write(new TextEncoder().encode(betaCodeStr));
     writer.releaseLock();
 
     await process.stdin.close();
@@ -96,8 +100,7 @@ export class Morpheus {
     const output = await process.output();
     const result = new TextDecoder().decode(output.stdout);
 
-    //process.unref();
-
+    process.unref();
     return result;
   }
 
@@ -115,8 +118,8 @@ export class Morpheus {
         { workw: "", lem: "", prvb: "", aug1: "", stem: "", suff: "", end: "" }
       );
 
-    formattedData.workw = toGreek(formattedData.workw, KeyType.BETA_CODE);
-    formattedData.lem = toGreek(formattedData.lem, KeyType.BETA_CODE);
+    formattedData.workw = toGreek(formattedData.workw, KeyType.TLG_BETA_CODE);
+    formattedData.lem = toGreek(formattedData.lem, KeyType.TLG_BETA_CODE);
 
     return formattedData;
   }
@@ -134,35 +137,39 @@ export class Morpheus {
   }
 
   /**
-   * @param betaCodeStr A beta code string (without diacritics).
+   * @param greekStr A greek string.
    * @returns Relevant morphological data grouped by lemma.
-   *
-   * @fixme Morpheus doesn't recognize the -S flag.
    */
   async lookup(
-    betaCodeStr: string,
-    params?: { caseSensitive: boolean }
+    greekStr: string,
+    { caseSensitive }: Pick<ApiLookupParams<never>, "caseSensitive">
   ): Promise<MorpheusData> {
-    if (!this.isNeeded(betaCodeStr)) return {};
+    if (!this.isNeeded(greekStr)) return {};
 
-    betaCodeStr = betaCodeStr.toLowerCase();
+    const searchStr = (() => {
+      const isCapitalized: boolean = greekStr[0] !== greekStr[0].toLowerCase();
 
-    // Letter rho isn't recognized if it doesn't carry its rough breathing.
-    const leadingRho: boolean = betaCodeStr.startsWith("r");
-    if (leadingRho) betaCodeStr = betaCodeStr.replace(/^(r)/, "$&(");
-    // The input must also be validated with a rough breathing as Morpheus
-    // assumes a smooth breathing if neither is present.
-    const captureLeadingVowels: RegExp = /^([aehiouw]+)/;
-    const roughBetaCodeStr = betaCodeStr.replace(captureLeadingVowels, "$&(");
-    const q: string =
-      !leadingRho && betaCodeStr !== roughBetaCodeStr
-        ? `${betaCodeStr}\n${roughBetaCodeStr}`
-        : betaCodeStr;
+      // Capitalize using an asterisk (TLG style beta code).
+      let result: string = toBetaCode(greekStr, KeyType.GREEK).toLowerCase();
+      if (isCapitalized && caseSensitive) result = `*${result}`;
+      if (!caseSensitive) result = `${result}\n*${result}`;
+
+      // Morpheus assumes a smooth breathing if none have been noted.
+      const resultRough: string = result.replace(
+        /^(\*?)(rh?|[aehiouw]+)/gim,
+        (m, $1, $2) => {
+          if ($1) return $1 + "(" + $2;
+          else return $2 + "(";
+        }
+      );
+
+      return `${result}\n${resultRough}`;
+    })();
 
     let data: string;
 
     try {
-      data = await runTimeLimitedPromise(this.call(q));
+      data = await runTimeLimitedPromise(this.call(searchStr));
     } catch (error) {
       console.error(`Morpheus call failed with error <${error}>`);
       return {};

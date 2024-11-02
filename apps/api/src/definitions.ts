@@ -1,3 +1,5 @@
+import type { KeyType } from "greek-conversion";
+
 export type NonEmptyArray<T> = [T, ...T[]];
 
 export type Optional<T, K extends keyof T> = { [P in K]?: T[K] };
@@ -7,6 +9,7 @@ export type PartialExcept<T, K extends keyof T> = Pick<T, K> &
 
 export type ApiRawParams = {
   q?: string;
+  inputMode?: "greek" | "betacode" | "transliteration" | string;
   fields?: string;
   morphology?: string;
   caseSensitive?: string;
@@ -19,6 +22,7 @@ export type ApiRawParams = {
 
 export type ApiParams<K extends keyof QueryableFields> = {
   q: string;
+  inputMode: KeyType;
   fields: NonEmptyArray<keyof Pick<QueryableFields, K>>;
   morphology: boolean;
   caseSensitive: boolean;
@@ -35,7 +39,13 @@ export type ApiEntryParams<K extends keyof QueryableFields> = Pick<
 >;
 export type ApiLookupParams<K extends keyof QueryableFields> = Pick<
   ApiParams<K>,
-  "q" | "fields" | "morphology" | "caseSensitive" | "limit" | "skipMorpheus"
+  | "q"
+  | "inputMode"
+  | "fields"
+  | "morphology"
+  | "caseSensitive"
+  | "limit"
+  | "skipMorpheus"
 >;
 export type ApiRandomEntryParams<K extends keyof QueryableFields> = Pick<
   ApiParams<K>,

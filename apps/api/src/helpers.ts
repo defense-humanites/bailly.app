@@ -1,3 +1,4 @@
+import { KeyType } from "greek-conversion";
 import type {
   ApiParams,
   ApiRawParams,
@@ -13,6 +14,7 @@ import { Settings } from "./Settings.ts";
 export function setParams(params: ApiRawParams): ApiParams<any> {
   return {
     q: decodeURIComponent(params.q ?? "").trim(),
+    inputMode: setinputMode(params.inputMode),
     fields: setSelectedFields(params.fields),
     morphology: setBooleanParam(params.morphology),
     caseSensitive: setBooleanParam(params.caseSensitive),
@@ -26,6 +28,18 @@ export function setParams(params: ApiRawParams): ApiParams<any> {
 
 export function setBooleanParam(param?: string): boolean {
   return param !== undefined && param !== "false";
+}
+
+export function setinputMode(param?: string): KeyType {
+  switch (param) {
+    case "betacode":
+      return KeyType.BETA_CODE;
+    case "transliteration":
+      return KeyType.TRANSLITERATION;
+    case "greek":
+    default:
+      return KeyType.GREEK;
+  }
 }
 
 export function setNumericParam(param?: string): number | undefined {
@@ -79,7 +93,7 @@ export function setUniqueEntries(
 
     if (entries.length > 1) {
       // Create a common entry and place the actual entries as children.
-      let entry: PartialExcept<Entry<"word">, "word" | "children"> &
+      const entry: PartialExcept<Entry<"word">, "word" | "children"> &
         Optional<
           DatabaseEntry,
           "searchableAtonic" | "searchableAtonicCaseInsensitive"
