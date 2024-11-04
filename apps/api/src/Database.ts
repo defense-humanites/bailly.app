@@ -61,7 +61,7 @@ export class Database {
         readonly: true
       });
 
-      Database.connection.exec("PRAGMA mmap_size = 30000000000;");
+      //Database.connection.exec("PRAGMA mmap_size = 30000000000;");
     }
 
     return Database.connection;
