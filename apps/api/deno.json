@@ -5,9 +5,9 @@
   },
   "imports": {
     "@db/sqlite": "jsr:@db/sqlite@^0.12.0",
-    "@hono/hono": "jsr:@hono/hono@^4.6.15",
-    "@std/assert": "jsr:@std/assert@^1.0.10",
-    "@std/testing": "jsr:@std/testing@^1.0.8",
+    "@hono/hono": "jsr:@hono/hono@^4.7.2",
+    "@std/assert": "jsr:@std/assert@^1.0.11",
+    "@std/testing": "jsr:@std/testing@^1.0.9",
     "greek-conversion": "npm:greek-conversion@^0.14.1"
   },
   "compilerOptions": {
