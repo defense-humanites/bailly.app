@@ -3,7 +3,7 @@
 > [!NOTE]
 > Ce dépôt contient uniquement l'API de l'application Bailly. Le client se trouve quant à lui dans le dépôt principal ([bailly.app](https://github.com/antoineboquet/bailly.app)).
 
-Veuillez noter que la base de données utilisée par l'API n'est PAS distribuée avec le code. Si vous cherchez à faire fonctionner cette API par vous-même, vous devrez au préalable convertir les données du [Bailly 2020 Hugo Chávez](http://gerardgreco.free.fr/spip.php?article52) dans le format spécifié au sein du code source.
+Veuillez noter que la base de données utilisée par l'API n'est PAS distribuée avec le code. Si vous cherchez à faire fonctionner cette API par vous-même, vous devrez au préalable convertir les données du [Bailly 2020 Hugo Chávez](http://gerardgreco.free.fr/spip.php?article24) dans le format spécifié au sein du code source.
 
 Par ailleurs, pour exploiter l'ensemble des fonctionnalités de cette API, il est nécessaire de joindre un exécutable de l'analyseur morphologique [Morpheus](https://github.com/PerseusDL/morpheus), ainsi que le dossier `stemlib` associé.
 
@@ -26,7 +26,7 @@ along with this program. If not, see https://www.gnu.org/licenses/agpl-3.0.fr.ht
 
 ### Données
 
-Cette application utilise les données du [Bailly 2020 Hugo Chávez](http://gerardgreco.free.fr/spip.php?article52) (Gérard Gréco, André Charbonnet, Mark De Wilde, Bernard Maréchal _et al._), distribuées sous licence _Creative Commons Attribution - Pas d'Utilisation Commerciale - Pas de Modification_ (CC&nbsp;BY-NC-ND&nbsp;4.0).
+Cette application utilise les données du [Bailly 2020 Hugo Chávez](http://gerardgreco.free.fr/spip.php?article24) (Gérard Gréco, André Charbonnet, Mark De Wilde, Bernard Maréchal _et al._), distribuées sous licence _Creative Commons Attribution - Pas d'Utilisation Commerciale - Pas de Modification_ (CC&nbsp;BY-NC-ND&nbsp;4.0).
 
 ### Analyse morphologique
 
