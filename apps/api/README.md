@@ -9,19 +9,19 @@ Par ailleurs, pour exploiter l'ensemble des fonctionnalités de cette API, il es
 
 ## Mise en route
 
-Cette API fait usage de code natif compilé pour `linux/amd64` (cf. Morpheus) et peut être déployée aisément, en local comme en production, à l'aide de Docker.
-
-### Développement
+Cette API fait usage de code natif compilé pour `linux/amd64` (cf. Morpheus), mais peut être déployée aisément, en local comme en production, à l'aide de Docker :
 
 ```sh
+### Développement
+
 docker compose up
-```
 
 ### Production
 
-```sh
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up # ajouter `--build` pour reconstruire l'image
 ```
+
+Pour reconstruire l'image Docker : ```docker compose build```.
 
 ## Licence
 
