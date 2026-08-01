@@ -6,6 +6,8 @@ WORKDIR /app
 COPY deno.json deno.lock package.json* ./
 RUN deno ci --prod --skip-types
 COPY . .
+RUN gzip -df /app/morpheus/cruncher.gz \
+	&& chmod +x /app/morpheus/cruncher
 
 ### Production stage
 
