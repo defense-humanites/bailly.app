@@ -1,0 +1,17 @@
+services:
+  bailly-api:
+    container_name: bailly-api-prod
+    env_file:
+      - .env.production
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

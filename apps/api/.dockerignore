@@ -1,0 +1,17 @@
+.git/
+.gitignore
+.dockerignore
+
+.husky/
+
+.env*
+.prettierrc
+
+**/*.md
+
+**/.DS_Store
+
+node_modules/
+
+.vscode/
+.idea/

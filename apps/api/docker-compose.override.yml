@@ -1,0 +1,19 @@
+services:
+  bailly-api:
+    container_name: bailly-api-dev
+    stdin_open: true
+    tty: true
+    env_file:
+      - .env.development
+    volumes:
+      - deno-cache:/deno-dir
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /app/src
+        - action: sync+restart
+          path: ./deno.json
+          target: /app/deno.json
+volumes:
+  deno-cache:
