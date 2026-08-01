@@ -7,9 +7,25 @@ Veuillez noter que la base de données utilisée par l'API n'est PAS distribuée
 
 Par ailleurs, pour exploiter l'ensemble des fonctionnalités de cette API, il est nécessaire de joindre un exécutable de l'analyseur morphologique [Morpheus](https://github.com/PerseusDL/morpheus), ainsi que le dossier `stemlib` associé.
 
+## Mise en route
+
+Cette API fait usage de code natif compilé pour `linux/amd64` (cf. Morpheus) et peut être déployée aisément, en local comme en production, à l'aide de Docker.
+
+### Développement
+
+```sh
+docker compose up
+```
+
+### Production
+
+```sh
+docker compose -f docker-compose.yml up
+```
+
 ## Licence
 
-Copyright (C) 2021, 2022, 2023, 2024 Antoine Boquet, Benjamin Georges
+Copyright (C) 2021, 2022, 2023, 2024, 2025, 2026 Antoine Boquet, Benjamin Georges
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
