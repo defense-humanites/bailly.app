@@ -1,4 +1,10 @@
-database/*.db
+.env*
+
+**/.DS_Store
+
 node_modules/
-.env
-.DS_Store
+
+.vscode/
+.idea/
+
+database/*.db
