@@ -88,9 +88,9 @@ export class Morpheus {
 
   private async call(betaCodeStr: string): Promise<string> {
     // -n: ignore accents; -d: dictionary format.
-    const process = new Deno.Command("morpheus/cruncher", {
+    const process = new Deno.Command(this.binary, {
       args: ["-n", "-d"],
-      env: { MORPHLIB: "morpheus/stemlib" },
+      env: { MORPHLIB: this.stemlib },
       stdin: "piped",
       stdout: "piped",
       stderr: "piped"
