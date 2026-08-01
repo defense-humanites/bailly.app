@@ -1,7 +1,6 @@
 import { AdditionalChar, KeyType, toTransliteration } from "greek-conversion";
 import { Hono } from "@hono/hono";
 import { cors } from "@hono/hono/cors";
-import { logger } from "@hono/hono/logger";
 import { secureHeaders } from "@hono/hono/secure-headers";
 import { Database } from "./Database.ts";
 import { setParams } from "./helpers.ts";
@@ -9,6 +8,7 @@ import { getEntry } from "./model/entry.ts";
 import { getEntries } from "./model/lookup.ts";
 import { getRandomEntry } from "./model/randomEntry.ts";
 import { Morpheus } from "./Morpheus.ts";
+import { logger } from "./logger.ts";
 import { Settings } from "./Settings.ts";
 
 if (Deno.env.get("NODE_ENV") === "development") {
