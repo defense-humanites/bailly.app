@@ -88,7 +88,8 @@ export class Morpheus {
       args: ["-n", "-d"],
       env: { MORPHLIB: "morpheus/stemlib" },
       stdin: "piped",
-      stdout: "piped"
+      stdout: "piped",
+      stderr: "piped"
     }).spawn();
 
     const writer = process.stdin.getWriter();
