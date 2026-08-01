@@ -1,4 +1,4 @@
-import { Database as Sqlite } from "jsr:@db/sqlite";
+import { Database as Sqlite } from "@db/sqlite";
 import { Settings } from "./Settings.ts";
 
 export class Database {

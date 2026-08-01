@@ -1,5 +1,5 @@
-import { assertEquals } from "jsr:@std/assert";
-import { describe } from "jsr:@std/testing/bdd";
+import { assertEquals } from "@std/assert";
+import { describe } from "@std/testing/bdd";
 import { app } from "../src/index.ts";
 import { Settings } from "../src/Settings.ts";
 
