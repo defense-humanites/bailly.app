@@ -36,17 +36,6 @@ export class Morpheus {
       );
     } else {
       this.isAvailable = true;
-
-      fs.chmod(this.binary, fs.constants.S_IXUSR, (error) => {
-        try {
-          if (error) throw error;
-          console.info(
-            `✅ Changed chmod for '${this.binary}' to ensure its executability.`
-          );
-        } catch (error: unknown) {
-          console.error(error);
-        }
-      });
     }
   }
 
@@ -77,6 +66,21 @@ export class Morpheus {
       }
 
       Morpheus.instance = new Morpheus(binaryExists, stemlibExists);
+
+      await fs.chmod(
+        Morpheus.instance.binary,
+        fs.constants.S_IXUSR,
+        (error) => {
+          try {
+            if (error) throw error;
+            console.info(
+              `✅ Changed chmod for '${Morpheus.instance.binary}' to ensure its executability.`
+            );
+          } catch (error: unknown) {
+            console.error(error);
+          }
+        }
+      );
     }
 
     return Morpheus.instance;
