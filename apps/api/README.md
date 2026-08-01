@@ -18,10 +18,8 @@ docker compose up
 
 ### Production
 
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up # ajouter `--build` pour reconstruire l'image
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up # `--build` pour reconstruire l'image
 ```
-
-Pour reconstruire l'image Docker : ```docker compose build```.
 
 ## Licence
 
