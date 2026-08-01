@@ -97,10 +97,9 @@ export class Morpheus {
     }).spawn();
 
     const writer = process.stdin.getWriter();
-    writer.write(new TextEncoder().encode(betaCodeStr));
+    await writer.write(new TextEncoder().encode(betaCodeStr));
+    await writer.close();
     writer.releaseLock();
-
-    await process.stdin.close();
 
     const output = await process.output();
     const result = new TextDecoder().decode(output.stdout);
