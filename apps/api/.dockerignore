@@ -1,3 +1,10 @@
+.vscode/
+.idea/
+
+**/.DS_Store
+
+node_modules/
+
 .git/
 .gitignore
 .dockerignore
@@ -9,9 +16,6 @@
 
 **/*.md
 
-**/.DS_Store
-
-node_modules/
-
-.vscode/
-.idea/
+# Some OS prevent the copying of executables. We provide an archive to be
+# extracted (`cruncher.gz`) in order to prevent this problem.
+morpheus/cruncher
