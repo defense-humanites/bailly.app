@@ -1,10 +1,12 @@
-.env*
+.vscode/
+.idea/
 
 **/.DS_Store
 
 node_modules/
 
-.vscode/
-.idea/
+.env*
 
+# The database is decompressed at startup. Ignore any databases that have
+# already been extracted.
 database/*.db
