@@ -20,17 +20,19 @@ export async function getRandomEntry<K extends keyof QueryableFields>({
     SELECT length(definition) as length, ${fieldsStr}
     FROM bailly
     ${
-      lengthRange
-        ? !lengthRange[1]
-          ? `WHERE length(definition) >= ${lengthRange[0]}`
-          : `WHERE length(definition) >= ${lengthRange[0]} AND length(definition) <= ${lengthRange[1]}`
-        : ""
-    }
+    lengthRange
+      ? !lengthRange[1]
+        ? `WHERE length(definition) >= ${lengthRange[0]}`
+        : `WHERE length(definition) >= ${lengthRange[0]} AND length(definition) <= ${
+          lengthRange[1]
+        }`
+      : ""
+  }
     ORDER BY random()
     LIMIT 1
   `;
 
-  const entry = <(Partial<DatabaseEntry> & { length: number }) | null>(
+  const entry = <(Partial<DatabaseEntry> & { length: number }) | null> (
     db.prepare(sql).get()
   );
 

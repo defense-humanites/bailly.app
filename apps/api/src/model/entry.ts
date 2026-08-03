@@ -25,9 +25,7 @@ export async function getEntry<K extends keyof QueryableFields>({
   // ending with a hash and a number.
   // @fixme: don't get 'word' colmun twice if it's in `fields`.
   const entriesSql = `
-    SELECT orderedID, ${
-      !fieldsStr.includes("word") ? `word, ${fieldsStr}` : fieldsStr
-    }
+    SELECT orderedID, ${!fieldsStr.includes("word") ? `word, ${fieldsStr}` : fieldsStr}
     FROM bailly
     WHERE uri = $q
     OR uri GLOB $qHashNumber
@@ -38,7 +36,7 @@ export async function getEntry<K extends keyof QueryableFields>({
     $qHashNumber: `${q}#?`
   };
 
-  const data = <PartialExcept<DatabaseEntry, "orderedID" | "word">[]>(
+  const data = <PartialExcept<DatabaseEntry, "orderedID" | "word">[]> (
     db.prepare(entriesSql).all(entriesSqlParams)
   );
 
@@ -105,7 +103,7 @@ export async function getEntry<K extends keyof QueryableFields>({
     $nextID: nextSiblingID
   };
 
-  const siblings = <PartialExcept<DatabaseEntry, "orderedID">[]>(
+  const siblings = <PartialExcept<DatabaseEntry, "orderedID">[]> (
     db.prepare(siblingsSql).all(siblingsParams)
   );
 

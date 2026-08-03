@@ -4,8 +4,9 @@ export type NonEmptyArray<T> = [T, ...T[]];
 
 export type Optional<T, K extends keyof T> = { [P in K]?: T[K] };
 
-export type PartialExcept<T, K extends keyof T> = Pick<T, K> &
-  Partial<Omit<T, K>>;
+export type PartialExcept<T, K extends keyof T> =
+  & Pick<T, K>
+  & Partial<Omit<T, K>>;
 
 export type ApiRawParams = {
   q?: string;
@@ -58,8 +59,7 @@ export type ApiResponse = {
   };
 };
 
-export interface ApiEntryResponse<K extends keyof QueryableFields>
-  extends ApiResponse {
+export interface ApiEntryResponse<K extends keyof QueryableFields> extends ApiResponse {
   data: {
     version: string;
     entry: PartialExcept<Entry<K>, K | "children">;

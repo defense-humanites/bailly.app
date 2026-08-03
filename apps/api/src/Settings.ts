@@ -3,7 +3,9 @@ import type { DatabaseEntry } from "./definitions.ts";
 const DB_FILE_PATH = Deno.env.get("DB_FILE_PATH");
 const DB_VERSION = Deno.env.get("DB_VERSION");
 const MORPHEUS_BINARY_PATH = Deno.env.get("MORPHEUS_BINARY_PATH");
-const MORPHEUS_LOOKUP_MAX_DURATION = Deno.env.get("MORPHEUS_LOOKUP_MAX_DURATION"); // prettier-ignore
+const MORPHEUS_LOOKUP_MAX_DURATION = Deno.env.get(
+  "MORPHEUS_LOOKUP_MAX_DURATION"
+);
 const MORPHEUS_STEMLIB_PATH = Deno.env.get("MORPHEUS_STEMLIB_PATH");
 const PORT = Deno.env.get("PORT");
 const QUERY_ALLOWED_FIELDS = Deno.env.get("QUERY_ALLOWED_FIELDS");
@@ -44,15 +46,16 @@ export class Settings {
     // Query params
 
     this.queryAllowedFields = QUERY_ALLOWED_FIELDS
-      ? (Settings.formatFields(QUERY_ALLOWED_FIELDS) as (keyof DatabaseEntry)[])
+      ? (Settings.formatFields(
+        QUERY_ALLOWED_FIELDS
+      ) as (keyof DatabaseEntry)[])
       : [];
-    this.queryDefaultFields =
-      QUERY_DEFAULT_FIELDS &&
-      this.checkFields(Settings.formatFields(QUERY_DEFAULT_FIELDS))
-        ? (Settings.formatFields(
-            QUERY_DEFAULT_FIELDS
-          ) as (keyof DatabaseEntry)[])
-        : this.queryAllowedFields;
+    this.queryDefaultFields = QUERY_DEFAULT_FIELDS &&
+        this.checkFields(Settings.formatFields(QUERY_DEFAULT_FIELDS))
+      ? (Settings.formatFields(
+        QUERY_DEFAULT_FIELDS
+      ) as (keyof DatabaseEntry)[])
+      : this.queryAllowedFields;
     this.queryMaxRows = Number(QUERY_MAX_ROWS ?? -1);
   }
 

@@ -59,8 +59,8 @@ app.get("/entry/:uri", async (c) => {
 
 app.get("/lookup/:q", async (c) => {
   const q = c.req.param("q");
-  const { inputMode, fields, morphology, caseSensitive, limit, skipMorpheus } =
-    c.req.query();
+  const { inputMode, fields, morphology, caseSensitive, limit, skipMorpheus } = c.req
+    .query();
   const params = setParams({
     q,
     inputMode,

@@ -52,7 +52,9 @@ export function setNumericParam(param?: string): number | undefined {
   return Number(param);
 }
 
-export function setNumericRangeParam(param?: string): [number, number?] | null {
+export function setNumericRangeParam(
+  param?: string
+): [number, number?] | null {
   const arr: number[] = (param ?? "")
     .split(",")
     .map((item) => Number.parseInt(item, 10))
@@ -80,26 +82,31 @@ export function setUniqueEntries(
   params?: {
     caseSensitive?: boolean;
   }
-): (PartialExcept<Entry, "word" | "children"> &
-  Optional<
+): (
+  & PartialExcept<Entry, "word" | "children">
+  & Optional<
     DatabaseEntry,
     "searchableAtonic" | "searchableAtonicCaseInsensitive"
-  >)[] {
+  >
+)[] {
   const uniqueEntries: PartialExcept<Entry, "word">[] = [];
-  for (const [word, entries] of Object.entries(
-    Object.groupBy(inputEntries, ({ word }) => word)
-  )) {
+  for (
+    const [word, entries] of Object.entries(
+      Object.groupBy(inputEntries, ({ word }) => word)
+    )
+  ) {
     if (!entries) continue;
 
     if (entries.length > 1) {
       // Create a common entry and place the actual entries as children.
-      const entry: PartialExcept<Entry<"word">, "word" | "children"> &
-        Optional<
+      const entry:
+        & PartialExcept<Entry<"word">, "word" | "children">
+        & Optional<
           DatabaseEntry,
           "searchableAtonic" | "searchableAtonicCaseInsensitive"
         > = {
-        ...entries[0]
-      };
+          ...entries[0]
+        };
 
       // @ts-ignore: @fixme
       Object.keys(entries[0]).forEach((prop) => (entry[prop] = ""));

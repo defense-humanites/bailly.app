@@ -1,10 +1,6 @@
 import { KeyType, toBetaCode, toGreek } from "greek-conversion";
 import fs from "node:fs";
-import type {
-  ApiLookupParams,
-  MorpheusData,
-  MorpheusDataItem
-} from "./definitions.ts";
+import type { ApiLookupParams, MorpheusData, MorpheusDataItem } from "./definitions.ts";
 import { SpecialChar } from "./enums.ts";
 import { runTimeLimitedPromise } from "./helpers.ts";
 import { Settings } from "./Settings.ts";
@@ -109,7 +105,15 @@ export class Morpheus {
           acc[key] = value.trim();
           return acc;
         },
-        { workw: "", lem: "", prvb: "", aug1: "", stem: "", suff: "", end: "" }
+        {
+          workw: "",
+          lem: "",
+          prvb: "",
+          aug1: "",
+          stem: "",
+          suff: "",
+          end: ""
+        }
       );
 
     formattedData.workw = toGreek(formattedData.workw, KeyType.TLG_BETA_CODE);

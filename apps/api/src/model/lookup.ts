@@ -92,8 +92,7 @@ export async function getEntries<K extends keyof QueryableFields>({
 
   const fieldsAsStr: string = fields.join(", ");
 
-  const isExactMatch: boolean =
-    (q.startsWith("^") && q.endsWith("$")) ||
+  const isExactMatch: boolean = (q.startsWith("^") && q.endsWith("$")) ||
     (q.startsWith('"') && q.endsWith('"'));
 
   if (isExactMatch) {
@@ -127,8 +126,8 @@ export async function getEntries<K extends keyof QueryableFields>({
   // and build the `children` property.
   const sql = `
     SELECT ${
-      !fieldsAsStr.includes("word") ? `word, ${fieldsAsStr}` : fieldsAsStr
-    }, ${searchableAtonicField}, (
+    !fieldsAsStr.includes("word") ? `word, ${fieldsAsStr}` : fieldsAsStr
+  }, ${searchableAtonicField}, (
       SELECT COUNT(orderedID)
       FROM bailly
       WHERE ${searchableAtonicField} ${comparisonOperator} $query ${morpheusSQLStatements}
@@ -161,7 +160,7 @@ export async function getEntries<K extends keyof QueryableFields>({
     console.log(sql);
   }
 
-  const data = <PartialExcept<DatabaseEntry, "word">[]>(
+  const data = <PartialExcept<DatabaseEntry, "word">[]> (
     db.prepare(sql).all(params)
   );
 
@@ -188,13 +187,14 @@ export async function getEntries<K extends keyof QueryableFields>({
           return caseSensitive
             ? !item.searchableAtonic?.startsWith(searchStr)
             : !item.searchableAtonicCaseInsensitive?.startsWith(
-                searchStr.toLowerCase()
-              );
+              searchStr.toLowerCase()
+            );
         })();
 
         const removeExtraFields = (
-          item: Partial<Entry> &
-            Optional<
+          item:
+            & Partial<Entry>
+            & Optional<
               DatabaseEntry,
               | "countAll"
               | "searchableAtonic"
