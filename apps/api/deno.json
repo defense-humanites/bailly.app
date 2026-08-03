@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "dev": "deno run --allow-env --allow-ffi --allow-net --allow-read --allow-run --allow-write --env-file --watch src/index.ts",
+    "dev": "deno run --allow-env --allow-ffi --allow-net --allow-read --allow-run --allow-write --env-file=.env.development --watch src/index.ts",
     "test": "deno test --allow-env --allow-ffi --allow-net --allow-read --allow-run --allow-write --env-file tests/*.test.ts"
   },
   "imports": {
@@ -16,7 +16,10 @@
     "indentWidth": 2,
     "semiColons": true,
     "singleQuote": false,
-    "proseWrap": "preserve"
+    "proseWrap": "preserve",
+    "exclude": [
+      "**/*.md"
+    ]
   },
   "compilerOptions": {
     "verbatimModuleSyntax": true,
