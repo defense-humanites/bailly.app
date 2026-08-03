@@ -16,6 +16,7 @@
     "indentWidth": 2,
     "semiColons": true,
     "singleQuote": false,
+    "trailingCommas": "onlyMultiLine",
     "proseWrap": "preserve",
     "exclude": [
       "**/*.md"
