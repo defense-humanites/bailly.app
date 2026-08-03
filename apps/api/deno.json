@@ -1,7 +1,7 @@
 {
   "tasks": {
     "dev": "deno run --allow-env --allow-ffi --allow-net --allow-read --allow-run --allow-write --env-file=.env.development --watch src/index.ts",
-    "test": "deno test --allow-env --allow-ffi --allow-net --allow-read --allow-run --allow-write --env-file tests/*.test.ts"
+    "test": "deno test --allow-env --allow-ffi --allow-net --allow-read --allow-run --allow-write --env-file=.env.development tests/*.test.ts"
   },
   "imports": {
     "@db/sqlite": "jsr:@db/sqlite@^0.13.0",
