@@ -10,6 +10,14 @@
     "@std/testing": "jsr:@std/testing@^1.0.19",
     "greek-conversion": "npm:greek-conversion@^0.14.1"
   },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 88,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": false,
+    "proseWrap": "preserve"
+  },
   "compilerOptions": {
     "verbatimModuleSyntax": true,
     "strict": true
