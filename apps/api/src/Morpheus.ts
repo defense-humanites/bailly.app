@@ -35,6 +35,11 @@ export class Morpheus {
         `value corresponds to an actual file (current value is '${this.stemlib}').`
       );
     } else {
+      fs.chmodSync(this.binary, fs.constants.S_IXUSR);
+      console.info(
+        `✅ Changed chmod for '${this.binary}' to ensure its executability.`
+      );
+
       this.isAvailable = true;
     }
   }
@@ -66,21 +71,6 @@ export class Morpheus {
       }
 
       Morpheus.instance = new Morpheus(binaryExists, stemlibExists);
-
-      await fs.chmod(
-        Morpheus.instance.binary,
-        fs.constants.S_IXUSR,
-        (error) => {
-          try {
-            if (error) throw error;
-            console.info(
-              `✅ Changed chmod for '${Morpheus.instance.binary}' to ensure its executability.`
-            );
-          } catch (error: unknown) {
-            console.error(error);
-          }
-        }
-      );
     }
 
     return Morpheus.instance;
@@ -184,7 +174,7 @@ export class Morpheus {
       .splice(1)
       .map((item) => this.formatResponse(item));
 
-    return <MorpheusData>(
+    return <MorpheusData> (
       Object.groupBy(formattedData, ({ lem }) => lem.replace(/\d+$/, ""))
     );
   }
