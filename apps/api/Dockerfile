@@ -20,5 +20,5 @@ COPY --from=builder --chown=deno:deno /app .
 COPY --from=builder --chown=deno:deno /deno-dir /deno-dir
 USER deno
 EXPOSE 3000
-CMD ["deno", "run", "--allow-env", "--allow-ffi", "--allow-net", "--allow-read",
+CMD ["deno", "run", "--allow-env", "--allow-ffi", "--allow-net", "--allow-read", \
      "--allow-run", "--allow-write", "--env-file", "--watch", "src/index.ts"]
