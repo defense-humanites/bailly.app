@@ -3,10 +3,10 @@
   "specifiers": {
     "jsr:@db/sqlite@0.13": "0.13.0",
     "jsr:@denosaurs/plug@1": "1.1.0",
-    "jsr:@hono/hono@^4.12.32": "4.12.32",
+    "jsr:@hono/hono@^4.12.33": "4.12.33",
     "jsr:@std/assert@^1.0.19": "1.0.19",
-    "jsr:@std/async@^1.4.0": "1.5.0",
-    "jsr:@std/data-structures@^1.1.0": "1.1.1",
+    "jsr:@std/async@^1.5.0": "1.5.0",
+    "jsr:@std/data-structures@^1.1.2": "1.1.2",
     "jsr:@std/encoding@1": "1.0.11",
     "jsr:@std/fmt@1": "1.0.10",
     "jsr:@std/fs@1": "1.0.24",
@@ -16,7 +16,8 @@
     "jsr:@std/path@1": "1.1.6",
     "jsr:@std/path@1.0": "1.0.9",
     "jsr:@std/path@^1.1.5": "1.1.6",
-    "jsr:@std/testing@^1.0.19": "1.0.19",
+    "jsr:@std/path@^1.1.6": "1.1.6",
+    "jsr:@std/testing@^1.0.20": "1.0.20",
     "npm:greek-conversion@~0.14.1": "0.14.1"
   },
   "jsr": {
@@ -36,8 +37,8 @@
         "jsr:@std/path@1"
       ]
     },
-    "@hono/hono@4.12.32": {
-      "integrity": "e1274e968ee724176d7e35946c184d3cb8508f05e3f8ae6cee157c4f29ef148d"
+    "@hono/hono@4.12.33": {
+      "integrity": "0df9fd54840e64fd3c10455aed240ed1dbc8b2773b6d9b825e3a681378d1ba77"
     },
     "@std/assert@1.0.19": {
       "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
@@ -48,8 +49,8 @@
     "@std/async@1.5.0": {
       "integrity": "4c1f22d287a17ad7d8643b1952bc5a4d21e5d8b68dc8c20d8268eecc69096e82"
     },
-    "@std/data-structures@1.1.1": {
-      "integrity": "7e1fcf19771fb9c6dbcd7f65039d6d42ef8dc023cfbc0c4cdc74b24e09229380"
+    "@std/data-structures@1.1.2": {
+      "integrity": "2471377c9e0051f9ec34e57d0ebd0ad133a5a889677446ec6ba9938e4e102918"
     },
     "@std/encoding@1.0.11": {
       "integrity": "e7cef2f0b3153bccc17431e7c864a1de03a4b6d9647389c43e08aaa775d37385"
@@ -76,15 +77,15 @@
         "jsr:@std/internal@^1.0.14"
       ]
     },
-    "@std/testing@1.0.19": {
-      "integrity": "f4236172365b216728dc3cc8b5e80a9f4c33083d1e4ede7613d5b25b4014898e",
+    "@std/testing@1.0.20": {
+      "integrity": "21380ed438672762e4ec549cbf4fe41c5b68f5598773a30b64abe7375513e721",
       "dependencies": [
         "jsr:@std/assert",
         "jsr:@std/async",
         "jsr:@std/data-structures",
         "jsr:@std/fs@^1.0.24",
         "jsr:@std/internal@^1.0.14",
-        "jsr:@std/path@^1.1.5"
+        "jsr:@std/path@^1.1.6"
       ]
     }
   },
@@ -96,9 +97,9 @@
   "workspace": {
     "dependencies": [
       "jsr:@db/sqlite@0.13",
-      "jsr:@hono/hono@^4.12.32",
+      "jsr:@hono/hono@^4.12.33",
       "jsr:@std/assert@^1.0.19",
-      "jsr:@std/testing@^1.0.19",
+      "jsr:@std/testing@^1.0.20",
       "npm:greek-conversion@~0.14.1"
     ]
   }
