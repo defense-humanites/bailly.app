@@ -57,6 +57,17 @@ export class Settings {
       ) as (keyof DatabaseEntry)[])
       : this.queryAllowedFields;
     this.queryMaxRows = Number(QUERY_MAX_ROWS ?? -1);
+
+    console.log("Current settings:");
+    console.info("* dbFilePath:", this.dbFilePath);
+    console.info("* dbVersion:", this.dbVersion);
+    console.info("* morpheusBinaryPath:", this.morpheusBinaryPath);
+    console.info("* morpheusLookupMaxDuration:", this.morpheusLookupMaxDuration);
+    console.info("* morpheusStemlibPath:", this.morpheusStemlibPath);
+    console.info("* port:", this.port);
+    console.info("* queryAllowedFields:", this.queryAllowedFields);
+    console.info("* queryDefaultFields:", this.queryDefaultFields);
+    console.info("* queryMaxRows:", this.queryMaxRows);
   }
 
   static getSettings(): Settings {
