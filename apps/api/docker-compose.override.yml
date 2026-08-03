@@ -5,6 +5,8 @@ services:
     tty: true
     env_file:
       - .env.development
+    environment:
+      - DENO_DIR=/deno-dir
     volumes:
       - deno-cache:/deno-dir
     develop:

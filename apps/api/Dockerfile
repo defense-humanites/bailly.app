@@ -3,8 +3,8 @@
 FROM denoland/deno:latest AS builder
 ENV DENO_DIR=/deno-dir
 WORKDIR /app
-COPY deno.json deno.lock package.json* ./
-RUN deno ci --prod --skip-types
+COPY deno.json deno.lock ./
+RUN deno cache --lock=deno.lock deno.json
 COPY . .
 # Some OS prevent the copying of executables. We provide an archive to be
 # extracted in order to prevent this problem.
