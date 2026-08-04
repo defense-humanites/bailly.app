@@ -36,7 +36,10 @@ export class Database {
       }
 
       if (!dbFileExists && gzippedDbFileExists) {
-        console.info("⏳ Unzipping database file...");
+        console.info(
+          "%c⏳ Unzipping database file...",
+          "font-weight: bold;color:yellow"
+        );
 
         const input = await Deno.open(gzippedDbFilePath);
         const output = await Deno.create(settings.dbFilePath);
@@ -45,7 +48,7 @@ export class Database {
           .pipeThrough(new DecompressionStream("gzip"))
           .pipeTo(output.writable);
 
-        console.info("✅ Database file unzipped.");
+        console.info("%c✅ Database file unzipped.\n", "font-weight: bold;color:green");
       }
 
       if (!dbFileExists && !gzippedDbFileExists) {

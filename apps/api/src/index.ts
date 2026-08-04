@@ -76,4 +76,4 @@ app.get("/lookup/:q", async (c) => {
 
 Deno.serve({ port: settings.port }, app.fetch);
 
-console.info("🐎 The API is running.");
+console.info("%c🐎 The API is running.\n", "font-weight: bold;color:cyan");

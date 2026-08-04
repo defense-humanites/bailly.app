@@ -21,19 +21,22 @@ export class Morpheus {
     if (!binaryExists) {
       this.isAvailable = false;
       console.warn(
-        `⚠️ Morpheus binary not found. Check that the 'MORPHEUS_BINARY_PATH'`,
-        `value corresponds to an actual file (current value is '${this.binary}').`
+        `%c⚠️ Morpheus binary not found. Check that the 'MORPHEUS_BINARY_PATH'`,
+        `value corresponds to an actual file (current value is '${this.binary}').`,
+        "font-weight: bold;color:yellow"
       );
     } else if (!stemlibExists) {
       this.isAvailable = false;
       console.warn(
-        `⚠️ Morpheus stemlib not found. Check that the 'MORPHEUS_STEMLIB_PATH'`,
-        `value corresponds to an actual file (current value is '${this.stemlib}').`
+        `%c⚠️ Morpheus stemlib not found. Check that the 'MORPHEUS_STEMLIB_PATH'`,
+        `value corresponds to an actual file (current value is '${this.stemlib}').`,
+        "font-weight: bold;color:yellow"
       );
     } else {
       fs.chmodSync(this.binary, fs.constants.S_IXUSR);
       console.info(
-        `✅ Changed chmod for '${this.binary}' to ensure its executability.`
+        `%c✅ Changed chmod for '${this.binary}' to ensure its executability.\n`,
+        "font-weight: bold;color:green"
       );
 
       this.isAvailable = true;
