@@ -91,7 +91,7 @@ export class Settings {
     );
     if (this.isHostDb) {
       console.warn(
-        "%c  🚧 This is an arbitrarily mounted database from the host file system.",
+        "%c  ⚠️ This is an arbitrarily mounted database from the host file system.",
         "color:yellow"
       );
     }
