@@ -15,6 +15,10 @@ node_modules/
 
 **/*.md
 
+# The database is decompressed at startup. Ignore any databases that have
+# already been extracted.
+database/*.db
+
 # Some OS prevent the copying of executables. We provide an archive to be
 # extracted (`cruncher.gz`) in order to prevent this problem.
 morpheus/cruncher
