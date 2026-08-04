@@ -7,8 +7,10 @@ services:
       - .env.development
     environment:
       - DENO_DIR=/deno-dir
+      - HOST_DB=${HOST_DB:-}
     volumes:
       - deno-cache:/deno-dir
+      - ${HOST_DB:-host-db}:/app/database/host.db:ro
     develop:
       watch:
         - action: sync
@@ -19,3 +21,4 @@ services:
           target: /app/deno.json
 volumes:
   deno-cache:
+  host-db:
