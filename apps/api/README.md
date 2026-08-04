@@ -16,6 +16,10 @@ Cette API fait usage de code natif compilé pour `linux/amd64` (cf. Morpheus), 
 
 docker compose up
 
+# Avec une base de données chargée arbitrairement depuis le système de fichier courant
+# (`HOST_DB` attend soit un chemin absolu soit relatif au fichier `docker-compose.yml`).
+HOST_DB=./<file.db> docker compose up
+
 ### Production
 
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up # `--build` pour reconstruire l'image
