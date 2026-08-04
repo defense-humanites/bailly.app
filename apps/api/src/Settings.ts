@@ -83,11 +83,16 @@ export class Settings {
     this.queryMaxRows = Number(QUERY_MAX_ROWS ?? -1);
 
     console.log("\n%cCurrent settings:", "font-weight: bold");
-    console.info(`* dbFilePath: ${this.dbFilePath}${this.isHostDb ? ` -> %c${this.hostDbUnderlyingPath}` : "%c"}`, "color:lightCyan");
+    console.info(
+      `* dbFilePath: ${this.dbFilePath}${
+        this.isHostDb ? ` -> %c${this.hostDbUnderlyingPath}` : "%c"
+      }`,
+      "color:lightCyan"
+    );
     if (this.isHostDb) {
       console.warn(
         "%c  🚧 This is an arbitrarily mounted database from the host file system.",
-        "font-weight: bold;color:yellow"
+        "color:yellow"
       );
     }
     console.info("* dbVersion:", this.dbVersion);
