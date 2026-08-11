@@ -6,10 +6,6 @@ WORKDIR /app
 COPY deno.json deno.lock ./
 RUN deno cache --lock=deno.lock deno.json
 COPY . .
-# Some OS prevent the copying of executables. We provide an archive to be
-# extracted in order to prevent this problem.
-RUN gzip -df /app/morpheus/cruncher.gz \
-	&& chmod +x /app/morpheus/cruncher
 
 ### Production stage
 
