@@ -118,9 +118,15 @@ export async function getEntries<K extends keyof QueryableFields>({
     ? await morpheus.lookup(searchStr, { caseSensitive })
     : {};
 
-  const morpheusSQLStatements: string = Object.keys(morpheusData)
-    .map((_, i) => `OR searchable = $lemma${(i += 1)} `)
-    .join("");
+  const morpheusSQLStatements: string = (() => {
+    const keys = Object.keys(morpheusData);
+    if (keys.length) {
+      return "OR searchable IN (" + keys
+        .map((_, i) => `$lemma${(i += 1)}`)
+        .join(", ") + ")";
+    }
+    return "";
+  })();
 
   // Field `word` is mandatory in order to retrieve unique entries
   // and build the `children` property.
