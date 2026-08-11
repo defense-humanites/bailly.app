@@ -147,7 +147,7 @@ export async function getEntries<K extends keyof QueryableFields>({
     params[propName] = removeGreekVariants(lemma);
   });
 
-  if (Deno.env.get("NODE_ENV") === "development") {
+  if (Deno.env.get("DENO_ENV") === "development") {
     console.log({
       searchStr: searchStr,
       morpheusData: Object.keys(morpheusData),

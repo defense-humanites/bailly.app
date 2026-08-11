@@ -11,10 +11,6 @@ import { Morpheus } from "./Morpheus.ts";
 import { logger } from "./logger.ts";
 import { Settings } from "./Settings.ts";
 
-if (Deno.env.get("NODE_ENV") === "development") {
-  console.warn("⚠️ The development mode is active.");
-}
-
 const settings = Settings.getSettings();
 
 await Database.getConnection();
@@ -76,4 +72,12 @@ app.get("/lookup/:q", async (c) => {
 
 Deno.serve({ port: settings.port }, app.fetch);
 
-console.info("%c🐎 The API is running.", "font-weight: bold;color:cyan");
+if (Deno.env.get("DENO_ENV") === "development") {
+  console.info(
+    "%c🐎 The API is running... %c(🚧 development mode)",
+    "font-weight:bold;color:cyan",
+    "font-weight:bold;color:yellow"
+  );
+} else {
+  console.info("%c🐎 The API is running...", "font-weight:bold;color:cyan");
+}
