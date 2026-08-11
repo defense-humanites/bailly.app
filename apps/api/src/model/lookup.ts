@@ -127,11 +127,7 @@ export async function getEntries<K extends keyof QueryableFields>({
   const sql = `
     SELECT ${
     !fieldsAsStr.includes("word") ? `word, ${fieldsAsStr}` : fieldsAsStr
-  }, ${searchableAtonicField}, (
-      SELECT COUNT(orderedID)
-      FROM bailly
-      WHERE ${searchableAtonicField} ${comparisonOperator} $query ${morpheusSQLStatements}
-    ) as countAll
+  }, ${searchableAtonicField}, COUNT(*) OVER () AS countAll
     FROM bailly
     WHERE ${searchableAtonicField} ${comparisonOperator} $query ${morpheusSQLStatements}
     ORDER BY orderedID
