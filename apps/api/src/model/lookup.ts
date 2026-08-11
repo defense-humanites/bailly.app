@@ -123,7 +123,8 @@ export async function getEntries<K extends keyof QueryableFields>({
     if (keys.length) {
       return "OR searchable IN (" + keys
         .map((_, i) => `$lemma${(i += 1)}`)
-        .join(", ") + ")";
+        .join(", ") +
+        ")";
     }
     return "";
   })();
@@ -154,6 +155,7 @@ export async function getEntries<K extends keyof QueryableFields>({
   });
 
   if (Deno.env.get("DENO_ENV") === "development") {
+    console.info(`\n${import.meta.url} > getEntries():\n`);
     console.log({
       searchStr: searchStr,
       morpheusData: Object.keys(morpheusData),
