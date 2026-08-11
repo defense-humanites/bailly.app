@@ -82,7 +82,7 @@ export class Settings {
       : this.queryAllowedFields;
     this.queryMaxRows = Number(QUERY_MAX_ROWS ?? -1);
 
-    console.log("\n%cCurrent settings:", "font-weight: bold");
+    console.log("%cCurrent settings:", "font-weight: bold");
     console.info(
       `* dbFilePath: ${this.dbFilePath}${
         this.isHostDb ? ` -> %c${this.hostDbUnderlyingPath}` : "%c"
@@ -102,7 +102,7 @@ export class Settings {
     console.info("* port:", this.port);
     console.info("* queryAllowedFields:", this.queryAllowedFields);
     console.info("* queryDefaultFields:", this.queryDefaultFields);
-    console.info("* queryMaxRows:", this.queryMaxRows, "\n");
+    console.info("* queryMaxRows:", this.queryMaxRows);
   }
 
   static getSettings(): Settings {

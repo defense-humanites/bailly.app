@@ -48,7 +48,7 @@ export class Database {
           .pipeThrough(new DecompressionStream("gzip"))
           .pipeTo(output.writable);
 
-        console.info("%c✅ Database file unzipped.\n", "font-weight: bold;color:green");
+        console.info("%c✅ Database file unzipped.", "font-weight: bold;color:green");
       }
 
       if (!dbFileExists && !gzippedDbFileExists) {
