@@ -17,13 +17,16 @@ Cette API fait usage de code natif compilé pour `linux/amd64` (cf. Morpheus), 
 docker compose up
 
 # Avec une base de données chargée arbitrairement depuis le système de fichier courant
-# (`HOST_DB` attend soit un chemin absolu soit relatif au fichier `docker-compose.yml`).
-HOST_DB=./<file.db> docker compose up
+# (`HOST_DB` attend soit un chemin absolu soit un chemin relatif au fichier `docker-compose.yml`).
+HOST_DB=<file.db> docker compose up
 
 ### Production
 
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up # `--build` pour reconstruire l'image
 ```
+
+> [!WARNING]
+> Si le binaire de Morpheus a été dézippé localement (cf. `./morpheus/cruncher`), il peut être nécessaire de le supprimer manuellement pour pouvoir construire l'image Docker. MacOS, par exemple, prévient toute interaction avec des binaires non authentifiés, et la règle d'exclusion visant le binaire de Morpheus dans le fichier `./dockeringore` n'est pas prise en compte de manière suffisamment précoce par Docker, ce qui peut produire une erreur lors de la construction.
 
 ## Licence
 
