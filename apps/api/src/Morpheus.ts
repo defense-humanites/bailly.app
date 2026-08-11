@@ -8,40 +8,12 @@ import { Settings } from "./Settings.ts";
 export class Morpheus {
   private static instance: Morpheus;
 
-  private readonly binary: string;
-  private readonly stemlib: string;
+  private static binary: string;
+  private static stemlib: string;
 
-  readonly isAvailable: boolean;
+  static isAvailable: boolean;
 
-  private constructor(binaryExists: boolean, stemlibExists: boolean) {
-    const settings = Settings.getSettings();
-    this.binary = settings.morpheusBinaryPath;
-    this.stemlib = settings.morpheusStemlibPath;
-
-    if (!binaryExists) {
-      this.isAvailable = false;
-      console.warn(
-        `%c⚠️ Morpheus binary not found. Check that the 'MORPHEUS_BINARY_PATH'`,
-        `value corresponds to an actual file (current value is '${this.binary}').`,
-        "font-weight: bold;color:yellow"
-      );
-    } else if (!stemlibExists) {
-      this.isAvailable = false;
-      console.warn(
-        `%c⚠️ Morpheus stemlib not found. Check that the 'MORPHEUS_STEMLIB_PATH'`,
-        `value corresponds to an actual file (current value is '${this.stemlib}').`,
-        "font-weight: bold;color:yellow"
-      );
-    } else {
-      fs.chmodSync(this.binary, fs.constants.S_IXUSR);
-      console.info(
-        `%c✅ Changed chmod for '${this.binary}' to ensure its executability.\n`,
-        "font-weight: bold;color:green"
-      );
-
-      this.isAvailable = true;
-    }
-  }
+  private constructor() {}
 
   static async getMorpheus(): Promise<Morpheus> {
     if (!Morpheus.instance) {
@@ -58,6 +30,16 @@ export class Morpheus {
         }
       }
 
+      const gzippedBinaryFilePath: string = `${settings.morpheusBinaryPath}.gz`;
+      let gzippedBinaryExists: boolean = false;
+
+      try {
+        const gzippedBinaryFile = await Deno.lstat(gzippedBinaryFilePath);
+        if (gzippedBinaryFile.isFile) gzippedBinaryExists = true;
+      } catch (err: unknown) {
+        if (!(err instanceof Deno.errors.NotFound)) throw err;
+      }
+
       let stemlibExists: boolean = false;
 
       if (settings.morpheusStemlibPath) {
@@ -69,17 +51,59 @@ export class Morpheus {
         }
       }
 
-      Morpheus.instance = new Morpheus(binaryExists, stemlibExists);
+      if (!binaryExists && !gzippedBinaryExists) {
+        Morpheus.isAvailable = false;
+        console.warn(
+          `%c⚠️ Morpheus binary not found. Check that the 'MORPHEUS_BINARY_PATH'`,
+          `value corresponds to an actual raw or gzipped file (current value is '${Morpheus.binary}').`,
+          "font-weight: bold;color:yellow"
+        );
+      } else if (!stemlibExists) {
+        Morpheus.isAvailable = false;
+        console.warn(
+          `%c⚠️ Morpheus stemlib not found. Check that the 'MORPHEUS_STEMLIB_PATH'`,
+          `value corresponds to an actual file (current value is '${Morpheus.stemlib}').`,
+          "font-weight: bold;color:yellow"
+        );
+      } else {
+        if (!binaryExists && gzippedBinaryExists) {
+          console.info(
+            "%c⏳ Unzipping Morpheus binary...",
+            "font-weight: bold;color:yellow"
+          );
+
+          const input = await Deno.open(gzippedBinaryFilePath);
+          const output = await Deno.create(settings.morpheusBinaryPath);
+
+          await input.readable
+            .pipeThrough(new DecompressionStream("gzip"))
+            .pipeTo(output.writable);
+
+          console.info("%c✅ Morpheus binary unzipped.", "font-weight: bold;color:green");
+        }
+
+        Morpheus.binary = settings.morpheusBinaryPath;
+        Morpheus.stemlib = settings.morpheusStemlibPath;
+        Morpheus.isAvailable = true;
+
+        fs.chmodSync(Morpheus.binary, fs.constants.S_IXUSR);
+        console.info(
+          `%c✅ Changed chmod for '${Morpheus.binary}' to ensure its executability.`,
+          "font-weight: bold;color:green"
+        );
+      }
+
+      Morpheus.instance = new Morpheus();
     }
 
     return Morpheus.instance;
   }
 
-  private async call(betaCodeStr: string): Promise<string> {
+  private static async call(betaCodeStr: string): Promise<string> {
     // -n: ignore accents; -d: dictionary format.
-    const process = new Deno.Command(this.binary, {
+    const process = new Deno.Command(Morpheus.binary, {
       args: ["-n", "-d"],
-      env: { MORPHLIB: this.stemlib },
+      env: { MORPHLIB: Morpheus.stemlib },
       stdin: "piped",
       stdout: "piped",
       stderr: "piped"
@@ -97,7 +121,7 @@ export class Morpheus {
     return result;
   }
 
-  private formatResponse(item: string): MorpheusDataItem {
+  private static formatResponse(item: string): MorpheusDataItem {
     const formattedData: MorpheusDataItem = item
       .split(":")
       .splice(1)
@@ -125,9 +149,9 @@ export class Morpheus {
     return formattedData;
   }
 
-  private isNeeded(str: string): boolean {
+  private static isNeeded(str: string): boolean {
     return (
-      this.isAvailable &&
+      Morpheus.isAvailable &&
       !/\s/g.test(str) && // Morpheus ignores whitespace
       !str.toLowerCase().includes("ϝ") && // Morpheus ignores letter digamma
       !str.endsWith('"') &&
@@ -145,7 +169,7 @@ export class Morpheus {
     greekStr: string,
     { caseSensitive }: Pick<ApiLookupParams<never>, "caseSensitive">
   ): Promise<MorpheusData> {
-    if (!this.isNeeded(greekStr)) return {};
+    if (!Morpheus.isNeeded(greekStr)) return {};
 
     const searchStr = (() => {
       const isCapitalized: boolean = greekStr[0] !== greekStr[0].toLowerCase();
@@ -170,7 +194,7 @@ export class Morpheus {
     let data: string;
 
     try {
-      data = await runTimeLimitedPromise(this.call(searchStr));
+      data = await runTimeLimitedPromise(Morpheus.call(searchStr));
     } catch (error) {
       console.error(`Morpheus call failed with error <${error}>`);
       return {};
@@ -179,7 +203,7 @@ export class Morpheus {
     const formattedData = data
       .split(/:raw.*\s+/)
       .splice(1)
-      .map((item) => this.formatResponse(item));
+      .map((item) => Morpheus.formatResponse(item));
 
     return <MorpheusData> (
       Object.groupBy(formattedData, ({ lem }) => lem.replace(/\d+$/, ""))
