@@ -26,8 +26,10 @@ export function setParams(params: ApiRawParams): ApiParams<any> {
   };
 }
 
-export function setBooleanParam(param?: string): boolean {
-  return param !== undefined && param !== "false";
+export function setBooleanParam(param?: unknown): boolean {
+  if (param === undefined) return false;
+  const paramAsStr: string = String(param).trim();
+  return paramAsStr !== "false" && paramAsStr !== "0";
 }
 
 export function setinputMode(param?: string): KeyType {
