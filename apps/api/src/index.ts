@@ -10,6 +10,11 @@ import { getRandomEntry } from "./model/randomEntry.ts";
 import { Morpheus } from "./Morpheus.ts";
 import { logger } from "./logger.ts";
 import { Settings } from "./Settings.ts";
+import {
+  type ApiLookupResponse,
+  type ApiParams,
+  type QueryableFields
+} from "./definitions.ts";
 
 const settings = Settings.getSettings();
 
@@ -53,21 +58,34 @@ app.get("/entry/:uri", async (c) => {
   return c.json(entry);
 });
 
+function setLookupParams(
+  params: Record<string, unknown>
+): ApiParams<keyof QueryableFields> {
+  return setParams({
+    q: params.q,
+    inputMode: params.inputMode,
+    fields: params.fields,
+    morphology: params.morphology,
+    caseSensitive: params.caseSensitive,
+    limit: params.limit,
+    skipMorpheus: params.skipMorpheus
+  });
+}
+
 app.get("/lookup/:q", async (c) => {
   const q = c.req.param("q");
-  const { inputMode, fields, morphology, caseSensitive, limit, skipMorpheus } = c.req
-    .query();
-  const params = setParams({
-    q,
-    inputMode,
-    fields,
-    morphology,
-    caseSensitive,
-    limit,
-    skipMorpheus
-  });
+  const params = setLookupParams({ ...c.req.query(), q });
   const entries = await getEntries(params);
   return c.json(entries);
+});
+
+app.post("/lookup/batch", async (c) => {
+  const params = setLookupParams(await c.req.json());
+  const queries: string[] = params.q.split(",");
+  const responses: ApiLookupResponse<any>[] = await Promise.all(
+    queries.map((query) => getEntries({ ...params, q: query }))
+  );
+  return c.json(responses);
 });
 
 Deno.serve({ port: settings.port }, app.fetch);
