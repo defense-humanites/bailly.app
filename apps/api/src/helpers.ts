@@ -1,7 +1,6 @@
 import { KeyType } from "greek-conversion";
 import type {
   ApiParams,
-  ApiRawParams,
   DatabaseEntry,
   Entry,
   NonEmptyArray,
@@ -11,10 +10,12 @@ import type {
 } from "./definitions.ts";
 import { Settings } from "./Settings.ts";
 
-export function setParams(params: ApiRawParams): ApiParams<any> {
+export function setParams(
+  params: Record<string, unknown>
+): ApiParams<keyof QueryableFields> {
   return {
-    q: decodeURIComponent(params.q ?? "").trim(),
-    inputMode: setinputMode(params.inputMode),
+    q: setQueryParam(params.q),
+    inputMode: setInputMode(params.inputMode),
     fields: setSelectedFields(params.fields),
     morphology: setBooleanParam(params.morphology),
     caseSensitive: setBooleanParam(params.caseSensitive),
@@ -26,13 +27,21 @@ export function setParams(params: ApiRawParams): ApiParams<any> {
   };
 }
 
+function safeDecodeURIComponent(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 export function setBooleanParam(param?: unknown): boolean {
   if (param === undefined) return false;
   const paramAsStr: string = String(param).trim();
   return paramAsStr !== "false" && paramAsStr !== "0";
 }
 
-export function setinputMode(param?: string): KeyType {
+export function setInputMode(param?: unknown): KeyType {
   switch (param) {
     case "betacode":
       return KeyType.BETA_CODE;
@@ -44,7 +53,7 @@ export function setinputMode(param?: string): KeyType {
   }
 }
 
-export function setNumericParam(param?: string): number | undefined {
+export function setNumericParam(param?: unknown): number | undefined {
   const value: number = Number(param);
 
   if (Number.isNaN(value) || value < 1 || !Number.isInteger(value)) {
@@ -55,22 +64,36 @@ export function setNumericParam(param?: string): number | undefined {
 }
 
 export function setNumericRangeParam(
-  param?: string
+  param?: unknown
 ): [number, number?] | null {
-  const arr: number[] = (param ?? "")
-    .split(",")
-    .map((item) => Number.parseInt(item, 10))
-    .sort((a, b) => a - b);
+  let arr: number[] = [];
 
-  if (!arr.length || arr.some((item) => Number.isNaN(item))) return null;
-  return arr.length > 1 ? [arr[0], arr[1]] : [arr[0]];
+  if (Array.isArray(param) || typeof param === "string") {
+    if (typeof param === "string") {
+      arr = param.split(",").map((item) => Number.parseInt(item, 10));
+    }
+
+    arr = arr.sort((a, b) => a - b);
+
+    if (!arr.length || arr.some((item) => Number.isNaN(item))) return null;
+    return arr.length > 1 ? [arr[0], arr[1]] : [arr[0]];
+  }
+
+  return null;
+}
+
+export function setQueryParam(param?: unknown): string {
+  if (Array.isArray(param)) {
+    return param.map((el) => String(el).trim()).join(",");
+  }
+  return safeDecodeURIComponent(String(param) ?? "").trim();
 }
 
 export function setSelectedFields(
-  fields?: string
+  fields?: unknown
 ): NonEmptyArray<keyof QueryableFields> {
   const settings = Settings.getSettings();
-  const formattedFields = Settings.formatFields(fields ?? "");
+  const formattedFields = Settings.formatFields(String(fields) ?? "");
 
   const selectedFields = settings.checkFields(formattedFields)
     ? formattedFields
@@ -105,12 +128,16 @@ export function setUniqueEntries(
         & PartialExcept<Entry<"word">, "word" | "children">
         & Optional<
           DatabaseEntry,
-          "searchableAtonic" | "searchableAtonicCaseInsensitive"
+          | "countAll"
+          | "searchable"
+          | "searchableCaseInsensitive"
+          | "searchableAtonic"
+          | "searchableAtonicCaseInsensitive"
         > = {
           ...entries[0]
         };
 
-      // @ts-ignore: @fixme
+      // @ts-ignore replace each key by an empty string.
       Object.keys(entries[0]).forEach((prop) => (entry[prop] = ""));
 
       entry.word = word;
