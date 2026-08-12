@@ -9,7 +9,7 @@ export type PartialExcept<T, K extends keyof T> =
   & Partial<Omit<T, K>>;
 
 export type ApiRawParams = {
-  q?: string;
+  q?: string | string[];
   inputMode?: "greek" | "betacode" | "transliteration" | string;
   fields?: string;
   morphology?: string;
@@ -59,7 +59,9 @@ export type ApiResponse = {
   };
 };
 
-export interface ApiEntryResponse<K extends keyof QueryableFields> extends ApiResponse {
+export interface ApiEntryResponse<
+  K extends keyof QueryableFields
+> extends ApiResponse {
   data: {
     version: string;
     entry: PartialExcept<Entry<K>, K | "children">;
@@ -67,8 +69,9 @@ export interface ApiEntryResponse<K extends keyof QueryableFields> extends ApiRe
   };
 }
 
-export interface ApiRandomEntryResponse<K extends keyof QueryableFields>
-  extends ApiResponse {
+export interface ApiRandomEntryResponse<
+  K extends keyof QueryableFields
+> extends ApiResponse {
   data: {
     version: string;
     length: number;
@@ -76,8 +79,9 @@ export interface ApiRandomEntryResponse<K extends keyof QueryableFields>
   };
 }
 
-export interface ApiLookupResponse<K extends keyof QueryableFields>
-  extends ApiResponse {
+export interface ApiLookupResponse<
+  K extends keyof QueryableFields
+> extends ApiResponse {
   data: {
     version: string;
     count: number;
