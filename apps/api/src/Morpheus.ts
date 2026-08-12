@@ -5,105 +5,118 @@ import { SpecialChar } from "./enums.ts";
 import { runTimeLimitedPromise } from "./helpers.ts";
 import { Settings } from "./Settings.ts";
 
-export class Morpheus {
+class Morpheus {
   private static instance: Morpheus;
 
-  private static binary: string;
-  private static stemlib: string;
+  private binary: string;
+  private stemlib: string;
 
-  static isAvailable: boolean;
+  isAvailable: boolean;
 
-  private constructor() {}
+  private constructor(isAvailable: boolean) {
+    const settings = Settings.getSettings();
 
-  static async getMorpheus(): Promise<Morpheus> {
-    if (!Morpheus.instance) {
-      const settings = Settings.getSettings();
+    this.binary = settings.morpheusBinaryPath;
+    this.stemlib = settings.morpheusStemlibPath;
+    this.isAvailable = isAvailable;
 
-      let binaryExists: boolean = false;
+    if (this.isAvailable) {
+      fs.chmodSync(this.binary, fs.constants.S_IXUSR);
+      console.info(
+        `%c✅ Changed chmod for '${this.binary}' to ensure its executability.`,
+        "font-weight: bold;color:green"
+      );
+    }
+  }
 
-      if (settings.morpheusBinaryPath) {
-        try {
-          const binaryFile = await Deno.lstat(settings.morpheusBinaryPath);
-          if (binaryFile.isFile) binaryExists = true;
-        } catch (err: unknown) {
-          if (!(err instanceof Deno.errors.NotFound)) throw err;
-        }
-      }
+  /**
+   * An async initializer that checks and bootstrap the Morpheus binary and data. This
+   * should be called before the constructor, and the returned value passed to it.
+   * @returns A boolean representing the availability of the Morpheus binary and data.
+   */
+  private static async init(): Promise<boolean> {
+    const settings = Settings.getSettings();
+    const gzippedBinaryFilePath: string = `${settings.morpheusBinaryPath}.gz`;
 
-      const gzippedBinaryFilePath: string = `${settings.morpheusBinaryPath}.gz`;
-      let gzippedBinaryExists: boolean = false;
+    let binaryExists: boolean = false;
+    let gzippedBinaryExists: boolean = false;
 
+    if (settings.morpheusBinaryPath) {
       try {
-        const gzippedBinaryFile = await Deno.lstat(gzippedBinaryFilePath);
-        if (gzippedBinaryFile.isFile) gzippedBinaryExists = true;
+        const binaryFile = await Deno.lstat(settings.morpheusBinaryPath);
+        if (binaryFile.isFile) binaryExists = true;
       } catch (err: unknown) {
         if (!(err instanceof Deno.errors.NotFound)) throw err;
       }
-
-      let stemlibExists: boolean = false;
-
-      if (settings.morpheusStemlibPath) {
-        try {
-          const stemlibDir = await Deno.lstat(settings.morpheusStemlibPath);
-          if (stemlibDir.isDirectory) stemlibExists = true;
-        } catch (err: unknown) {
-          if (!(err instanceof Deno.errors.NotFound)) throw err;
-        }
-      }
-
-      if (!binaryExists && !gzippedBinaryExists) {
-        Morpheus.isAvailable = false;
-        console.warn(
-          `%c⚠️ Morpheus binary not found. Check that the 'MORPHEUS_BINARY_PATH'`,
-          `value corresponds to an actual raw or gzipped file (current value is '${Morpheus.binary}').`,
-          "font-weight: bold;color:yellow"
-        );
-      } else if (!stemlibExists) {
-        Morpheus.isAvailable = false;
-        console.warn(
-          `%c⚠️ Morpheus stemlib not found. Check that the 'MORPHEUS_STEMLIB_PATH'`,
-          `value corresponds to an actual file (current value is '${Morpheus.stemlib}').`,
-          "font-weight: bold;color:yellow"
-        );
-      } else {
-        if (!binaryExists && gzippedBinaryExists) {
-          console.info(
-            "%c⏳ Unzipping Morpheus binary...",
-            "font-weight: bold;color:yellow"
-          );
-
-          const input = await Deno.open(gzippedBinaryFilePath);
-          const output = await Deno.create(settings.morpheusBinaryPath);
-
-          await input.readable
-            .pipeThrough(new DecompressionStream("gzip"))
-            .pipeTo(output.writable);
-
-          console.info("%c✅ Morpheus binary unzipped.", "font-weight: bold;color:green");
-        }
-
-        Morpheus.binary = settings.morpheusBinaryPath;
-        Morpheus.stemlib = settings.morpheusStemlibPath;
-        Morpheus.isAvailable = true;
-
-        fs.chmodSync(Morpheus.binary, fs.constants.S_IXUSR);
-        console.info(
-          `%c✅ Changed chmod for '${Morpheus.binary}' to ensure its executability.`,
-          "font-weight: bold;color:green"
-        );
-      }
-
-      Morpheus.instance = new Morpheus();
     }
 
-    return Morpheus.instance;
+    try {
+      const gzippedBinaryFile = await Deno.lstat(gzippedBinaryFilePath);
+      if (gzippedBinaryFile.isFile) gzippedBinaryExists = true;
+    } catch (err: unknown) {
+      if (!(err instanceof Deno.errors.NotFound)) throw err;
+    }
+
+    let stemlibExists: boolean = false;
+
+    if (settings.morpheusStemlibPath) {
+      try {
+        const stemlibDir = await Deno.lstat(settings.morpheusStemlibPath);
+        if (stemlibDir.isDirectory) stemlibExists = true;
+      } catch (err: unknown) {
+        if (!(err instanceof Deno.errors.NotFound)) throw err;
+      }
+    }
+
+    if (!binaryExists && !gzippedBinaryExists) {
+      console.warn(
+        `%c⚠️ Morpheus binary not found. Check that the 'MORPHEUS_BINARY_PATH' value corresponds to an actual raw or gzipped file (current value is '${settings.morpheusBinaryPath}').`,
+        "font-weight: bold;color:yellow"
+      );
+      return false;
+    }
+
+    if (!stemlibExists) {
+      console.warn(
+        `%c⚠️ Morpheus stemlib not found. Check that the 'MORPHEUS_STEMLIB_PATH' value corresponds to an actual file (current value is '${settings.morpheusStemlibPath}').`,
+        "font-weight: bold;color:yellow"
+      );
+      return false;
+    }
+
+    // @fixme add try/catch to fail if the binary isn't wrote correctly.
+    if (!binaryExists && gzippedBinaryExists) {
+      console.info(
+        "%c⏳ Unzipping Morpheus binary...",
+        "font-weight: bold;color:yellow"
+      );
+
+      const input = await Deno.open(gzippedBinaryFilePath);
+      const output = await Deno.create(settings.morpheusBinaryPath);
+
+      await input.readable
+        .pipeThrough(new DecompressionStream("gzip"))
+        .pipeTo(output.writable);
+
+      console.info(
+        "%c✅ Morpheus binary unzipped.",
+        "font-weight: bold;color:green"
+      );
+    }
+
+    return true;
   }
 
-  private static async call(betaCodeStr: string): Promise<string> {
+  static async getMorpheus(): Promise<Morpheus> {
+    if (!this.instance) this.instance = new Morpheus(await Morpheus.init());
+    return this.instance;
+  }
+
+  private async call(betaCodeStr: string): Promise<string> {
     // -n: ignore accents; -d: dictionary format.
-    const process = new Deno.Command(Morpheus.binary, {
+    const process = new Deno.Command(this.binary, {
       args: ["-n", "-d"],
-      env: { MORPHLIB: Morpheus.stemlib },
+      env: { MORPHLIB: this.stemlib },
       stdin: "piped",
       stdout: "piped",
       stderr: "piped"
@@ -121,7 +134,7 @@ export class Morpheus {
     return result;
   }
 
-  private static formatResponse(item: string): MorpheusDataItem {
+  private formatResponse(item: string): MorpheusDataItem {
     const formattedData: MorpheusDataItem = item
       .split(":")
       .splice(1)
@@ -149,9 +162,9 @@ export class Morpheus {
     return formattedData;
   }
 
-  private static isNeeded(str: string): boolean {
+  private isNeeded(str: string): boolean {
     return (
-      Morpheus.isAvailable &&
+      this.isAvailable &&
       !/\s/g.test(str) && // Morpheus ignores whitespace
       !str.toLowerCase().includes("ϝ") && // Morpheus ignores letter digamma
       !str.endsWith('"') &&
@@ -169,7 +182,7 @@ export class Morpheus {
     greekStr: string,
     { caseSensitive }: Pick<ApiLookupParams<never>, "caseSensitive">
   ): Promise<MorpheusData> {
-    if (!Morpheus.isNeeded(greekStr)) return {};
+    if (!this.isNeeded(greekStr)) return {};
 
     const searchStr = (() => {
       const isCapitalized: boolean = greekStr[0] !== greekStr[0].toLowerCase();
@@ -194,7 +207,7 @@ export class Morpheus {
     let data: string;
 
     try {
-      data = await runTimeLimitedPromise(Morpheus.call(searchStr));
+      data = await runTimeLimitedPromise(this.call(searchStr));
     } catch (error) {
       console.error(`Morpheus call failed with error <${error}>`);
       return {};
@@ -203,10 +216,12 @@ export class Morpheus {
     const formattedData = data
       .split(/:raw.*\s+/)
       .splice(1)
-      .map((item) => Morpheus.formatResponse(item));
+      .map((item) => this.formatResponse(item));
 
     return <MorpheusData> (
       Object.groupBy(formattedData, ({ lem }) => lem.replace(/\d+$/, ""))
     );
   }
 }
+
+export default Morpheus;
