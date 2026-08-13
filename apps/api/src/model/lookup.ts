@@ -145,7 +145,8 @@ export async function getEntries<K extends keyof QueryableFields>({
     $query: formatQueryStr(searchStr, isExactMatch, caseSensitive),
     $limit: (() => {
       if (limit && limit <= settings.queryMaxRows) return limit;
-      else return settings.queryMaxRows;
+      // @fixme I shouldn't have to think to this special value.
+      else return settings.queryMaxRows === Infinity ? -1 : settings.queryMaxRows;
     })()
   };
 
