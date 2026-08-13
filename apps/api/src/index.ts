@@ -11,11 +11,7 @@ import { getRandomEntry } from "./model/randomEntry.ts";
 import { Morpheus } from "./Morpheus.ts";
 import { logger } from "./logger.ts";
 import { Settings } from "./Settings.ts";
-import {
-  type ApiLookupResponse,
-  type ApiParams,
-  type QueryableFields
-} from "./definitions.ts";
+import { type ApiLookupParams, type QueryableFields } from "./definitions.ts";
 
 const settings = Settings.getSettings();
 
@@ -61,7 +57,7 @@ app.get("/entry/:uri", async (c) => {
 
 function setLookupParams(
   params: Record<string, unknown>
-): ApiParams<keyof QueryableFields> {
+): ApiLookupParams<keyof QueryableFields> {
   return setParams({
     q: params.q,
     inputMode: params.inputMode,
@@ -98,7 +94,7 @@ app.post("/lookup", async (c) => {
     }
   }
 
-  const responses: ApiLookupResponse<any>[] = await Promise.all(
+  const responses = await Promise.all(
     queries.map((query) => getEntries({ ...params, q: query }))
   );
 
