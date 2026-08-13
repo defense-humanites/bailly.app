@@ -154,7 +154,7 @@ export async function getEntries<K extends keyof QueryableFields>({
     params[propName] = removeGreekVariants(lemma);
   });
 
-  if (Deno.env.get("DENO_ENV") === "development") {
+  /*if (Deno.env.get("DENO_ENV") === "development") {
     console.info(`\n${import.meta.url} > getEntries():\n`);
     console.log({
       searchStr: searchStr,
@@ -162,7 +162,7 @@ export async function getEntries<K extends keyof QueryableFields>({
       params: params
     });
     console.log(sql);
-  }
+  }*/
 
   const data = <PartialExcept<DatabaseEntry, "word">[]> (
     db.prepare(sql).all(params)
