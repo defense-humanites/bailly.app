@@ -1,6 +1,7 @@
 import { AdditionalChar, KeyType, toTransliteration } from "greek-conversion";
 import { Hono } from "@hono/hono";
 import { cors } from "@hono/hono/cors";
+import { HTTPException } from "@hono/hono/http-exception";
 import { secureHeaders } from "@hono/hono/secure-headers";
 import { Database } from "./Database.ts";
 import { setParams } from "./helpers.ts";
@@ -79,23 +80,38 @@ app.get("/lookup/:q", async (c) => {
   return c.json(entries);
 });
 
-app.post("/lookup/batch", async (c) => {
+// For batch requests.
+app.post("/lookup", async (c) => {
   const params = setLookupParams(await c.req.json());
   const queries: string[] = params.q.split(",");
+
+  if (queries.length > 1) {
+    if (settings.isDevEnv) {
+      console.info(
+        `%c🚀 Batching ${queries.length.toLocaleString()} queries...`,
+        "font-weight:bold;color:mediumPurple"
+      );
+    }
+
+    if (queries.length > settings.queryMaxBatchSize) {
+      throw new HTTPException(400, { message: "Maximum batch size exceeded" });
+    }
+  }
+
   const responses: ApiLookupResponse<any>[] = await Promise.all(
     queries.map((query) => getEntries({ ...params, q: query }))
   );
-  return c.json(responses);
+
+  return c.json({
+    count: responses.length,
+    queries: responses
+  });
 });
 
 Deno.serve({ port: settings.port }, app.fetch);
 
-if (Deno.env.get("DENO_ENV") === "development") {
-  console.info(
-    "%c🐎 The API is running... %c(🚧 development mode)",
-    "font-weight:bold;color:cyan",
-    "font-weight:bold;color:yellow"
-  );
-} else {
-  console.info("%c🐎 The API is running...", "font-weight:bold;color:cyan");
-}
+console.info(
+  `%c🐎 The API is running...${settings.isDevEnv ? " %c(🚧 development mode)" : ""}`,
+  "font-weight:bold;color:cyan",
+  ...(settings.isDevEnv ? ["font-weight:bold;color:yellow"] : [])
+);
