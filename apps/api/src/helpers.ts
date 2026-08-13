@@ -164,16 +164,3 @@ export function setUniqueEntries(
 
   return uniqueEntries;
 }
-
-export async function runTimeLimitedPromise<T>(
-  promise: Promise<T>,
-  timer?: number
-): Promise<T> {
-  timer = timer ?? Settings.getSettings().morpheusLookupMaxDuration ?? 1000;
-
-  const timedPromise = new Promise<T>((_, reject) =>
-    setTimeout(() => reject(new Error("timed out")), timer)
-  );
-
-  return await Promise.race([promise, timedPromise]);
-}
