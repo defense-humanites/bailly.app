@@ -1,31 +1,36 @@
-import { KeyType, toBetaCode, toGreek } from "greek-conversion";
 import fs from "node:fs";
+import { KeyType, toBetaCode, toGreek } from "greek-conversion";
 import type { ApiLookupParams, MorpheusData, MorpheusDataItem } from "./definitions.ts";
 import { SpecialChar } from "./enums.ts";
-import { runTimeLimitedPromise } from "./helpers.ts";
+import { MorpheusWorkerPool } from "./MorpheusWorkerPool.ts";
 import { Settings } from "./Settings.ts";
 
-class Morpheus {
-  private static instance: Morpheus;
+export class Morpheus {
+  static #wrapper: Morpheus;
 
-  private binary: string;
-  private stemlib: string;
+  // The actual Morpheus instances.
+  readonly #pool: MorpheusWorkerPool;
 
-  isAvailable: boolean;
+  readonly #binary: string;
+  readonly #stemlib: string;
+
+  readonly isAvailable: boolean;
 
   private constructor(isAvailable: boolean) {
     const settings = Settings.getSettings();
 
-    this.binary = settings.morpheusBinaryPath;
-    this.stemlib = settings.morpheusStemlibPath;
+    this.#binary = settings.morpheusBinaryPath;
+    this.#stemlib = settings.morpheusStemlibPath;
     this.isAvailable = isAvailable;
 
     if (this.isAvailable) {
-      fs.chmodSync(this.binary, fs.constants.S_IXUSR);
+      fs.chmodSync(this.#binary, fs.constants.S_IXUSR);
       console.info(
-        `%c✅ Changed chmod for '${this.binary}' to ensure its executability.`,
+        `%c✅ Changed chmod for '${this.#binary}' to ensure its executability.`,
         "font-weight: bold;color:green"
       );
+
+      this.#pool = new MorpheusWorkerPool(["-n", "-d"]);
     }
   }
 
@@ -34,7 +39,7 @@ class Morpheus {
    * should be called before the constructor, and the returned value passed to it.
    * @returns A boolean representing the availability of the Morpheus binary and data.
    */
-  private static async init(): Promise<boolean> {
+  static async #init(): Promise<boolean> {
     const settings = Settings.getSettings();
     const gzippedBinaryFilePath: string = `${settings.morpheusBinaryPath}.gz`;
 
@@ -108,33 +113,11 @@ class Morpheus {
   }
 
   static async getMorpheus(): Promise<Morpheus> {
-    if (!this.instance) this.instance = new Morpheus(await Morpheus.init());
-    return this.instance;
+    if (!this.#wrapper) this.#wrapper = new Morpheus(await Morpheus.#init());
+    return this.#wrapper;
   }
 
-  private async call(betaCodeStr: string): Promise<string> {
-    // -n: ignore accents; -d: dictionary format.
-    const process = new Deno.Command(this.binary, {
-      args: ["-n", "-d"],
-      env: { MORPHLIB: this.stemlib },
-      stdin: "piped",
-      stdout: "piped",
-      stderr: "piped"
-    }).spawn();
-
-    const writer = process.stdin.getWriter();
-    await writer.write(new TextEncoder().encode(betaCodeStr));
-    await writer.close();
-    writer.releaseLock();
-
-    const output = await process.output();
-    const result = new TextDecoder().decode(output.stdout);
-
-    process.unref();
-    return result;
-  }
-
-  private formatResponse(item: string): MorpheusDataItem {
+  #formatResponse(item: string): MorpheusDataItem {
     const formattedData: MorpheusDataItem = item
       .split(":")
       .splice(1)
@@ -142,7 +125,7 @@ class Morpheus {
         (acc, curr) => {
           const [key, value] = curr.split(" ", 2);
           // @ts-ignore: @fixme
-          acc[key] = value.trim();
+          acc[key] = String(value).trim();
           return acc;
         },
         {
@@ -162,7 +145,7 @@ class Morpheus {
     return formattedData;
   }
 
-  private isNeeded(str: string): boolean {
+  #isNeeded(str: string): boolean {
     return (
       this.isAvailable &&
       !/\s/g.test(str) && // Morpheus ignores whitespace
@@ -182,7 +165,7 @@ class Morpheus {
     greekStr: string,
     { caseSensitive }: Pick<ApiLookupParams<never>, "caseSensitive">
   ): Promise<MorpheusData> {
-    if (!this.isNeeded(greekStr)) return {};
+    if (!this.#isNeeded(greekStr)) return {};
 
     const searchStr = (() => {
       const isCapitalized: boolean = greekStr[0] !== greekStr[0].toLowerCase();
@@ -204,24 +187,23 @@ class Morpheus {
       return `${result}\n${resultRough}`;
     })();
 
-    let data: string;
-
     try {
-      data = await runTimeLimitedPromise(this.call(searchStr));
+      const data = await this.#pool.analyze(
+        searchStr,
+        Settings.getSettings().morpheusLookupMaxDuration
+      );
+
+      const formattedData = data
+        .split(/:raw.*\s+/)
+        .splice(1)
+        .map((item) => this.#formatResponse(item));
+
+      return <MorpheusData> (
+        Object.groupBy(formattedData, ({ lem }) => lem.replace(/\d+$/, ""))
+      );
     } catch (error) {
       console.error(`Morpheus call failed with error <${error}>`);
       return {};
     }
-
-    const formattedData = data
-      .split(/:raw.*\s+/)
-      .splice(1)
-      .map((item) => this.formatResponse(item));
-
-    return <MorpheusData> (
-      Object.groupBy(formattedData, ({ lem }) => lem.replace(/\d+$/, ""))
-    );
   }
 }
-
-export default Morpheus;
