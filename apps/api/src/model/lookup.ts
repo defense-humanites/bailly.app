@@ -8,6 +8,7 @@ import { Database } from "../Database.ts";
 import type {
   ApiLookupParams,
   ApiLookupResponse,
+  ApiParams,
   DatabaseEntry,
   Entry,
   MorpheusData,
@@ -79,7 +80,7 @@ export async function getEntries<K extends keyof QueryableFields>({
   caseSensitive,
   limit,
   skipMorpheus
-}: ApiLookupParams<K>): Promise<
+}: PartialExcept<ApiParams<K>, keyof ApiLookupParams<K>>): Promise<
   ApiLookupResponse<K> | ApiLookupResponse<never>
 > {
   const db = await Database.getConnection();
