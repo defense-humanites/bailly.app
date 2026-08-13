@@ -1,93 +1,161 @@
 import type { DatabaseEntry } from "./definitions.ts";
 
-// This is for arbitrary databases mounted w/ Docker during development.
-// It should not be accessible in production.
-const HOST_DB = Deno.env.get("HOST_DB");
+const ENV_KEYS = [
+  /* Docker only */
 
-const DB_FILE_PATH = Deno.env.get("DB_FILE_PATH");
-const DB_VERSION = Deno.env.get("DB_VERSION");
+  // For arbitrary databases mounted w/ Docker during development.
+  "HOST_DB",
 
-const MORPHEUS_BINARY_PATH = Deno.env.get("MORPHEUS_BINARY_PATH");
-const MORPHEUS_LOOKUP_MAX_DURATION = Deno.env.get(
-  "MORPHEUS_LOOKUP_MAX_DURATION"
-);
-const MORPHEUS_STEMLIB_PATH = Deno.env.get("MORPHEUS_STEMLIB_PATH");
+  /* Proper .env variables */
 
-const PORT = Deno.env.get("PORT");
+  "DB_FILE_PATH",
+  "DB_VERSION",
+  "DENO_ENV",
+  "MORPHEUS_BINARY_PATH",
+  "MORPHEUS_LOOKUP_MAX_DURATION",
+  "MORPHEUS_POOL_SIZE",
+  "MORPHEUS_STEMLIB_PATH",
+  "PORT",
+  "QUERY_ALLOWED_FIELDS",
+  "QUERY_DEFAULT_FIELDS",
+  "QUERY_MAX_BATCH_SIZE",
+  "QUERY_MAX_ROWS"
+] as const;
 
-const QUERY_ALLOWED_FIELDS = Deno.env.get("QUERY_ALLOWED_FIELDS");
-const QUERY_DEFAULT_FIELDS = Deno.env.get("QUERY_DEFAULT_FIELDS");
-const QUERY_MAX_ROWS = Deno.env.get("QUERY_MAX_ROWS");
+type EnvKeys = typeof ENV_KEYS[number];
+
+const ENV_KV = ENV_KEYS.map((key) => {
+  return { key: key, value: Deno.env.get(key) };
+});
+
+function getEnv(keyName: EnvKeys): string {
+  const row = ENV_KV.find((el) => el.key === keyName);
+  if (!row) throw new Error("Invalid env key");
+  return row.value;
+}
 
 export class Settings {
   private static settings: Settings;
 
-  readonly isHostDb: boolean = false;
+  isHostDb: boolean = false;
+  hostDbUnderlyingPath: string;
   readonly hostDbPath = "/app/database/host.db"; // As in `../docker-compose.override.yml`
-  readonly hostDbUnderlyingPath: string = "";
 
   readonly dbFilePath: string;
   readonly dbVersion: string;
 
+  readonly denoEnv: "production" | "development";
+  readonly isDevEnv: boolean;
+
   readonly morpheusBinaryPath: string;
-  readonly morpheusLookupMaxDuration: number;
+  readonly morpheusLookupMaxDuration: number = 250;
+  readonly morpheusPoolSize: number = 4;
   readonly morpheusStemlibPath: string;
 
-  readonly port: number;
+  readonly port: number = 3000;
 
   readonly queryAllowedFields: string[];
   readonly queryDefaultFields: string[];
-  readonly queryMaxRows: number;
+  readonly queryMaxBatchSize: number = 5;
+  readonly queryMaxRows: number = 100;
 
   private constructor() {
     // General
 
-    this.port = Number(PORT ?? 3000);
+    this.denoEnv = (() => {
+      const value: string = getEnv("DENO_ENV");
+      if (value !== "production" && value !== "development") {
+        return "production";
+      } else return value;
+    })();
+    this.isDevEnv = this.denoEnv === "development";
+
+    this.port = Settings.formatNumber(getEnv("PORT")) ?? this.port;
 
     // Database
 
     this.dbFilePath = (() => {
-      if (HOST_DB) {
+      if (getEnv("HOST_DB")) {
         this.isHostDb = true;
-        this.hostDbUnderlyingPath = HOST_DB;
+        this.hostDbUnderlyingPath = getEnv("HOST_DB");
         return this.hostDbPath;
-      } else if (DB_FILE_PATH) {
-        return DB_FILE_PATH;
+      } else if (getEnv("DB_FILE_PATH")) {
+        return getEnv("DB_FILE_PATH");
       }
       return "";
     })();
+
     // @FIXME it should be wrapped in the database itself.
-    this.dbVersion = DB_VERSION ?? "";
+    this.dbVersion = getEnv("DB_VERSION") ?? "";
 
     // Morpheus
 
-    this.morpheusBinaryPath = MORPHEUS_BINARY_PATH ?? "";
-    this.morpheusLookupMaxDuration = Number(
-      MORPHEUS_LOOKUP_MAX_DURATION ?? 100
+    this.morpheusBinaryPath = getEnv("MORPHEUS_BINARY_PATH") ?? "";
+
+    this.morpheusLookupMaxDuration = Settings.formatNumber(
+      getEnv("MORPHEUS_LOOKUP_MAX_DURATION"),
+      this.isDevEnv ? 1_000_000 : this.morpheusLookupMaxDuration
     );
-    this.morpheusStemlibPath = MORPHEUS_STEMLIB_PATH ?? "";
+
+    this.morpheusPoolSize = (() => {
+      const value: number = Settings.formatNumber(getEnv("MORPHEUS_POOL_SIZE")) ??
+        this.morpheusPoolSize;
+      if (!Number.isInteger(value) || value < 1) {
+        throw new Error(`Invalid environment value for 'MORPHEUS_POOL_SIZE': ${value}`);
+      }
+      return value;
+    })();
+
+    this.morpheusStemlibPath = getEnv("MORPHEUS_STEMLIB_PATH") ?? "";
 
     // Query params
 
-    this.queryAllowedFields = QUERY_ALLOWED_FIELDS
+    this.queryAllowedFields = getEnv("QUERY_ALLOWED_FIELDS")
       ? (Settings.formatFields(
-        QUERY_ALLOWED_FIELDS
+        getEnv("QUERY_ALLOWED_FIELDS")
       ) as (keyof DatabaseEntry)[])
       : [];
-    this.queryDefaultFields = QUERY_DEFAULT_FIELDS &&
-        this.checkFields(Settings.formatFields(QUERY_DEFAULT_FIELDS))
+
+    this.queryDefaultFields = getEnv("QUERY_DEFAULT_FIELDS") &&
+        this.checkFields(Settings.formatFields(getEnv("QUERY_DEFAULT_FIELDS")))
       ? (Settings.formatFields(
-        QUERY_DEFAULT_FIELDS
+        getEnv("QUERY_DEFAULT_FIELDS")
       ) as (keyof DatabaseEntry)[])
       : this.queryAllowedFields;
-    this.queryMaxRows = Number(QUERY_MAX_ROWS ?? -1);
 
-    console.log("%cCurrent settings:", "font-weight: bold");
+    this.queryMaxBatchSize = (() => {
+      const value: number = Settings.formatNumber(
+        getEnv("QUERY_MAX_BATCH_SIZE"),
+        this.isDevEnv ? Infinity : this.queryMaxBatchSize
+      );
+      if (Number.isNaN(value) || Number.isFinite(value) && !Number.isInteger(value)) {
+        throw new Error(
+          `Invalid environment value for 'QUERY_MAX_BATCH_SIZE': ${value}`
+        );
+      }
+      return value;
+    })();
+
+    this.queryMaxRows = (() => {
+      const value: number = Settings.formatNumber(
+        getEnv("QUERY_MAX_ROWS"),
+        this.isDevEnv ? Infinity : this.queryMaxRows
+      );
+      if (Number.isNaN(value) || Number.isFinite(value) && !Number.isInteger(value)) {
+        throw new Error(
+          `Invalid environment value for 'QUERY_MAX_ROWS': ${value}`
+        );
+      }
+      return value;
+    })();
+
+    console.info("%cCurrent settings:", "font-weight: bold");
+    console.info("* denoEnv:", this.denoEnv);
     console.info(
       `* dbFilePath: ${this.dbFilePath}${
         this.isHostDb ? ` -> %c${this.hostDbUnderlyingPath}` : "%c"
       }`,
-      "color:lightCyan"
+      "color:cyan"
     );
     if (this.isHostDb) {
       console.warn(
@@ -98,10 +166,12 @@ export class Settings {
     console.info("* dbVersion:", this.dbVersion);
     console.info("* morpheusBinaryPath:", this.morpheusBinaryPath);
     console.info("* morpheusLookupMaxDuration:", this.morpheusLookupMaxDuration);
+    console.info("* morpheusPoolSize:", this.morpheusPoolSize);
     console.info("* morpheusStemlibPath:", this.morpheusStemlibPath);
     console.info("* port:", this.port);
     console.info("* queryAllowedFields:", this.queryAllowedFields);
     console.info("* queryDefaultFields:", this.queryDefaultFields);
+    console.info("* queryMaxBatchSize:", this.queryMaxBatchSize);
     console.info("* queryMaxRows:", this.queryMaxRows);
   }
 
@@ -116,5 +186,12 @@ export class Settings {
 
   static formatFields(fields: string): string[] {
     return fields.replace(/\s/g, "").split(",");
+  }
+
+  static formatNumber(
+    value: string | null | undefined,
+    defaults: number | null = null
+  ): number | null {
+    return (["-1", "", null, undefined].includes(value)) ? defaults : Number(value);
   }
 }
