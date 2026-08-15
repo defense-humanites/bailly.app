@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { KeyType, toBetaCode, toGreek } from "greek-conversion";
+import { KeyType, Preset, toBetaCode, toGreek } from "greek-conversion";
 import type { ApiLookupParams, MorpheusData, MorpheusDataItem } from "./definitions.ts";
 import { SpecialChar } from "./enums.ts";
 import { MorpheusWorkerPool } from "./MorpheusWorkerPool.ts";
@@ -30,7 +30,26 @@ export class Morpheus {
         "font-weight: bold;color:green"
       );
 
-      this.#pool = new MorpheusWorkerPool(["-n", "-d"]);
+      // Create a pool of Morpheus workers with the following arguments:
+      //
+      //   - `-d`: dictionary format (easier to parse response); e.g.
+      //
+      //         1 | :raw logos
+      //         2 |
+      //         3 | :workw lo/gos
+      //         4 | :lem lo/gos
+      //         5 | :prvb
+      //         6 | :aug1
+      //         7 | :stem log        masc                   os_ou
+      //         8 | :suff
+      //         9 | :end os  masc nom sg                    os_ou
+      //
+      //   - `-n`: non-accented search. (For strict searches, Morpheus results need
+      //           to be filtered Deno-side. Another solution would be to create two
+      //           different worker pools; one for non-accented searches (with the `-n`
+      //           flag) and another for accented searches (without the flag)—supposing
+      //           at least two child processes.)
+      this.#pool = new MorpheusWorkerPool(["-d", "-n"]);
     }
   }
 
@@ -163,28 +182,44 @@ export class Morpheus {
    */
   async lookup(
     greekStr: string,
-    { caseSensitive }: Pick<ApiLookupParams<never>, "caseSensitive">
+    {
+      caseSensitive,
+      diacriticSensitive
+    }: Pick<ApiLookupParams<never>, "caseSensitive" | "diacriticSensitive">
   ): Promise<MorpheusData> {
     if (!this.#isNeeded(greekStr)) return {};
 
     const searchStr = (() => {
-      const isCapitalized: boolean = greekStr[0] !== greekStr[0].toLowerCase();
+      // Capitalize using an asterisk (following the TLG style beta code).
+      let result: string = toBetaCode(greekStr, KeyType.GREEK, Preset.TLG);
 
-      // Capitalize using an asterisk (TLG style beta code).
-      let result: string = toBetaCode(greekStr, KeyType.GREEK).toLowerCase();
-      if (isCapitalized && caseSensitive) result = `*${result}`;
-      if (!caseSensitive) result = `${result}\n*${result}`;
+      // The expected format is lower case.
+      result = result.toLowerCase();
 
-      // Morpheus assumes a smooth breathing if none have been noted.
-      const resultRough: string = result.replace(
-        /^(\*?)(rh?|[aehiouw]+)/gim,
-        (m, $1, $2) => {
-          if ($1) return $1 + "(" + $2;
-          else return $2 + "(";
-        }
-      );
+      // Build the lower case and the upper case TLG style beta code variants.
+      if (!caseSensitive) {
+        result = (result.startsWith("*"))
+          ? `${result.slice(1)}\n${result}`
+          : `${result}\n*${result}`;
+      }
 
-      return `${result}\n${resultRough}`;
+      // We assume that `greekStr` diacritics have been removed before. We only build
+      // the breathings here, as a non-sensentive search supposes to match either those
+      // starting with smooth and rough breathings. Note: Morpheus assumes a smooth
+      // breathing if none have been noted—so we only need to build the rough variant.
+      if (!diacriticSensitive) {
+        const resultRough: string = result.replace(
+          /^(\*?)(rh?|[aehiouw]+)/gim,
+          (m, $1, $2) => {
+            if ($1) return $1 + "(" + $2;
+            else return $2 + "(";
+          }
+        );
+
+        return `${result}\n${resultRough}`;
+      }
+
+      return result;
     })();
 
     try {
@@ -198,9 +233,19 @@ export class Morpheus {
         .splice(1)
         .map((item) => this.#formatResponse(item));
 
-      return <MorpheusData> (
-        Object.groupBy(formattedData, ({ lem }) => lem.replace(/\d+$/, ""))
-      );
+      // Assuming that the Morpheus worker pool is using with the `-n` (non-accented
+      // search) flag, we have to filter the formatted data to retain only the entries
+      // if the `diacriticSensitive` option is enabled. The formatted `entry.workw`
+      // represents the accented form of the unaccented search, so just compare it
+      // to the input `greekStr`.
+      const lemmaGroups = Object.groupBy(
+        diacriticSensitive
+          ? formattedData.filter((entry) => entry.workw === greekStr)
+          : formattedData,
+        ({ lem }) => lem.replace(/\d+$/, "")
+      ) satisfies MorpheusData;
+
+      return lemmaGroups;
     } catch (error) {
       console.error(`Morpheus call failed with error <${error}>`);
       return {};

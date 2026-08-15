@@ -19,6 +19,7 @@ export function setParams(
     fields: setSelectedFields(params.fields),
     morphology: setBooleanParam(params.morphology),
     caseSensitive: setBooleanParam(params.caseSensitive),
+    diacriticSensitive: setBooleanParam(params.diacriticSensitive),
     lengthRange: setNumericRangeParam(params.lengthRange),
     limit: setNumericParam(params.limit),
     offset: setNumericParam(params.offset),

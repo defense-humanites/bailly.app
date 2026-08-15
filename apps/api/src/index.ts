@@ -64,6 +64,7 @@ function setLookupParams(
     fields: params.fields,
     morphology: params.morphology,
     caseSensitive: params.caseSensitive,
+    diacriticSensitive: params.diacriticSensitive,
     limit: params.limit,
     skipMorpheus: params.skipMorpheus
   });
@@ -87,6 +88,7 @@ app.post("/lookup", async (c) => {
         `%c🚀 Batching ${queries.length.toLocaleString()} queries...`,
         "font-weight:bold;color:mediumPurple"
       );
+      //console.info(queries);
     }
 
     if (queries.length > settings.queryMaxBatchSize) {

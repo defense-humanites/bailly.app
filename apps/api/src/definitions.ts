@@ -14,6 +14,7 @@ export type ApiRawParams = {
   fields?: string;
   morphology?: string;
   caseSensitive?: string;
+  diacriticSensitive?: string;
   lengthRange?: string;
   limit?: string;
   offset?: string;
@@ -27,6 +28,7 @@ export type ApiParams<K extends keyof QueryableFields> = {
   fields: NonEmptyArray<keyof Pick<QueryableFields, K>>;
   morphology: boolean;
   caseSensitive: boolean;
+  diacriticSensitive: boolean;
   lengthRange: [number, number?] | null;
   limit?: number;
   offset?: number;
@@ -45,6 +47,7 @@ export type ApiLookupParams<K extends keyof QueryableFields> = Pick<
   | "fields"
   | "morphology"
   | "caseSensitive"
+  | "diacriticSensitive"
   | "limit"
   | "skipMorpheus"
 >;

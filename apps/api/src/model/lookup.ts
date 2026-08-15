@@ -49,6 +49,15 @@ function formatQueryStr(
   return isCaseSensitive ? str : str.toLowerCase();
 }
 
+function formatSearchableField(
+  caseSensitive: boolean,
+  diacriticSensitive: boolean
+): string {
+  return `searchable${diacriticSensitive ? "" : "Atonic"}${
+    caseSensitive ? "" : "CaseInsensitive"
+  }`;
+}
+
 /**
  * A. Empty string.
  * B. One char: only allow greek letters (digamma included).
@@ -77,6 +86,7 @@ export async function getEntries<K extends keyof QueryableFields>({
   fields,
   morphology,
   caseSensitive,
+  diacriticSensitive,
   limit,
   skipMorpheus
 }: ApiLookupParams<K>): Promise<
@@ -101,21 +111,23 @@ export async function getEntries<K extends keyof QueryableFields>({
     q = q.slice(1);
   }
 
-  // Make the query string searchable.
-  const searchStr: string = removeGreekVariants(
-    removeDiacritics(q.trim(), KeyType.GREEK)
-  );
+  if (!diacriticSensitive) q = removeDiacritics(q, KeyType.GREEK);
 
-  if (!validateInput(searchStr)) return emptyResponse();
+  const searchStr: string = removeGreekVariants(q.trim());
+
+  if (!validateInput(removeDiacritics(searchStr, KeyType.GREEK))) {
+    return emptyResponse();
+  }
 
   const comparisonOperator: string = isExactMatch ? "=" : "GLOB";
 
-  const [_searchableField, searchableAtonicField]: string[] = caseSensitive
-    ? ["searchable", "searchableAtonic"]
-    : ["searchableCaseInsensitive", "searchableAtonicCaseInsensitive"];
+  const searchableField: string = formatSearchableField(
+    caseSensitive,
+    diacriticSensitive
+  );
 
   const morpheusData: MorpheusData = !skipMorpheus
-    ? await morpheus.lookup(searchStr, { caseSensitive })
+    ? await morpheus.lookup(searchStr, { caseSensitive, diacriticSensitive })
     : {};
 
   const morpheusSQLStatements: string = (() => {
@@ -129,23 +141,23 @@ export async function getEntries<K extends keyof QueryableFields>({
     return "";
   })();
 
-  // Field `word` is mandatory in order to retrieve unique entries
-  // and build the `children` property.
+  // The `word` field is mandatory in order to retrieve unique entries and build the
+  // `children` property.
   const sql = `
-    SELECT ${
+  SELECT ${
     !fieldsAsStr.includes("word") ? `word, ${fieldsAsStr}` : fieldsAsStr
-  }, ${searchableAtonicField}, COUNT(*) OVER () AS countAll
-    FROM bailly
-    WHERE ${searchableAtonicField} ${comparisonOperator} $query ${morpheusSQLStatements}
-    ORDER BY orderedID
-    LIMIT $limit 
+  }, ${searchableField}, COUNT(*) OVER () AS countAll
+  FROM bailly
+  WHERE ${searchableField} ${comparisonOperator} $query ${morpheusSQLStatements}
+  ORDER BY orderedID
+  LIMIT $limit 
   `;
 
   const params: { [key: string]: any } = {
     $query: formatQueryStr(searchStr, isExactMatch, caseSensitive),
     $limit: (() => {
       if (limit && limit <= settings.queryMaxRows) return limit;
-      // @fixme I shouldn't have to think to this special value.
+      // @fixme One shouldn't have to think about this special value.
       else return settings.queryMaxRows === Infinity ? -1 : settings.queryMaxRows;
     })()
   };
@@ -181,19 +193,38 @@ export async function getEntries<K extends keyof QueryableFields>({
       morphology: morphology ? morpheusData : undefined,
       entries: uniqueEntries.map((item) => {
         const isExact: boolean = (() => {
-          return caseSensitive
+          const normalizedSearchStr = caseSensitive
+            ? searchStr
+            : searchStr.toLowerCase();
+          return normalizedSearchStr ===
+            item[formatSearchableField(caseSensitive, diacriticSensitive)];
+
+          /*return caseSensitive
             ? searchStr === item.searchableAtonic
-            : searchStr.toLowerCase() === item.searchableAtonicCaseInsensitive;
+            : searchStr.toLowerCase() === item.searchableAtonicCaseInsensitive;*/
         })();
 
         const isMorpheus: boolean = (() => {
           if (!Object.keys(morpheusData).length) return false;
 
-          return caseSensitive
+          const searchableFieldValue =
+            item[formatSearchableField(caseSensitive, diacriticSensitive)];
+          const normalizedSearchStr = caseSensitive
+            ? searchStr
+            : searchStr.toLowerCase();
+
+          if (isExactMatch && searchableFieldValue.length !== searchStr.length) {
+            return true;
+          }
+
+          return !searchableFieldValue
+            .startsWith(normalizedSearchStr);
+
+          /*return caseSensitive
             ? !item.searchableAtonic?.startsWith(searchStr)
             : !item.searchableAtonicCaseInsensitive?.startsWith(
               searchStr.toLowerCase()
-            );
+            );*/
         })();
 
         const removeExtraFields = (
@@ -202,6 +233,8 @@ export async function getEntries<K extends keyof QueryableFields>({
             & Optional<
               DatabaseEntry,
               | "countAll"
+              | "searchable"
+              | "searchableCaseInsensitive"
               | "searchableAtonic"
               | "searchableAtonicCaseInsensitive"
             >
@@ -211,9 +244,10 @@ export async function getEntries<K extends keyof QueryableFields>({
 
           delete item.countAll;
 
-          caseSensitive
-            ? delete item.searchableAtonic
-            : delete item.searchableAtonicCaseInsensitive;
+          delete item.searchable;
+          delete item.searchableCaseInsensitive;
+          delete item.searchableAtonic;
+          delete item.searchableAtonicCaseInsensitive;
         };
 
         removeExtraFields(item);
