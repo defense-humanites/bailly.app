@@ -53,9 +53,9 @@ export class Database {
 
       if (!dbFileExists && !gzippedDbFileExists) {
         throw new Error(
-          `Database file not found. Check that the 'DB_FILE_PATH' value ` +
-            `corresponds to an actual file (current value is ` +
-            `'${settings.dbFilePath}').`
+          `Database file not found. Check that the 'DB_FILE_PATH' value corresponds ` +
+            `to an actual file (current value is '${settings.dbFilePath}').\n` +
+            `Note: the Docker image only loads gzipped database files.`
         );
       }
 
