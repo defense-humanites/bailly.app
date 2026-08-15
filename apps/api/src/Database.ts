@@ -59,10 +59,16 @@ export class Database {
         );
       }
 
-      Database.connection = new Sqlite(settings.dbFilePath, {
-        create: false,
-        readonly: true
-      });
+      const SQLITE_OPEN_READONLY = 0x00000001;
+      const SQLITE_OPEN_URI = 0x00000040;
+
+      Database.connection = new Sqlite(
+        `file:${settings.dbFilePath}?immutable=1`,
+        {
+          // @db/sqlite doesn't have a built-in `immutable: true|false` option.
+          flags: SQLITE_OPEN_READONLY | SQLITE_OPEN_URI
+        }
+      );
 
       //Database.connection.exec("PRAGMA mmap_size = 30000000000;");
     }
