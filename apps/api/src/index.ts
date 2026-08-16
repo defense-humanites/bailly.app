@@ -11,7 +11,11 @@ import { getRandomEntry } from "./model/randomEntry.ts";
 import { Morpheus } from "./Morpheus.ts";
 import { logger } from "./logger.ts";
 import { Settings } from "./Settings.ts";
-import { type ApiLookupParams, type QueryableFields } from "./definitions.ts";
+import {
+  type ApiEntryParams,
+  type ApiLookupParams,
+  type QueryableFields
+} from "./definitions.ts";
 
 const settings = Settings.getSettings();
 
@@ -35,9 +39,19 @@ app.get("/entry/random", async (c) => {
   return c.json(entry);
 });
 
+function setEntryParams(
+  params: Record<string, unknown>
+): ApiEntryParams<keyof QueryableFields> {
+  return setParams({
+    q: params.q,
+    fields: params.fields,
+    siblings: params.siblings
+  });
+}
+
 app.get("/entry/:uri", async (c) => {
-  const { fields, siblings } = c.req.query();
-  const params = setParams({ q: c.req.param("uri"), fields, siblings });
+  const q = c.req.param("uri");
+  const params = setEntryParams({ ...c.req.query(), q });
 
   // Handle malformed URIs smoothly.
   // @fixme: using option `removeDiacritics` removes dashes and
@@ -53,6 +67,49 @@ app.get("/entry/:uri", async (c) => {
 
   const entry = await getEntry(params);
   return c.json(entry);
+});
+
+// For batch requests.
+app.post("/entry", async (c) => {
+  const params = setEntryParams(await c.req.json());
+  const queries: string[] = params.q.split(",");
+
+  if (queries.length > 1) {
+    if (settings.isDevEnv) {
+      console.info(
+        `%c🚀 Batching ${queries.length.toLocaleString()} queries...`,
+        "font-weight:bold;color:mediumPurple"
+      );
+      console.info(queries);
+    }
+
+    if (queries.length > settings.queryMaxBatchSize) {
+      throw new HTTPException(400, { message: "Maximum batch size exceeded" });
+    }
+  }
+
+  const responses = await Promise.all(
+    queries.map((query) => {
+      // Handle malformed URIs smoothly.
+      // @fixme: using option `removeDiacritics` removes dashes and
+      //         this prevents access to contract verbs for example.
+      query = toTransliteration(query, KeyType.TRANSLITERATION, {
+        additionalChars: AdditionalChar.DIGAMMA,
+        //removeDiacritics: true,
+        transliterationStyle: {
+          gammaNasal_n: true,
+          useCxOverMacron: true
+        }
+      });
+
+      return getEntry({ ...params, q: query });
+    })
+  );
+
+  return c.json({
+    count: responses.length,
+    queries: responses
+  });
 });
 
 function setLookupParams(
