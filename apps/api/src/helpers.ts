@@ -83,11 +83,21 @@ export function setNumericRangeParam(
   return null;
 }
 
+/**
+ * Returns a decoded, trimmed and Unicode-normalized string representing one or multiple queries.
+ * @privateRemarks Always normalize Unicode-sensitive strings like polytonic greek strings.
+ * @param param A query passed in the URL (GET) or in a Response body (POST).
+ */
 export function setQueryParam(param?: unknown): string {
   if (Array.isArray(param)) {
-    return param.map((el) => String(el).trim()).join(",");
+    return param.map((query) => String(query).trim()).join(",").normalize();
   }
-  return safeDecodeURIComponent(String(param) ?? "").trim();
+
+  // The param can be encoded (GET) or not (POST); it can be a string (GET) or other types (POST).
+  param = safeDecodeURIComponent(String(param) ?? "");
+
+  // First split the param in order to trim all its (potential) parts.
+  return param.split(",").map((query) => query.trim()).join(",").normalize();
 }
 
 export function setSelectedFields(
