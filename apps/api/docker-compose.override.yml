@@ -16,9 +16,10 @@ services:
         - action: sync
           path: ./src
           target: /app/src
-        - action: sync+restart
+        - action: rebuild
           path: ./deno.json
-          target: /app/deno.json
+        - action: rebuild
+          path: ./deno.lock
 volumes:
   deno-cache:
   host-db:
