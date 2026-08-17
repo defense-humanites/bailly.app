@@ -192,39 +192,20 @@ export async function getEntries<K extends keyof QueryableFields>({
       countAll: data[0].countAll ?? -1,
       morphology: morphology ? morpheusData : {},
       entries: uniqueEntries.map((item) => {
-        const isExact: boolean = (() => {
-          const normalizedSearchStr = caseSensitive
-            ? searchStr
-            : searchStr.toLowerCase();
-          return normalizedSearchStr ===
-            item[formatSearchableField(caseSensitive, diacriticSensitive)];
+        const searchableFieldValue =
+          item[formatSearchableField(caseSensitive, diacriticSensitive)];
+        const normalizedSearchStr = caseSensitive ? searchStr : searchStr.toLowerCase();
 
-          /*return caseSensitive
-            ? searchStr === item.searchableAtonic
-            : searchStr.toLowerCase() === item.searchableAtonicCaseInsensitive;*/
-        })();
+        const isExact: boolean = normalizedSearchStr === searchableFieldValue;
 
         const isMorpheus: boolean = (() => {
-          if (!Object.keys(morpheusData).length) return false;
-
-          const searchableFieldValue =
-            item[formatSearchableField(caseSensitive, diacriticSensitive)];
-          const normalizedSearchStr = caseSensitive
-            ? searchStr
-            : searchStr.toLowerCase();
-
-          if (isExactMatch && searchableFieldValue.length !== searchStr.length) {
+          if (!Object.keys(morpheusData).length) {
+            return false;
+          } else if (isExactMatch && searchableFieldValue.length !== searchStr.length) {
             return true;
+          } else {
+            return !searchableFieldValue.startsWith(normalizedSearchStr);
           }
-
-          return !searchableFieldValue
-            .startsWith(normalizedSearchStr);
-
-          /*return caseSensitive
-            ? !item.searchableAtonic?.startsWith(searchStr)
-            : !item.searchableAtonicCaseInsensitive?.startsWith(
-              searchStr.toLowerCase()
-            );*/
         })();
 
         const removeExtraFields = (
@@ -239,15 +220,13 @@ export async function getEntries<K extends keyof QueryableFields>({
               | "searchableAtonicCaseInsensitive"
             >
         ): void => {
-          // Property `word` has been picked in order to group entries.
-          if (!fieldsAsStr.includes("word")) delete item.word;
-
           delete item.countAll;
-
           delete item.searchable;
           delete item.searchableCaseInsensitive;
           delete item.searchableAtonic;
           delete item.searchableAtonicCaseInsensitive;
+          // Property `word` has been picked in order to group entries.
+          if (!fieldsAsStr.includes("word")) delete item.word;
         };
 
         removeExtraFields(item);
@@ -257,7 +236,7 @@ export async function getEntries<K extends keyof QueryableFields>({
           ...item,
           isMorpheus: isMorpheus,
           isExact: isMorpheus || isExact
-        } as Entry<K>;
+        };
       })
     }
   };
