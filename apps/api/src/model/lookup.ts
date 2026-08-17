@@ -10,7 +10,6 @@ import type {
   ApiLookupResponse,
   DatabaseEntry,
   Entry,
-  MorpheusData,
   Optional,
   PartialExcept,
   QueryableFields
@@ -126,12 +125,12 @@ export async function getEntries<K extends keyof QueryableFields>({
     diacriticSensitive
   );
 
-  const morpheusData: MorpheusData = !skipMorpheus
+  const morpheusAnalyzes = !skipMorpheus
     ? await morpheus.lookup(searchStr, { caseSensitive, diacriticSensitive })
     : {};
 
   const morpheusSQLStatements: string = (() => {
-    const keys = Object.keys(morpheusData);
+    const keys = Object.keys(morpheusAnalyzes);
     if (keys.length) {
       return "OR searchable IN (" + keys
         .map((_, i) => `$lemma${(i += 1)}`)
@@ -144,13 +143,13 @@ export async function getEntries<K extends keyof QueryableFields>({
   // The `word` field is mandatory in order to retrieve unique entries and build the
   // `children` property.
   const sql = `
-  SELECT ${
+    SELECT ${
     !fieldsAsStr.includes("word") ? `word, ${fieldsAsStr}` : fieldsAsStr
   }, ${searchableField}, COUNT(*) OVER () AS countAll
-  FROM bailly
-  WHERE ${searchableField} ${comparisonOperator} $query ${morpheusSQLStatements}
-  ORDER BY orderedID
-  LIMIT $limit 
+    FROM bailly
+    WHERE ${searchableField} ${comparisonOperator} $query ${morpheusSQLStatements}
+    ORDER BY orderedID
+    LIMIT $limit 
   `;
 
   const params: { [key: string]: any } = {
@@ -162,7 +161,7 @@ export async function getEntries<K extends keyof QueryableFields>({
     })()
   };
 
-  Object.keys(morpheusData).forEach((lemma, i) => {
+  Object.keys(morpheusAnalyzes).forEach((lemma, i) => {
     const propName: string = `$lemma${(i += 1)}`;
     params[propName] = removeGreekVariants(lemma);
   });
@@ -190,7 +189,17 @@ export async function getEntries<K extends keyof QueryableFields>({
       version: settings.dbVersion,
       count: data.length,
       countAll: data[0].countAll ?? -1,
-      morphology: morphology ? morpheusData : {},
+      morphology: (() => {
+        if (morphology) {
+          return Object.fromEntries(
+            Object.entries(morpheusAnalyzes).map(([lemma, analyzes]) => [
+              lemma,
+              analyzes.map(({ morphology }) => morphology)
+            ])
+          );
+        }
+        return {} as any;
+      })(),
       entries: uniqueEntries.map((item) => {
         const searchableFieldValue =
           item[formatSearchableField(caseSensitive, diacriticSensitive)];
@@ -199,7 +208,7 @@ export async function getEntries<K extends keyof QueryableFields>({
         const isExact: boolean = normalizedSearchStr === searchableFieldValue;
 
         const isMorpheus: boolean = (() => {
-          if (!Object.keys(morpheusData).length) {
+          if (!Object.keys(morpheusAnalyzes).length) {
             return false;
           } else if (isExactMatch && searchableFieldValue.length !== searchStr.length) {
             return true;

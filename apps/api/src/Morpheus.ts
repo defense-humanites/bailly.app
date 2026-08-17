@@ -6,10 +6,11 @@ import {
   toBetaCode,
   toGreek
 } from "greek-conversion";
-import type { ApiLookupParams, MorpheusData, MorpheusDataItem } from "./definitions.ts";
+import { type ApiLookupParams, type GroupedByLemmas } from "./definitions.ts";
 import { SpecialChar } from "./enums.ts";
 import { MorpheusWorkerPool } from "./MorpheusWorkerPool.ts";
 import { Settings } from "./Settings.ts";
+import { type MorpheusAnalysis, MorpheusParser } from "./MorpheusParser.ts";
 
 type MorpheusLookupOptions = Pick<
   ApiLookupParams<never>,
@@ -19,7 +20,10 @@ type MorpheusLookupOptions = Pick<
 export class Morpheus {
   static #wrapper: Morpheus;
 
-  // The actual Morpheus instances.
+  /**
+   * The actual Morpheus instances.
+   * @private
+   */
   readonly #pool: MorpheusWorkerPool;
 
   readonly #binary: string;
@@ -148,54 +152,25 @@ export class Morpheus {
     return this.#wrapper;
   }
 
-  #formatMorpheusData(rawMorpheusData: string): MorpheusDataItem[] {
-    return rawMorpheusData
-      .split(/^:raw\s+/m)
-      .slice(1) // Remove the empty aprt that is returned before the first match.
-      .map((item) => this.#formatMorpheusItem(item));
-  }
-
-  #formatMorpheusItem(morpheusItem: string): MorpheusDataItem {
-    const morpheusProps = {
-      workw: "",
-      lem: "",
-      prvb: "",
-      aug1: "",
-      stem: "",
-      suff: "",
-      end: ""
-    };
-
-    const formattedData: MorpheusDataItem = morpheusItem
-      .split(/\r?\n/)
-      .reduce(
-        (acc, line) => {
-          const [key, ...valueParts] = line.trim().split(/\s+/);
-
-          if (!key?.startsWith(":")) {
-            return acc;
-          }
-
-          acc[key.slice(1)] = valueParts.join(" ");
-
-          return acc;
-        },
-        morpheusProps
-      );
-
-    formattedData.workw = removeGreekVariants(
-      toGreek(formattedData.workw, KeyType.TLG_BETA_CODE)
-    );
-    formattedData.lem = toGreek(formattedData.lem, KeyType.TLG_BETA_CODE);
-
-    return formattedData;
+  /**
+   * @param rawData Morpheus output potentially containing multiple analyzes blocks,
+   * where a block begins with a `:raw` tag and is made of several lines starting by
+   * `:<tag>` tags.
+   * @private
+   */
+  #formatMorpheusRawData(rawData: string): MorpheusAnalysis[] {
+    return rawData.split(/(?=^:raw\s+)/m)
+      .filter((rawDataBlock) => rawDataBlock.trim())
+      .map((rawDataBlock) => new MorpheusParser(rawDataBlock).parse());
   }
 
   #isNeeded(str: string): boolean {
     return (
       this.isAvailable &&
-      !/\s/g.test(str) && // Morpheus ignores whitespace
+      !/\s/.test(str) && // Morpheus ignores whitespace
       !str.toLowerCase().includes("ϝ") && // Morpheus ignores letter digamma
+      !str.startsWith('"') &&
+      !str.startsWith(SpecialChar.explicitStart) &&
       !str.endsWith('"') &&
       !str.endsWith(SpecialChar.explicitEnd) &&
       !str.includes(SpecialChar.singleWildcard) &&
@@ -211,8 +186,8 @@ export class Morpheus {
   async lookup(
     greekStr: string,
     options: MorpheusLookupOptions
-  ): Promise<MorpheusData> {
-    if (!this.#isNeeded(greekStr)) return {};
+  ): Promise<GroupedByLemmas<MorpheusAnalysis>> {
+    if (!this.#isNeeded(greekStr)) return;
 
     const { caseSensitive = false, diacriticSensitive = false } = options;
     const settings = Settings.getSettings();
@@ -256,32 +231,36 @@ export class Morpheus {
     }
 
     try {
-      const formattedData = this.#formatMorpheusData(
+      const analyzes = this.#formatMorpheusRawData(
         await this.#pool.analyze(
           morpheusInput.join("\n"),
           settings.morpheusLookupMaxDuration
         )
       );
 
+      console.log(analyzes);
+
       // Assuming that the Morpheus worker pool is using with the `-n` (non-accented
       // search) flag, we have to filter the formatted data to retain only the entries
-      // if the `diacriticSensitive` option is enabled. `entry.workw` represents the
+      // if the `diacriticSensitive` option is enabled. `entry.workWord` represents the
       // accented form of the unaccented search.
-      const lemmaGroups = Object.groupBy(
+      return Object.groupBy(
         diacriticSensitive
-          ? formattedData.filter((entry) => {
-            return caseSensitive
-              ? entry.workw === greekStr
-              : entry.workw.toLowerCase() === greekStr.toLowerCase();
-          })
-          : formattedData,
-        ({ lem }) => lem.replace(/\d+$/, "") // Remove the eventual trailing digits.
-      ) satisfies MorpheusData;
+          ? analyzes.filter((analysis) => {
+            const normalizedWorkWord = removeGreekVariants(
+              toGreek(analysis.workWord, KeyType.TLG_BETA_CODE)
+            );
 
-      return lemmaGroups;
+            return caseSensitive
+              ? normalizedWorkWord === greekStr
+              : normalizedWorkWord.toLowerCase() === greekStr.toLowerCase();
+          })
+          : analyzes,
+        ({ lemma }) => toGreek(lemma, KeyType.TLG_BETA_CODE).replace(/\d+$/, "") // Remove the eventual trailing digits.
+      );
     } catch (error) {
       console.error(`Morpheus call failed with error <${error}>`);
-      return {};
+      return;
     }
   }
 }
