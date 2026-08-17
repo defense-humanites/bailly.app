@@ -190,7 +190,7 @@ export async function getEntries<K extends keyof QueryableFields>({
       version: settings.dbVersion,
       count: data.length,
       countAll: data[0].countAll ?? -1,
-      morphology: morphology ? morpheusData : undefined,
+      morphology: morphology ? morpheusData : {},
       entries: uniqueEntries.map((item) => {
         const isExact: boolean = (() => {
           const normalizedSearchStr = caseSensitive

@@ -89,7 +89,8 @@ export interface ApiLookupResponse<
     version: string;
     count: number;
     countAll: number;
-    morphology?: MorpheusData;
+    morphology: MorpheusData;
+    morphology: MorpheusData;
     entries: PartialExcept<
       Entry<K>,
       K | "children" | "isExact" | "isMorpheus"
