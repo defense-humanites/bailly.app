@@ -92,20 +92,6 @@ app.post("/entry", async (c) => {
   }
 
   const responses = await Promise.all(
-    queries.map((query) => {
-      // @fixme: using option `removeDiacritics` removes dashes and
-      //         this prevents access to contract verbs for example.
-      query = toTransliteration(query, KeyType.TRANSLITERATION, {
-        additionalChars: AdditionalChar.DIGAMMA,
-        //removeDiacritics: true,
-        transliterationStyle: {
-          gammaNasal_n: true,
-          useCxOverMacron: true
-        }
-      });
-
-      return getEntry({ ...params, q: query });
-    })
     queries.map((query) => getEntry({ ...params, q: formatEntryQuery(query) }))
   );
 
