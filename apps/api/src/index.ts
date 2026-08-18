@@ -96,6 +96,7 @@ app.post("/entry", async (c) => {
   );
 
   return c.json({
+    $query: params,
     count: responses.length,
     queries: responses
   });
@@ -147,6 +148,7 @@ app.post("/lookup", async (c) => {
   );
 
   return c.json({
+    $query: params ?? {},
     count: responses.length,
     queries: responses
   });
