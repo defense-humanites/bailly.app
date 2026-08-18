@@ -152,6 +152,57 @@ export class Morpheus {
     return this.#wrapper;
   }
 
+  #normalizeBetaCode(value?: string): string | undefined {
+    return value?.replace(/^\*/, "");
+  }
+
+  #analysisKey(analysis: MorpheusAnalysis): string {
+    const m = analysis.morphology;
+
+    return JSON.stringify({
+      lemma: this.#normalizeBetaCode(analysis.lemma),
+      partOfSpeech: m.partOfSpeech,
+      gender: m.gender?.toSorted(),
+      case: m.case?.toSorted(),
+      number: m.number?.toSorted(),
+      tense: m.tense,
+      mood: m.mood,
+      voice: m.voice,
+      person: m.person,
+      degree: m.degree,
+      dialects: m.dialects?.toSorted(),
+      features: m.features?.toSorted()
+    });
+  }
+
+  #deduplicateAnalyses(
+    analyses: MorpheusAnalysis[]
+  ): MorpheusAnalysis[] {
+    const unique = new Map<string, MorpheusAnalysis>();
+
+    for (const analysis of analyses) {
+      unique.set(this.#analysisKey(analysis), analysis);
+    }
+
+    return [...unique.values()];
+  }
+
+  #normalizeAnalysis(
+    analysis: MorpheusAnalysis
+  ): MorpheusAnalysis {
+    return {
+      ...analysis,
+      lemma: this.#normalizeBetaCode(analysis.lemma),
+      workWord: this.#normalizeBetaCode(analysis.workWord),
+      stem: analysis.stem
+        ? {
+          ...analysis.stem,
+          value: this.#normalizeBetaCode(analysis.stem.value)!
+        }
+        : undefined
+    };
+  }
+
   /**
    * @param rawData Morpheus output potentially containing multiple analysis blocks,
    * where a block begins with a `:raw` tag and is made of several lines starting by
@@ -238,24 +289,28 @@ export class Morpheus {
         )
       );
 
-      console.log(analyses);
+      // As we can pass multiple — potentially equivalent - queries in one Morpheus call
+      // (e.g. when checking for both lower and upper case), we need to deduplicate the
+      // resulting analyses.
+      const uniqueAnalyses = this.#deduplicateAnalyses(analyses);
 
       // Assuming that the Morpheus worker pool is running with the `-n` (non-accented
       // search) flag, we have to filter the analyses to retain only the entries matching
       // the search string if the `diacriticSensitive` option is enabled. Note: `workWord`
       // represents the accented form of the unaccented search.
-      return Object.groupBy(
-        diacriticSensitive
-          ? analyses.filter((analysis) => {
-            const normalizedWorkWord = removeGreekVariants(
-              toGreek(analysis.workWord, KeyType.TLG_BETA_CODE)
-            );
+      const filteredUniqueAnalyses = diacriticSensitive
+        ? uniqueAnalyses.filter((analysis) => {
+          const normalizedWorkWord = removeGreekVariants(
+            toGreek(analysis.workWord, KeyType.TLG_BETA_CODE)
+          );
+          return caseSensitive
+            ? normalizedWorkWord === greekStr
+            : normalizedWorkWord.toLowerCase() === greekStr.toLowerCase();
+        })
+        : uniqueAnalyses;
 
-            return caseSensitive
-              ? normalizedWorkWord === greekStr
-              : normalizedWorkWord.toLowerCase() === greekStr.toLowerCase();
-          })
-          : analyses,
+      return Object.groupBy(
+        filteredUniqueAnalyses,
         // Remove any trailing number (they are not guaranteed to correspond to the
         // order of disambiguation in the Bailly).
         ({ lemma }) => toGreek(lemma, KeyType.TLG_BETA_CODE).replace(/\d+$/, "")
