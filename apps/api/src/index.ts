@@ -49,14 +49,13 @@ function setEntryParams(
   });
 }
 
-app.get("/entry/:uri", async (c) => {
-  const q = c.req.param("uri");
-  const params = setEntryParams({ ...c.req.query(), q });
-
-  // Handle malformed URIs smoothly.
-  // @fixme: using option `removeDiacritics` removes dashes and
-  //         this prevents access to contract verbs for example.
-  params.q = toTransliteration(params.q, KeyType.TRANSLITERATION, {
+/**
+ * Handle malformed URIs smoothly.
+ * @param q A query string.
+ */
+function formatEntryQuery(q: string): string {
+  // @fixme: `removeDiacritics` removes dashes and prevents access to contract verbs, etc.
+  return toTransliteration(q, KeyType.TRANSLITERATION, {
     additionalChars: AdditionalChar.DIGAMMA,
     //removeDiacritics: true,
     transliterationStyle: {
@@ -64,8 +63,12 @@ app.get("/entry/:uri", async (c) => {
       useCxOverMacron: true
     }
   });
+}
 
-  const entry = await getEntry(params);
+app.get("/entry/:uri", async (c) => {
+  const q = c.req.param("uri");
+  const params = setEntryParams({ ...c.req.query(), q });
+  const entry = await getEntry({ ...params, q: formatEntryQuery(params.q) });
   return c.json(entry);
 });
 
@@ -90,7 +93,6 @@ app.post("/entry", async (c) => {
 
   const responses = await Promise.all(
     queries.map((query) => {
-      // Handle malformed URIs smoothly.
       // @fixme: using option `removeDiacritics` removes dashes and
       //         this prevents access to contract verbs for example.
       query = toTransliteration(query, KeyType.TRANSLITERATION, {
@@ -104,6 +106,7 @@ app.post("/entry", async (c) => {
 
       return getEntry({ ...params, q: query });
     })
+    queries.map((query) => getEntry({ ...params, q: formatEntryQuery(query) }))
   );
 
   return c.json({
