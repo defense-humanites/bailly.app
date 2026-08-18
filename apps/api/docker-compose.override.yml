@@ -10,7 +10,8 @@ services:
       - HOST_DB=${HOST_DB:-}
     volumes:
       - deno-cache:/deno-dir
-      - ${HOST_DB:-host-db}:/app/database/host.db:ro
+      - ${HOST_DB:-host-db}:/host-database/host.db:ro
+      - host-db-cache:/app/database
     develop:
       watch:
         - action: sync
@@ -23,3 +24,4 @@ services:
 volumes:
   deno-cache:
   host-db:
+  host-db-cache:

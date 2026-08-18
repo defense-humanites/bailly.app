@@ -16,6 +16,13 @@ export class Database {
         );
       }
 
+      if (settings.isDevEnv && settings.isHostDb) {
+        await Deno.copyFile(
+          settings.hostDbPath.bindMountedFile,
+          settings.hostDbPath.copyDest
+        );
+      }
+
       let dbFileExists: boolean = false;
 
       try {
@@ -48,14 +55,16 @@ export class Database {
           .pipeThrough(new DecompressionStream("gzip"))
           .pipeTo(output.writable);
 
-        console.info("%c✅ Database file unzipped.", "font-weight: bold;color:green");
+        console.info(
+          "%c✅ Database file unzipped.",
+          "font-weight: bold;color:green"
+        );
       }
 
       if (!dbFileExists && !gzippedDbFileExists) {
         throw new Error(
           `Database file not found. Check that the 'DB_FILE_PATH' value corresponds ` +
-            `to an actual file (current value is '${settings.dbFilePath}').\n` +
-            `Note: the Docker image only loads gzipped database files.`
+            `to an actual file (current value is '${settings.dbFilePath}').`
         );
       }
 
