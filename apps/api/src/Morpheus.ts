@@ -153,7 +153,7 @@ export class Morpheus {
   }
 
   /**
-   * @param rawData Morpheus output potentially containing multiple analyzes blocks,
+   * @param rawData Morpheus output potentially containing multiple analysis blocks,
    * where a block begins with a `:raw` tag and is made of several lines starting by
    * `:<tag>` tags.
    * @private
@@ -231,22 +231,22 @@ export class Morpheus {
     }
 
     try {
-      const analyzes = this.#formatMorpheusRawData(
+      const analyses = this.#formatMorpheusRawData(
         await this.#pool.analyze(
           morpheusInput.join("\n"),
           settings.morpheusLookupMaxDuration
         )
       );
 
-      console.log(analyzes);
+      console.log(analyses);
 
-      // Assuming that the Morpheus worker pool is using with the `-n` (non-accented
-      // search) flag, we have to filter the formatted data to retain only the entries
-      // if the `diacriticSensitive` option is enabled. `entry.workWord` represents the
-      // accented form of the unaccented search.
+      // Assuming that the Morpheus worker pool is running with the `-n` (non-accented
+      // search) flag, we have to filter the analyses to retain only the entries matching
+      // the search string if the `diacriticSensitive` option is enabled. Note: `workWord`
+      // represents the accented form of the unaccented search.
       return Object.groupBy(
         diacriticSensitive
-          ? analyzes.filter((analysis) => {
+          ? analyses.filter((analysis) => {
             const normalizedWorkWord = removeGreekVariants(
               toGreek(analysis.workWord, KeyType.TLG_BETA_CODE)
             );
@@ -255,8 +255,10 @@ export class Morpheus {
               ? normalizedWorkWord === greekStr
               : normalizedWorkWord.toLowerCase() === greekStr.toLowerCase();
           })
-          : analyzes,
-        ({ lemma }) => toGreek(lemma, KeyType.TLG_BETA_CODE).replace(/\d+$/, "") // Remove the eventual trailing digits.
+          : analyses,
+        // Remove any trailing number (they are not guaranteed to correspond to the
+        // order of disambiguation in the Bailly).
+        ({ lemma }) => toGreek(lemma, KeyType.TLG_BETA_CODE).replace(/\d+$/, "")
       );
     } catch (error) {
       console.error(`Morpheus call failed with error <${error}>`);

@@ -125,12 +125,12 @@ export async function getEntries<K extends keyof QueryableFields>({
     diacriticSensitive
   );
 
-  const morpheusAnalyzes = !skipMorpheus
+  const morpheusAnalyses = !skipMorpheus
     ? await morpheus.lookup(searchStr, { caseSensitive, diacriticSensitive })
     : {};
 
   const morpheusSQLStatements: string = (() => {
-    const keys = Object.keys(morpheusAnalyzes);
+    const keys = Object.keys(morpheusAnalyses);
     if (keys.length) {
       return "OR searchable IN (" + keys
         .map((_, i) => `$lemma${(i += 1)}`)
@@ -161,7 +161,7 @@ export async function getEntries<K extends keyof QueryableFields>({
     })()
   };
 
-  Object.keys(morpheusAnalyzes).forEach((lemma, i) => {
+  Object.keys(morpheusAnalyses).forEach((lemma, i) => {
     const propName: string = `$lemma${(i += 1)}`;
     params[propName] = removeGreekVariants(lemma);
   });
@@ -192,9 +192,9 @@ export async function getEntries<K extends keyof QueryableFields>({
       morphology: (() => {
         if (morphology) {
           return Object.fromEntries(
-            Object.entries(morpheusAnalyzes).map(([lemma, analyzes]) => [
+            Object.entries(morpheusAnalyses).map(([lemma, analyses]) => [
               lemma,
-              analyzes.map(({ morphology }) => morphology)
+              analyses.map(({ morphology }) => morphology)
             ])
           );
         }
@@ -208,7 +208,7 @@ export async function getEntries<K extends keyof QueryableFields>({
         const isExact: boolean = normalizedSearchStr === searchableFieldValue;
 
         const isMorpheus: boolean = (() => {
-          if (!Object.keys(morpheusAnalyzes).length) {
+          if (!Object.keys(morpheusAnalyses).length) {
             return false;
           } else if (isExactMatch && searchableFieldValue.length !== searchStr.length) {
             return true;
