@@ -105,7 +105,7 @@ export interface MorpheusAnalysis {
   suffix?: string;
   ending?: MorpheusEnding;
 
-  morphology: Morphology;
+  morphology?: Morphology;
 }
 
 export class MorpheusParser {
@@ -115,13 +115,13 @@ export class MorpheusParser {
    * @private
    */
   static readonly #lemmaCorrections = new Map<string, string>([
-    ["neani/hs|nea_ni", "neani/as"]
+    ["neani/hs|nea_ni", "neani/as"],
   ]);
 
   static readonly #genders: Record<string, Gender> = {
     masc: "masculine",
     fem: "feminine",
-    neut: "neuter"
+    neut: "neuter",
   };
 
   static readonly #cases: Record<string, GrammaticalCase> = {
@@ -129,13 +129,13 @@ export class MorpheusParser {
     gen: "genitive",
     dat: "dative",
     acc: "accusative",
-    voc: "vocative"
+    voc: "vocative",
   };
 
   static readonly #numbers: Record<string, GrammaticalNumber> = {
     sg: "singular",
     dual: "dual",
-    pl: "plural"
+    pl: "plural",
   };
 
   static readonly #tenses: Record<string, Tense> = {
@@ -145,7 +145,7 @@ export class MorpheusParser {
     aor: "aorist",
     perf: "perfect",
     plup: "pluperfect",
-    futperf: "future perfect"
+    futperf: "future perfect",
   };
 
   static readonly #moods: Record<string, Mood> = {
@@ -155,20 +155,20 @@ export class MorpheusParser {
     imperat: "imperative",
     inf: "infinitive",
     infin: "infinitive", // tolerate both
-    part: "participle"
+    part: "participle",
   };
 
   static readonly #voices: Record<string, Voice> = {
     act: "active",
     mid: "middle",
     pass: "passive",
-    mp: "middle-passive"
+    mp: "middle-passive",
   };
 
   static readonly #persons: Record<string, Person> = {
     "1st": "first",
     "2nd": "second",
-    "3rd": "third"
+    "3rd": "third",
   };
 
   static readonly #dialects: Record<string, Dialect> = {
@@ -176,7 +176,7 @@ export class MorpheusParser {
     ionic: "ionic",
     doric: "doric",
     aeolic: "aeolic",
-    epic: "epic"
+    epic: "epic",
   };
 
   readonly #fields = new Map<string, string>();
@@ -191,8 +191,9 @@ export class MorpheusParser {
     }
   }
 
-  #correctLemma(lemma: string, stem: string): string {
-    return MorpheusParser.#lemmaCorrections.get(`${lemma}|${stem}`) ?? lemma;
+  #correctLemma(lemma: string, stem: MorpheusStem): string {
+    return MorpheusParser.#lemmaCorrections.get(`${lemma}|${stem.value}`) ??
+      lemma;
   }
 
   parse(): MorpheusAnalysis {
@@ -201,16 +202,20 @@ export class MorpheusParser {
 
     const stem = this.#parseStem(this.#fields.get("stem"));
 
+    const lem = this.#get("lem") && stem
+      ? this.#correctLemma(this.#get("lem"), stem)
+      : undefined;
+
     this.#inferPartOfSpeech(
       morphology,
       stem,
-      ending.value
+      ending.value,
     );
 
     return {
       raw: this.#get("raw"),
       workWord: this.#get("workw"),
-      lemma: this.#correctLemma(this.#get("lem"), stem.value),
+      lemma: lem,
 
       prefix: this.#get("prvb"),
       augment: this.#get("aug1"),
@@ -218,7 +223,7 @@ export class MorpheusParser {
       suffix: this.#get("suff"),
       ending: ending.value,
 
-      morphology
+      morphology,
     };
   }
 
@@ -227,7 +232,7 @@ export class MorpheusParser {
   }
 
   #parseStem(
-    raw: string | undefined
+    raw: string | undefined,
   ): MorpheusStem | undefined {
     if (!raw) return;
 
@@ -251,13 +256,13 @@ export class MorpheusParser {
       classes,
 
       ...(tokens.length > 0 && {
-        attributes: tokens
-      })
+        attributes: tokens,
+      }),
     };
   }
 
   #parseEnding(
-    raw: string | undefined
+    raw: string | undefined,
   ): {
     value?: MorpheusEnding;
     morphology: Morphology;
@@ -294,27 +299,27 @@ export class MorpheusParser {
     return {
       value: {
         value,
-        class: inflectionClass
+        class: inflectionClass,
       },
-      morphology
+      morphology,
     };
   }
 
   #parseMorphologyToken(
     token: string,
-    morphology: Morphology
+    morphology: Morphology,
   ): boolean {
     const parts = token.split("/");
 
     const genders = this.#mapAll(
       parts,
-      MorpheusParser.#genders
+      MorpheusParser.#genders,
     );
 
     if (genders) {
       morphology.gender = this.#unique([
         ...(morphology.gender ?? []),
-        ...genders
+        ...genders,
       ]);
 
       return true;
@@ -322,13 +327,13 @@ export class MorpheusParser {
 
     const cases = this.#mapAll(
       parts,
-      MorpheusParser.#cases
+      MorpheusParser.#cases,
     );
 
     if (cases) {
       morphology.case = this.#unique([
         ...(morphology.case ?? []),
-        ...cases
+        ...cases,
       ]);
 
       return true;
@@ -336,13 +341,13 @@ export class MorpheusParser {
 
     const numbers = this.#mapAll(
       parts,
-      MorpheusParser.#numbers
+      MorpheusParser.#numbers,
     );
 
     if (numbers) {
       morphology.number = this.#unique([
         ...(morphology.number ?? []),
-        ...numbers
+        ...numbers,
       ]);
 
       return true;
@@ -382,7 +387,7 @@ export class MorpheusParser {
     if (dialect) {
       morphology.dialects = this.#unique([
         ...(morphology.dialects ?? []),
-        dialect
+        dialect,
       ]);
 
       return true;
@@ -420,7 +425,7 @@ export class MorpheusParser {
   #inferPartOfSpeech(
     morphology: Morphology,
     stem: MorpheusStem | undefined,
-    ending: MorpheusEnding | undefined
+    ending: MorpheusEnding | undefined,
   ): void {
     if (morphology.partOfSpeech) {
       return;
@@ -443,7 +448,7 @@ export class MorpheusParser {
 
     const classes = [
       ...(stem?.classes ?? []),
-      ...(ending?.class ? [ending.class] : [])
+      ...(ending?.class ? [ending.class] : []),
     ];
 
     if (classes.some((value) => value.endsWith("_adj"))) {
@@ -461,17 +466,17 @@ export class MorpheusParser {
 
   #addFeature(
     morphology: Morphology,
-    feature: string
+    feature: string,
   ): void {
     morphology.features = this.#unique([
       ...(morphology.features ?? []),
-      feature
+      feature,
     ]);
   }
 
   #mapAll<T>(
     values: string[],
-    map: Record<string, T>
+    map: Record<string, T>,
   ): T[] | undefined {
     const result: T[] = [];
 

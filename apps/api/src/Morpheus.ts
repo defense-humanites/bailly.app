@@ -6,15 +6,24 @@ import {
   toBetaCode,
   toGreek
 } from "greek-conversion";
-import { type ApiLookupParams, type GroupedByLemmas } from "./definitions.ts";
+import type { ApiLookupParams } from "./definitions.ts";
 import { SpecialChar } from "./enums.ts";
 import { MorpheusWorkerPool } from "./MorpheusWorkerPool.ts";
 import { Settings } from "./Settings.ts";
-import { type MorpheusAnalysis, MorpheusParser } from "./MorpheusParser.ts";
+import {
+  type MorpheusAnalysis,
+  MorpheusParser,
+  type Morphology
+} from "./MorpheusParser.ts";
 
 type MorpheusLookupOptions = Pick<
   ApiLookupParams<never>,
   "caseSensitive" | "diacriticSensitive"
+>;
+
+export type MorpheusResponse<K extends MorpheusAnalysis | Morphology> = Record<
+  string,
+  K[]
 >;
 
 export class Morpheus {
@@ -161,17 +170,17 @@ export class Morpheus {
 
     return JSON.stringify({
       lemma: this.#normalizeBetaCode(analysis.lemma),
-      partOfSpeech: m.partOfSpeech,
-      gender: m.gender?.toSorted(),
-      case: m.case?.toSorted(),
-      number: m.number?.toSorted(),
-      tense: m.tense,
-      mood: m.mood,
-      voice: m.voice,
-      person: m.person,
-      degree: m.degree,
-      dialects: m.dialects?.toSorted(),
-      features: m.features?.toSorted()
+      partOfSpeech: m?.partOfSpeech,
+      gender: m?.gender?.toSorted(),
+      case: m?.case?.toSorted(),
+      number: m?.number?.toSorted(),
+      tense: m?.tense,
+      mood: m?.mood,
+      voice: m?.voice,
+      person: m?.person,
+      degree: m?.degree,
+      dialects: m?.dialects?.toSorted(),
+      features: m?.features?.toSorted()
     });
   }
 
@@ -185,22 +194,6 @@ export class Morpheus {
     }
 
     return [...unique.values()];
-  }
-
-  #normalizeAnalysis(
-    analysis: MorpheusAnalysis
-  ): MorpheusAnalysis {
-    return {
-      ...analysis,
-      lemma: this.#normalizeBetaCode(analysis.lemma),
-      workWord: this.#normalizeBetaCode(analysis.workWord),
-      stem: analysis.stem
-        ? {
-          ...analysis.stem,
-          value: this.#normalizeBetaCode(analysis.stem.value)!
-        }
-        : undefined
-    };
   }
 
   /**
@@ -230,6 +223,30 @@ export class Morpheus {
   }
 
   /**
+   * Builds lower/upper case variants for a beta code string.
+   * @remarks Capitalize using an asterisk (following the TLG style beta code).
+   * @param betaCodeStr
+   * @private
+   */
+  #buildCaseVariants(betaCodeStr: string): [string, string] {
+    return betaCodeStr.startsWith("*")
+      ? [betaCodeStr.slice(1), betaCodeStr]
+      : [betaCodeStr, `*${betaCodeStr}`];
+  }
+
+  /**
+   * Builds smooth/rough breathings variants for a beta code string.
+   * @remarks Breathings should be applied after an eventual asterisk (= upper case),
+   * the letter rho, a valid vowel diphthong or a single vowel.
+   * @param betaCodeStr
+   * @private
+   */
+  #buildBreathingVariants(betaCodeStr: string): [string, string] {
+    const re: RegExp = /^(\*?)(rh?|ai|ei|oi|au|eu|hu|ou|ui|[aehiouw])/gim;
+    return [betaCodeStr.replace(re, "$1$2)"), betaCodeStr.replace(re, "$1$2(")];
+  }
+
+  /**
    * @param greekStr A greek string. If the option `diacriticSensitive` has been set to
    *        `false`, we assume that the `greekStr` diacritics have been removed.
    * @returns Relevant morphological data grouped by lemma.
@@ -237,38 +254,25 @@ export class Morpheus {
   async lookup(
     greekStr: string,
     options: MorpheusLookupOptions
-  ): Promise<GroupedByLemmas<MorpheusAnalysis>> {
-    if (!this.#isNeeded(greekStr)) return;
+  ): Promise<MorpheusResponse<MorpheusAnalysis>> {
+    if (!this.#isNeeded(greekStr)) return {};
 
     const { caseSensitive = false, diacriticSensitive = false } = options;
     const settings = Settings.getSettings();
 
     // The expected format is lower case, but the TLG style beta code is upper case.
-    const betaCodeStr = toBetaCode(greekStr, KeyType.GREEK, Preset.TLG).toLowerCase();
-
-    // Capitalize using an asterisk (following the TLG style beta code).
-    const buildCaseVariants = (betaCodeStr: string): [string, string] => {
-      return betaCodeStr.startsWith("*")
-        ? [betaCodeStr.slice(1), betaCodeStr]
-        : [betaCodeStr, `*${betaCodeStr}`];
-    };
-
-    // Breathings should be applied after an eventual asterisk (= upper case), the letter
-    // rho, a valid vowel diphthong or a single vowel.
-    const buildBreathingVariants = (betaCodeStr: string): [string, string] => {
-      const re: RegExp = /^(\*?)(rh?|ai|ei|oi|au|eu|hu|ou|ui|[aehiouw])/gim;
-      return [betaCodeStr.replace(re, "$1$2)"), betaCodeStr.replace(re, "$1$2(")];
-    };
+    const betaCodeStr = toBetaCode(greekStr, KeyType.GREEK, Preset.TLG)
+      .toLowerCase();
 
     const morpheusInput = [
       ...(!caseSensitive
-        ? buildCaseVariants(betaCodeStr).map((caseVariant, i) => {
+        ? this.#buildCaseVariants(betaCodeStr).map((caseVariant) => {
           return !diacriticSensitive
-            ? buildBreathingVariants(caseVariant)
+            ? this.#buildBreathingVariants(caseVariant)
             : caseVariant;
         }).flat()
         : !diacriticSensitive
-        ? buildBreathingVariants(betaCodeStr)
+        ? this.#buildBreathingVariants(betaCodeStr)
         : [betaCodeStr])
     ];
 
@@ -289,35 +293,76 @@ export class Morpheus {
         )
       );
 
-      // As we can pass multiple — potentially equivalent - queries in one Morpheus call
-      // (e.g. when checking for both lower and upper case), we need to deduplicate the
-      // resulting analyses.
-      const uniqueAnalyses = this.#deduplicateAnalyses(analyses);
-
-      // Assuming that the Morpheus worker pool is running with the `-n` (non-accented
-      // search) flag, we have to filter the analyses to retain only the entries matching
-      // the search string if the `diacriticSensitive` option is enabled. Note: `workWord`
-      // represents the accented form of the unaccented search.
-      const filteredUniqueAnalyses = diacriticSensitive
-        ? uniqueAnalyses.filter((analysis) => {
-          const normalizedWorkWord = removeGreekVariants(
-            toGreek(analysis.workWord, KeyType.TLG_BETA_CODE)
-          );
-          return caseSensitive
-            ? normalizedWorkWord === greekStr
-            : normalizedWorkWord.toLowerCase() === greekStr.toLowerCase();
-        })
-        : uniqueAnalyses;
-
-      return Object.groupBy(
-        filteredUniqueAnalyses,
-        // Remove any trailing number (they are not guaranteed to correspond to the
-        // order of disambiguation in the Bailly).
-        ({ lemma }) => toGreek(lemma, KeyType.TLG_BETA_CODE).replace(/\d+$/, "")
-      );
+      return this.#formatMorpheusResponse(analyses, greekStr, options);
     } catch (error) {
       console.error(`Morpheus call failed with error <${error}>`);
-      return;
+      return {};
     }
+  }
+
+  #formatMorpheusResponse(
+    analyses: MorpheusAnalysis[],
+    greekStr: string,
+    options: MorpheusLookupOptions
+  ): MorpheusResponse<MorpheusAnalysis> {
+    const { caseSensitive, diacriticSensitive } = options;
+
+    // As we can pass multiple—potentially equivalent-queries in one Morpheus call (e.g.
+    // when checking for both lower & upper case), we need to deduplicate the analyses.
+    const uniqueAnalyses = this.#deduplicateAnalyses(analyses);
+
+    // Assuming that the Morpheus worker pool is running with the `-n` (non-accented
+    // search) flag, we have to filter the analyses to retain only the entries matching
+    // the search string if the `diacriticSensitive` option is enabled. Note: `workWord`
+    // represents the accented form of the unaccented search.
+    const filteredUniqueAnalyses = diacriticSensitive
+      ? uniqueAnalyses.filter((analysis) => {
+        if (!analysis.workWord) {
+          return false;
+        }
+
+        const normalizedWorkWord = removeGreekVariants(
+          toGreek(analysis.workWord, KeyType.TLG_BETA_CODE)
+        );
+        return caseSensitive
+          ? normalizedWorkWord === greekStr
+          : normalizedWorkWord.toLowerCase() === greekStr.toLowerCase();
+      })
+      : uniqueAnalyses;
+
+    const uniqueAnalysesGroupedByLemmasPlusWorkWord = Object.groupBy(
+      filteredUniqueAnalyses.filter(({ lemma, workWord }) =>
+        Boolean(lemma && workWord)
+      ),
+      // As pipes `|` are part of the beta code writting system, build a temporary key
+      // format <lemma@workWord>, even if the outputted format is <lemma|wordWord> (see infra).
+      ({ lemma, workWord }) => `${lemma}@${workWord}`
+    );
+
+    return Object.fromEntries(
+      Object.entries(uniqueAnalysesGroupedByLemmasPlusWorkWord).map(
+        ([lemmaPlusWorkWord, analyses]) => {
+          const TLG: KeyType = KeyType.TLG_BETA_CODE;
+
+          // Decode the previously formatted key.
+          const [lemma, workWord] = lemmaPlusWorkWord.split("@");
+
+          const isContracted = analyses?.some(
+            ({ morphology }) => morphology?.features?.includes("contracted")
+          );
+
+          // Remove any trailing number (disambiguation order isn't guaranteed to match
+          // those of the Bailly), then match the Bailly canonical form for contracted verbs.
+          let lemmaAsGreekStr = toGreek(lemma.replace(/\d+$/, ""), TLG);
+          if (isContracted) lemmaAsGreekStr += "-ῶ";
+
+          return [
+            // Build a key format <lemma|wordWord> that is both readable and flexible.
+            [lemmaAsGreekStr, toGreek(workWord, TLG)].join("|"),
+            analyses
+          ];
+        }
+      )
+    );
   }
 }

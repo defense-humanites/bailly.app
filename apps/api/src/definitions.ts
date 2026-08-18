@@ -1,5 +1,6 @@
 import type { KeyType } from "greek-conversion";
-import type { MorpheusAnalysis, Morphology } from "./MorpheusParser.ts";
+import type { Morphology } from "./MorpheusParser.ts";
+import type { MorpheusResponse } from "./Morpheus.ts";
 
 export type NonEmptyArray<T> = [T, ...T[]];
 
@@ -90,10 +91,10 @@ export interface ApiLookupResponse<
     version: string;
     count: number;
     countAll: number;
-    morphology: GroupedByLemmas<Morphology>;
+    orphanMorphology?: MorpheusResponse<Morphology>;
     entries: PartialExcept<
       Entry<K>,
-      K | "children" | "isExact" | "isMorpheus"
+      K | "children" | "isExact" | "isMorpheus" | "morphology"
     >[];
   };
 }
@@ -123,6 +124,7 @@ export type Entry<K extends keyof Entry = never> = {
   excerpt: string;
   isExact: boolean;
   isMorpheus: boolean;
+  morphology?: MorpheusResponse<Morphology>;
   children?: PartialExcept<Entry, K>[];
 };
 
@@ -139,8 +141,4 @@ export type Siblings<K extends keyof QueryableFields> = {
 export type EntryWithSiblings<K extends keyof QueryableFields> = {
   entry: PartialExcept<Entry<K>, K>;
   siblings: Siblings<K>;
-};
-
-export type GroupedByLemmas<K extends MorpheusAnalysis | Morphology> = {
-  [lemma: string]: K[];
 };
