@@ -21,9 +21,7 @@ export async function getEntry<K extends keyof QueryableFields>({
   // Remove from the query any trailing substring starting with a hash.
   q = q.replace(/#\d?$/, "");
 
-  // The entry can be either a single word or a set of words
-  // ending with a hash and a number.
-  // @fixme: don't get 'word' colmun twice if it's in `fields`.
+  // The entry can be either a single word or 2+ words ending with a hash and a number.
   const entriesSql = `
     SELECT orderedID, ${!fieldsStr.includes("word") ? `word, ${fieldsStr}` : fieldsStr}
     FROM bailly
