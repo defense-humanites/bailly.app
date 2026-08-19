@@ -11,10 +11,11 @@ import { getRandomEntry } from "./model/randomEntry.ts";
 import { Morpheus } from "./Morpheus.ts";
 import { logger } from "./logger.ts";
 import { Settings } from "./Settings.ts";
-import {
-  type ApiEntryParams,
-  type ApiLookupParams,
-  type QueryableFields
+import type {
+  ApiEntryParams,
+  ApiLookupParams,
+  ApiRandomEntryParams,
+  QueryableFields
 } from "./definitions.ts";
 
 const settings = Settings.getSettings();
@@ -33,21 +34,21 @@ app.get("/", (c) => {
 });
 
 app.get("/entry/random", async (c) => {
-  const { fields, lengthRange } = c.req.query();
-  const params = setParams({ fields, lengthRange });
-  const entry = await getRandomEntry(params);
-  return c.json(entry);
-});
-
-function setEntryParams(
-  params: Record<string, unknown>
-): ApiEntryParams<keyof QueryableFields> {
-  return setParams({
-    q: params.q,
-    fields: params.fields,
-    siblings: params.siblings
+  const params = setParams<ApiRandomEntryParams<keyof QueryableFields>>({
+    ...c.req.query()
   });
-}
+
+  delete params.q;
+
+  const entry = await getRandomEntry(params);
+
+  return c.json({
+    data: {
+      $query: params,
+      ...entry.data
+    }
+  });
+});
 
 /**
  * Handle malformed URIs smoothly.
@@ -67,14 +68,23 @@ function formatEntryQuery(q: string): string {
 
 app.get("/entry/:uri", async (c) => {
   const q = c.req.param("uri");
-  const params = setEntryParams({ ...c.req.query(), q });
+  const params = setParams<ApiEntryParams<keyof QueryableFields>>({
+    ...c.req.query(),
+    q
+  });
   const entry = await getEntry({ ...params, q: formatEntryQuery(params.q) });
-  return c.json(entry);
+
+  return c.json({
+    data: {
+      $query: params,
+      ...entry.data
+    }
+  });
 });
 
 // For batch requests.
 app.post("/entry", async (c) => {
-  const params = setEntryParams(await c.req.json());
+  const params = setParams<ApiEntryParams<keyof QueryableFields>>(await c.req.json());
   const queries: string[] = params.q.split(",");
 
   if (queries.length > 1) {
@@ -102,31 +112,25 @@ app.post("/entry", async (c) => {
   });
 });
 
-function setLookupParams(
-  params: Record<string, unknown>
-): ApiLookupParams<keyof QueryableFields> {
-  return setParams({
-    q: params.q,
-    inputMode: params.inputMode,
-    fields: params.fields,
-    morphology: params.morphology,
-    caseSensitive: params.caseSensitive,
-    diacriticSensitive: params.diacriticSensitive,
-    limit: params.limit,
-    skipMorpheus: params.skipMorpheus
-  });
-}
-
 app.get("/lookup/:q", async (c) => {
   const q = c.req.param("q");
-  const params = setLookupParams({ ...c.req.query(), q });
+  const params = setParams<ApiLookupParams<keyof QueryableFields>>({
+    ...c.req.query(),
+    q
+  });
   const entries = await getEntries(params);
-  return c.json(entries);
+
+  return c.json({
+    data: {
+      $query: params,
+      ...entries.data
+    }
+  });
 });
 
 // For batch requests.
 app.post("/lookup", async (c) => {
-  const params = setLookupParams(await c.req.json());
+  const params = setParams<ApiLookupParams<keyof QueryableFields>>(await c.req.json());
   const queries: string[] = params.q.split(",");
 
   if (queries.length > 1) {

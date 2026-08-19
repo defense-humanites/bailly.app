@@ -10,10 +10,12 @@ import type {
 } from "./definitions.ts";
 import { Settings } from "./Settings.ts";
 
-export function setParams(
+export function setParams<
+  T = PartialExcept<ApiParams<keyof QueryableFields>, "q" | "fields">
+>(
   params: Record<string, unknown>
-): ApiParams<keyof QueryableFields> {
-  return {
+): T {
+  const formatted = {
     q: setQueryParam(params.q),
     inputMode: setInputMode(params.inputMode),
     fields: setSelectedFields(params.fields),
@@ -26,6 +28,14 @@ export function setParams(
     siblings: setBooleanParam(params.siblings),
     skipMorpheus: setBooleanParam(params.skipMorpheus)
   };
+
+  Object.keys(formatted).forEach((key) => {
+    if (key in params || key === "q" || key === "fields") {
+      params[key] = formatted[key];
+    }
+  });
+
+  return params as T;
 }
 
 function safeDecodeURIComponent(value: string): string {
