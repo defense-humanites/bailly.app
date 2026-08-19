@@ -161,15 +161,12 @@ export class Morpheus {
     return this.#wrapper;
   }
 
-  #normalizeBetaCode(value?: string): string | undefined {
-    return value?.replace(/^\*/, "");
-  }
-
   #analysisKey(analysis: MorpheusAnalysis): string {
     const m = analysis.morphology;
 
     return JSON.stringify({
-      lemma: this.#normalizeBetaCode(analysis.lemma),
+      // Don't keep the eventual upper case mark `*`.
+      lemma: analysis.lemma?.replace(/^\*/, ""),
       partOfSpeech: m?.partOfSpeech,
       gender: m?.gender?.toSorted(),
       case: m?.case?.toSorted(),
