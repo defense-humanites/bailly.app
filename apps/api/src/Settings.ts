@@ -42,8 +42,8 @@ export class Settings {
 
   // As in `../docker-compose.override.yml`
   readonly hostDbPath = {
-    bindMountedFile: "/host-database/host.db",
-    copyDest: "/app/database/host.db",
+    bindMountedFile: "/host-db/host.db",
+    copyDest: "/runtime-db/host.db"
   };
 
   readonly dbFilePath: string;
