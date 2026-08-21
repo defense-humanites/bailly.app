@@ -19,7 +19,7 @@ const ENV_KEYS = [
   "QUERY_ALLOWED_FIELDS",
   "QUERY_DEFAULT_FIELDS",
   "QUERY_MAX_BATCH_SIZE",
-  "QUERY_MAX_ROWS",
+  "QUERY_MAX_ROWS"
 ] as const;
 
 type EnvKeys = typeof ENV_KEYS[number];
@@ -97,16 +97,15 @@ export class Settings {
 
     this.morpheusLookupMaxDuration = Settings.formatNumber(
       getEnv("MORPHEUS_LOOKUP_MAX_DURATION"),
-      this.isDevEnv ? 1_000_000 : this.morpheusLookupMaxDuration,
+      this.isDevEnv ? 1_000_000 : this.morpheusLookupMaxDuration
     );
 
     this.morpheusPoolSize = (() => {
-      const value: number =
-        Settings.formatNumber(getEnv("MORPHEUS_POOL_SIZE")) ??
-          this.morpheusPoolSize;
+      const value: number = Settings.formatNumber(getEnv("MORPHEUS_POOL_SIZE")) ??
+        this.morpheusPoolSize;
       if (!Number.isInteger(value) || value < 1) {
         throw new Error(
-          `Invalid environment value for 'MORPHEUS_POOL_SIZE': ${value}`,
+          `Invalid environment value for 'MORPHEUS_POOL_SIZE': ${value}`
         );
       }
       return value;
@@ -118,28 +117,28 @@ export class Settings {
 
     this.queryAllowedFields = getEnv("QUERY_ALLOWED_FIELDS")
       ? (Settings.formatFields(
-        getEnv("QUERY_ALLOWED_FIELDS"),
+        getEnv("QUERY_ALLOWED_FIELDS")
       ) as (keyof DatabaseEntry)[])
       : [];
 
     this.queryDefaultFields = getEnv("QUERY_DEFAULT_FIELDS") &&
         this.checkFields(Settings.formatFields(getEnv("QUERY_DEFAULT_FIELDS")))
       ? (Settings.formatFields(
-        getEnv("QUERY_DEFAULT_FIELDS"),
+        getEnv("QUERY_DEFAULT_FIELDS")
       ) as (keyof DatabaseEntry)[])
       : this.queryAllowedFields;
 
     this.queryMaxBatchSize = (() => {
       const value: number = Settings.formatNumber(
         getEnv("QUERY_MAX_BATCH_SIZE"),
-        this.isDevEnv ? Infinity : this.queryMaxBatchSize,
+        this.isDevEnv ? Infinity : this.queryMaxBatchSize
       );
       if (
         Number.isNaN(value) ||
         Number.isFinite(value) && !Number.isInteger(value)
       ) {
         throw new Error(
-          `Invalid environment value for 'QUERY_MAX_BATCH_SIZE': ${value}`,
+          `Invalid environment value for 'QUERY_MAX_BATCH_SIZE': ${value}`
         );
       }
       return value;
@@ -148,14 +147,14 @@ export class Settings {
     this.queryMaxRows = (() => {
       const value: number = Settings.formatNumber(
         getEnv("QUERY_MAX_ROWS"),
-        this.isDevEnv ? Infinity : this.queryMaxRows,
+        this.isDevEnv ? Infinity : this.queryMaxRows
       );
       if (
         Number.isNaN(value) ||
         Number.isFinite(value) && !Number.isInteger(value)
       ) {
         throw new Error(
-          `Invalid environment value for 'QUERY_MAX_ROWS': ${value}`,
+          `Invalid environment value for 'QUERY_MAX_ROWS': ${value}`
         );
       }
       return value;
@@ -167,19 +166,19 @@ export class Settings {
       `* dbFilePath: ${this.dbFilePath}${
         this.isHostDb ? ` -> %c${this.hostDbUnderlyingPath}` : "%c"
       }`,
-      "color:cyan",
+      "color:cyan"
     );
     if (this.isHostDb) {
       console.warn(
         "%c  ⚠️ This is an arbitrarily mounted database from the host file system.",
-        "color:yellow",
+        "color:yellow"
       );
     }
     console.info("* dbVersion:", this.dbVersion);
     console.info("* morpheusBinaryPath:", this.morpheusBinaryPath);
     console.info(
       "* morpheusLookupMaxDuration:",
-      this.morpheusLookupMaxDuration,
+      this.morpheusLookupMaxDuration
     );
     console.info("* morpheusPoolSize:", this.morpheusPoolSize);
     console.info("* morpheusStemlibPath:", this.morpheusStemlibPath);
@@ -205,10 +204,8 @@ export class Settings {
 
   static formatNumber(
     value: string | null | undefined,
-    defaults: number | null = null,
+    defaults: number | null = null
   ): number | null {
-    return (["-1", "", null, undefined].includes(value))
-      ? defaults
-      : Number(value);
+    return (["-1", "", null, undefined].includes(value)) ? defaults : Number(value);
   }
 }
