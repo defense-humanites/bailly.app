@@ -10,8 +10,9 @@ services:
       - HOST_DB=${HOST_DB:-}
     volumes:
       - deno-cache:/deno-dir
-      - ${HOST_DB:-host-db}:/host-database/host.db:ro
-      - host-db-cache:/app/database
+      - ${HOST_DB:-host-db}:/host-db/host.db:ro
+    tmpfs:
+      - /runtime-db
     develop:
       watch:
         - action: sync
@@ -24,4 +25,3 @@ services:
 volumes:
   deno-cache:
   host-db:
-  host-db-cache:
