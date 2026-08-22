@@ -16,10 +16,20 @@ import type {
   QueryableFields
 } from "../definitions.ts";
 import { SpecialChar } from "../enums.ts";
-import { setUniqueEntries } from "../helpers.ts";
 import { Morpheus, type MorpheusResponse } from "../Morpheus.ts";
 import { Settings } from "../Settings.ts";
 import type { MorpheusAnalysis, Morphology } from "../MorpheusParser.ts";
+
+enum LookupMode {
+  exact,
+  startsWith,
+  endsWith
+}
+
+type QueryStringFormat = {
+  searchStr: string;
+  lookupMode: LookupMode;
+};
 
 type MorphologyKey = {
   lemma: string;
@@ -95,7 +105,8 @@ function emptyResponse(): ApiLookupResponse<never> {
   };
 }
 
-function normalizeGreekForLookup(word: string): string {
+// @fixme this would make sense if an option 'permissive: boolean' is added to the API.
+function sanitizeGreek(word: string): string {
   return word
     // @fixme NFC/NFKC normalization breaks matches with the data converter.
     //.normalize("NFD")
@@ -104,30 +115,91 @@ function normalizeGreekForLookup(word: string): string {
     .replace(/[·•]/g, "");
 }
 
+export function setUniqueEntries(
+  inputEntries: PartialExcept<DatabaseEntry, "word">[],
+  params?: {
+    caseSensitive?: boolean;
+  }
+): (
+  & PartialExcept<Entry, "word" | "children">
+  & Optional<
+    DatabaseEntry,
+    "searchableAtonic" | "searchableAtonicCaseInsensitive"
+  >
+)[] {
+  const uniqueEntries: PartialExcept<Entry, "word">[] = [];
+  for (
+    const [word, entries] of Object.entries(
+      Object.groupBy(inputEntries, ({ word }) => word)
+    )
+  ) {
+    if (!entries) continue;
+
+    if (entries.length > 1) {
+      // Create a common entry and place the actual entries as children.
+      const entry:
+        & PartialExcept<Entry<"word">, "word" | "children">
+        & Optional<
+          DatabaseEntry,
+          | "countAll"
+          | "searchable"
+          | "searchableCaseInsensitive"
+          | "searchableAtonic"
+          | "searchableAtonicCaseInsensitive"
+        > = {
+          ...entries[0]
+        };
+
+      // @ts-ignore replace each key by an empty string.
+      Object.keys(entries[0]).forEach((prop) => (entry[prop] = ""));
+
+      entry.word = word;
+      entry.uri = entries[0].uri?.replace(/#\d$/, "");
+      entry.children = entries; // children may be truncated due to `limit` param
+
+      if (params && Object.keys(params).length) {
+        if ("caseSensitive" in params) {
+          if (params.caseSensitive) {
+            entry.searchableAtonic = entries[0].searchableAtonic ?? "";
+          } else {
+            entry.searchableAtonicCaseInsensitive =
+              entries[0].searchableAtonicCaseInsensitive ?? "";
+          }
+        }
+      }
+
+      uniqueEntries.push(entry);
+      continue;
+    }
+
+    uniqueEntries.push(entries[0]);
+  }
+
+  return uniqueEntries;
+}
+
 function formatQueryStr(
   q: string,
-  exactMatchQuery: boolean,
   caseSensitive: boolean,
   diacriticSensitive: boolean
-): string {
-  if (exactMatchQuery) {
-    if (
-      (q.startsWith("^") && q.endsWith("$")) ||
-      (q.startsWith('"') && q.endsWith('"'))
-    ) {
-      // Remove the wrapping characters from the query (`isExactMatchQuery` supra will
-      // determine the comparison operator in the SQL statement below).
-      q = q.slice(1, -1);
-    } else if (q.startsWith(SpecialChar.explicitStart) || q.startsWith('"')) {
-      q = q.slice(1);
-    }
+): QueryStringFormat {
+  q = q.replace(/^"/, SpecialChar.explicitStart);
+  q = q.replace(/"$/, SpecialChar.explicitEnd);
+
+  let mode: LookupMode;
+  if (q.startsWith(SpecialChar.explicitStart) && q.endsWith(SpecialChar.explicitEnd)) {
+    q = q.slice(1, -1);
+    // Wildcards at the beginning/end doesn't make sense if the search is interpreted as exact.
+    q = q.replace(/^[*]+|[*]+$/g, "");
+    mode = LookupMode.exact;
+  } else if (q.startsWith(SpecialChar.explicitStart)) {
+    q = q.slice(1);
+    mode = LookupMode.endsWith;
+  } else if (q.endsWith(SpecialChar.explicitEnd)) {
+    q = q.slice(0, -1);
+    mode = LookupMode.startsWith;
   } else {
-    if (q.endsWith(SpecialChar.explicitEnd)) {
-      if (q.startsWith(SpecialChar.wildcard)) q = q.slice(0, -1);
-      else q = SpecialChar.wildcard + q.slice(0, -1);
-    } else {
-      if (!q.endsWith(SpecialChar.wildcard)) q += SpecialChar.wildcard;
-    }
+    mode = LookupMode.endsWith;
   }
 
   // @fixme this is a Morpheus/Bailly concordance rule. It should be extracted from this.
@@ -150,7 +222,14 @@ function formatQueryStr(
   // `searchable*` database columns don't use it, contrary to the `word` column.
   q = diacriticSensitive ? q.replace(/(?<=ω)-ῶ$/, "") : q.replace(/(?<=ω)-[ῶω]$/, "");
 
-  return normalizeGreekForLookup(q);
+  // @fixme Add this option to the API?
+  const permissive = false;
+  q = permissive ? sanitizeGreek(q) : q;
+
+  return {
+    searchStr: q,
+    lookupMode: mode
+  };
 }
 
 function formatSearchableField(
@@ -169,8 +248,10 @@ async function getMorpheusAnalyses(
 ): Promise<MorpheusResponse<MorpheusAnalysis>> {
   const morpheus = await Morpheus.getMorpheus();
 
-  // Remove the eventual GLOB special chars from the Morpheus search.
-  return await morpheus.lookup(greekStr.replace(/^[*?]|[*?]$/, ""), {
+  // @TODO Add a jokers interpreter in `morpheus.lookup()` to support them.
+  if (/[*?]/.test(greekStr)) return {};
+
+  return await morpheus.lookup(greekStr, {
     caseSensitive,
     diacriticSensitive
   });
@@ -185,24 +266,22 @@ function getMorpheusAnalysesSearchableKeys(
 
     const formatted = formatQueryStr(
       lemma,
-      true, // Morpheus keys are exact match queries.
       true, // Morpheus keys are matched against the `searchable` (case-sensitive) field.
       true // Morpheus keys are matched against the `searchable` (diacritic-sensitive) field.
     );
 
-    return formatted;
+    return formatted.searchStr;
   });
 }
 
 /**
+ * @fixme is this too restrictive? e.g. regarding strings beginning with a dash.
  * A. Empty string.
  * B. One char: only allow greek letters (digamma included).
  * C. (1) Allow a maximum of 50 characters.
- *    (2) Only allow greek letters (digamma included), spaces
- *        and metacharacters `^`, `$`, `?`, `*` and `"`;
- *    (3) Only allow `^` in first position;
- *    (4) Only allow `$` in last position;
- *    (5) Allow a maximum of three identical characters in a row.
+ *    (2) Only allow greek letters (digamma included), spaces, elision marks (formally:
+ *        'right single quotation mark'), tirets and metacharacters (`^`, `$`, `?`, `*` `"`);
+ *    (3) Allow a maximum of three identical characters in a row.
  */
 function validateQueryStr(greekStr: string): boolean {
   // Validate the user input against a non-accented string.
@@ -212,12 +291,16 @@ function validateQueryStr(greekStr: string): boolean {
   if (greekStr.length === 1) return /[^α-ωϝ]/i.test(greekStr) === false;
   return (
     greekStr.length < 50 &&
-    /[^α-ωϝ\s^$?*"]/i.test(greekStr) === false &&
-    /^.+\^/.test(greekStr) === false &&
-    /\$.+$/.test(greekStr) === false &&
+    /[^α-ωϝ\s’\-^$?*"]/i.test(greekStr) === false &&
     /(.)\1{3,}/.test(greekStr) === false
   );
 }
+/*function isPotentialGreekWord(word: string): boolean {
+  return /\p{Script=Greek}/u.test(word) &&
+    !/^[0-9]+$/u.test(word) &&
+    // Avoid the abbreviations, generally linked to the headword.
+    !word.endsWith(".");
+}*/
 
 export async function getEntries<K extends keyof QueryableFields>({
   q,
@@ -234,18 +317,13 @@ export async function getEntries<K extends keyof QueryableFields>({
   const db = await Database.getConnection();
   const settings = Settings.getSettings();
 
-  // A query only targets exact matches if it's wrapped within ^ and $ or quotes.
-  const isExactMatchQuery: boolean = (q.startsWith("^") && q.endsWith("$")) ||
-    (q.startsWith('"') && q.endsWith('"'));
-
   // Convert non-greek inputs to greek.
   if ([KeyType.BETA_CODE, KeyType.TRANSLITERATION].includes(inputMode)) {
     q = toGreek(q, inputMode);
   }
 
-  const searchStr: string = formatQueryStr(
+  const { searchStr, lookupMode }: QueryStringFormat = formatQueryStr(
     q,
-    isExactMatchQuery,
     caseSensitive,
     diacriticSensitive
   );
@@ -286,21 +364,36 @@ export async function getEntries<K extends keyof QueryableFields>({
       ")"
     : "";
 
+  // Perf: prefer using a strict equality comparison if possible.
+  const comparisonOperator = lookupMode === LookupMode.exact && !/[*?]/.test(searchStr)
+    ? "="
+    : "GLOB";
+
   // The `word` field is mandatory in order to retrieve unique entries and build the
   // `children` property.
   const sql = `
     SELECT ${fieldsAsStr},
            ${searchableField}, COUNT(*) OVER () AS countAll
     FROM bailly
-    WHERE ${searchableField} ${
-    isExactMatchQuery ? "=" : "GLOB"
-  } $query ${morpheusSQLStatements}
+    WHERE ${searchableField} ${comparisonOperator} $query ${morpheusSQLStatements}
     ORDER BY orderedID
     LIMIT $limit 
   `;
 
   const params: { [key: string]: any } = {
-    $query: searchStr,
+    $query: (() => {
+      switch (lookupMode) {
+        case LookupMode.exact:
+          return searchStr;
+        case LookupMode.startsWith:
+          // Don't add a wildcard at the beginning if the user wrote already a joker character.
+          return /^[^*?]+/.test(searchStr) ? "*" + searchStr : searchStr;
+        case LookupMode.endsWith:
+        default:
+          // Don't add a wildcard at the end if the user already wrote a joker character.
+          return /[^*?]+$/.test(searchStr) ? searchStr + "*" : searchStr;
+      }
+    })(),
     $limit: (() => {
       if (limit && limit <= settings.queryMaxRows) return limit;
       // @fixme One shouldn't have to think about this special value.
@@ -317,6 +410,7 @@ export async function getEntries<K extends keyof QueryableFields>({
     console.log(`\n${import.meta.url} > getEntries():\n`);
     console.log({
       searchStr: searchStr,
+      lookupMode: lookupMode,
       morpheusAnalysesSearchableKeys: morpheusAnalysesSearchableKeys,
       params: params
     });
@@ -342,11 +436,18 @@ export async function getEntries<K extends keyof QueryableFields>({
         const isExact: boolean = normalizedSearchStr === searchableFieldValue;
 
         const isMorpheus: boolean = (() => {
-          if (!morpheusAnalysesSearchableKeys.length) return false;
-          if (isExactMatchQuery && searchableFieldValue.length !== searchStr.length) {
+          if (
+            morpheusAnalysesSearchableKeys.length && (
+              (lookupMode === LookupMode.exact &&
+                searchableFieldValue.length !== searchStr.length) ||
+              (/^[α-ω-]|[α-ω’-]$/i.test(normalizedSearchStr) === true &&
+                searchableFieldValue.startsWith(normalizedSearchStr) === false)
+            )
+          ) {
             return true;
+          } else {
+            return false;
           }
-          return !searchableFieldValue.startsWith(normalizedSearchStr);
         })();
 
         const removeExtraFields = (
