@@ -3,7 +3,7 @@
   "specifiers": {
     "jsr:@db/sqlite@0.13": "0.13.0",
     "jsr:@denosaurs/plug@1": "1.1.0",
-    "jsr:@hono/hono@^4.13.2": "4.13.2",
+    "jsr:@hono/hono@^4.13.3": "4.13.3",
     "jsr:@std/assert@^1.0.19": "1.0.19",
     "jsr:@std/async@^1.5.0": "1.5.0",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
@@ -20,7 +20,7 @@
     "jsr:@std/path@^1.1.6": "1.1.6",
     "jsr:@std/streams@^1.1.2": "1.1.2",
     "jsr:@std/testing@^1.0.20": "1.0.20",
-    "npm:greek-conversion@~0.14.3": "0.14.3"
+    "npm:greek-conversion@0.14.3": "0.14.3"
   },
   "jsr": {
     "@db/sqlite@0.13.0": {
@@ -39,8 +39,8 @@
         "jsr:@std/path@1"
       ]
     },
-    "@hono/hono@4.13.2": {
-      "integrity": "715d8cc1b6b5d6b9e6a7519059778d775b2d79fffdc026ac0ccdd9971e75809c"
+    "@hono/hono@4.13.3": {
+      "integrity": "2d277e78219ea145202359af5296cfa136eba5e75ffb08fda6fbd54d72032b4f"
     },
     "@std/assert@1.0.19": {
       "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
@@ -108,11 +108,11 @@
   "workspace": {
     "dependencies": [
       "jsr:@db/sqlite@0.13",
-      "jsr:@hono/hono@^4.13.2",
+      "jsr:@hono/hono@^4.13.3",
       "jsr:@std/assert@^1.0.19",
       "jsr:@std/streams@^1.1.2",
       "jsr:@std/testing@^1.0.20",
-      "npm:greek-conversion@~0.14.3"
+      "npm:greek-conversion@0.14.3"
     ]
   }
 }
