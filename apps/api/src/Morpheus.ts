@@ -352,16 +352,30 @@ export class Morpheus {
           const TLG: KeyType = KeyType.TLG_BETA_CODE;
 
           // Decode the previously formatted key.
-          const [lemma, workWord] = lemmaPlusWorkWord.split("@");
+          let [lemma, workWord] = lemmaPlusWorkWord.split("@");
+
+          /* ------------------------------------------------------------------------ */
+          // BEGIN Lemmas canonicalization
+          /* ------------------------------------------------------------------------ */
+          if (lemma === "tis") lemma = "ti\\s";
+
+          // Remove any trailing number (disambiguation order isn't guaranteed to match
+          // those of the Bailly).
+          lemma = lemma.replace(/\d+$/, "");
 
           const isContracted = analyses?.some(
             ({ morphology }) => morphology?.features?.includes("contracted")
           );
 
-          // Remove any trailing number (disambiguation order isn't guaranteed to match
-          // those of the Bailly), then match the Bailly canonical form for contracted verbs.
-          let lemmaAsGreekStr = toGreek(lemma.replace(/\d+$/, ""), TLG);
-          if (isContracted) lemmaAsGreekStr += "-ῶ";
+          // Match the Bailly canonical form for contracted verbs; e.g. '*ω-ῶ'.
+          if (isContracted && lemma.endsWith("w")) lemma = `${lemma}-w=`;
+
+          let lemmaAsGreekStr = toGreek(lemma, TLG, {
+            betaCodeStyle: { skipSanitization: true, useTLGStyle: true }
+          });
+          /* ------------------------------------------------------------------------ */
+          // END Lemmas canonicalization
+          /* ------------------------------------------------------------------------ */
 
           return [
             // Build a key format <lemma|wordWord> that is both readable and flexible.
