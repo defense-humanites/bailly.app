@@ -205,6 +205,7 @@ export class Morpheus {
       .map((rawDataBlock) => new MorpheusParser(rawDataBlock).parse());
   }
 
+  // @FIXME Verify if it's not blocking valid requests.
   #isNeeded(str: string): boolean {
     return (
       this.isAvailable &&
@@ -252,10 +253,19 @@ export class Morpheus {
     greekStr: string,
     options: MorpheusLookupOptions
   ): Promise<MorpheusResponse<MorpheusAnalysis>> {
-    if (!this.#isNeeded(greekStr)) return {};
+    const settings = Settings.getSettings();
+
+    if (!this.#isNeeded(greekStr)) {
+      if (settings.isDevEnv) {
+        console.log(
+          `%cInvalid input '${greekStr}' (will return an empty response).`,
+          "color:orange"
+        );
+      }
+      return {};
+    }
 
     const { caseSensitive = false, diacriticSensitive = false } = options;
-    const settings = Settings.getSettings();
 
     // The expected format is lower case, but the TLG style beta code is upper case.
     const betaCodeStr = toBetaCode(greekStr, KeyType.GREEK, Preset.TLG)
@@ -273,14 +283,14 @@ export class Morpheus {
         : [betaCodeStr])
     ];
 
-    if (settings.isDevEnv) {
+    /*if (settings.isDevEnv) {
       console.info(
         "%c./src/Morpheus.ts > lookup():",
         "font-weight:bold",
         "morpheusInput =",
         morpheusInput
       );
-    }
+    }*/
 
     try {
       const analyses = this.#formatMorpheusRawData(
