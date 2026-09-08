@@ -1,10 +1,7 @@
-import { KeyType } from "greek-conversion";
 import type {
   ApiParams,
-  DatabaseEntry,
-  Entry,
+  GreekConversionFormatKey,
   NonEmptyArray,
-  Optional,
   PartialExcept,
   QueryableFields
 } from "./definitions.ts";
@@ -52,15 +49,15 @@ export function setBooleanParam(param?: unknown): boolean {
   return paramAsStr !== "false" && paramAsStr !== "0";
 }
 
-export function setInputMode(param?: unknown): KeyType {
+export function setInputMode(param?: unknown): GreekConversionFormatKey {
   switch (param) {
     case "betacode":
-      return KeyType.BETA_CODE;
+      return "beta-code";
     case "transliteration":
-      return KeyType.TRANSLITERATION;
+      return "transliteration";
     case "greek":
     default:
-      return KeyType.GREEK;
+      return "greek";
   }
 }
 

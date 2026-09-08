@@ -1,6 +1,5 @@
-import type { KeyType } from "greek-conversion";
-import type { Morphology } from "./MorpheusParser.ts";
-import type { MorpheusResponse } from "./Morpheus.ts";
+import type { Format as GreekConversionFormat } from "@humanities/greek-conversion";
+import type { MorpheusResponse, Morphology } from "./Morpheus.ts";
 
 export type NonEmptyArray<T> = [T, ...T[]];
 
@@ -10,23 +9,11 @@ export type PartialExcept<T, K extends keyof T> =
   & Pick<T, K>
   & Partial<Omit<T, K>>;
 
-export type ApiRawParams = {
-  q?: string | string[];
-  inputMode?: "greek" | "betacode" | "transliteration" | string;
-  fields?: string;
-  morphology?: string;
-  caseSensitive?: string;
-  diacriticSensitive?: string;
-  lengthRange?: string;
-  limit?: string;
-  offset?: string;
-  siblings?: string;
-  skipMorpheus?: string;
-};
+export type GreekConversionFormatKey = keyof typeof GreekConversionFormat;
 
 export type ApiParams<K extends keyof QueryableFields> = {
   q: string;
-  inputMode: KeyType;
+  inputMode: GreekConversionFormatKey;
   fields: NonEmptyArray<keyof Pick<QueryableFields, K>>;
   morphology: boolean;
   caseSensitive: boolean;
