@@ -1,13 +1,14 @@
 services:
   bailly-api:
-    build: .
-    image: bailly-api
-    platform: linux/amd64 # Required for the Morpheus executable
+    build:
+      context: .
+      args:
+        MORPHEUS_DENO_IMAGE: ${MORPHEUS_DENO_IMAGE:-morpheus-deno:latest}
+    image: bailly-api-dev
     ports:
       - "3000:3000"
-    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
       interval: 30s
       timeout: 5s
       retries: 3

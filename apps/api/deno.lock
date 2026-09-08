@@ -3,7 +3,9 @@
   "specifiers": {
     "jsr:@db/sqlite@0.13": "0.13.0",
     "jsr:@denosaurs/plug@1": "1.1.0",
-    "jsr:@hono/hono@^4.13.3": "4.13.3",
+    "jsr:@hono/hono@^4.13.5": "4.13.5",
+    "jsr:@humanities/greek-conversion@1.0.0-beta.3": "1.0.0-beta.3",
+    "jsr:@libmorpheus/deno@0.4": "0.4.0",
     "jsr:@std/assert@^1.0.19": "1.0.19",
     "jsr:@std/async@^1.5.0": "1.5.0",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
@@ -19,8 +21,7 @@
     "jsr:@std/path@^1.1.5": "1.1.6",
     "jsr:@std/path@^1.1.6": "1.1.6",
     "jsr:@std/streams@^1.1.2": "1.1.2",
-    "jsr:@std/testing@^1.0.20": "1.0.20",
-    "npm:greek-conversion@0.14.3": "0.14.3"
+    "jsr:@std/testing@^1.0.20": "1.0.20"
   },
   "jsr": {
     "@db/sqlite@0.13.0": {
@@ -39,8 +40,14 @@
         "jsr:@std/path@1"
       ]
     },
-    "@hono/hono@4.13.3": {
-      "integrity": "2d277e78219ea145202359af5296cfa136eba5e75ffb08fda6fbd54d72032b4f"
+    "@hono/hono@4.13.5": {
+      "integrity": "b5b10f340820d14d69add622452e88722d7e99e05e30cdeafcb90133fc752126"
+    },
+    "@humanities/greek-conversion@1.0.0-beta.3": {
+      "integrity": "f77eeb2a5df718e8ac0adde91578bbbd7ce98f08d637c34d8caee2adfd19a4b0"
+    },
+    "@libmorpheus/deno@0.4.0": {
+      "integrity": "b0f529afe1199c48d3f6dd3467e04bb4e7c246ac82072f109a5b49ee998fd548"
     },
     "@std/assert@1.0.19": {
       "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
@@ -100,19 +107,15 @@
       ]
     }
   },
-  "npm": {
-    "greek-conversion@0.14.3": {
-      "integrity": "sha512-QwyjQk3fpK8C2uWOHhVXENf4GxiBSqjqDo1RfUbgeu8SLNupclobnZmMpTpClg9YRNp8K56FrZnf12NChPMRjQ=="
-    }
-  },
   "workspace": {
     "dependencies": [
       "jsr:@db/sqlite@0.13",
-      "jsr:@hono/hono@^4.13.3",
+      "jsr:@hono/hono@^4.13.5",
+      "jsr:@humanities/greek-conversion@1.0.0-beta.3",
+      "jsr:@libmorpheus/deno@0.4",
       "jsr:@std/assert@^1.0.19",
       "jsr:@std/streams@^1.1.2",
-      "jsr:@std/testing@^1.0.20",
-      "npm:greek-conversion@0.14.3"
+      "jsr:@std/testing@^1.0.20"
     ]
   }
 }

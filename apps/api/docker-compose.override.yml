@@ -6,8 +6,11 @@ services:
     env_file:
       - .env.development
     environment:
-      - DENO_DIR=/deno-dir
-      - HOST_DB=${HOST_DB:-}
+      DENO_DIR: /deno-dir
+      DENO_SQLITE_PATH: /usr/lib/libsqlite3.so.0
+      HOST_DB: ${HOST_DB:-}
+      MORPHEUS_LIBRARY_PATH: /opt/morpheus/lib/libmorpheus.so
+      MORPHEUS_STEMLIB_PATH: /opt/morpheus/share/morpheus/stemlib
     volumes:
       - deno-cache:/deno-dir
       - ${HOST_DB:-host-db}:/host-db/host.db:ro
@@ -22,6 +25,7 @@ services:
           path: ./deno.json
         - action: rebuild
           path: ./deno.lock
+
 volumes:
   deno-cache:
   host-db:

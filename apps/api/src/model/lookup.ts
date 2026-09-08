@@ -1,10 +1,8 @@
 import {
-  KeyType,
-  removeDiacritics,
-  removeGreekVariants,
-  toBetaCode,
-  toGreek
-} from "greek-conversion";
+  convert,
+  foldGreekVariants,
+  removeDiacritics
+} from "@humanities/greek-conversion";
 import { Database } from "../Database.ts";
 import type {
   ApiLookupParams,
@@ -16,9 +14,13 @@ import type {
   QueryableFields
 } from "../definitions.ts";
 import { SpecialChar } from "../enums.ts";
-import { Morpheus, type MorpheusResponse } from "../Morpheus.ts";
+import {
+  Morpheus,
+  type MorpheusAnalysis,
+  type MorpheusResponse,
+  type Morphology
+} from "../Morpheus.ts";
 import { Settings } from "../Settings.ts";
-import type { MorpheusAnalysis, Morphology } from "../MorpheusParser.ts";
 
 enum LookupMode {
   exact,
@@ -35,6 +37,23 @@ type MorphologyKey = {
   lemma: string;
   stem: string;
 };
+
+function buildSql(
+  searchableField: string,
+  comparisonOperator: string,
+  heavyFields: readonly string[]
+): string {
+  const selectedFields = [...LIGHT_FIELDS, ...heavyFields].join(", ");
+  return `
+  SELECT ${selectedFields},
+         ${searchableField}, COUNT(*) OVER () AS countAll
+  FROM bailly
+  WHERE ${searchableField} ${comparisonOperator} $query
+        OR ${searchableField} IN (SELECT value FROM json_each($morpheusValues))
+  ORDER BY orderedID
+  LIMIT $limit
+`;
+}
 
 function parseMorphologyKey(key: string): MorphologyKey | undefined {
   const separatorIndex = key.indexOf("|");
@@ -204,19 +223,14 @@ function formatQueryStr(
 
   // @fixme this is a Morpheus/Bailly concordance rule. It should be extracted from this.
   const preserveAccents: boolean = (() => {
-    const qAsBetaCode = toBetaCode(q, KeyType.GREEK, {
-      betaCodeStyle: {
-        skipSanitization: true,
-        useTLGStyle: true
-      }
-    }).toLowerCase();
+    const qAsBetaCode = convert(q, "greek", "beta-code");
     return ["ti\\s"].includes(qAsBetaCode);
   })();
 
-  q = removeGreekVariants(q.trim(), { preserveAccents });
+  q = foldGreekVariants(q.trim());
 
   q = caseSensitive ? q : q.toLowerCase();
-  if (!diacriticSensitive) q = removeDiacritics(q, KeyType.GREEK);
+  if (!diacriticSensitive) q = removeDiacritics(q, "greek");
 
   // Remove the eventual extended contract verb form (e.g. '-ῶ'), as the
   // `searchable*` database columns don't use it, contrary to the `word` column.
@@ -285,7 +299,7 @@ function getMorpheusAnalysesSearchableKeys(
  */
 function validateQueryStr(greekStr: string): boolean {
   // Validate the user input against a non-accented string.
-  greekStr = removeDiacritics(greekStr, KeyType.GREEK);
+  greekStr = removeDiacritics(greekStr, "greek");
 
   if (!greekStr) return false;
   if (greekStr.length === 1) return /[^α-ωϝ]/i.test(greekStr) === false;
@@ -318,8 +332,8 @@ export async function getEntries<K extends keyof QueryableFields>({
   const settings = Settings.getSettings();
 
   // Convert non-greek inputs to greek.
-  if ([KeyType.BETA_CODE, KeyType.TRANSLITERATION].includes(inputMode)) {
-    q = toGreek(q, inputMode);
+  if (["beta-code", "transliteration"].includes(inputMode)) {
+    q = convert(q, inputMode, "greek");
   }
 
   const { searchStr, lookupMode }: QueryStringFormat = formatQueryStr(
@@ -332,7 +346,7 @@ export async function getEntries<K extends keyof QueryableFields>({
     if (settings.isDevEnv) {
       console.log(
         `%cInvalid input '${
-          removeDiacritics(searchStr, KeyType.GREEK)
+          removeDiacritics(searchStr, "greek")
         }' (will return an empty response).`,
         "color:orange"
       );
@@ -353,29 +367,22 @@ export async function getEntries<K extends keyof QueryableFields>({
     ? await getMorpheusAnalyses(searchStr, caseSensitive, diacriticSensitive)
     : {};
 
-  const morpheusAnalysesSearchableKeys = getMorpheusAnalysesSearchableKeys(
+  const morpheusSearchableKeys = getMorpheusAnalysesSearchableKeys(
     morpheusAnalyses
   );
-
-  const morpheusSQLStatements: string = morpheusAnalysesSearchableKeys.length
-    ? "OR searchable IN (" + morpheusAnalysesSearchableKeys
-      .map((_, i) => `$lemma${(i += 1)}`)
-      .join(", ") +
-      ")"
-    : "";
 
   // Perf: prefer using a strict equality comparison if possible.
   const comparisonOperator = lookupMode === LookupMode.exact && !/[*?]/.test(searchStr)
     ? "="
     : "GLOB";
 
-  // The `word` field is mandatory in order to retrieve unique entries and build the
-  // `children` property.
+  // The `word` field is mandatory to retrieve unique entries and build the `children` property.
   const sql = `
     SELECT ${fieldsAsStr},
            ${searchableField}, COUNT(*) OVER () AS countAll
     FROM bailly
-    WHERE ${searchableField} ${comparisonOperator} $query ${morpheusSQLStatements}
+    WHERE ${searchableField} ${comparisonOperator} $query
+          OR searchable IN (SELECT value FROM json_each($morpheusSearchableKeys))
     ORDER BY orderedID
     LIMIT $limit 
   `;
@@ -386,14 +393,15 @@ export async function getEntries<K extends keyof QueryableFields>({
         case LookupMode.exact:
           return searchStr;
         case LookupMode.startsWith:
-          // Don't add a wildcard at the beginning if the user wrote already a joker character.
+          // Don't add a wildcard at the beginning if the user already wrote a joker.
           return /^[^*?]+/.test(searchStr) ? "*" + searchStr : searchStr;
         case LookupMode.endsWith:
         default:
-          // Don't add a wildcard at the end if the user already wrote a joker character.
+          // Don't add a wildcard at the end if the user already wrote a joker.
           return /[^*?]+$/.test(searchStr) ? searchStr + "*" : searchStr;
       }
     })(),
+    $morpheusSearchableKeys: JSON.stringify(morpheusSearchableKeys),
     $limit: (() => {
       if (limit && limit <= settings.queryMaxRows) return limit;
       // @fixme One shouldn't have to think about this special value.
@@ -401,17 +409,12 @@ export async function getEntries<K extends keyof QueryableFields>({
     })()
   };
 
-  morpheusAnalysesSearchableKeys.forEach((lemma, i) => {
-    const propName: string = `$lemma${(i += 1)}`;
-    params[propName] = lemma;
-  });
-
   /*if (settings.isDevEnv) {
     console.log(`\n${import.meta.url} > getEntries():\n`);
     console.log({
       searchStr: searchStr,
       lookupMode: lookupMode,
-      morpheusAnalysesSearchableKeys: morpheusAnalysesSearchableKeys,
+      morpheusSearchableKeys: morpheusSearchableKeys,
       params: params
     });
     console.log(sql);
@@ -437,7 +440,7 @@ export async function getEntries<K extends keyof QueryableFields>({
 
         const isMorpheus: boolean = (() => {
           if (
-            morpheusAnalysesSearchableKeys.length && (
+            morpheusSearchableKeys.length && (
               (lookupMode === LookupMode.exact &&
                 searchableFieldValue.length !== searchStr.length) ||
               (/^[α-ω-]|[α-ω’-]$/i.test(normalizedSearchStr) === true &&

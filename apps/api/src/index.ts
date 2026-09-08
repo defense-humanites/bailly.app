@@ -1,4 +1,4 @@
-import { AdditionalChar, KeyType, toTransliteration } from "greek-conversion";
+import { reencode } from "@humanities/greek-conversion";
 import { Hono } from "@hono/hono";
 import { cors } from "@hono/hono/cors";
 import { HTTPException } from "@hono/hono/http-exception";
@@ -55,13 +55,10 @@ app.get("/entry/random", async (c) => {
  * @param q A query string.
  */
 function formatEntryQuery(q: string): string {
-  // @fixme: `removeDiacritics` removes dashes and prevents access to contract verbs, etc.
-  return toTransliteration(q, KeyType.TRANSLITERATION, {
-    additionalChars: AdditionalChar.DIGAMMA,
-    //removeDiacritics: true,
-    transliterationStyle: {
-      gammaNasal_n: true,
-      useCxOverMacron: true
+  return reencode(q, "transliteration", {
+    removeDiacritics: true,
+    orthography: {
+      longVowels: "circumflex"
     }
   });
 }
