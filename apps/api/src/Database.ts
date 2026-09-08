@@ -75,7 +75,9 @@ export class Database {
         `file:${settings.dbFilePath}?immutable=1`,
         {
           // @db/sqlite doesn't have a built-in `immutable: true|false` option.
-          flags: SQLITE_OPEN_READONLY | SQLITE_OPEN_URI
+          flags: SQLITE_OPEN_READONLY | SQLITE_OPEN_URI,
+          // This performance option is desirable as long as we use only one client.
+          unsafeConcurrency: true
         }
       );
 
