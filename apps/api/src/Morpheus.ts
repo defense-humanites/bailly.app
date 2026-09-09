@@ -1,69 +1,23 @@
 import {
-  type MorpheusAnalysis as LibMorpheusAnalysis,
   type MorpheusContext,
   MorpheusLanguage,
   MorpheusLibrary,
   MorpheusOption
 } from "@libmorpheus/deno";
-
 import { convert } from "@humanities/greek-conversion";
 import type { ApiLookupParams } from "./definitions.ts";
 import { SpecialChar } from "./enums.ts";
+import { graveToAcute } from "./helpers.ts";
 import { Settings } from "./Settings.ts";
 
-export interface Morphology {
-  partOfSpeech?:
-    | "verb"
-    | "participle"
-    | "adverb"
-    | "adjective"
-    | "nominal";
-  gender?: ("masculine" | "feminine" | "neuter")[];
-  case?: ("nominative" | "genitive" | "dative" | "accusative" | "vocative")[];
-  number?: "singular" | "dual" | "plural";
-  tense?:
-    | "present"
-    | "imperfect"
-    | "future"
-    | "aorist"
-    | "perfect"
-    | "pluperfect"
-    | "future perfect";
-  mood?:
-    | "indicative"
-    | "subjunctive"
-    | "optative"
-    | "imperative"
-    | "infinitive"
-    | "participle";
-  voice?: "active" | "middle" | "passive" | "middle-passive";
-  person?: "first" | "second" | "third";
-  degree?: "comparative" | "superlative";
-  dialects?: ("attic" | "ionic" | "doric" | "aeolic" | "epic")[];
-  features?: string[];
-}
-
-export interface MorpheusAnalysis {
-  raw?: string;
-  workWord?: string;
-  lemma?: string;
-  prefix?: string;
-  augment?: string;
-  stem?: string;
-  suffix?: string;
-  ending?: { value: string };
-  morphology?: Morphology;
-}
+export type { MorpheusAnalysis } from "@libmorpheus/deno";
 
 type MorpheusLookupOptions = Pick<
   ApiLookupParams<never>,
   "caseSensitive" | "diacriticSensitive"
 >;
 
-export type MorpheusResponse<K extends MorpheusAnalysis | Morphology> = Record<
-  string,
-  K[]
->;
+export type MorpheusResponse = Record<string, MorpheusAnalysis[]>;
 
 export class Morpheus {
   static #wrapper: Morpheus;
@@ -96,14 +50,19 @@ export class Morpheus {
 
     let library: MorpheusLibrary | undefined;
     const contexts: MorpheusContext[] = [];
+
     try {
       library = new MorpheusLibrary(settings.morpheusLibraryPath);
+
       for (let index = 0; index < settings.morpheusPoolSize; index++) {
-        contexts.push(library.createContext(
-          settings.morpheusStemlibPath,
-          MorpheusLanguage.Greek
-        ));
+        contexts.push(
+          library.createContext(
+            settings.morpheusStemlibPath,
+            MorpheusLanguage.Greek
+          )
+        );
       }
+
       return new Morpheus(library, contexts);
     } catch (error) {
       try {
@@ -112,6 +71,7 @@ export class Morpheus {
       } catch {
         // Keep initialization failure non-fatal for the API.
       }
+
       console.error(`Failed to initialize libmorpheus: ${error}`);
       return new Morpheus();
     }
@@ -145,105 +105,96 @@ export class Morpheus {
   async lookup(
     greekStr: string,
     options: MorpheusLookupOptions
-  ): Promise<MorpheusResponse<MorpheusAnalysis>> {
+  ): Promise<MorpheusResponse> {
     const settings = Settings.getSettings();
+
     if (!this.#isNeeded(greekStr)) {
       if (settings.isDevEnv) {
-        console.log("greekStr:", greekStr);
         console.log(`Invalid Morpheus input '${greekStr}'.`);
       }
       return {};
     }
 
-    const { caseSensitive = false, diacriticSensitive = false } = options;
-    const betaCode = convert(greekStr, "greek", "beta-code", { preset: "perseus" });
+    const {
+      caseSensitive = false,
+      diacriticSensitive = false
+    } = options;
+
+    console.log(
+      "caseSensitive",
+      caseSensitive,
+      ", diacriticSensitive",
+      diacriticSensitive
+    );
+
     let morpheusOptions = 0n;
     if (caseSensitive) morpheusOptions |= MorpheusOption.StrictCase;
     if (!diacriticSensitive) morpheusOptions |= MorpheusOption.IgnoreAccents;
 
+    // Morpheus does not recognize contextual grave accents. They are always
+    // converted to their lexical acute equivalent for analysis; the original
+    // Greek surface form is preserved in the public morphology key.
+    const betaCode = convert(
+      graveToAcute(greekStr),
+      "greek",
+      "beta-code",
+      { preset: "perseus" }
+    );
+
+    console.log(greekStr, betaCode);
+
     try {
       const analyses = await this.#context().analyze(betaCode, morpheusOptions);
-      return this.#formatMorpheusResponse(
-        analyses.map((analysis) => this.#adaptAnalysis(analysis))
-      );
+      console.log(analyses.map((analysis) => analysis.lemma));
+      return this.#formatMorpheusResponse(analyses, greekStr);
     } catch (error) {
       console.error("libmorpheus call failed:", error);
       return {};
     }
   }
 
-  #adaptAnalysis(analysis: LibMorpheusAnalysis): MorpheusAnalysis {
-    const morphology: Morphology = {
-      partOfSpeech: analysis.mood ?? undefined,
-      gender: analysis.genders ?? [],
-      case: analysis.grammaticalCases ?? [],
-      number: analysis.grammaticalNumber ?? undefined,
-      tense: analysis.tense ?? undefined,
-      mood: analysis.mood ?? undefined,
-      voice: analysis.voices,
-      person: analysis.person ?? undefined,
-      degree: analysis.degree ?? undefined,
-      dialects: analysis.dialects ?? [],
-      features: [...analysis.morphFlags] ?? []
-    };
-
-    return {
-      raw: analysis.raw || undefined,
-      workWord: analysis.workword || undefined,
-      lemma: analysis.lemma || undefined,
-      prefix: analysis.preverb || undefined,
-      augment: analysis.augment || undefined,
-      stem: analysis.stem || undefined,
-      suffix: analysis.suffix || undefined,
-      ending: analysis.ending ? { value: analysis.ending } : undefined,
-      morphology
-    };
-  }
-
   #analysisKey(analysis: MorpheusAnalysis): string {
-    const m = analysis.morphology;
     return JSON.stringify({
-      lemma: analysis.lemma?.replace(/^\*/, ""),
-      partOfSpeech: m?.partOfSpeech,
-      gender: m?.gender?.toSorted(),
-      case: m?.case?.toSorted(),
-      number: m?.number,
-      tense: m?.tense,
-      mood: m?.mood,
-      voice: m?.voice,
-      person: m?.person,
-      degree: m?.degree,
-      dialects: m?.dialects?.toSorted(),
-      features: m?.features?.toSorted()
+      lemma: analysis.lemma.replace(/^\*/, ""),
+      partOfSpeech: analysis.partOfSpeech,
+      genders: analysis.genders.toSorted(),
+      grammaticalCases: analysis.grammaticalCases.toSorted(),
+      grammaticalNumber: analysis.grammaticalNumber,
+      tense: analysis.tense,
+      mood: analysis.mood,
+      voices: analysis.voices.toSorted(),
+      person: analysis.person,
+      degree: analysis.degree,
+      dialects: analysis.dialects.toSorted(),
+      geographicRegions: analysis.geographicRegions.toSorted(),
+      morphFlags: analysis.morphFlags.toSorted()
     });
   }
 
   #formatMorpheusResponse(
-    analyses: MorpheusAnalysis[]
-  ): MorpheusResponse<MorpheusAnalysis> {
+    analyses: readonly MorpheusAnalysis[],
+    surfaceForm: string
+  ): MorpheusResponse {
     const unique = new Map<string, MorpheusAnalysis>();
-    for (const analysis of analyses) unique.set(this.#analysisKey(analysis), analysis);
+
+    for (const analysis of analyses) {
+      unique.set(this.#analysisKey(analysis), analysis);
+    }
 
     const grouped = Object.groupBy(
-      [...unique.values()].filter(({ lemma, workWord }) => lemma && workWord),
-      ({ lemma, workWord }) => `${lemma}@${workWord}`
+      [...unique.values()].filter((analysis) => analysis.lemma),
+      (analysis) => analysis.lemma
     );
 
     return Object.fromEntries(
-      Object.entries(grouped).map(([key, values]) => {
-        let [lemma, workWord] = key.split("@");
-        if (lemma === "tis") lemma = "ti\\s";
-        lemma = lemma.replace(/\d+$/, "");
-        if (
-          values?.some(({ morphology }) =>
-            morphology?.features?.includes("contracted")
-          ) && lemma.endsWith("w")
-        ) lemma = `${lemma}-w=`;
+      Object.entries(grouped).map(([lemma, values]) => {
+        const greekLemma = convert(
+          lemma.replace(/\d+$/, ""),
+          "beta-code",
+          "greek"
+        );
 
-        const greekLemma = convert(lemma, "beta-code", "greek");
-        const greekWorkWord = convert(workWord, "beta-code", "greek");
-
-        return [[greekLemma, greekWorkWord].join("|"), values ?? []];
+        return [`${greekLemma}|${surfaceForm}`, values ?? []];
       })
     );
   }

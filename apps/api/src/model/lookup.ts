@@ -14,12 +14,8 @@ import type {
   QueryableFields
 } from "../definitions.ts";
 import { SpecialChar } from "../enums.ts";
-import {
-  Morpheus,
-  type MorpheusAnalysis,
-  type MorpheusResponse,
-  type Morphology
-} from "../Morpheus.ts";
+import { graveToAcute } from "../helpers.ts";
+import { Morpheus, type MorpheusAnalysis, type MorpheusResponse } from "../Morpheus.ts";
 import { Settings } from "../Settings.ts";
 
 enum LookupMode {
@@ -30,6 +26,7 @@ enum LookupMode {
 
 type QueryStringFormat = {
   searchStr: string;
+  surfaceForm: string;
   lookupMode: LookupMode;
 };
 
@@ -38,22 +35,60 @@ type MorphologyKey = {
   stem: string;
 };
 
-function buildSql(
-  searchableField: string,
-  comparisonOperator: string,
-  heavyFields: readonly string[]
-): string {
-  const selectedFields = [...LIGHT_FIELDS, ...heavyFields].join(", ");
-  return `
-  SELECT ${selectedFields},
-         ${searchableField}, COUNT(*) OVER () AS countAll
-  FROM bailly
-  WHERE ${searchableField} ${comparisonOperator} $query
-        OR ${searchableField} IN (SELECT value FROM json_each($morpheusValues))
-  ORDER BY orderedID
-  LIMIT $limit
-`;
+type Morphology = Pick<
+  MorpheusResponse,
+  | "partOfSpeech"
+  | "dialects"
+  | "geographicRegions"
+  | "person"
+  | "grammaticalNumber"
+  | "genders"
+  | "grammaticalCases"
+  | "tense"
+  | "mood"
+  | "voices"
+  | "degree"
+  | "preverb"
+  | "augment"
+  | "morphFlags"
+>;
+
+function getMorphology({
+  partOfSpeech,
+  dialects,
+  geographicRegions,
+  person,
+  grammaticalNumber,
+  genders,
+  grammaticalCases,
+  tense,
+  mood,
+  voices,
+  degree,
+  preverb,
+  augment,
+  morphFlags
+}: MorpheusAnalysis): Morphology {
+  return {
+    partOfSpeech,
+    dialects,
+    geographicRegions,
+    person,
+    grammaticalNumber,
+    genders,
+    grammaticalCases,
+    tense,
+    mood,
+    voices,
+    degree,
+    preverb,
+    augment,
+    morphFlags
+  };
 }
+
+const TIS_GRAVE = "τὶς";
+const TIS_GRAVE_NFD = TIS_GRAVE.normalize("NFD");
 
 function parseMorphologyKey(key: string): MorphologyKey | undefined {
   const separatorIndex = key.indexOf("|");
@@ -65,44 +100,209 @@ function parseMorphologyKey(key: string): MorphologyKey | undefined {
   };
 }
 
+function normalizeBaillyGraves(value: string): string {
+  return value.normalize("NFD").toLowerCase() === TIS_GRAVE_NFD
+    ? value.normalize("NFC")
+    : graveToAcute(value);
+}
+
+// @fixme this would make sense if an option 'permissive: boolean' is added to the API.
+function sanitizeGreek(word: string): string {
+  return word
+    // @fixme NFC/NFKC normalization breaks matches with the data converter.
+    //.normalize("NFD")
+    //.replace(/[\u0304\u0306]/g, "") // macron, breve
+    //.normalize("NFC")
+    .replace(/[·•]/g, "");
+}
+
+function formatSearchableValue(
+  value: string,
+  caseSensitive: boolean,
+  diacriticSensitive: boolean
+): string {
+  let formatted = value.trim();
+
+  if (diacriticSensitive) {
+    formatted = normalizeBaillyGraves(formatted);
+  }
+
+  formatted = foldGreekVariants(formatted);
+
+  if (!caseSensitive) {
+    formatted = formatted.toLowerCase();
+  }
+
+  if (!diacriticSensitive) {
+    formatted = removeDiacritics(formatted, "greek");
+  }
+
+  // The searchable* columns don't contain Bailly's extended contract-verb
+  // suffix "-ῶ", contrary to the `word` column.
+  formatted = diacriticSensitive
+    ? formatted.replace(/(?<=ω)-ῶ$/, "")
+    : formatted.replace(/(?<=ω)-[ῶω]$/, "");
+
+  // @fixme Add this option to the API?
+  const permissive = false;
+  return permissive ? sanitizeGreek(formatted) : formatted;
+}
+
+function formatQueryStr(
+  q: string,
+  caseSensitive: boolean,
+  diacriticSensitive: boolean
+): QueryStringFormat {
+  q = q.replace(/^"/, SpecialChar.explicitStart);
+  q = q.replace(/"$/, SpecialChar.explicitEnd);
+
+  let lookupMode: LookupMode;
+
+  if (
+    q.startsWith(SpecialChar.explicitStart) &&
+    q.endsWith(SpecialChar.explicitEnd)
+  ) {
+    q = q.slice(1, -1).replace(/^[*]+|[*]+$/g, "");
+    lookupMode = LookupMode.exact;
+  } else if (q.startsWith(SpecialChar.explicitStart)) {
+    q = q.slice(1);
+    lookupMode = LookupMode.endsWith;
+  } else if (q.endsWith(SpecialChar.explicitEnd)) {
+    q = q.slice(0, -1);
+    lookupMode = LookupMode.startsWith;
+  } else {
+    lookupMode = LookupMode.endsWith;
+  }
+
+  const surfaceForm = q.trim();
+
+  return {
+    searchStr: formatSearchableValue(
+      surfaceForm,
+      caseSensitive,
+      diacriticSensitive
+    ),
+    surfaceForm,
+    lookupMode
+  };
+}
+
+function formatSearchableField(
+  caseSensitive: boolean,
+  diacriticSensitive: boolean
+): string {
+  return `searchable${diacriticSensitive ? "" : "Atonic"}${
+    caseSensitive ? "" : "CaseInsensitive"
+  }`;
+}
+
+function formatMorpheusLemmaForSearch(lemma: string): string {
+  return formatSearchableValue(lemma, true, true);
+}
+
+const TIS_SEARCHABLE = {
+  grave: formatMorpheusLemmaForSearch("τὶς"),
+  acute: formatMorpheusLemmaForSearch("τίς"),
+  unaccented: formatMorpheusLemmaForSearch("τις")
+} as const;
+
+function getMorpheusLemmaSearchKey({ lemma, stem }: MorphologyKey): string {
+  const lemmaKey = formatMorpheusLemmaForSearch(lemma);
+  const stemKey = formatMorpheusLemmaForSearch(stem);
+
+  // τὶς is Bailly's only lexical grave exception. The explicit surface form
+  // wins over Morpheus' grave→acute normalization.
+  if (stemKey === TIS_SEARCHABLE.grave) return TIS_SEARCHABLE.grave;
+  if (stemKey === TIS_SEARCHABLE.acute) return TIS_SEARCHABLE.acute;
+
+  // Morpheus uses an unaccented lemma for the indefinite pronoun in forms
+  // such as τι, τινος and τινι; Bailly records that lemma under τὶς.
+  if (lemmaKey === TIS_SEARCHABLE.unaccented) return TIS_SEARCHABLE.grave;
+
+  return lemmaKey;
+}
+
+function getMorpheusAnalysesSearchableKeys(
+  analyses: MorpheusResponse
+): string[] {
+  return [
+    ...new Set(
+      Object.keys(analyses)
+        .map(parseMorphologyKey)
+        .filter((key): key is MorphologyKey => key !== undefined)
+        .map(getMorpheusLemmaSearchKey)
+    )
+  ];
+}
+
+async function getMorpheusAnalyses(
+  greekStr: string,
+  caseSensitive: boolean,
+  diacriticSensitive: boolean
+): Promise<MorpheusResponse> {
+  const morpheus = await Morpheus.getMorpheus();
+
+  // @TODO Add a jokers interpreter in `morpheus.lookup()` to support them.
+  if (/[*?]/.test(greekStr)) return {};
+
+  return await morpheus.lookup(greekStr, {
+    caseSensitive,
+    diacriticSensitive
+  });
+}
+
 function attachMorphology<K extends keyof QueryableFields>(
   partialResponse: ApiLookupResponse<K>,
-  orphanMorphology: MorpheusResponse<Morphology>
+  morpheusMorphology: MorphologyResponse
 ): ApiLookupResponse<K> {
-  const entryWords = new Set(partialResponse.data.entries.map(({ word }) => word));
+  const entrySearchables = new Set(
+    partialResponse.data.entries
+      .map((entry) => (entry as Partial<DatabaseEntry>).searchable)
+      .filter((value): value is string => Boolean(value))
+  );
 
-  const { byLemma, orphans } = Object.entries(orphanMorphology)
-    .reduce(
-      (acc, [compoundKey, analyses]) => {
-        const parsed = parseMorphologyKey(compoundKey);
+  const bySearchable: Record<string, Record<string, Morphology[]>> = {};
+  const orphans: Record<string, Morphology[]> = {};
 
-        if (!parsed || !entryWords.has(parsed.lemma)) {
-          acc.orphans[compoundKey] = analyses;
-          return acc;
-        }
+  for (
+    const [compoundKey, analyses] of Object.entries(morpheusMorphology) as [
+      string,
+      Morphology[]
+    ][]
+  ) {
+    const parsed = parseMorphologyKey(compoundKey);
 
-        acc.byLemma[parsed.lemma] = {
-          ...acc.byLemma[parsed.lemma],
-          [parsed.stem]: analyses
-        };
+    if (!parsed) {
+      orphans[compoundKey] = analyses;
+      continue;
+    }
 
-        return acc;
-      },
-      {
-        byLemma: {} as Record<string, Record<string, Morphology[]>>,
-        orphans: {} as Record<string, Morphology[]>
-      }
-    );
+    const searchable = getMorpheusLemmaSearchKey(parsed);
 
-  let response = {
+    if (!entrySearchables.has(searchable)) {
+      orphans[compoundKey] = analyses;
+      continue;
+    }
+
+    bySearchable[searchable] = {
+      ...bySearchable[searchable],
+      [parsed.stem]: analyses
+    };
+  }
+
+  const response = {
     data: {
       ...partialResponse.data,
-      entries: partialResponse.data.entries.map((entry) => ({
-        ...entry,
-        ...(byLemma[entry.word] && {
-          morphology: byLemma[entry.word]
-        })
-      }))
+      entries: partialResponse.data.entries.map((entry) => {
+        const searchable = (entry as Partial<DatabaseEntry>).searchable;
+
+        return {
+          ...entry,
+          ...(searchable && bySearchable[searchable] && {
+            morphology: bySearchable[searchable]
+          })
+        };
+      })
     }
   };
 
@@ -124,29 +324,21 @@ function emptyResponse(): ApiLookupResponse<never> {
   };
 }
 
-// @fixme this would make sense if an option 'permissive: boolean' is added to the API.
-function sanitizeGreek(word: string): string {
-  return word
-    // @fixme NFC/NFKC normalization breaks matches with the data converter.
-    //.normalize("NFD")
-    //.replace(/[\u0304\u0306]/g, "") // macron, breve
-    //.normalize("NFC")
-    .replace(/[·•]/g, "");
-}
-
 export function setUniqueEntries(
   inputEntries: PartialExcept<DatabaseEntry, "word">[],
-  params?: {
-    caseSensitive?: boolean;
-  }
+  _params?: { caseSensitive?: boolean }
 ): (
   & PartialExcept<Entry, "word" | "children">
   & Optional<
     DatabaseEntry,
-    "searchableAtonic" | "searchableAtonicCaseInsensitive"
+    | "searchable"
+    | "searchableCaseInsensitive"
+    | "searchableAtonic"
+    | "searchableAtonicCaseInsensitive"
   >
 )[] {
   const uniqueEntries: PartialExcept<Entry, "word">[] = [];
+
   for (
     const [word, entries] of Object.entries(
       Object.groupBy(inputEntries, ({ word }) => word)
@@ -155,7 +347,6 @@ export function setUniqueEntries(
     if (!entries) continue;
 
     if (entries.length > 1) {
-      // Create a common entry and place the actual entries as children.
       const entry:
         & PartialExcept<Entry<"word">, "word" | "children">
         & Optional<
@@ -176,16 +367,12 @@ export function setUniqueEntries(
       entry.uri = entries[0].uri?.replace(/#\d$/, "");
       entry.children = entries; // children may be truncated due to `limit` param
 
-      if (params && Object.keys(params).length) {
-        if ("caseSensitive" in params) {
-          if (params.caseSensitive) {
-            entry.searchableAtonic = entries[0].searchableAtonic ?? "";
-          } else {
-            entry.searchableAtonicCaseInsensitive =
-              entries[0].searchableAtonicCaseInsensitive ?? "";
-          }
-        }
-      }
+      // Keep internal lookup fields until morphology and exactness have been resolved.
+      entry.searchable = entries[0].searchable ?? "";
+      entry.searchableCaseInsensitive = entries[0].searchableCaseInsensitive ?? "";
+      entry.searchableAtonic = entries[0].searchableAtonic ?? "";
+      entry.searchableAtonicCaseInsensitive =
+        entries[0].searchableAtonicCaseInsensitive ?? "";
 
       uniqueEntries.push(entry);
       continue;
@@ -195,97 +382,6 @@ export function setUniqueEntries(
   }
 
   return uniqueEntries;
-}
-
-function formatQueryStr(
-  q: string,
-  caseSensitive: boolean,
-  diacriticSensitive: boolean
-): QueryStringFormat {
-  q = q.replace(/^"/, SpecialChar.explicitStart);
-  q = q.replace(/"$/, SpecialChar.explicitEnd);
-
-  let mode: LookupMode;
-  if (q.startsWith(SpecialChar.explicitStart) && q.endsWith(SpecialChar.explicitEnd)) {
-    q = q.slice(1, -1);
-    // Wildcards at the beginning/end doesn't make sense if the search is interpreted as exact.
-    q = q.replace(/^[*]+|[*]+$/g, "");
-    mode = LookupMode.exact;
-  } else if (q.startsWith(SpecialChar.explicitStart)) {
-    q = q.slice(1);
-    mode = LookupMode.endsWith;
-  } else if (q.endsWith(SpecialChar.explicitEnd)) {
-    q = q.slice(0, -1);
-    mode = LookupMode.startsWith;
-  } else {
-    mode = LookupMode.endsWith;
-  }
-
-  // @fixme this is a Morpheus/Bailly concordance rule. It should be extracted from this.
-  const preserveAccents: boolean = (() => {
-    const qAsBetaCode = convert(q, "greek", "beta-code");
-    return ["ti\\s"].includes(qAsBetaCode);
-  })();
-
-  q = foldGreekVariants(q.trim());
-
-  q = caseSensitive ? q : q.toLowerCase();
-  if (!diacriticSensitive) q = removeDiacritics(q, "greek");
-
-  // Remove the eventual extended contract verb form (e.g. '-ῶ'), as the
-  // `searchable*` database columns don't use it, contrary to the `word` column.
-  q = diacriticSensitive ? q.replace(/(?<=ω)-ῶ$/, "") : q.replace(/(?<=ω)-[ῶω]$/, "");
-
-  // @fixme Add this option to the API?
-  const permissive = false;
-  q = permissive ? sanitizeGreek(q) : q;
-
-  return {
-    searchStr: q,
-    lookupMode: mode
-  };
-}
-
-function formatSearchableField(
-  caseSensitive: boolean,
-  diacriticSensitive: boolean
-): string {
-  return `searchable${diacriticSensitive ? "" : "Atonic"}${
-    caseSensitive ? "" : "CaseInsensitive"
-  }`;
-}
-
-async function getMorpheusAnalyses(
-  greekStr: string,
-  caseSensitive: boolean,
-  diacriticSensitive: boolean
-): Promise<MorpheusResponse<MorpheusAnalysis>> {
-  const morpheus = await Morpheus.getMorpheus();
-
-  // @TODO Add a jokers interpreter in `morpheus.lookup()` to support them.
-  if (/[*?]/.test(greekStr)) return {};
-
-  return await morpheus.lookup(greekStr, {
-    caseSensitive,
-    diacriticSensitive
-  });
-}
-
-function getMorpheusAnalysesSearchableKeys(
-  analyses: MorpheusResponse<MorpheusAnalysis>
-): string[] {
-  // We want the lemma to compare it against one of the database `searchable*` column later.
-  return Object.keys(analyses).map((key) => {
-    const lemma = parseMorphologyKey(key).lemma;
-
-    const formatted = formatQueryStr(
-      lemma,
-      true, // Morpheus keys are matched against the `searchable` (case-sensitive) field.
-      true // Morpheus keys are matched against the `searchable` (diacritic-sensitive) field.
-    );
-
-    return formatted.searchStr;
-  });
 }
 
 /**
@@ -298,23 +394,17 @@ function getMorpheusAnalysesSearchableKeys(
  *    (3) Allow a maximum of three identical characters in a row.
  */
 function validateQueryStr(greekStr: string): boolean {
-  // Validate the user input against a non-accented string.
   greekStr = removeDiacritics(greekStr, "greek");
 
   if (!greekStr) return false;
   if (greekStr.length === 1) return /[^α-ωϝ]/i.test(greekStr) === false;
+
   return (
     greekStr.length < 50 &&
     /[^α-ωϝ\s’\-^$?*"]/i.test(greekStr) === false &&
     /(.)\1{3,}/.test(greekStr) === false
   );
 }
-/*function isPotentialGreekWord(word: string): boolean {
-  return /\p{Script=Greek}/u.test(word) &&
-    !/^[0-9]+$/u.test(word) &&
-    // Avoid the abbreviations, generally linked to the headword.
-    !word.endsWith(".");
-}*/
 
 export async function getEntries<K extends keyof QueryableFields>({
   q,
@@ -331,60 +421,65 @@ export async function getEntries<K extends keyof QueryableFields>({
   const db = await Database.getConnection();
   const settings = Settings.getSettings();
 
-  // Convert non-greek inputs to greek.
   if (["beta-code", "transliteration"].includes(inputMode)) {
     q = convert(q, inputMode, "greek");
   }
 
-  const { searchStr, lookupMode }: QueryStringFormat = formatQueryStr(
-    q,
-    caseSensitive,
-    diacriticSensitive
-  );
+  const {
+    searchStr,
+    surfaceForm,
+    lookupMode
+  } = formatQueryStr(q, caseSensitive, diacriticSensitive);
 
   if (!validateQueryStr(searchStr)) {
     if (settings.isDevEnv) {
       console.log(
-        `%cInvalid input '${
-          removeDiacritics(searchStr, "greek")
-        }' (will return an empty response).`,
+        `%cInvalid input '${removeDiacritics(searchStr, "greek")}' ` +
+          "(will return an empty response).",
         "color:orange"
       );
     }
     return emptyResponse();
   }
 
-  // Field `word` is needed to retrieve unique entries and build the `children` property.
-  if (!fields.includes("word")) fields.unshift("word");
-  const fieldsAsStr: string = fields.join(", ");
-
-  const searchableField: string = formatSearchableField(
+  const wordRequested = fields.includes("word");
+  const queryFields = wordRequested ? fields : ["word", ...fields];
+  const searchableField = formatSearchableField(
     caseSensitive,
     diacriticSensitive
   );
 
-  const morpheusAnalyses = (!skipMorpheus)
-    ? await getMorpheusAnalyses(searchStr, caseSensitive, diacriticSensitive)
-    : {};
+  // `searchable` is always needed to resolve Morpheus lemmas, independently
+  // from the field used for the user's direct query.
+  const selectedFields = [
+    ...new Set<string>([
+      ...queryFields,
+      "searchable",
+      searchableField
+    ])
+  ].join(", ");
+
+  const morpheusAnalyses = skipMorpheus ? {} : await getMorpheusAnalyses(
+    surfaceForm,
+    caseSensitive,
+    diacriticSensitive
+  );
 
   const morpheusSearchableKeys = getMorpheusAnalysesSearchableKeys(
     morpheusAnalyses
   );
 
-  // Perf: prefer using a strict equality comparison if possible.
   const comparisonOperator = lookupMode === LookupMode.exact && !/[*?]/.test(searchStr)
     ? "="
     : "GLOB";
 
-  // The `word` field is mandatory to retrieve unique entries and build the `children` property.
   const sql = `
-    SELECT ${fieldsAsStr},
-           ${searchableField}, COUNT(*) OVER () AS countAll
+    SELECT ${selectedFields}, COUNT(*) OVER () AS countAll
     FROM bailly
     WHERE ${searchableField} ${comparisonOperator} $query
           OR searchable IN (SELECT value FROM json_each($morpheusSearchableKeys))
     ORDER BY orderedID
-    LIMIT $limit 
+    LIMIT $limit
   `;
 
   const params: { [key: string]: any } = {
@@ -393,40 +488,25 @@ export async function getEntries<K extends keyof QueryableFields>({
         case LookupMode.exact:
           return searchStr;
         case LookupMode.startsWith:
-          // Don't add a wildcard at the beginning if the user already wrote a joker.
-          return /^[^*?]+/.test(searchStr) ? "*" + searchStr : searchStr;
+          return /^[^*?]+/.test(searchStr) ? `*${searchStr}` : searchStr;
         case LookupMode.endsWith:
         default:
-          // Don't add a wildcard at the end if the user already wrote a joker.
-          return /[^*?]+$/.test(searchStr) ? searchStr + "*" : searchStr;
+          return /[^*?]+$/.test(searchStr) ? `${searchStr}*` : searchStr;
       }
     })(),
     $morpheusSearchableKeys: JSON.stringify(morpheusSearchableKeys),
-    $limit: (() => {
-      if (limit && limit <= settings.queryMaxRows) return limit;
-      // @fixme One shouldn't have to think about this special value.
-      else return settings.queryMaxRows === Infinity ? -1 : settings.queryMaxRows;
-    })()
+    $limit: limit && limit <= settings.queryMaxRows
+      ? limit
+      : settings.queryMaxRows === Infinity
+      ? -1
+      : settings.queryMaxRows
   };
-
-  /*if (settings.isDevEnv) {
-    console.log(`\n${import.meta.url} > getEntries():\n`);
-    console.log({
-      searchStr: searchStr,
-      lookupMode: lookupMode,
-      morpheusSearchableKeys: morpheusSearchableKeys,
-      params: params
-    });
-    console.log(sql);
-  }*/
 
   const data = <PartialExcept<DatabaseEntry, "word">[]> (
     db.prepare(sql).all(params)
   );
 
-  const uniqueEntries = setUniqueEntries(data, { caseSensitive });
-
-  let response: ApiLookupResponse<keyof QueryableFields> | ApiLookupResponse<never> = {
+  let internalResponse: ApiLookupResponse<keyof QueryableFields> = {
     data: {
       version: settings.dbVersion,
       count: data.length,
@@ -434,27 +514,46 @@ export async function getEntries<K extends keyof QueryableFields>({
       entries: uniqueEntries.map((item) => {
         const searchableFieldValue =
           item[formatSearchableField(caseSensitive, diacriticSensitive)];
+      entries: setUniqueEntries(data)
+    }
+  };
+
+  if (morphology) {
+    const morpheusMorphology: MorphologyResponse = Object.fromEntries(
+      Object.entries(morpheusAnalyses).map(([key, analyses]) => [
+        key,
+        analyses.map(getMorphology)
+      ])
+    );
+
+    internalResponse = attachMorphology(
+      internalResponse,
+      morpheusMorphology
+    );
+  }
+
+  const response: ApiLookupResponse<keyof QueryableFields> = {
+    data: {
+      ...internalResponse.data,
+      entries: internalResponse.data.entries.map((item) => {
+        const searchableFieldValue = (item as Partial<DatabaseEntry>)[
+          searchableField as keyof DatabaseEntry
+        ] ?? "";
         const normalizedSearchStr = caseSensitive ? searchStr : searchStr.toLowerCase();
 
-        const isExact: boolean = normalizedSearchStr === searchableFieldValue;
-
-        const isMorpheus: boolean = (() => {
-          if (
-            morpheusSearchableKeys.length && (
+        const isExact = normalizedSearchStr === searchableFieldValue;
+        const isMorpheus = Boolean(
+          morpheusSearchableKeys.length &&
+            (
               (lookupMode === LookupMode.exact &&
                 searchableFieldValue.length !== searchStr.length) ||
-              (/^[α-ω-]|[α-ω’-]$/i.test(normalizedSearchStr) === true &&
-                searchableFieldValue.startsWith(normalizedSearchStr) === false)
+              (/^[α-ω-]|[α-ω’-]$/i.test(normalizedSearchStr) &&
+                !searchableFieldValue.startsWith(normalizedSearchStr))
             )
-          ) {
-            return true;
-          } else {
-            return false;
-          }
-        })();
+        );
 
         const removeExtraFields = (
-          item:
+          entry:
             & Partial<Entry>
             & Optional<
               DatabaseEntry,
@@ -465,38 +564,25 @@ export async function getEntries<K extends keyof QueryableFields>({
               | "searchableAtonicCaseInsensitive"
             >
         ): void => {
-          delete item.countAll;
-          delete item.searchable;
-          delete item.searchableCaseInsensitive;
-          delete item.searchableAtonic;
-          delete item.searchableAtonicCaseInsensitive;
-          // Property `word` has been picked in order to group entries (see supra).
-          if (!fieldsAsStr.includes("word")) delete item.word;
+          delete entry.countAll;
+          delete entry.searchable;
+          delete entry.searchableCaseInsensitive;
+          delete entry.searchableAtonic;
+          delete entry.searchableAtonicCaseInsensitive;
+          if (!wordRequested) delete entry.word;
         };
 
         removeExtraFields(item);
-        item.children?.forEach((child) => removeExtraFields(child));
+        item.children?.forEach(removeExtraFields);
 
         return {
           ...item,
-          isMorpheus: isMorpheus,
+          isMorpheus,
           isExact: isMorpheus || isExact
         };
       })
     }
   };
-
-  if (morphology) {
-    response = attachMorphology(
-      response,
-      Object.fromEntries(
-        Object.entries(morpheusAnalyses).map(([lemma, analyses]) => [
-          lemma,
-          analyses.map(({ morphology }) => morphology)
-        ])
-      ) as any
-    );
-  }
 
   return response;
 }
