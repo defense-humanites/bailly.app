@@ -511,9 +511,6 @@ export async function getEntries<K extends keyof QueryableFields>({
       version: settings.dbVersion,
       count: data.length,
       countAll: data[0]?.countAll ?? 0,
-      entries: uniqueEntries.map((item) => {
-        const searchableFieldValue =
-          item[formatSearchableField(caseSensitive, diacriticSensitive)];
       entries: setUniqueEntries(data)
     }
   };
