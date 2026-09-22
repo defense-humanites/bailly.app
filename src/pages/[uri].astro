@@ -9,7 +9,10 @@ import SingleColumn from "../layouts/SingleColumn.astro";
 export const prerender = false;
 
 const { uri } = Astro.params;
-if (!uri) return Astro.redirect("/404");
+if (!uri){
+  console.log(Astro.params)
+  return Astro.redirect("/404");
+}
 
 const data = await fetchOneEntry(uri, {
   fields: ["word", "uri", "htmlDefinition", "excerpt"],
@@ -29,6 +32,7 @@ if (entry.uri !== uri) return Astro.redirect(`/${entry.uri}`);
  * may not display it accurately.
  */
 const title = `${entry.word.replace(/\u03D0/g, "β")} (${toTransliteration(entry.word, KeyType.GREEK, Preset.ALA_LC)})`;
+const entries = entry.children ?? [entry];
 ---
 
 <SingleColumn title={title} description={entry.excerpt}>
@@ -70,49 +74,69 @@ const title = `${entry.word.replace(/\u03D0/g, "β")} (${toTransliteration(entry
         )
       }
     </header>
-    {
-      entry.children ? (
-        <section class="space-y-6 lg:space-y-12">
-          {entry.children.map((childEntry, i) => (
-            <article id={String(i + 1)}>
-              <Card content={childEntry.htmlDefinition}>
-                <TagToolbar
-                  client:load
-                  transition:persist
-                  slot="toolBar"
-                  entry={childEntry}
-                />
-              </Card>
-            </article>
-          ))}
-        </section>
-      ) : (
-        <Card content={entry.htmlDefinition}>
-          <TagToolbar
-            client:load
-            transition:persist
-            slot="toolBar"
-            entry={entry}
-          />
-        </Card>
-      )
-    }
+    <section class="space-y-6 lg:space-y-12">
+      {entries.map((entry, i) => (
+        <article id={String(i + 1)}>
+          <Card contentClass="definition" content={entry.htmlDefinition}>
+            <TagToolbar
+              client:load
+              transition:persist
+              slot="toolBar"
+              entry={entry}
+            />
+          </Card>
+        </article>
+      ))}
+    </section>
   </entry-article>
 </SingleColumn>
 
 <script>
   import type { Entry } from "../api";
   import { IdbHistory } from "../idb";
+  //import Popover from "../components/MultipleLinkedEntriesPopover";
+  //import { render } from "solid-js/web";
 
   class EntryArticle extends HTMLElement {
-    constructor() {
-      super();
-
+    connectedCallback() {
       const entry: Pick<
         Entry<"word" | "uri" | "excerpt">,
         "word" | "uri" | "excerpt" | "children"
       > = JSON.parse(this.dataset.entry ?? "");
       IdbHistory.update(entry);
+
+      this.querySelectorAll<HTMLSpanElement>("span[data-linked-entries]").forEach(
+        (element) => {
+          const queryString = element.dataset.linkedEntries;
+          if (!queryString) return;
+
+          const anchor = document.createElement("a");
+          for (const attribute of element.attributes) {
+            if (attribute.name !== "data-linked-entries") {
+              anchor.setAttribute(attribute.name, attribute.value);
+            }
+          }
+          anchor.href = `/lecteur?q=${queryString}`;
+          anchor.innerHTML = element.innerHTML;
+          element.replaceWith(anchor);
+        }
+      );
+
+      /*this.querySelectorAll<HTMLAnchorElement>("span[data-linked-entries]").forEach(
+        (link) => {
+          const hrefs = (link.getAttribute("href") ?? "").split(",");
+          // Remove the first character ('/') from the first href.
+          if (hrefs[0]) hrefs[0] = hrefs[0].slice(1);
+          const mount = document.createElement("span");
+
+          link.replaceWith(mount);
+          render(
+            () =>
+              Popover({ hrefs, label: link.textContent ?? "" }),
+            mount
+          );
+        }
+      );*/
     }
   }
 
