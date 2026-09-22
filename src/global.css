@@ -393,6 +393,13 @@ f
   .etiqetymrev {
     @apply font-semibold;
   }
+
+  .definition a {
+    @apply decoration-dotted;
+    &:not(:hover) {
+      @apply decoration-neutral-400 !important;
+    }
+  }
 }
 
 @layer utilities {
