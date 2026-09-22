@@ -1,0 +1,115 @@
+---
+import { fetchOneEntry, type ApiEntryResponse } from "../api";
+import Card from "../components/Card";
+import Icon from "../components/Icon";
+import TagToolbar from "../components/TagToolbar";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+export const prerender = false;
+
+// Accessed via /lecteur?q=foo,bar
+const url = new URL(Astro.request.url);
+const itemsParam = url.searchParams.get("q") ?? url.searchParams.get("items");
+
+const itemsArray = itemsParam ? itemsParam.split(",") : [];
+
+let queries: ApiEntryResponse<"word" | "uri" | "htmlDefinition" | "excerpt">[] =
+  await Promise.all(
+    itemsArray.map((item) =>
+      fetchOneEntry(item, {
+        fields: ["word", "uri", "htmlDefinition", "excerpt"],
+        siblings: true,
+      })
+    )
+  );
+
+queries = queries.filter(query => Object.keys(query.entry).length);
+
+const title = "Lecteur";
+---
+
+<BaseLayout title={title} description="">
+  <section class="px-6 max-lg:py-6 max-lg:max-w-screen-md m-auto lg:grid lg:gap-6 lg:grid-cols-2 2xl:m-12 2xl:gap-12 2xl:grid-cols-3">
+    {queries.map((query, i) => (
+      <entry-article
+        id={String(i + 1)}
+        class="py-6 text-xl md:py-12"
+        data-entry={JSON.stringify(query.entry)}
+        role="article"
+      >
+        <header class="mb-3 flex items-center lg:mb-6">
+          {
+            query.siblings?.previous?.uri && (
+              <span class="flex flex-1 items-center">
+                <a href={"/" + query.siblings.previous.uri}>
+                  <span class="lg:hidden">
+                    <Icon name="ArrowLeftCircle" />
+                  </span>
+                  <span class="grec max-lg:hidden">{query.siblings.previous.word}</span>
+                </a>
+              </span>
+            )
+          }
+          <h1
+            class={`grec shrink-0 text-2xl lg:text-3xl leading-loose font-bold ${
+              !query.siblings?.next?.uri ? "text-right" : "text-center"
+            }`}
+          >
+            {query.entry.word}
+          </h1>
+          {
+            query.siblings?.next?.uri && (
+              <span class="flex flex-1 items-center justify-end">
+                <a href={"/" + query.siblings.next.uri}>
+                  <span class="lg:hidden">
+                    <Icon name="ArrowRightCircle" />
+                  </span>
+                  <span class="grec max-lg:hidden">{query.siblings.next.word}</span>
+                </a>
+              </span>
+            )
+          }
+        </header>
+        <section class="space-y-6 lg:space-y-12">
+          {(query.entry.children ?? [query.entry]).map((entry, i) => (
+            <article id={String(i + 1)}>
+              <Card contentClass="definition" content={entry.htmlDefinition}>
+                <TagToolbar
+                  client:load
+                  transition:persist
+                  slot="toolBar"
+                  entry={entry}
+                />
+              </Card>
+            </article>
+          ))}
+        </section>
+      </entry-article>
+    ))}
+  </section>
+</BaseLayout>
+
+<script>
+  class EntryArticle extends HTMLElement {
+    connectedCallback() {
+      this.querySelectorAll<HTMLSpanElement>("span[data-linked-entries]").forEach(
+        (element) => {
+          const queryString = element.dataset.linkedEntries;
+          if (!queryString) return;
+
+          const anchor = document.createElement("a");
+          for (const attribute of element.attributes) {
+            if (attribute.name !== "data-linked-entries") {
+              anchor.setAttribute(attribute.name, attribute.value);
+            }
+          }
+          anchor.href = `/lecteur?q=${queryString.slice(1)}`;
+          anchor.innerHTML = element.innerHTML;
+          element.replaceWith(anchor);
+        }
+      );
+    }
+  }
+
+  customElements.define("entry-article", EntryArticle);
+</script>
