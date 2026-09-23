@@ -6,8 +6,8 @@
   },
   "imports": {
     "@db/sqlite": "jsr:@db/sqlite@^0.13.0",
-    "@hono/hono": "jsr:@hono/hono@^4.13.5",
-    "@humanities/greek-conversion": "jsr:@humanities/greek-conversion@1.0.0-beta.3",
+    "@hono/hono": "jsr:@hono/hono@^4.13.8",
+    "@humanities/greek-conversion": "jsr:@humanities/greek-conversion@1.0.0-beta.5",
     "@libmorpheus/deno": "jsr:@libmorpheus/deno@^0.4.0",
     "@std/assert": "jsr:@std/assert@^1.0.19",
     "@std/streams": "jsr:@std/streams@^1.1.2",

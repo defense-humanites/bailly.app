@@ -3,8 +3,8 @@
   "specifiers": {
     "jsr:@db/sqlite@0.13": "0.13.0",
     "jsr:@denosaurs/plug@1": "1.1.0",
-    "jsr:@hono/hono@^4.13.5": "4.13.5",
-    "jsr:@humanities/greek-conversion@1.0.0-beta.3": "1.0.0-beta.3",
+    "jsr:@hono/hono@^4.13.8": "4.13.8",
+    "jsr:@humanities/greek-conversion@1.0.0-beta.5": "1.0.0-beta.5",
     "jsr:@libmorpheus/deno@0.4": "0.4.0",
     "jsr:@std/assert@^1.0.19": "1.0.19",
     "jsr:@std/async@^1.5.0": "1.5.0",
@@ -40,11 +40,11 @@
         "jsr:@std/path@1"
       ]
     },
-    "@hono/hono@4.13.5": {
-      "integrity": "b5b10f340820d14d69add622452e88722d7e99e05e30cdeafcb90133fc752126"
+    "@hono/hono@4.13.8": {
+      "integrity": "bbb566d9ebb81e74c0d7eeff1f9221ba9f3fda6f1832e5ca66cbddcecb2f7fec"
     },
-    "@humanities/greek-conversion@1.0.0-beta.3": {
-      "integrity": "f77eeb2a5df718e8ac0adde91578bbbd7ce98f08d637c34d8caee2adfd19a4b0"
+    "@humanities/greek-conversion@1.0.0-beta.5": {
+      "integrity": "ab83df8e59ce28b43f911fa82243230217a790da957f2c7aa97b5de23ed1317d"
     },
     "@libmorpheus/deno@0.4.0": {
       "integrity": "b0f529afe1199c48d3f6dd3467e04bb4e7c246ac82072f109a5b49ee998fd548"
@@ -110,8 +110,8 @@
   "workspace": {
     "dependencies": [
       "jsr:@db/sqlite@0.13",
-      "jsr:@hono/hono@^4.13.5",
-      "jsr:@humanities/greek-conversion@1.0.0-beta.3",
+      "jsr:@hono/hono@^4.13.8",
+      "jsr:@humanities/greek-conversion@1.0.0-beta.5",
       "jsr:@libmorpheus/deno@0.4",
       "jsr:@std/assert@^1.0.19",
       "jsr:@std/streams@^1.1.2",
