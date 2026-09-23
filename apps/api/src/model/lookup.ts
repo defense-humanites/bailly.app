@@ -30,6 +30,15 @@ type QueryStringFormat = {
   lookupMode: LookupMode;
 };
 
+type MatchFlags = {
+  directMatch: number;
+  morpheusMatch: number;
+};
+
+type MatchedDatabaseEntry =
+  & PartialExcept<DatabaseEntry, "word">
+  & MatchFlags;
+
 type MorphologyKey = {
   lemma: string;
   stem: string;
@@ -325,10 +334,10 @@ function emptyResponse(): ApiLookupResponse<never> {
 }
 
 export function setUniqueEntries(
-  inputEntries: PartialExcept<DatabaseEntry, "word">[],
+  inputEntries: MatchedDatabaseEntry[],
   _params?: { caseSensitive?: boolean }
 ): (
-  & PartialExcept<Entry, "word" | "children">
+  & PartialExcept<MatchedDatabaseEntry, "children">
   & Optional<
     DatabaseEntry,
     | "searchable"
@@ -337,7 +346,7 @@ export function setUniqueEntries(
     | "searchableAtonicCaseInsensitive"
   >
 )[] {
-  const uniqueEntries: PartialExcept<Entry, "word">[] = [];
+  const uniqueEntries: MatchedDatabaseEntry[] = [];
 
   for (
     const [word, entries] of Object.entries(
@@ -356,6 +365,8 @@ export function setUniqueEntries(
           | "searchableCaseInsensitive"
           | "searchableAtonic"
           | "searchableAtonicCaseInsensitive"
+          | "directMatch"
+          | "morpheusMatch"
         > = {
           ...entries[0]
         };
@@ -373,6 +384,14 @@ export function setUniqueEntries(
       entry.searchableAtonic = entries[0].searchableAtonic ?? "";
       entry.searchableAtonicCaseInsensitive =
         entries[0].searchableAtonicCaseInsensitive ?? "";
+
+      // Keep match provenance until `isExact` and `isMorpheus` have been resolved.
+      entry.directMatch = Number(
+        entries.some((entry) => Boolean(entry.directMatch))
+      );
+      entry.morpheusMatch = Number(
+        entries.some((entry) => Boolean(entry.morpheusMatch))
+      );
 
       uniqueEntries.push(entry);
       continue;
@@ -450,7 +469,7 @@ export async function getEntries<K extends keyof QueryableFields>({
   );
 
   // `searchable` is always needed to resolve Morpheus lemmas, independently
-  // from the field used for the user's direct query.
+  // of the field used for the user's direct query.
   const selectedFields = [
     ...new Set<string>([
       ...queryFields,
@@ -473,11 +492,21 @@ export async function getEntries<K extends keyof QueryableFields>({
     ? "="
     : "GLOB";
 
+  const directMatchExpression = `${searchableField} ${comparisonOperator} $query`;
+
+  const morpheusMatchExpression = `searchable IN (
+    SELECT value FROM json_each($morpheusSearchableKeys)
+  )`;
+
   const sql = `
-    SELECT ${selectedFields}, COUNT(*) OVER () AS countAll
+    SELECT
+      ${selectedFields},
+      ${directMatchExpression} AS directMatch,
+      ${morpheusMatchExpression} AS morpheusMatch,
+      COUNT(*) OVER () AS countAll
     FROM bailly
-    WHERE ${searchableField} ${comparisonOperator} $query
-          OR searchable IN (SELECT value FROM json_each($morpheusSearchableKeys))
+    WHERE ${directMatchExpression}
+       OR ${morpheusMatchExpression}
     ORDER BY orderedID
     LIMIT $limit
   `;
@@ -502,11 +531,11 @@ export async function getEntries<K extends keyof QueryableFields>({
       : settings.queryMaxRows
   };
 
-  const data = <PartialExcept<DatabaseEntry, "word">[]> (
+  const data = <MatchedDatabaseEntry[]> (
     db.prepare(sql).all(params)
   );
 
-  let internalResponse: ApiLookupResponse<keyof QueryableFields> = {
+  let internalResponse: ApiLookupResponse<keyof MatchedDatabaseEntry> = {
     data: {
       version: settings.dbVersion,
       count: data.length,
@@ -516,6 +545,8 @@ export async function getEntries<K extends keyof QueryableFields>({
   };
 
   if (morphology) {
+    console.log(morpheusAnalyses);
+
     const morpheusMorphology: MorphologyResponse = Object.fromEntries(
       Object.entries(morpheusAnalyses).map(([key, analyses]) => [
         key,
@@ -532,22 +563,21 @@ export async function getEntries<K extends keyof QueryableFields>({
   const response: ApiLookupResponse<keyof QueryableFields> = {
     data: {
       ...internalResponse.data,
-      entries: internalResponse.data.entries.map((item) => {
-        const searchableFieldValue = (item as Partial<DatabaseEntry>)[
-          searchableField as keyof DatabaseEntry
-        ] ?? "";
-        const normalizedSearchStr = caseSensitive ? searchStr : searchStr.toLowerCase();
+      entries: internalResponse.data.entries.map((entry) => {
+        const searchableFieldValue = entry[
+          searchableField as keyof typeof entry
+        ];
 
-        const isExact = normalizedSearchStr === searchableFieldValue;
-        const isMorpheus = Boolean(
-          morpheusSearchableKeys.length &&
-            (
-              (lookupMode === LookupMode.exact &&
-                searchableFieldValue.length !== searchStr.length) ||
-              (/^[α-ω-]|[α-ω’-]$/i.test(normalizedSearchStr) &&
-                !searchableFieldValue.startsWith(normalizedSearchStr))
-            )
-        );
+        const exactSearchStr = searchStr.replace(/^\*+|\*+$/g, "");
+
+        const isExact = lookupMode === LookupMode.exact ||
+          (
+            !/[*?]/.test(exactSearchStr) &&
+            exactSearchStr === searchableFieldValue
+          );
+
+        const isMorpheus = Boolean(entry.morpheusMatch) &&
+          !Boolean(entry.directMatch);
 
         const removeExtraFields = (
           entry:
@@ -559,23 +589,27 @@ export async function getEntries<K extends keyof QueryableFields>({
               | "searchableCaseInsensitive"
               | "searchableAtonic"
               | "searchableAtonicCaseInsensitive"
+              | "directMatch"
+              | "morpheusMatch"
             >
         ): void => {
           delete entry.countAll;
+          if (!wordRequested) delete entry.word;
           delete entry.searchable;
           delete entry.searchableCaseInsensitive;
           delete entry.searchableAtonic;
           delete entry.searchableAtonicCaseInsensitive;
-          if (!wordRequested) delete entry.word;
+          delete entry.directMatch;
+          delete entry.morpheusMatch;
         };
 
-        removeExtraFields(item);
-        item.children?.forEach(removeExtraFields);
+        removeExtraFields(entry);
+        entry.children?.forEach(removeExtraFields);
 
         return {
-          ...item,
-          isMorpheus,
-          isExact: isMorpheus || isExact
+          ...entry,
+          isExact,
+          isMorpheus
         };
       })
     }
