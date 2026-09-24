@@ -394,11 +394,38 @@ f
     @apply font-semibold;
   }
 
-  .definition a {
-    @apply decoration-dotted;
-    &:not(:hover) {
-      @apply decoration-neutral-400 !important;
+  /*
+   * Definition links: a thin, discreet dotted underline so as not to disrupt the
+   * reading (an article can hold hundreds of links); it turns solid on hover and
+   * keyboard focus. Links keep the color of the surrounding text (e.g. `.secta`,
+   * `.etymor`), the underline being derived from it. The offset keeps the
+   * underline clear of the Greek descenders and iota subscripts.
+   * `main` and `:not(.unstyled-link)` are needed to override the generic
+   * `main a:not(.unstyled-link)` rules (including their state variants).
+   */
+  main .definition a:not(.unstyled-link) {
+    @apply decoration-dotted decoration-1 underline-offset-[0.2em];
+    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    text-decoration-skip-ink: auto;
+    &:hover,
+    &:focus,
+    &:active {
+      color: inherit;
+      text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
     }
+    &:hover,
+    &:focus-visible {
+      @apply decoration-solid;
+      text-decoration-color: currentColor;
+    }
+  }
+
+  /*
+   * Forms of the current entry (cf. `bailly-data-converter`): they aren't links,
+   * so they get no link styling at all.
+   */
+  .definition [data-linked-self] {
+    @apply cursor-text;
   }
 }
 
