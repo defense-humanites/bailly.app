@@ -7,7 +7,6 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@nuxt/test-utils/module",
   ],
-  devServer: { port: 4321 },
   devtools: { enabled: true },
   css: ["~/assets/css/main.css"],
   ui: {
@@ -28,6 +27,7 @@ export default defineNuxtConfig({
       maxTags: 50,
     },
   },
+  devServer: { port: 4321 },
   compatibilityDate: "2025-07-15",
   typescript: {
     tsConfig: {
