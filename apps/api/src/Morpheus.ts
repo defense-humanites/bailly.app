@@ -123,11 +123,9 @@ export class Morpheus {
     const settings = Settings.getSettings();
 
     if (!settings.morpheusLibraryPath || !settings.morpheusStemlibPath) {
-      console.warn(
-        "⚠️ libmorpheus-deno is disabled: MORPHEUS_LIBRARY_PATH and " +
-          "MORPHEUS_STEMLIB_PATH must both be set."
+      return Morpheus.#unavailable(
+        "MORPHEUS_LIBRARY_PATH and MORPHEUS_STEMLIB_PATH must both be set."
       );
-      return new Morpheus();
     }
 
     let library: MorpheusLibrary | undefined;
@@ -151,12 +149,26 @@ export class Morpheus {
         await Promise.all(contexts.map((context) => context.close()));
         library?.close();
       } catch {
-        // Keep initialization failure non-fatal for the API.
+        // The initialization error is the one worth reporting.
       }
 
-      console.error(`Failed to initialize libmorpheus: ${error}`);
-      return new Morpheus();
+      return Morpheus.#unavailable(`initialization failed: ${error}`);
     }
+  }
+
+  /**
+   * Without libmorpheus, the lookups silently lose every Morpheus result. This is
+   * tolerated in development (e.g. to run the API or the tests without the native
+   * library), but not in production, where the startup (and the Heroku release
+   * phase, cf. `scripts/heroku_release.ts`) must fail instead.
+   */
+  static #unavailable(reason: string): Morpheus {
+    if (!Settings.getSettings().isDevEnv) {
+      throw new Error(`libmorpheus is unavailable: ${reason}`);
+    }
+
+    console.warn(`⚠️ libmorpheus is disabled: ${reason}`);
+    return new Morpheus();
   }
 
   static async getMorpheus(): Promise<Morpheus> {
@@ -202,13 +214,6 @@ export class Morpheus {
       diacriticSensitive = false
     } = options;
 
-    console.log(
-      "caseSensitive",
-      caseSensitive,
-      ", diacriticSensitive",
-      diacriticSensitive
-    );
-
     let morpheusOptions = 0n;
     if (caseSensitive) morpheusOptions |= MorpheusOption.StrictCase;
     if (!diacriticSensitive) morpheusOptions |= MorpheusOption.IgnoreAccents;
@@ -243,14 +248,11 @@ export class Morpheus {
       convert(form, "greek", "beta-code", { preset: "perseus" })
     );
 
-    console.log(greekStr, betaCodes);
-
     try {
       const analyses: MorpheusAnalysis[] = [];
       for (const betaCode of betaCodes) {
         analyses.push(...await this.#context().analyze(betaCode, morpheusOptions));
       }
-      console.log(analyses.map((analysis) => analysis.lemma));
       return this.#formatMorpheusResponse(analyses, greekStr);
     } catch (error) {
       console.error("libmorpheus call failed:", error);

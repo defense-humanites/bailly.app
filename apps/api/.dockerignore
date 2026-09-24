@@ -21,6 +21,7 @@ Procfile
 # already been extracted.
 database/*.db
 
-# Some OS (e.g. MacOS) prevent the copying of executables. We provide an archive to be
-# extracted at startup (`cruncher.gz`) in order to prevent this problem.
-morpheus/cruncher
+# libmorpheus, installed by `heroku_build.ts` (Heroku build).
+vendor/
+heroku_build.ts
+scripts/heroku_release.ts

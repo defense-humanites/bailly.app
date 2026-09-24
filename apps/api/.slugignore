@@ -1,0 +1,14 @@
+# Files removed from the Heroku slug (applied before the build).
+
+# Only the database revision set in DB_FILE_PATH is needed in production.
+database/bailly.db.gz
+database/bailly-rev1.db.gz
+database/bailly-rev2.db.gz
+database/bailly-rev3.db.gz
+
+# Development and Docker files.
+tests/
+.husky/
+Dockerfile
+docker-compose*.yml
+.dockerignore

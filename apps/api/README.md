@@ -5,11 +5,11 @@
 
 Veuillez noter que la base de données utilisée par l'API n'est PAS distribuée avec le code. Si vous cherchez à faire fonctionner cette API par vous-même, vous devrez au préalable convertir les données du [Bailly 2020 Hugo Chávez](http://gerardgreco.free.fr/spip.php?article24) dans le format spécifié au sein du code source.
 
-Par ailleurs, pour exploiter l'ensemble des fonctionnalités de cette API, il est nécessaire de joindre un exécutable de l'analyseur morphologique [Morpheus](https://github.com/PerseusDL/morpheus), ainsi que le dossier `stemlib` associé.
+Par ailleurs, l'analyse morphologique repose sur [libmorpheus](https://github.com/defense-humanites/libmorpheus), une bibliothèque dérivée de l'analyseur [Morpheus](https://github.com/PerseusDL/morpheus), chargée par FFI (`@libmorpheus/deno`). Elle requiert la bibliothèque native et un jeu de stems (`stemlib`), désignés par les variables d'environnement `MORPHEUS_LIBRARY_PATH` et `MORPHEUS_STEMLIB_PATH`.
 
 ## Mise en route
 
-Cette API fait usage de code natif compilé pour `linux/amd64` (cf. Morpheus), mais peut être déployée aisément, en local comme en production, à l'aide de Docker :
+Cette API fait usage de code natif (libmorpheus), mais peut être déployée aisément, en local comme en production, à l'aide de Docker. L'image de développement repose sur l'image `morpheus-deno` de libmorpheus, qui fournit la bibliothèque et le stemlib Alpheios :
 
 ```sh
 ### Développement
@@ -25,8 +25,21 @@ HOST_DB=<file.db> docker compose up
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up # `--build` pour reconstruire l'image
 ```
 
-> [!WARNING]
-> Si le binaire de Morpheus a été dézippé localement (cf. `./morpheus/cruncher`), il peut être nécessaire de le supprimer manuellement pour pouvoir construire l'image Docker. MacOS, par exemple, prévient toute interaction avec des binaires non authentifiés, et la règle d'exclusion visant le binaire de Morpheus dans le fichier `./dockeringore` n'est pas prise en compte de manière suffisamment précoce par Docker, ce qui peut produire une erreur lors de la construction.
+### Heroku
+
+Le déploiement sur Heroku repose sur le buildpack [chibat/heroku-buildpack-deno](https://github.com/chibat/heroku-buildpack-deno) :
+
+- `heroku_build.ts` installe, lors de la construction, la bibliothèque native de libmorpheus (Linux x86-64, glibc ; somme SHA-256 vérifiée) et le stemlib Alpheios dans `vendor/` ;
+- la phase de publication (`release:` dans le `Procfile`, cf. `scripts/heroku_release.ts`) vérifie que libmorpheus fonctionne ; en cas d'échec, la nouvelle version n'est pas déployée ;
+- `.slugignore` écarte du slug les révisions inutilisées de la base et les fichiers de développement.
+
+Variables de configuration attendues (outre celles de `.env.example`) :
+
+```sh
+DB_FILE_PATH=database/bailly-rev4.db
+MORPHEUS_LIBRARY_PATH=vendor/morpheus-native/lib/libmorpheus.so
+MORPHEUS_STEMLIB_PATH=vendor/morpheus-data
+```
 
 ## Licence
 
@@ -52,3 +65,5 @@ Cette application utilise les données du [Bailly 2020 Hugo Chávez](http://gera
 ### Analyse morphologique
 
 Cette application utilise l'analyseur morphologique [Morpheus](https://github.com/PerseusDL/morpheus) (Gregory Crane _et al._ pour le compte de l'université Tufts), distribué sous licence _Creative Commons Attribution-ShareAlike 3.0 United States_ (CC&nbsp;BY-SA&nbsp;3.0&nbsp;US).
+
+Elle y accède au moyen de [libmorpheus](https://github.com/defense-humanites/libmorpheus), distribuée sous licence _GNU Affero General Public License_ (AGPL-3.0-or-later).

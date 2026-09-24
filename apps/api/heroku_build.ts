@@ -1,0 +1,47 @@
+/**
+ * Heroku build step, run by the Deno buildpack (chibat/heroku-buildpack-deno) from the
+ * app directory, whose content is then copied into the slug.
+ *
+ * Installs libmorpheus (native library for Linux x86-64 glibc, SHA-256 verified) and
+ * the Alpheios stem dataset, the one embedded in the `morpheus-deno` development
+ * image. The version follows the `@libmorpheus/deno` binding pinned by `deno.lock`.
+ *
+ * Heroku config vars to set accordingly:
+ *   MORPHEUS_LIBRARY_PATH=vendor/morpheus-native/lib/libmorpheus.so
+ *   MORPHEUS_STEMLIB_PATH=vendor/morpheus-data
+ *
+ * NB: the buildpack ignores the exit code of this script (`set +e`); a failed install
+ * is caught by the release phase (`scripts/heroku_release.ts`), which prevents the
+ * deployment.
+ */
+
+import { setupMorpheus } from "@libmorpheus/deno/setup";
+
+const NATIVE_OUTPUT = "vendor/morpheus-native";
+const DATA_OUTPUT = "vendor/morpheus-data";
+
+try {
+  // `setupMorpheus()` refuses to overwrite existing directories.
+  for (const path of [NATIVE_OUTPUT, DATA_OUTPUT]) {
+    await Deno.remove(path, { recursive: true }).catch((error) => {
+      if (!(error instanceof Deno.errors.NotFound)) throw error;
+    });
+  }
+
+  // … but needs their parent directory.
+  await Deno.mkdir("vendor", { recursive: true });
+
+  const receipt = await setupMorpheus({
+    dataset: "alpheios",
+    nativeOutput: NATIVE_OUTPUT,
+    dataOutput: DATA_OUTPUT
+  });
+
+  console.info("-----> libmorpheus installed:", {
+    nativeLibraryPath: receipt.nativeLibraryPath,
+    dataOutput: receipt.dataOutput
+  });
+} catch (error) {
+  console.error("-----> ❌ libmorpheus installation FAILED:", error);
+  Deno.exit(1);
+}
