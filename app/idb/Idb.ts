@@ -1,5 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
-import { type ColorKey } from "~/enums";
+import type { ColorKey } from "~/enums";
 import type { Entry } from "~/plugins/api";
 import type { PartialExcept } from "~/types";
 import type { TagColorKey } from "./IdbTags";
@@ -111,8 +111,8 @@ export interface BaillyDB extends DBSchema {
     key: number;
     value: IdbTagged;
     indexes: {
-      uri: string;
-      tagKey: number;
+      "uri": string;
+      "tagKey": number;
       "tagKey+uri": string;
     };
   };
@@ -120,9 +120,9 @@ export interface BaillyDB extends DBSchema {
     key: number;
     value: IdbTag;
     indexes: {
-      name: string;
-      color: ColorKey;
-      position: number;
+      "name": string;
+      "color": ColorKey;
+      "position": number;
       "position+color": [number, ColorKey];
     };
   };
@@ -165,7 +165,7 @@ export class Idb {
       Idb.configure();
       console.warn(
         "`Idb.getIndexedDB` was called before the `Idb.configure` method, so default values were applied:",
-        this.#config
+        this.#config,
       );
     }
 
@@ -218,13 +218,13 @@ export class Idb {
    */
   static buildIdbEntry(entry: IdbEntryCreation): IdbEntry {
     if (
-      !entry.word ||
-      !entry.uri ||
-      (!entry.excerpt && !entry.children?.length)
+      !entry.word
+      || !entry.uri
+      || (!entry.excerpt && !entry.children?.length)
     ) {
       throw new Error(
-        "La création de l'entrée nécessite certaines valeurs manquantes." +
-          [entry.word, entry.uri, entry.excerpt, entry.children?.length]
+        "La création de l'entrée nécessite certaines valeurs manquantes."
+        + [entry.word, entry.uri, entry.excerpt, entry.children?.length],
       );
     }
 

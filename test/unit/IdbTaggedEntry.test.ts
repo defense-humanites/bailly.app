@@ -12,10 +12,10 @@ test("Create tagged entry", async () => {
   expect(await IdbTaggedEntry.add(entries.rhinokeros, banquetTagKey)).toSatisfy(success);
   expect(await IdbTaggedEntry.add(entries.rhinokeros, theeteteTagKey)).toSatisfy(success);
   expect(await IdbTaggedEntry.add(entries.alopex, banquetTagKey)).toSatisfy(success);
-  
+
   expect(await IdbTaggedEntry.add(entries.alopex, theeteteTagKey, { setCurrentTag: true })).toSatisfy(success);
   expect(IdbTags.getCurrentKey()).toBe(theeteteTagKey); // The previous line must have changed the current tag key.
-  
+
   expect(await IdbTaggedEntry.add({ word: "foo", uri: "foo", excerpt: "foo" }, banquetTagKey)).toSatisfy(success);
   expect(await IdbTaggedEntry.add({ word: "bar", uri: "bar", children: [{}] }, banquetTagKey)).toSatisfy(success); // Children must have length, but values are not checked.
 
@@ -32,7 +32,7 @@ test("Create tagged entry", async () => {
   expect(await IdbTaggedEntry.add({ word: "", uri: "foo", excerpt: "foo" }, banquetTagKey)).toSatisfy(error); // Bad values.
   expect(await IdbTaggedEntry.add({ word: "", uri: "foo", children: [] }, banquetTagKey)).toSatisfy(error); // Bad values.
   expect(await IdbTaggedEntry.add({}, banquetTagKey)).toSatisfy(error); // Bad values.
-  
+
   Idb.configure({ tagMaxItems: 1 });
   expect(await IdbTaggedEntry.add({ word: "baz", uri: "baz", excerpt: "baz" }, banquetTagKey)).toSatisfy(error); // Too many tagged entries.
 });
@@ -42,7 +42,7 @@ test("Delete tagged entry", async () => {
   const banquetTagKey = banquetTag.data.key;
 
   await IdbTaggedEntry.add(entries.rhinokeros, banquetTagKey);
-  
+
   expect(await IdbTaggedEntry.remove(entries.rhinokeros.uri, 999)).toSatisfy(error);
   expect(await IdbTaggedEntry.remove("unknown", banquetTagKey)).toSatisfy(error);
 

@@ -72,7 +72,7 @@ export class IdbHistory {
     const tx = db.transaction(IdbStore.History);
 
     let cursor = await tx.store.openCursor(null, "prev");
-    let history: IdbEntry[] = [];
+    const history: IdbEntry[] = [];
     while (cursor) {
       history.push(cursor.value);
 

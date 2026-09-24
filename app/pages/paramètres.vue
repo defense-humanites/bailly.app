@@ -2,68 +2,69 @@
   import type { RadioGroupItem } from "@nuxt/ui";
 
   definePageMeta({
-    layout: "single-column"
+    layout: "single-column",
   });
 
   useSeoMeta({
     title: "Paramètres",
-    description: "Réglez les paramètres d'affichage et de recherche en fonction de vos préférences."
+    description: "Réglez les paramètres d'affichage et de recherche en fonction de vos préférences.",
   });
-
 
   const displayLayoutOptions: RadioGroupItem[] = [
     {
-      label: 'Horizontal',
-      value: 'horizontal'
+      label: "Horizontal",
+      value: "horizontal",
     },
     {
-      label: 'Vertical',
-      value: 'vertical'
-    }
+      label: "Vertical",
+      value: "vertical",
+    },
   ];
 
   const displayThemeOptions: RadioGroupItem[] = [
     {
-      label: 'Système',
-      value: 'system'
+      label: "Système",
+      value: "system",
     },
     {
-      label: 'Clair',
-      value: 'light'
+      label: "Clair",
+      value: "light",
     },
     {
-      label: 'Foncé',
-      value: 'dark'
-    }
+      label: "Foncé",
+      value: "dark",
+    },
   ];
 
   const searchInputModeOptions = ref<RadioGroupItem[]>([
     {
       label: "Beta code",
-      value: "betaCode"
+      value: "betaCode",
     },
     {
       label: "Translittération",
-      value: "transliteration"
-    }
+      value: "transliteration",
+    },
   ]);
 
   const searchLemmatizationOptions = ref<RadioGroupItem[]>([
     {
       label: "Désactivé",
-      value: "disabled"
+      value: "disabled",
     },
     {
       default: true,
       label: "Activé",
-      value: "enabled"
-    }
+      value: "enabled",
+    },
   ]);
 </script>
 
 <template>
   <form class="space-y-6 lg:space-y-12">
-    <h1 class="text-3xl leading-normal font-bold">Paramètres</h1>
+    <h1 class="text-3xl leading-normal font-bold">
+      Paramètres
+    </h1>
 
     <section>
       <h2>Affichage</h2>
@@ -73,8 +74,12 @@
           <p>
             ...
           </p>
-          <URadioGroup variant="table" orientation="horizontal" default-value="horizontal"
-            :items="displayLayoutOptions" />
+          <URadioGroup
+            variant="table"
+            orientation="horizontal"
+            default-value="horizontal"
+            :items="displayLayoutOptions"
+          />
         </fieldset>
       </fieldset>
 
@@ -85,7 +90,12 @@
             Lorsque l'option <em>système</em> est active, le thème sélectionné suit
             auto&shy;mati&shy;que&shy;ment les préférences d'affichage de votre appareil.
           </p>
-          <URadioGroup variant="table" orientation="horizontal" default-value="system" :items="displayThemeOptions" />
+          <URadioGroup
+            variant="table"
+            orientation="horizontal"
+            default-value="system"
+            :items="displayThemeOptions"
+          />
         </fieldset>
       </fieldset>
     </section>
@@ -103,12 +113,22 @@
           </p>
           <p>
             Voyez la
-            <ModalLink client:load label="table de correspondance" modalTitle="Table de correspondance">
-              <ConversionChart slot="modalContent" />
+            <ModalLink
+              client:load
+              label="table de correspondance"
+              modal-title="Table de correspondance"
+            >
+              <template #modalContent>
+                <ConversionChart />
+              </template>
             </ModalLink>.
           </p>
-          <URadioGroup variant="table" orientation="horizontal" default-value="betaCode"
-            :items="searchInputModeOptions" />
+          <URadioGroup
+            variant="table"
+            orientation="horizontal"
+            default-value="betaCode"
+            :items="searchInputModeOptions"
+          />
         </fieldset>
       </fieldset>
       <fieldset>
@@ -118,13 +138,17 @@
             Lorsque la lemmatisation est active, les formes fléchies peuvent
             produire des résultats de recherche.
           </p>
-          <URadioGroup variant="table" orientation="horizontal" default-value="enabled"
-            :items="searchLemmatizationOptions" />
+          <URadioGroup
+            variant="table"
+            orientation="horizontal"
+            default-value="enabled"
+            :items="searchLemmatizationOptions"
+          />
         </fieldset>
       </fieldset>
     </section>
 
-    <!--<section>
+    <!-- <section>
       <h2>Accessibiltié</h2>
       <fieldset>
         <fieldset>
@@ -136,7 +160,7 @@
           />
         </fieldset>
       </fieldset>
-    </section>-->
+    </section> -->
   </form>
 </template>
 

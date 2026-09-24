@@ -1,4 +1,4 @@
-import { Color } from "./enums";
+import type { Color } from "./enums";
 
 type SafelistedOpacity = 50;
 type SafelistedShade = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
@@ -7,9 +7,9 @@ type TailwindColorClassesState = "active" | "hover";
 type TailwindColorClassesVariant = "solid" | "translucent";
 
 type TailwindColorClassesKeyBase = "bg" | "border" | "ring" | "text";
-type TailwindColorClassesKey =
-  | TailwindColorClassesKeyBase
-  | `${TailwindColorClassesState}:${TailwindColorClassesKeyBase}`;
+type TailwindColorClassesKey
+  = | TailwindColorClassesKeyBase
+    | `${TailwindColorClassesState}:${TailwindColorClassesKeyBase}`;
 
 type TailwindColorClassesShades = {
   [key in TailwindColorClassesKey]: SafelistedShade;
@@ -37,19 +37,20 @@ export class TailwindColorClasses {
    * The default shades.
    */
   #shades: TailwindColorClassesShades = {
-    bg: 200,
+    "bg": 200,
     "hover:bg": 300,
     "active:bg": 400,
-    border: 300,
+    "border": 300,
     "hover:border": 400,
     "active:border": 500,
-    ring: 300,
+    "ring": 300,
     "hover:ring": 400,
     "active:ring": 500,
-    text: 600,
+    "text": 600,
     "hover:text": 700,
     "active:text": 700,
   };
+
   /**
    * The default variant.
    * @remarks Variants should only apply to backgrounds and borders.
@@ -70,7 +71,7 @@ export class TailwindColorClasses {
     opts?: {
       shades?: Partial<TailwindColorClassesShades>;
       variant?: TailwindColorClassesVariant;
-    }
+    },
   ) {
     this.#color = color;
     if (opts?.shades) Object.assign(this.#shades, opts.shades);
@@ -86,7 +87,7 @@ export class TailwindColorClasses {
    */
   #buildClassName(
     key: TailwindColorClassesKey,
-    opts?: TailwindColorClassesOptions
+    opts?: TailwindColorClassesOptions,
   ) {
     const shade: SafelistedShade = opts?.shade ?? this.#shades[key];
     const variant: TailwindColorClassesVariant = opts?.variant ?? this.#variant;
@@ -117,7 +118,7 @@ export class TailwindColorClasses {
    */
   #singleClass(
     key: TailwindColorClassesKeyBase,
-    opts?: TailwindColorClassesOptionsWithState
+    opts?: TailwindColorClassesOptionsWithState,
   ): string {
     return opts?.state
       ? this.#buildClassName(`${opts.state}:${key}`, opts)
@@ -133,11 +134,11 @@ export class TailwindColorClasses {
   classes<
     KeyOptsRecord extends Partial<
       Record<TailwindColorClassesKey, TailwindColorClassesOptions>
-    >
+    >,
   >(
-    keys: KeyOptsRecord | Array<TailwindColorClassesKey | KeyOptsRecord>
+    keys: KeyOptsRecord | Array<TailwindColorClassesKey | KeyOptsRecord>,
   ): string {
-    let className: string[] = [];
+    const className: string[] = [];
 
     // If an array was passed, convert it to an object.
     const keyOptsRecord = Array.isArray(keys)
@@ -151,7 +152,7 @@ export class TailwindColorClasses {
 
     for (const [key, opts] of Object.entries(keyOptsRecord)) {
       className.push(
-        this.#buildClassName(key as TailwindColorClassesKey, opts)
+        this.#buildClassName(key as TailwindColorClassesKey, opts),
       );
     }
 

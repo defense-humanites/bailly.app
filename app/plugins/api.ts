@@ -9,10 +9,10 @@ export type ApiParams<K extends keyof QueryableFields> = {
   skipMorpheus?: boolean;
 };
 
-export type ApiEndpointParams<K extends keyof QueryableFields> =
-  | ApiEntryParams<K>
-  | ApiLookupParams<K>
-  | ApiRandomEntryParams<K>;
+export type ApiEndpointParams<K extends keyof QueryableFields>
+  = | ApiEntryParams<K>
+    | ApiLookupParams<K>
+    | ApiRandomEntryParams<K>;
 
 export type ApiEntryParams<K extends keyof QueryableFields> = Pick<
   ApiParams<K>,
@@ -31,14 +31,14 @@ type ApiResponse = {
   version: string;
 };
 
-export type ApiEndpointResponse<K extends keyof QueryableFields> =
-  | ApiEntryResponse<K>
-  | ApiRandomEntryResponse<K>
-  | ApiLookupResponse<K>;
+export type ApiEndpointResponse<K extends keyof QueryableFields>
+  = | ApiEntryResponse<K>
+    | ApiRandomEntryResponse<K>
+    | ApiLookupResponse<K>;
 
 export type ApiWrappedResponse<
   T extends ApiEndpointResponse<K>,
-  K extends keyof QueryableFields = never
+  K extends keyof QueryableFields = never,
 > = { data: T };
 
 export interface ApiEntryResponse<K extends keyof QueryableFields>
@@ -74,8 +74,8 @@ type EntryBase = {
 
 type PickEntryBase<K extends keyof EntryBase> = Pick<EntryBase, K>;
 
-export type Entry<K extends keyof EntryBase = keyof EntryBase> =
-  PickEntryBase<K> & {
+export type Entry<K extends keyof EntryBase = keyof EntryBase>
+  = PickEntryBase<K> & {
     children?: PickEntryBase<K>[];
   };
 

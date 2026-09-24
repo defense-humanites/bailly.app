@@ -43,14 +43,14 @@ export class IdbStarred {
       const countEntries = await tx.store.count();
       if (countEntries >= Idb.config.tagMaxItems) {
         throw new Error(
-          `Les favoris ne peuvent contenir plus de ${Idb.config.tagMaxItems} entrées.`
+          `Les favoris ne peuvent contenir plus de ${Idb.config.tagMaxItems} entrées.`,
         );
       }
 
       const uriExists = await tx.store.index("uri").get(entry.uri);
       if (uriExists) {
         throw new Error(
-          `L'entrée ${entry.word} a déjà été ajoutée aux favoris.`
+          `L'entrée ${entry.word} a déjà été ajoutée aux favoris.`,
         );
       }
 
@@ -76,7 +76,7 @@ export class IdbStarred {
       return new IdbResponse("success", {});
     } else {
       return IdbResponse.defaultError(
-        "L'entrée à supprimer n'a pas été ajoutée aux favoris."
+        "L'entrée à supprimer n'a pas été ajoutée aux favoris.",
       );
     }
   }

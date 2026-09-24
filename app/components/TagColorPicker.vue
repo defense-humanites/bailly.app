@@ -22,7 +22,7 @@
     () => props.selected,
     (newValue) => {
       if (newValue) selected.value = newValue;
-    }
+    },
   );
 
   /**
@@ -59,7 +59,7 @@
    * Gets the color classes for the currently selected color.
    */
   const selectedColorClasses = computed(() =>
-    colors.find((item) => item.key === selected.value)?.colorClasses
+    colors.find(item => item.key === selected.value)?.colorClasses,
   );
 
   watch(open, (open) => {
@@ -78,17 +78,33 @@
 </script>
 
 <template>
-  <UPopover v-model:open="open" :arrow="{ rounded: true, width: 16, height: 8 }"
-    :ui="{ content: 'z-99 p-3', arrow: 'fill-white' }">
-    <slot name="trigger" :icon="icon" :class="selectedColorClasses?.text()">
-      <UButton :icon="icon" color="neutral" variant="outline" :class="selectedColorClasses?.text()"
-        :ui="{ 'base': 'shadow-none' }" />
+  <UPopover
+    v-model:open="open"
+    :arrow="{ rounded: true, width: 16, height: 8 }"
+    :ui="{ content: 'z-99 p-3', arrow: 'fill-white' }"
+  >
+    <slot
+      name="trigger"
+      :icon="icon"
+      :class="selectedColorClasses?.text()"
+    >
+      <UButton
+        :icon="icon"
+        color="neutral"
+        variant="outline"
+        :class="selectedColorClasses?.text()"
+        :ui="{ base: 'shadow-none' }"
+      />
     </slot>
 
     <template #content>
       <div class="grid grid-cols-4 gap-1.5">
-        <span v-for="color in colors" @click="pickColor(color.key)" class="p-3 rounded-full border transition-colors"
-          :class="color.key === selected ? color.selected : color.base" />
+        <span
+          v-for="color in colors"
+          class="p-3 rounded-full border transition-colors"
+          :class="color.key === selected ? color.selected : color.base"
+          @click="pickColor(color.key)"
+        />
       </div>
     </template>
   </UPopover>

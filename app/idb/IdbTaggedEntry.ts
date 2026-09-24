@@ -24,7 +24,7 @@ export class IdbTaggedEntry {
     tagKey: number,
     opts?: {
       setCurrentTag: boolean;
-    }
+    },
   ): Promise<IdbResponse<IdbTagged>> {
     try {
       if (await this.get(entry.uri, tagKey)) {
@@ -37,7 +37,7 @@ export class IdbTaggedEntry {
       const countEntries = await tx.store.index("tagKey").count(tagKey);
       if (countEntries >= Idb.config.tagMaxItems) {
         throw new Error(
-          `L'étiquette ne peut contenir plus de ${Idb.config.tagMaxItems} entrées.`
+          `L'étiquette ne peut contenir plus de ${Idb.config.tagMaxItems} entrées.`,
         );
       }
 
@@ -69,7 +69,7 @@ export class IdbTaggedEntry {
     const key = await db.getKeyFromIndex(
       IdbStore.Tagged,
       "tagKey+uri",
-      IDBKeyRange.only([tagKey, uri])
+      IDBKeyRange.only([tagKey, uri]),
     );
 
     if (key) {
@@ -77,7 +77,7 @@ export class IdbTaggedEntry {
       return new IdbResponse("success", {});
     } else {
       return IdbResponse.defaultError(
-        "L'étiquette ne référence pas l'entrée à supprimer."
+        "L'étiquette ne référence pas l'entrée à supprimer.",
       );
     }
   }
@@ -93,7 +93,7 @@ export class IdbTaggedEntry {
     const taggedEntry = await db.getFromIndex(
       IdbStore.Tagged,
       "tagKey+uri",
-      IDBKeyRange.only([tagKey, uri])
+      IDBKeyRange.only([tagKey, uri]),
     );
 
     return taggedEntry ?? null;

@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import {
-  IdbResponse,
+  type IdbResponse,
   IdbStarred,
   IdbTaggedEntry,
   type IdbEntry,
@@ -94,7 +94,7 @@ export const useBookmarksStore = defineStore("bookmarks", {
      */
     async fetchTaggedEntries(): Promise<void> {
       this.taggedEntries = this.taggedEntries = sortEntries(
-        await IdbTaggedEntry.getAll()
+        await IdbTaggedEntry.getAll(),
       );
     },
     /**
@@ -162,7 +162,7 @@ export const useBookmarksStore = defineStore("bookmarks", {
      */
     async updateTag(
       key: number,
-      data: IdbTagCreation
+      data: IdbTagCreation,
     ): Promise<IdbResponse<IdbTagWithKey>> {
       const response = await IdbTags.update(key, data);
 
@@ -187,7 +187,7 @@ export const useBookmarksStore = defineStore("bookmarks", {
      */
     async reorderTags(
       orderedKeys: number[],
-      setFirstAsCurrent: boolean = true
+      setFirstAsCurrent: boolean = true,
     ): Promise<void> {
       const response = await IdbTags.reorder(orderedKeys, {
         setFirstAsCurrent,
@@ -218,7 +218,7 @@ export const useBookmarksStore = defineStore("bookmarks", {
      */
     async tagEntry(
       entry: IdbEntryCreation,
-      tagKey: number
+      tagKey: number,
     ): Promise<IdbResponse<IdbEntry>> {
       const response = await IdbTaggedEntry.add(entry, tagKey);
 

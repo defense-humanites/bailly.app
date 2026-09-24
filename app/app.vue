@@ -10,7 +10,7 @@
    */
   const toaster: ToasterProps = {
     expand: false,
-    progress: false
+    progress: false,
   };
 
   /**
@@ -29,7 +29,7 @@
 
   useHead({
     titleTemplate: (title) => {
-      return title ? title : 'Bailly.app — Dictionnaire grec-français en ligne';
+      return title ? title : "Bailly.app — Dictionnaire grec-français en ligne";
     },
     meta: [
       {

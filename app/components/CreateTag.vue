@@ -17,7 +17,7 @@
     if (newTagName.value) {
       const response = await bookmarksStore.createTag({
         name: newTagName.value,
-        color: newTagColor.value
+        color: newTagColor.value,
       });
 
       switch (response.state) {
@@ -34,17 +34,32 @@
 </script>
 
 <template>
-  <UInput @keydown.enter="createTag" v-model="newTagName" size="2xl" :class="{ 'animate-shake': isNewTagNameErrored }"
-    :ui="{ root: 'w-96', leading: 'ps-1.5', trailing: 'pe-1.5' }">
+  <UInput
+    v-model="newTagName"
+    size="2xl"
+    :class="{ 'animate-shake': isNewTagNameErrored }"
+    :ui="{ root: 'w-96', leading: 'ps-1.5', trailing: 'pe-1.5' }"
+    @keydown.enter="createTag"
+  >
     <!-- Color picker -->
     <template #leading>
-      <TagColorPicker @pick-color="(colorKey) => (newTagColor = colorKey)" :selected="newTagColor" />
+      <TagColorPicker
+        :selected="newTagColor"
+        @pick-color="(colorKey) => (newTagColor = colorKey)"
+      />
     </template>
 
     <!-- Submit button -->
     <template #trailing>
-      <UButton @click="createTag" :disabled="!newTagName.length" size="md" variant="soft" color="secondary"
-        icon="i-heroicons-plus" :ui="{ base: 'shadow-none' }">
+      <UButton
+        :disabled="!newTagName.length"
+        size="md"
+        variant="soft"
+        color="secondary"
+        icon="i-heroicons-plus"
+        :ui="{ base: 'shadow-none' }"
+        @click="createTag"
+      >
         Ajouter
       </UButton>
     </template>

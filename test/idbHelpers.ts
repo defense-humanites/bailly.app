@@ -1,4 +1,4 @@
-import { Idb, IdbResponse, IdbStore, type IdbEntryCreation, type IdbTagCreation } from "../app/idb/Idb";
+import { Idb, type IdbResponse, IdbStore, type IdbEntryCreation, type IdbTagCreation } from "../app/idb/Idb";
 
 /**
  * Clears all the Idb stores and reverts the default `Idb` settings.
@@ -6,7 +6,7 @@ import { Idb, IdbResponse, IdbStore, type IdbEntryCreation, type IdbTagCreation 
  */
 export const clearIdb = async (): Promise<void> => {
   const db = await Idb.getIndexedDB();
-  await Promise.all(Object.values(IdbStore).map((store) => db.clear(store)));
+  await Promise.all(Object.values(IdbStore).map(store => db.clear(store)));
   Idb.configure();
 };
 
@@ -14,26 +14,26 @@ export const success = (response: IdbResponse) => response.state === "success";
 export const error = (response: IdbResponse) => response.state === "error";
 
 export const entries: { [key in "rhinokeros" | "alopex"]: IdbEntryCreation; } = {
-  "rhinokeros": {
+  rhinokeros: {
     word: "ῥινόκερως",
     uri: "rhinokerôs",
-    excerpt: "ῥινό·κερως, ωτος (ὁ) [ῑ] rhinocéros, animal avec une corne sur le nez, Str. 774 ; El. N.A. 17, 44 ; Callix. (Ath. 201c). Étym. ῥίς, κέρας."
+    excerpt: "ῥινό·κερως, ωτος (ὁ) [ῑ] rhinocéros, animal avec une corne sur le nez, Str. 774 ; El. N.A. 17, 44 ; Callix. (Ath. 201c). Étym. ῥίς, κέρας.",
   },
-  "alopex": {
+  alopex: {
     word: "ἀλώπηξ",
     uri: "alôpêx",
-    excerpt: "ἀλώπηξ, εκος (ἡ) [ᾰ] I renard, Hdt. 2, 67 ; Arstt. H.A. 8, 28, 7, etc. ; c. symbole de ruse (cf. franç. un fin renard) DL. 2, 73 ; p. opp. au lion (s…"
-  }
+    excerpt: "ἀλώπηξ, εκος (ἡ) [ᾰ] I renard, Hdt. 2, 67 ; Arstt. H.A. 8, 28, 7, etc. ; c. symbole de ruse (cf. franç. un fin renard) DL. 2, 73 ; p. opp. au lion (s…",
+  },
 };
 
 export const tags: { [key in "banquet" | "theetete"]: IdbTagCreation } = {
-  "banquet": {
+  banquet: {
     name: "Banquet",
     description: "De l'amour",
     color: "Rose",
   },
-  "theetete": {
+  theetete: {
     name: "Théétète",
     color: "Blue",
-  }
+  },
 };

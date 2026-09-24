@@ -1,30 +1,14 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2025-07-15',
-  css: ["~/assets/css/main.css"],
-  devtools: { enabled: true },
   modules: [
-    '@nuxt/eslint',
-    '@nuxt/ui',
-    '@vueuse/nuxt',
-    '@pinia/nuxt',
-    '@nuxt/test-utils/module',
+    "@nuxt/eslint",
+    "@nuxt/ui",
+    "@vueuse/nuxt",
+    "@pinia/nuxt",
+    "@nuxt/test-utils/module",
   ],
-  eslint: {
-    config: {
-      stylistic: {
-        indent: 2,
-        quotes: "double",
-        semi: true,
-        commaDangle: "always-multiline",
-        braceStyle: "1tbs",
-      },
-      // Enables type-aware rules (e.g. `no-floating-promises`).
-      typescript: {
-        tsconfigPath: "./tsconfig.json",
-      },
-    },
-  },
+  devtools: { enabled: true },
+  css: ["~/assets/css/main.css"],
   ui: {
     // Fonts are self-hosted (cf. `app/assets/css/fonts.css`).
     fonts: false,
@@ -43,4 +27,20 @@ export default defineNuxtConfig({
       maxTags: 50,
     },
   },
-})
+  compatibilityDate: "2025-07-15",
+  eslint: {
+    config: {
+      stylistic: {
+        indent: 2,
+        quotes: "double",
+        semi: true,
+        commaDangle: "always-multiline",
+        braceStyle: "1tbs",
+      },
+      // Enables type-aware rules (e.g. `no-floating-promises`).
+      typescript: {
+        tsconfigPath: "./tsconfig.json",
+      },
+    },
+  },
+});

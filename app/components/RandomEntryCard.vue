@@ -5,7 +5,7 @@
 
   const { data: payload } = await useApiRandomEntry({
     fields: ["word", "uri", "excerpt", "htmlDefinition"],
-    lengthRange: [600, 700]
+    lengthRange: [600, 700],
   });
 
   const children = entry.value?.children;
@@ -13,8 +13,14 @@
 </script>
 
 <template>
-  <EntryCard v-if="entry" :entry="entry?.children?.at(0) ?? entry" toolbar link :ui="{
-    root: 'h-96 flex overflow-y-hidden',
-    body: 'h-11/12 mask-b-from-85%',
-  }" />
+  <EntryCard
+    v-if="entry"
+    :entry="entry?.children?.at(0) ?? entry"
+    toolbar
+    link
+    :ui="{
+      root: 'h-96 flex overflow-y-hidden',
+      body: 'h-11/12 mask-b-from-85%',
+    }"
+  />
 </template>

@@ -20,10 +20,10 @@ enum ApiEndpoint {
 }
 
 const formatApiParams = <K extends keyof QueryableFields>(
-  params: ApiEndpointParams<K> | null
+  params: ApiEndpointParams<K> | null,
 ): string => {
   return Object.entries(params ?? []).reduce((acc, item) => {
-    let [key, value] = item;
+    const [key, value] = item;
 
     if (value) {
       const param = `${key}=${String(value)}`;
@@ -36,17 +36,17 @@ const formatApiParams = <K extends keyof QueryableFields>(
 
 export function buildApiCall<K extends keyof QueryableFields>(
   endpoint: ApiEndpoint,
-  query: ApiEndpointParams<K>
+  query: ApiEndpointParams<K>,
 ): string;
 export function buildApiCall<K extends keyof QueryableFields>(
   endpoint: ApiEndpoint,
   query: string,
-  params?: ApiEndpointParams<K>
+  params?: ApiEndpointParams<K>,
 ): string;
 export function buildApiCall<K extends keyof QueryableFields>(
   endpoint: ApiEndpoint,
   queryOrParams: string | ApiEndpointParams<K>,
-  params?: ApiEndpointParams<K>
+  params?: ApiEndpointParams<K>,
 ): string {
   let query: string = "";
   if (typeof queryOrParams === "string") {
@@ -55,28 +55,28 @@ export function buildApiCall<K extends keyof QueryableFields>(
 
   const path: string = endpoint + query;
   const request: string = formatApiParams(
-    (typeof queryOrParams !== "string" ? queryOrParams : params) ?? null
+    (typeof queryOrParams !== "string" ? queryOrParams : params) ?? null,
   );
 
   return `${path}?${request}`;
 }
 
 export const useApi = <
-  E extends ApiEndpointResponse<OptionalKeysOf<QueryableFields>>
+  E extends ApiEndpointResponse<OptionalKeysOf<QueryableFields>>,
 >(
   url: string | (() => string),
-  opts?: UseFetchOptions<ApiWrappedResponse<E>>
+  opts?: UseFetchOptions<ApiWrappedResponse<E>>,
 ) => {
   return useFetch(url, {
     ...opts,
-    $fetch: useNuxtApp().$api as typeof $fetch,
+    $fetch: useNuxtApp().$api,
   });
 };
 
 export const useApiEntry = async <K extends keyof QueryableFields>(
   uri: string,
   params: ApiEntryParams<K>,
-  opts?: UseFetchOptions<ApiWrappedResponse<ApiEntryResponse<K>>>
+  opts?: UseFetchOptions<ApiWrappedResponse<ApiEntryResponse<K>>>,
 ) => {
   const url = buildApiCall(ApiEndpoint.Entry, uri, params);
   return await useApi<ApiEntryResponse<K>>(url, opts);
@@ -84,7 +84,7 @@ export const useApiEntry = async <K extends keyof QueryableFields>(
 
 export const useApiRandomEntry = async <K extends keyof QueryableFields>(
   params: ApiRandomEntryParams<K>,
-  opts?: UseFetchOptions<ApiWrappedResponse<ApiRandomEntryResponse<K>>>
+  opts?: UseFetchOptions<ApiWrappedResponse<ApiRandomEntryResponse<K>>>,
 ) => {
   const url = buildApiCall(ApiEndpoint.RandomEntry, params);
   return await useApi<ApiRandomEntryResponse<K>>(url, opts);
@@ -93,7 +93,7 @@ export const useApiRandomEntry = async <K extends keyof QueryableFields>(
 export const useApiLookup = async <K extends keyof QueryableFields>(
   betaCodeStr: string,
   params: ApiLookupParams<K>,
-  opts?: UseFetchOptions<ApiWrappedResponse<ApiLookupResponse<K>>>
+  opts?: UseFetchOptions<ApiWrappedResponse<ApiLookupResponse<K>>>,
 ) => {
   const runtimeConfig = useRuntimeConfig();
 
@@ -103,7 +103,7 @@ export const useApiLookup = async <K extends keyof QueryableFields>(
   params.limit = params.limit ?? +runtimeConfig.public.searchResultsLength;
   params.skipMorpheus = params.skipMorpheus ?? false;
 
-  /*if (localStorage.getItem("searchInputMode") === "transliteration") {
+  /* if (localStorage.getItem("searchInputMode") === "transliteration") {
       // @fixme: `greek-conversion` should implement a character exclusion list.
       searchStr = searchStr.replace(/\?/g, "§");
 
@@ -121,7 +121,7 @@ export const useApiLookup = async <K extends keyof QueryableFields>(
       `Le mode de saisie n'a pas pu être déterminé.`,
       `<${error instanceof Error ? error.message : String(error)}>`
     );
-  }*/
+  } */
 
   if (!validateInput(betaCodeStr)) return;
 
@@ -129,7 +129,7 @@ export const useApiLookup = async <K extends keyof QueryableFields>(
   const response = await useApi<ApiLookupResponse<K>>(url, opts);
 
   response.data.value?.data.entries.sort(
-    (b, a) => Number(a.isExact) - Number(b.isExact)
+    (b, a) => Number(a.isExact) - Number(b.isExact),
   );
 
   return response;
@@ -152,11 +152,11 @@ function validateInput(str: string): boolean {
       return !/[^α-ωϝ]/i.test(str);
     default:
       return (
-        str.length < 50 &&
-        !/[^α-ωϝ\s^$?*"]/i.test(str) &&
-        !/^.+\^/.test(str) &&
-        !/\$.+$/.test(str) &&
-        !/(.)\1{3,}/.test(str)
+        str.length < 50
+        && !/[^α-ωϝ\s^$?*"]/i.test(str)
+        && !/^.+\^/.test(str)
+        && !/\$.+$/.test(str)
+        && !/(.)\1{3,}/.test(str)
       );
   }
 }

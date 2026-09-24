@@ -25,7 +25,7 @@
    * A boolean representing whether the current entry belongs to the current tag.
    */
   const taggedAsCurrent = computed((): boolean =>
-    Boolean(selectedTagKeys.value?.includes(currentTag.value?.key ?? -1))
+    Boolean(selectedTagKeys.value?.includes(currentTag.value?.key ?? -1)),
   );
 
   onMounted(async () => {
@@ -55,29 +55,48 @@
   const currentTagColor = computed(() =>
     currentTag.value
       ? new TailwindColorClasses(Color[currentTag.value.color])
-      : undefined
+      : undefined,
   );
 </script>
 
 <template>
-  <UButtonGroup orientation="horizontal"
-    class="border border-neutral-200 rounded-lg [&>button]:rounded-lg shadow-xs [&>button]:shadow-none">
+  <UButtonGroup
+    orientation="horizontal"
+    class="border border-neutral-200 rounded-lg [&>button]:rounded-lg shadow-xs [&>button]:shadow-none"
+  >
     <!-- Manage tags -->
-    <UButton icon="i-heroicons-ellipsis-horizontal-circle" color="neutral" variant="ghost" />
+    <UButton
+      icon="i-heroicons-ellipsis-horizontal-circle"
+      color="neutral"
+      variant="ghost"
+    />
 
     <!-- Toggle current tag -->
-    <UButton v-if="currentTag" @click="handleTagChange" :label="currentTag.name"
-      :icon="taggedAsCurrent ? 'i-heroicons-tag-solid' : 'i-heroicons-tag'" :class="taggedAsCurrent
+    <UButton
+      v-if="currentTag"
+      :label="currentTag.name"
+      :icon="taggedAsCurrent ? 'i-heroicons-tag-solid' : 'i-heroicons-tag'"
+      :class="taggedAsCurrent
         ? currentTagColor?.text()
         : currentTagColor?.classes(['hover:text'])
-        " :ui="{
-          label:
-            'max-w-8 overflow-hidden whitespace-nowrap mask-r-from-50% mask-r-to-100% text-clip text-xs tracking-tighter',
-        }" color="neutral" variant="ghost" />
+      "
+      :ui="{
+        label:
+          'max-w-8 overflow-hidden whitespace-nowrap mask-r-from-50% mask-r-to-100% text-clip text-xs tracking-tighter',
+      }"
+      color="neutral"
+      variant="ghost"
+      @click="handleTagChange"
+    />
 
     <!-- Toggle star -->
-    <UButton @click="toggleStar" :icon="starred ? 'i-heroicons-star-solid' : 'i-heroicons-star'" color="neutral"
-      variant="ghost" :class="starred ? 'text-primary-400' : 'hover:text-primary-400'"
-      :ui="{ base: 'border-l border-neutral-200' }" />
+    <UButton
+      :icon="starred ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+      color="neutral"
+      variant="ghost"
+      :class="starred ? 'text-primary-400' : 'hover:text-primary-400'"
+      :ui="{ base: 'border-l border-neutral-200' }"
+      @click="toggleStar"
+    />
   </UButtonGroup>
 </template>

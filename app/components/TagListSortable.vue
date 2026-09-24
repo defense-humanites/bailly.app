@@ -23,7 +23,7 @@
   /**
    * Updates `sortableTags` when `props.tags` change.
    */
-  watch(() => props.tags, tags => {
+  watch(() => props.tags, (tags) => {
     sortableTags.value = tags;
   }, { deep: true });
 
@@ -37,12 +37,12 @@
      * Sorts the array and emits the new order when the change is completed.
      */
     onUpdate: (e: any) => {
-      moveArrayElement(sortableTags, e.oldIndex, e.newIndex, e)
+      moveArrayElement(sortableTags, e.oldIndex, e.newIndex, e);
       nextTick(() => {
         const orderedKeys: number[] = [];
         for (const tag of sortableTags.value) orderedKeys.push(tag.key);
         emit("reorderTags", orderedKeys);
-      })
+      });
     } });
 
   /** Return Tailwind color classes. */
@@ -52,11 +52,24 @@
 </script>
 
 <template>
-  <ol ref="tag-list" class="space-y-3 select-none">
-    <li v-for="tag in sortableTags" :key="tag.key"
-      class="px-3 py-1.5 flex items-center hover:bg-neutral-100 rounded-lg text-lg font-semibold cursor-default">
-      <UIcon name="i-heroicons-bars-3" class="mr-3 size-5" />
-      <UIcon name="i-heroicons-tag-solid" class="mr-3 size-5" :class="tagColor(tag.color).text()" />
+  <ol
+    ref="tag-list"
+    class="space-y-3 select-none"
+  >
+    <li
+      v-for="tag in sortableTags"
+      :key="tag.key"
+      class="px-3 py-1.5 flex items-center hover:bg-neutral-100 rounded-lg text-lg font-semibold cursor-default"
+    >
+      <UIcon
+        name="i-heroicons-bars-3"
+        class="mr-3 size-5"
+      />
+      <UIcon
+        name="i-heroicons-tag-solid"
+        class="mr-3 size-5"
+        :class="tagColor(tag.color).text()"
+      />
       {{ tag.name }}
     </li>
   </ol>

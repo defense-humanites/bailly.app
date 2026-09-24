@@ -9,7 +9,7 @@ test("Create tag", async () => {
   expect(await IdbTags.add(tags.theetete)).toSatisfy(success);
   const createPhedonTag = await IdbTags.add({ name: "Phédon", description: "De l'âme", color: "unknown" });
   expect(createPhedonTag).toSatisfy(success);
-  expect(createPhedonTag).toSatisfy((tag) => tag.color !== "unknown"); // A valid color must have been picked.
+  expect(createPhedonTag).toSatisfy(tag => tag.color !== "unknown"); // A valid color must have been picked.
 
   // Wrong values.
   expect(await IdbTags.add({ name: "" })).toSatisfy(error); // Name is mandatory.
@@ -33,7 +33,7 @@ test("Update tag", async () => {
   expect(await IdbTags.update(banquetTagKey, newData)).toSatisfy(success);
   const updatedTag = await IdbTags.update(banquetTagKey, { ...newData, color: "unknown" });
   expect(updatedTag).toSatisfy(success);
-  expect(updatedTag).toSatisfy((tag) => tag.color !== "unknown"); // A valid color must have been picked.
+  expect(updatedTag).toSatisfy(tag => tag.color !== "unknown"); // A valid color must have been picked.
 
   // Wrong values.
   expect(await IdbTags.update(theeteteTagKey, { name: "" })).toSatisfy(error); // Name is mandatory.
@@ -133,7 +133,7 @@ test("Get entry tags / tag keys (involves IdbTaggedEntry)", async () => {
   expect(updatedFooEntryTagKeys).toHaveLength(2);
   expect(updatedFooEntryTags).toEqual([
     expect.objectContaining({ key: banquetTagKey, name: "Banquet", color: "Rose" }),
-    expect.objectContaining({ key: theeteteTagKey, name: "Théétète", color: "Blue" })
+    expect.objectContaining({ key: theeteteTagKey, name: "Théétète", color: "Blue" }),
   ]);
   expect(updatedFooEntryTagKeys).toEqual([banquetTagKey, theeteteTagKey]);
 
@@ -146,7 +146,7 @@ test("Get entry tags / tag keys (involves IdbTaggedEntry)", async () => {
   expect(updatedBarEntryTags).toHaveLength(1);
   expect(updatedBarEntryTagKeys).toHaveLength(1);
   expect(updatedBarEntryTags).toEqual([
-    expect.objectContaining({ key: banquetTagKey, name: "Banquet", color: "Rose" })
+    expect.objectContaining({ key: banquetTagKey, name: "Banquet", color: "Rose" }),
   ]);
   expect(updatedBarEntryTagKeys).toEqual([banquetTagKey]);
 });

@@ -22,7 +22,7 @@ test("Create starred entry", async () => {
   expect(await IdbStarred.add({ word: "", uri: "foo", excerpt: "foo" })).toSatisfy(error); // Bad values.
   expect(await IdbStarred.add({ word: "", uri: "foo", children: [] })).toSatisfy(error); // Bad values.
   expect(await IdbStarred.add({})).toSatisfy(error); // Bad values.
-  
+
   Idb.configure({ tagMaxItems: 1 });
   expect(await IdbStarred.add({ word: "baz", uri: "baz", excerpt: "baz" })).toSatisfy(error); // Too many starred entries.
 });

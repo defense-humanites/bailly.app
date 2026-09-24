@@ -25,7 +25,7 @@
     /**
      * Extended Nuxt UI theming for the card component.
      */
-    ui?: CardProps["ui"] & { entry?: string; };
+    ui?: CardProps["ui"] & { entry?: string };
   }>();
 
   const [DefineEntry, ReuseEntry] = createReusableTemplate<{
@@ -39,26 +39,54 @@
 
 <template>
   <DefineEntry v-slot="{ entry }">
-    <div v-html="entry.htmlDefinition ?? entry.excerpt" class="font-serif font-semibold text-xl" :class="ui?.entry" />
+    <div
+      class="font-serif font-semibold text-xl"
+      :class="ui?.entry"
+      v-html="entry.htmlDefinition ?? entry.excerpt"
+    />
   </DefineEntry>
 
   <DefineEntryCard v-slot="{ entry }">
-    <UCard :class="{ '[&>*]:p-0': link }" :ui="ui">
-      <TagButtonGroup v-if="toolbar" :entry="entry" class="relative float-right"
-        :class="[link ? 'right-3 top-3' : '-right-3 -top-3']" />
+    <UCard
+      :class="{ '[&>*]:p-0': link }"
+      :ui="ui"
+    >
+      <TagButtonGroup
+        v-if="toolbar"
+        :entry="entry"
+        class="relative float-right"
+        :class="[link ? 'right-3 top-3' : '-right-3 -top-3']"
+      />
 
-      <NuxtLink v-if="link" :class="[link && entry.htmlDefinition ? '[&>*]:p-4 [&>*]:sm:p-6' : '']"
-        :to="`/${entry.uri}`" prefetch-on="interaction">
+      <NuxtLink
+        v-if="link"
+        :class="[link && entry.htmlDefinition ? '[&>*]:p-4 [&>*]:sm:p-6' : '']"
+        :to="`/${entry.uri}`"
+        prefetch-on="interaction"
+      >
         <ReuseEntry :entry="entry" />
       </NuxtLink>
 
-      <ReuseEntry v-else :entry="entry" />
+      <ReuseEntry
+        v-else
+        :entry="entry"
+      />
     </UCard>
   </DefineEntryCard>
 
-  <div v-if="entry.children" class="flex flex-col gap-6">
-    <ReuseEntryCard v-for="childEntry in entry.children" :entry="childEntry" as="article" />
+  <div
+    v-if="entry.children"
+    class="flex flex-col gap-6"
+  >
+    <ReuseEntryCard
+      v-for="childEntry in entry.children"
+      :entry="childEntry"
+      as="article"
+    />
   </div>
 
-  <ReuseEntryCard v-else :entry="entry" />
+  <ReuseEntryCard
+    v-else
+    :entry="entry"
+  />
 </template>

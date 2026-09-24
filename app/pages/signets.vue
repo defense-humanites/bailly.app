@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { IdbEntry } from '~/idb';
+  import type { IdbEntry } from "~/idb";
 
   useSeoMeta({
     title: "Signets",
@@ -22,10 +22,21 @@
         <!-- Actions -->
         <aside class="flex items-center gap-x-3 xl:gap-x-6">
           <!-- Order tags -->
-          <UModal title="Arranger les étiquettes" :close="{ variant: 'outline', class: 'shadow-none' }">
-            <UButton label="Arranger" icon="i-heroicons-queue-list" size="2xl" variant="subtle" />
+          <UModal
+            title="Arranger les étiquettes"
+            :close="{ variant: 'outline', class: 'shadow-none' }"
+          >
+            <UButton
+              label="Arranger"
+              icon="i-heroicons-queue-list"
+              size="2xl"
+              variant="subtle"
+            />
             <template #body>
-              <TagListSortable @reorder-tags="(orderedKeys) => bookmarksStore.reorderTags(orderedKeys)" :tags="tags" />
+              <TagListSortable
+                :tags="tags"
+                @reorder-tags="(orderedKeys) => bookmarksStore.reorderTags(orderedKeys)"
+              />
             </template>
           </UModal>
 
@@ -36,18 +47,27 @@
       <!-- Content -->
       <ClientOnly>
         <!-- Favorites -->
-        <BookmarkGroup :tag="{
-          key: -1,
-          name: 'Favoris',
-          color: 'Yellow',
-        }" :entries="starredEntries as IdbEntry[]" custom-icon="i-heroicons-star">
+        <BookmarkGroup
+          :tag="{
+            key: -1,
+            name: 'Favoris',
+            color: 'Yellow',
+          }"
+          :entries="starredEntries as IdbEntry[]"
+          custom-icon="i-heroicons-star"
+        >
           Ajoutez à cette liste les entrées que vous souhaitez retrouver
           facilement plus tard.
         </BookmarkGroup>
 
         <!-- Tags -->
-        <BookmarkGroup v-for="tag in tags" :key="tag.key" :tag="tag"
-          :entries="taggedEntries.filter((entry) => entry.tagKey === tag.key)" editable>
+        <BookmarkGroup
+          v-for="tag in tags"
+          :key="tag.key"
+          :tag="tag"
+          :entries="taggedEntries.filter((entry) => entry.tagKey === tag.key)"
+          editable
+        >
           Cette étiquette ne référence aucune entrée.
         </BookmarkGroup>
       </ClientOnly>

@@ -8,5 +8,5 @@ export type OptionalKeysOf<Obj> = keyof {
   [Key in keyof Obj as Omit<Obj, Key> extends Obj ? Key : never]: Obj[Key];
 };
 
-export type PartialExcept<T, K extends keyof T> = Pick<T, K> &
-  Partial<Omit<T, K>>;
+export type PartialExcept<T, K extends keyof T> = Pick<T, K>
+  & Partial<Omit<T, K>>;

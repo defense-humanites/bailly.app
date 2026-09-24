@@ -24,7 +24,7 @@ export class IdbTags {
    * is for favorites.
    */
   static readonly colorKeys = Object.keys(Color).filter(
-    (el) => el !== "Yellow"
+    el => el !== "Yellow",
   ) as TagColorKey[];
 
   /**
@@ -37,16 +37,16 @@ export class IdbTags {
      * is present in the `Color` enum, considering that the latter may have changed
      * since the insertion or an error may have entered `IndexedDB`.
      */
-    const usedColorKeys = (await this.getUsedColorKeys()).filter((el) =>
-      (this.colorKeys as ColorKey[]).includes(el)
+    const usedColorKeys = (await this.getUsedColorKeys()).filter(el =>
+      (this.colorKeys as ColorKey[]).includes(el),
     );
     /**
      * Check if the length of the legitimate keys retrieved from `IndexedDB`
      * and the length of the filtered enum keys coincide, so that there is no
      * color left.
      */
-    const colorsExhausted: boolean =
-      usedColorKeys.length === this.colorKeys.length;
+    const colorsExhausted: boolean
+      = usedColorKeys.length === this.colorKeys.length;
     /**
      * Exclude some colors from picking. See the comments below.
      */
@@ -93,7 +93,7 @@ export class IdbTags {
    */
   static async #isExistingTagName(
     name: string,
-    tagKey?: number
+    tagKey?: number,
   ): Promise<string | undefined> {
     const makeComparable = (input: string): string =>
       input.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
@@ -101,14 +101,14 @@ export class IdbTags {
     const comparableName: string = makeComparable(name);
 
     return (await this.getAll()).find(
-      (tag) => makeComparable(tag.name) === comparableName && tag.key !== tagKey
+      tag => makeComparable(tag.name) === comparableName && tag.key !== tagKey,
     )?.name;
   }
 
   static async add(data: IdbTagCreation): Promise<IdbResponse<IdbTagWithKey>> {
     try {
-      const { name, description, color, position }: IdbTag =
-        await this.#buildIdbTag(data);
+      const { name, description, color, position }: IdbTag
+        = await this.#buildIdbTag(data);
 
       // Avoid giving an existing name.
       const nameExists = await this.#isExistingTagName(name);
@@ -136,7 +136,7 @@ export class IdbTags {
 
       if (!newTag) {
         throw new Error(
-          "Une erreur est survenue lors de la création de l'étiquette."
+          "Une erreur est survenue lors de la création de l'étiquette.",
         );
       }
 
@@ -157,11 +157,11 @@ export class IdbTags {
 
   static async update(
     tagKey: number,
-    data: IdbTagCreation
+    data: IdbTagCreation,
   ): Promise<IdbResponse<IdbTagWithKey>> {
     try {
       const { name, description, color }: IdbTag = await this.#buildIdbTag(
-        data
+        data,
       );
 
       // Avoid giving an existing name.
@@ -277,7 +277,7 @@ export class IdbTags {
    */
   static getCurrentKey(): number | null {
     const currentTagKey: string | null = localStorage.getItem(
-      LocalStorageKey.CurrentTagKey
+      LocalStorageKey.CurrentTagKey,
     );
 
     return currentTagKey ? Number(currentTagKey) : null;
@@ -289,7 +289,7 @@ export class IdbTags {
     const tagKeys = await this.getEntryTagKeys(uri);
     if (!tagKeys) return null;
 
-    let tags: IdbTagWithKey[] = [];
+    const tags: IdbTagWithKey[] = [];
     const tx = db.transaction(IdbStore.Tags);
     for (const tagKey of tagKeys) {
       const tag = await tx.store.get(tagKey);
@@ -305,10 +305,10 @@ export class IdbTags {
     const entries: IdbTagged[] = await db.getAllFromIndex(
       IdbStore.Tagged,
       "uri",
-      uri
+      uri,
     );
 
-    return entries.length ? entries.map((entry) => entry.tagKey) : null;
+    return entries.length ? entries.map(entry => entry.tagKey) : null;
   }
 
   static async remove(tagKey: number): Promise<IdbResponse> {
@@ -333,7 +333,7 @@ export class IdbTags {
         if (firstTagKey) {
           localStorage.setItem(
             LocalStorageKey.CurrentTagKey,
-            String(firstTagKey)
+            String(firstTagKey),
           );
         }
       }
@@ -356,7 +356,7 @@ export class IdbTags {
     orderedKeys: number[],
     opts?: {
       setFirstAsCurrent: boolean;
-    }
+    },
   ): Promise<IdbResponse<IdbTagWithKey[]>> {
     try {
       if (!orderedKeys[0]) {
@@ -366,21 +366,21 @@ export class IdbTags {
       const db = await Idb.getIndexedDB();
 
       const tags = await this.getAll({ orderBy: "position" });
-      const tagKeys = tags.map((el) => el.key);
+      const tagKeys = tags.map(el => el.key);
 
       if (
-        orderedKeys.length !== tagKeys.length ||
-        !orderedKeys.every((el) => tagKeys.includes(el))
+        orderedKeys.length !== tagKeys.length
+        || !orderedKeys.every(el => tagKeys.includes(el))
       ) {
         throw new Error(
-          "The keys passed and those stored in IndexedDB do not match " +
-            "(no data has been modified)."
+          "The keys passed and those stored in IndexedDB do not match "
+          + "(no data has been modified).",
         );
       }
 
       const tx = db.transaction(IdbStore.Tags, "readwrite");
       for (const [i, key] of orderedKeys.entries()) {
-        const tagIndex = tags.findIndex((el) => el.key === key);
+        const tagIndex = tags.findIndex(el => el.key === key);
         if (tags[tagIndex]) {
           try {
             const newPos: number = i + 1;
@@ -388,13 +388,13 @@ export class IdbTags {
             tags[tagIndex].position = newPos;
           } catch (error: unknown) {
             throw new Error(
-              error instanceof Error ? error.message : String(error)
+              error instanceof Error ? error.message : String(error),
             );
           }
         } else {
           throw new Error(
-            "The keys passed and those stored in IndexedDB do not match " +
-              "(note that some data has already been modified)."
+            "The keys passed and those stored in IndexedDB do not match "
+            + "(note that some data has already been modified).",
           );
         }
       }
@@ -419,8 +419,8 @@ export class IdbTags {
         return new IdbResponse("success", {});
       } else {
         throw new Error(
-          "L'étiquette sélectionnée n'a pas pu être promue " +
-            "en tant qu'étiquette courante."
+          "L'étiquette sélectionnée n'a pas pu être promue "
+          + "en tant qu'étiquette courante.",
         );
       }
     } catch (error: unknown) {

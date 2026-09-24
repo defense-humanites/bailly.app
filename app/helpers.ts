@@ -7,7 +7,7 @@ import { LocalStorageKey } from "~/enums";
  * @param filter Keys that should not be selected.
  * @returns An enum key if found, otherwise `undefined`.
  */
-/*export function pickRandomEnumKey<
+/* export function pickRandomEnumKey<
   T extends Record<string, string>,
   K extends (keyof T)[],
   F extends K
@@ -19,18 +19,18 @@ import { LocalStorageKey } from "~/enums";
     K[number],
     F[number]
   >;
-}*/
+} */
 
 type EnumLike = Record<string | number, string | number>;
 type ExcludeKeys<T, K extends keyof T> = Omit<T, K>;
 
 export function pickRandomEnumKey<
   T extends EnumLike,
-  E extends keyof T = never
+  E extends keyof T = never,
 >(enumObject: T, excludeKeys: E[] = [] as E[]): keyof ExcludeKeys<T, E> {
   const allKeys = Object.keys(enumObject) as (keyof T)[];
   const availableKeys = allKeys.filter(
-    (key) => !excludeKeys.includes(key as E)
+    key => !excludeKeys.includes(key as E),
   );
 
   if (!availableKeys.length) {
@@ -44,15 +44,15 @@ export function pickRandomEnumKey<
 export function highlightEntryInExcerpt(
   word: string,
   excerpt: string,
-  className: string = "font-semibold"
+  className: string = "font-semibold",
 ): string {
   // Count the characters that are present in the extract but removed from
   // the separated word: 'Asterisk', 'Middle Dot' (\u00B7).
   const countSpecialChars: number = [...excerpt.matchAll(/[*\u00B7]/g)].length;
 
   return (
-    `<span class="${className}">${word}</span>` +
-    excerpt?.slice(word.length + countSpecialChars)
+    `<span class="${className}">${word}</span>`
+    + excerpt?.slice(word.length + countSpecialChars)
   );
 }
 
@@ -69,7 +69,7 @@ export function romanizeGreekStrings(): void {
       item.textContent = convert(
         item.textContent.replace(/\u0387/g, "§"),
         "greek", "transliteration",
-        { preset: "ala-lc-ancient" }
+        { preset: "ala-lc-ancient" },
       ).replace(/§/g, "\u0387");
     }
   });

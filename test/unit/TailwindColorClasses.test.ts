@@ -4,18 +4,18 @@ import { TailwindColorClasses } from "../../app/TailwindColorClasses";
 
 // @fixme One should have access to the default shades values.
 const defaultShades = {
-  bg: 200,
+  "bg": 200,
   "hover:bg": 300,
   "active:bg": 400,
-  border: 300,
+  "border": 300,
   "hover:border": 400,
   "active:border": 500,
-  ring: 300,
+  "ring": 300,
   "hover:ring": 400,
   "active:ring": 500,
-  text: 600,
+  "text": 600,
   "hover:text": 700,
-  "active:text": 700
+  "active:text": 700,
 } as const;
 
 const blue = new TailwindColorClasses(Color.Blue, { shades: defaultShades });
@@ -34,7 +34,7 @@ test("Multiple color classes", async () => {
   expect(blue.classes({ bg: { variant: "translucent" } })).toBe("bg-blue-200/50");
   expect(blue.classes({ bg: { shade: 900, variant: "translucent" }, text: { shade: 100 } }))
     .toBe("bg-blue-900/50 text-blue-100");
-  expect(blue.classes({ border: { shade: 400 }, "hover:border": { shade: 600 }, "active:border": { shade: 800 } }))
+  expect(blue.classes({ "border": { shade: 400 }, "hover:border": { shade: 600 }, "active:border": { shade: 800 } }))
     .toBe("border-blue-400 hover:border-blue-600 active:border-blue-800");
 
   // Array with classes and objects.
@@ -48,7 +48,7 @@ test("Single color classes", async () => {
   expect(blue.background()).toBe("bg-blue-200");
   expect(blue.background({ state: "hover" })).toBe("hover:bg-blue-300");
   expect(blue.background({ state: "active" })).toBe("active:bg-blue-400");
-  //expect(blue.background({ state: "unknown" })).toBe("active:bg-blue-400"); // @fixme Prevent things like `unknown:bg-blue-unknown`.
+  // expect(blue.background({ state: "unknown" })).toBe("active:bg-blue-400"); // @fixme Prevent things like `unknown:bg-blue-unknown`.
 
   // Border
   expect(blue.border()).toBe("border-blue-300");
