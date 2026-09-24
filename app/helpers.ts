@@ -24,14 +24,15 @@ export function highlightEntryInExcerpt(
   excerpt: string,
   className: string = "font-semibold",
 ): string {
-  // Count the characters that are present in the extract but removed from
-  // the separated word: 'Asterisk', 'Middle Dot' (\u00B7).
-  const countSpecialChars: number = [...excerpt.matchAll(/[*\u00B7]/g)].length;
+  // The excerpt starts with the word, which may contain characters that are
+  // absent from the separated word: 'Asterisk', 'Middle Dot' (\u00B7). Find
+  // where the word ends in the excerpt, only counting those characters there.
+  let end = 0;
+  for (let matched = 0; end < excerpt.length && matched < word.length; end++) {
+    if (!/[*\u00B7]/.test(excerpt.charAt(end))) matched++;
+  }
 
-  return (
-    `<span class="${className}">${word}</span>`
-    + excerpt?.slice(word.length + countSpecialChars)
-  );
+  return `<span class="${className}">${word}</span>` + excerpt.slice(end);
 }
 
 export function romanizeGreekStrings(): void {

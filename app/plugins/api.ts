@@ -109,7 +109,7 @@ export type MorpheusDataItem = {
 };
 
 // Cf. https://nuxt.com/docs/4.x/guide/recipes/custom-usefetch
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(() => {
   const runtimeConfig = useRuntimeConfig();
 
   const api = $fetch.create({

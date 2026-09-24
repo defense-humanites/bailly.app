@@ -28,7 +28,21 @@
   --font-serif: Brill, "IFAOGrec", ui-serif, Georgia, Cambria, "Times New Roman",
     Times, serif;
 
+  --animate-rise: rise 0.25s ease-out;
   --animate-shake: shake 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+
+  @keyframes rise {
+    0% {
+      transform: translateY(0.5rem);
+      opacity: 0;
+    }
+    33% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
 
   @keyframes shake {
     10%,

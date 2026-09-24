@@ -22,7 +22,7 @@ enum ApiEndpoint {
 const formatApiParams = <K extends keyof QueryableFields>(
   params: ApiEndpointParams<K> | null,
 ): string => {
-  return Object.entries(params ?? []).reduce((acc, item) => {
+  return (Object.entries(params ?? {}) as [string, string | number | boolean | string[] | undefined][]).reduce((acc, item) => {
     const [key, value] = item;
 
     if (value) {
@@ -97,11 +97,14 @@ export const useApiLookup = async <K extends keyof QueryableFields>(
 ) => {
   const runtimeConfig = useRuntimeConfig();
 
-  params.fields = params.fields ?? ["word", "uri", "excerpt"];
-  params.morphology = params.morphology ?? false;
-  params.caseSensitive = params.caseSensitive ?? false;
-  params.limit = params.limit ?? +runtimeConfig.public.searchResultsLength;
-  params.skipMorpheus = params.skipMorpheus ?? false;
+  // Don't mutate the caller's object.
+  params = {
+    morphology: false,
+    caseSensitive: false,
+    limit: runtimeConfig.public.searchResultsLength,
+    skipMorpheus: false,
+    ...params,
+  };
 
   /* if (localStorage.getItem("searchInputMode") === "transliteration") {
       // @fixme: `greek-conversion` should implement a character exclusion list.
@@ -137,7 +140,7 @@ export const useApiLookup = async <K extends keyof QueryableFields>(
 
 /**
  * A. [one char] Only allow greek letters (digamma included).
- * B. (1) Allow a maximum of 50 characters.
+ * B. (1) Allow fewer than 50 characters.
  *    (2) Only allow greek letters (digamma included), spaces
  *        and metacharacters `^`, `$`, `?`, `*` and `"`;
  *    (3) Only allow `^` in first position;

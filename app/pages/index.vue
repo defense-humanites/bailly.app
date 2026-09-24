@@ -45,11 +45,4 @@
       </ClientOnly>
     </aside>
   </div>
-
-  <!-- <div
-    class="fixed bottom-3 right-3 mb-[env(safe-area-inset-bottom)] mr-[env(safe-area-inset-right)] lg:bottom-6 lg:right-6">
-    <ModalLink client:only="solid-js" type="button" label="Annexes" modalIcon="PaperClip" modalTitle="Annexes">
-      <DocumentsList slot="modalContent" />
-    </ModalLink>
-  </div> -->
 </template>

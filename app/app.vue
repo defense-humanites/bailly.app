@@ -19,9 +19,9 @@
    */
   onMounted(async () => {
     Idb.configure({
-      searchHistoryLength: Number(runtimeConfig.public.searchHistoryLength),
-      tagMaxItems: Number(runtimeConfig.public.tagMaxItems),
-      maxTags: Number(runtimeConfig.public.maxTags),
+      searchHistoryLength: runtimeConfig.public.searchHistoryLength,
+      tagMaxItems: runtimeConfig.public.tagMaxItems,
+      maxTags: runtimeConfig.public.maxTags,
     });
 
     await useBookmarksStore().initialize();
