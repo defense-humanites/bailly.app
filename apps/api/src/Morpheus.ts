@@ -44,6 +44,63 @@ export type Morphology = Pick<
  */
 export type MorpheusResponse<T = MorpheusAnalysis> = Record<string, T[]>;
 
+const SMOOTH_BREATHING = "\u0313";
+const ROUGH_BREATHING = "\u0314";
+const DIAERESIS = "\u0308";
+
+/**
+ * Returns the variants of a Greek word with a smooth and a rough breathing on its
+ * initial vowel (or diphthong), or a rough breathing on its initial rho. Any breathing
+ * already present is replaced. Words without an initial vowel or rho are returned as is.
+ */
+export function buildBreathingVariants(word: string): string[] {
+  const clusters = word
+    .normalize("NFD")
+    .replace(/[\u0313\u0314]/g, "")
+    .match(/\p{L}\p{M}*|[^\p{L}]+/gu) ?? [];
+
+  const [first = "", second = ""] = clusters;
+  const firstLetter = first.charAt(0).toLowerCase();
+  const secondLetter = second.charAt(0).toLowerCase();
+
+  const withBreathing = (breathing: string): string => {
+    // In a diphthong, the breathing goes on the second vowel (e.g. οὗ, αὐτός).
+    const isDiphthong = /^[αεοηυ]$/.test(firstLetter) &&
+      (secondLetter === "ι" || (secondLetter === "υ" && firstLetter !== "υ")) &&
+      first.length === 1 &&
+      !second.includes(DIAERESIS);
+    const index = isDiphthong ? 1 : 0;
+
+    return clusters
+      .map((cluster, i) =>
+        i === index ? cluster[0] + breathing + cluster.slice(1) : cluster
+      )
+      .join("")
+      .normalize("NFC");
+  };
+
+  if (firstLetter === "ρ") return [withBreathing(ROUGH_BREATHING)];
+  if (/^[αεηιουω]$/.test(firstLetter)) {
+    return [withBreathing(SMOOTH_BREATHING), withBreathing(ROUGH_BREATHING)];
+  }
+  return [word];
+}
+
+/**
+ * Capitalizes the first letter of a Greek word, keeping its diacritics on it (a plain
+ * `toUpperCase()` would turn an iota subscript into a capital iota: ᾧ → ὯΙ).
+ */
+/** Removes the accents and iota subscripts (breathings and diaereses are kept). */
+export function removeAccents(word: string): string {
+  return word.normalize("NFD").replace(/[\u0300\u0301\u0342\u0345]/g, "")
+    .normalize("NFC");
+}
+
+export function capitalize(word: string): string {
+  const nfd = word.normalize("NFD");
+  return (nfd.charAt(0).toUpperCase() + nfd.slice(1)).normalize("NFC");
+}
+
 export class Morpheus {
   static #wrapper: Morpheus;
 
@@ -159,17 +216,40 @@ export class Morpheus {
     // Morpheus does not recognize contextual grave accents. They are always
     // converted to their lexical acute equivalent for analysis; the original
     // Greek surface form is preserved in the public morphology key.
-    const betaCode = convert(
-      graveToAcute(greekStr),
-      "greek",
-      "beta-code",
-      { preset: "perseus" }
+    //
+    // `IgnoreAccents` does not cover the breathings: a form typed without one is read
+    // as smooth (e.g. `ων` misses ὅς through ὧν). When diacritics are ignored, both
+    // breathings are therefore tried.
+    //
+    // Likewise, Morpheus lowercases a capitalized form but never capitalizes a
+    // lowercase one (e.g. `διος` misses Ζεύς through Διός): when the case is ignored,
+    // the capitalized variants are tried too.
+    //
+    // Accents and iota subscripts are removed beforehand: Morpheus treats them as
+    // optional when absent, but as required when present (e.g. `ᾧ` would miss ὦ).
+    const breathingForms = diacriticSensitive
+      ? [graveToAcute(greekStr)]
+      : buildBreathingVariants(removeAccents(greekStr));
+
+    const forms = [
+      ...new Set(
+        caseSensitive
+          ? breathingForms
+          : breathingForms.flatMap((form) => [form, capitalize(form)])
+      )
+    ];
+
+    const betaCodes = forms.map((form) =>
+      convert(form, "greek", "beta-code", { preset: "perseus" })
     );
 
-    console.log(greekStr, betaCode);
+    console.log(greekStr, betaCodes);
 
     try {
-      const analyses = await this.#context().analyze(betaCode, morpheusOptions);
+      const analyses: MorpheusAnalysis[] = [];
+      for (const betaCode of betaCodes) {
+        analyses.push(...await this.#context().analyze(betaCode, morpheusOptions));
+      }
       console.log(analyses.map((analysis) => analysis.lemma));
       return this.#formatMorpheusResponse(analyses, greekStr);
     } catch (error) {
