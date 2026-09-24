@@ -19,6 +19,12 @@ const errorToast = (message: string): void => {
   });
 };
 
+/**
+ * The pending initialization, shared by concurrent or repeated calls (e.g.
+ * after a hot module replacement).
+ */
+let initialization: Promise<void> | undefined;
+
 const sortEntries = <T extends IdbEntry[]>(entries: T): T => {
   // Difference between 'grc' and 'el-polyton'?
   const collator = new Intl.Collator("grc");
@@ -61,18 +67,17 @@ export const useBookmarksStore = defineStore("bookmarks", {
     /**
      * Initializes the bookmarks store by fetching data stored in IndexedDB.
      */
-    async initialize() {
-      if (this.initialized) {
-        throw new Error("The store should only be initialized once.");
-      }
+    async initialize(): Promise<void> {
+      initialization ??= (async () => {
+        await this.fetchTags();
+        await this.fetchTaggedEntries();
+        await this.fetchStarredEntries();
+        this.newTagColor = await IdbTags.pickColor();
 
-      await this.fetchTags();
-      await this.fetchTaggedEntries();
-      await this.fetchStarredEntries();
-      this.currentTag = await IdbTags.getCurrent();
-      this.newTagColor = await IdbTags.pickColor();
+        this.initialized = true;
+      })();
 
-      this.initialized = true;
+      await initialization;
     },
     /**
      * Fetches the starred entries from IndexedDB.
@@ -93,7 +98,7 @@ export const useBookmarksStore = defineStore("bookmarks", {
      * Fetches the tagged entries from IndexedDB, then sorts them.
      */
     async fetchTaggedEntries(): Promise<void> {
-      this.taggedEntries = this.taggedEntries = sortEntries(
+      this.taggedEntries = sortEntries(
         await IdbTaggedEntry.getAll(),
       );
     },
@@ -203,12 +208,24 @@ export const useBookmarksStore = defineStore("bookmarks", {
       }
     },
     /**
-     * Removes a tag.
+     * Removes a tag (and detaches its entries).
      * @param key The tag key.
      */
-    async removeTag(key: number): Promise<void> {
-      await IdbTags.remove(key);
-      await this.fetchTags();
+    async removeTag(key: number): Promise<IdbResponse> {
+      const response = await IdbTags.remove(key);
+
+      switch (response.state) {
+        case "success":
+          await this.fetchTags();
+          await this.fetchTaggedEntries();
+          this.newTagColor = await IdbTags.pickColor();
+          break;
+        case "error":
+          errorToast(response.message);
+          break;
+      }
+
+      return response;
     },
     /**
      * Adds an entry to a tag.
@@ -219,12 +236,11 @@ export const useBookmarksStore = defineStore("bookmarks", {
     async tagEntry(
       entry: IdbEntryCreation,
       tagKey: number,
-    ): Promise<IdbResponse<IdbEntry>> {
+    ): Promise<IdbResponse<IdbTagged>> {
       const response = await IdbTaggedEntry.add(entry, tagKey);
 
       switch (response.state) {
         case "success":
-          await IdbTaggedEntry.add(entry, tagKey);
           await this.fetchTaggedEntries();
           break;
         case "error":
