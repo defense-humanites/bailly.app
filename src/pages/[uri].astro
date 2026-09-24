@@ -24,8 +24,13 @@ const siblings = data.siblings;
 
 if (!Object.keys(entry).length) return Astro.redirect("/404");
 
-// Redirect if the URI was malformed.
-if (entry.uri !== uri) return Astro.redirect(`/${entry.uri}`);
+/*
+ * Redirect if the URI was malformed. The URI must be percent-encoded: the
+ * Location header is a ByteString, so non-ASCII characters (e.g. "ê") would
+ * be sent as raw Latin-1 bytes, which the browser then requests as invalid
+ * UTF-8 sequences (e.g. "%EA"), making decodeURI() throw "URI malformed".
+ */
+if (entry.uri !== uri) return Astro.redirect(`/${encodeURIComponent(entry.uri)}`);
 
 /*
  * Replace the Greek Beta Symbol with the regular letter as some browsers
