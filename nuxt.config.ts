@@ -4,11 +4,27 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
   devtools: { enabled: true },
   modules: [
+    '@nuxt/eslint',
     '@nuxt/ui',
     '@vueuse/nuxt',
     '@pinia/nuxt',
     '@nuxt/test-utils/module',
   ],
+  eslint: {
+    config: {
+      stylistic: {
+        indent: 2,
+        quotes: "double",
+        semi: true,
+        commaDangle: "always-multiline",
+        braceStyle: "1tbs",
+      },
+      // Enables type-aware rules (e.g. `no-floating-promises`).
+      typescript: {
+        tsconfigPath: "./tsconfig.json",
+      },
+    },
+  },
   ui: {
     // Fonts are self-hosted (cf. `app/assets/css/fonts.css`).
     fonts: false,

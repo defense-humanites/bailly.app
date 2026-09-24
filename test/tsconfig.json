@@ -1,0 +1,7 @@
+{
+  // Editor and ESLint support for the unit tests, which exercise app code.
+  // Not referenced by the root `tsconfig.json`, so `nuxt typecheck` ignores it.
+  "extends": "../.nuxt/tsconfig.app.json",
+  "include": ["./**/*.ts"],
+  "exclude": []
+}
