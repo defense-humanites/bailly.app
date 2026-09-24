@@ -133,6 +133,8 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
 
   /**
    * Loads the data stored in IndexedDB.
+   * @remarks The other actions await it, so that a pending initialization
+   * cannot overwrite their result.
    */
   async function initialize(): Promise<void> {
     initialization ??= (async () => {
@@ -149,12 +151,14 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   }
 
   async function starEntry(entry: IdbEntryCreation): Promise<IdbResult<IdbEntry>> {
+    await initialize();
     const result = report(await IdbStarred.add(entry));
     if (result.state === "success") await fetchStarredEntries();
     return result;
   }
 
   async function unstarEntry(uri: string): Promise<IdbResult> {
+    await initialize();
     const result = report(await IdbStarred.remove(uri));
     if (result.state === "success") await fetchStarredEntries();
     return result;
@@ -164,6 +168,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    * Creates a tag, which becomes the current one.
    */
   async function createTag(data: IdbTagCreation): Promise<IdbResult<IdbTagWithKey>> {
+    await initialize();
     const result = report(await IdbTags.add(data));
     if (result.state === "success") {
       currentTagKey.value = result.data.key;
@@ -173,6 +178,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   }
 
   async function updateTag(key: number, data: IdbTagCreation): Promise<IdbResult<IdbTagWithKey>> {
+    await initialize();
     const result = report(await IdbTags.update(key, data));
     if (result.state === "success") {
       await fetchTags();
@@ -190,6 +196,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     orderedKeys: number[],
     setFirstAsCurrent = true,
   ): Promise<IdbResult<IdbTagWithKey[]>> {
+    await initialize();
     const result = report(await IdbTags.reorder(orderedKeys));
     if (result.state === "success") {
       if (setFirstAsCurrent && orderedKeys[0] !== undefined) currentTagKey.value = orderedKeys[0];
@@ -202,6 +209,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    * Removes a tag and detaches its entries.
    */
   async function removeTag(key: number): Promise<IdbResult> {
+    await initialize();
     const result = report(await IdbTags.remove(key));
     if (result.state === "success") {
       await Promise.all([fetchTags(), fetchTaggedEntries(), refreshNewTagColor()]);
@@ -214,12 +222,14 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   }
 
   async function tagEntry(entry: IdbEntryCreation, tagKey: number): Promise<IdbResult<IdbTagged>> {
+    await initialize();
     const result = report(await IdbTaggedEntry.add(entry, tagKey));
     if (result.state === "success") await fetchTaggedEntries();
     return result;
   }
 
   async function untagEntry(uri: string, tagKey: number): Promise<IdbResult> {
+    await initialize();
     const result = report(await IdbTaggedEntry.remove(uri, tagKey));
     if (result.state === "success") await fetchTaggedEntries();
     return result;
