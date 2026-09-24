@@ -1,8 +1,5 @@
-import {
-  convert,
-  foldGreekVariants,
-  removeDiacritics
-} from "@humanities/greek-conversion";
+import { toBaillySearchKey } from "@humanities/bailly-search-key";
+import { convert, removeDiacritics } from "@humanities/greek-conversion";
 import { Database } from "../Database.ts";
 import type {
   ApiLookupParams,
@@ -14,8 +11,12 @@ import type {
   QueryableFields
 } from "../definitions.ts";
 import { SpecialChar } from "../enums.ts";
-import { graveToAcute } from "../helpers.ts";
-import { Morpheus, type MorpheusAnalysis, type MorpheusResponse } from "../Morpheus.ts";
+import {
+  Morpheus,
+  type MorpheusAnalysis,
+  type MorpheusResponse,
+  type Morphology
+} from "../Morpheus.ts";
 import { Settings } from "../Settings.ts";
 
 enum LookupMode {
@@ -39,28 +40,28 @@ type MatchedDatabaseEntry =
   & PartialExcept<DatabaseEntry, "word">
   & MatchFlags;
 
+/**
+ * An entry being processed by the lookup: a matched row (or several rows grouped
+ * under a common entry), which keeps its internal fields (`searchable*`, match
+ * flags, etc.) until the response is formatted.
+ */
+type LookupEntry =
+  & Pick<DatabaseEntry, "word">
+  & Partial<Omit<DatabaseEntry, "word">>
+  & Partial<MatchFlags>
+  & Partial<Pick<Entry, "morphology">>
+  & { children?: LookupEntry[] };
+
+type LookupResponse = {
+  data: Omit<ApiLookupResponse<never>["data"], "entries"> & {
+    entries: LookupEntry[];
+  };
+};
+
 type MorphologyKey = {
   lemma: string;
   stem: string;
 };
-
-type Morphology = Pick<
-  MorpheusResponse,
-  | "partOfSpeech"
-  | "dialects"
-  | "geographicRegions"
-  | "person"
-  | "grammaticalNumber"
-  | "genders"
-  | "grammaticalCases"
-  | "tense"
-  | "mood"
-  | "voices"
-  | "degree"
-  | "preverb"
-  | "augment"
-  | "morphFlags"
->;
 
 function getMorphology({
   partOfSpeech,
@@ -96,9 +97,6 @@ function getMorphology({
   };
 }
 
-const TIS_GRAVE = "τὶς";
-const TIS_GRAVE_NFD = TIS_GRAVE.normalize("NFD");
-
 function parseMorphologyKey(key: string): MorphologyKey | undefined {
   const separatorIndex = key.indexOf("|");
   if (separatorIndex === -1) return undefined;
@@ -109,48 +107,23 @@ function parseMorphologyKey(key: string): MorphologyKey | undefined {
   };
 }
 
-function normalizeBaillyGraves(value: string): string {
-  return value.normalize("NFD").toLowerCase() === TIS_GRAVE_NFD
-    ? value.normalize("NFC")
-    : graveToAcute(value);
-}
-
 // @fixme this would make sense if an option 'permissive: boolean' is added to the API.
+// (The quantity marks are already removed by the search key.)
 function sanitizeGreek(word: string): string {
-  return word
-    // @fixme NFC/NFKC normalization breaks matches with the data converter.
-    //.normalize("NFD")
-    //.replace(/[\u0304\u0306]/g, "") // macron, breve
-    //.normalize("NFC")
-    .replace(/[·•]/g, "");
+  return word.replace(/[·•]/g, "");
 }
 
+/**
+ * Returns the search key of a query (or of a Morpheus lemma), as stored in the
+ * searchable* columns: both are computed by `@humanities/bailly-search-key` (which
+ * also handles the contract-verb suffix "-ῶ", the graves and τὶς).
+ */
 function formatSearchableValue(
   value: string,
   caseSensitive: boolean,
   diacriticSensitive: boolean
 ): string {
-  let formatted = value.trim();
-
-  if (diacriticSensitive) {
-    formatted = normalizeBaillyGraves(formatted);
-  }
-
-  formatted = foldGreekVariants(formatted);
-
-  if (!caseSensitive) {
-    formatted = formatted.toLowerCase();
-  }
-
-  if (!diacriticSensitive) {
-    formatted = removeDiacritics(formatted, "greek");
-  }
-
-  // The searchable* columns don't contain Bailly's extended contract-verb
-  // suffix "-ῶ", contrary to the `word` column.
-  formatted = diacriticSensitive
-    ? formatted.replace(/(?<=ω)-ῶ$/, "")
-    : formatted.replace(/(?<=ω)-[ῶω]$/, "");
+  const formatted = toBaillySearchKey(value, { caseSensitive, diacriticSensitive });
 
   // @fixme Add this option to the API?
   const permissive = false;
@@ -260,13 +233,13 @@ async function getMorpheusAnalyses(
   });
 }
 
-function attachMorphology<K extends keyof QueryableFields>(
-  partialResponse: ApiLookupResponse<K>,
-  morpheusMorphology: MorphologyResponse
-): ApiLookupResponse<K> {
+function attachMorphology(
+  partialResponse: LookupResponse,
+  morpheusMorphology: MorpheusResponse<Morphology>
+): LookupResponse {
   const entrySearchables = new Set(
     partialResponse.data.entries
-      .map((entry) => (entry as Partial<DatabaseEntry>).searchable)
+      .map((entry) => entry.searchable)
       .filter((value): value is string => Boolean(value))
   );
 
@@ -299,11 +272,11 @@ function attachMorphology<K extends keyof QueryableFields>(
     };
   }
 
-  const response = {
+  const response: LookupResponse = {
     data: {
       ...partialResponse.data,
       entries: partialResponse.data.entries.map((entry) => {
-        const searchable = (entry as Partial<DatabaseEntry>).searchable;
+        const searchable = entry.searchable;
 
         return {
           ...entry,
@@ -336,17 +309,8 @@ function emptyResponse(): ApiLookupResponse<never> {
 export function setUniqueEntries(
   inputEntries: MatchedDatabaseEntry[],
   _params?: { caseSensitive?: boolean }
-): (
-  & PartialExcept<MatchedDatabaseEntry, "children">
-  & Optional<
-    DatabaseEntry,
-    | "searchable"
-    | "searchableCaseInsensitive"
-    | "searchableAtonic"
-    | "searchableAtonicCaseInsensitive"
-  >
-)[] {
-  const uniqueEntries: MatchedDatabaseEntry[] = [];
+): LookupEntry[] {
+  const uniqueEntries: LookupEntry[] = [];
 
   for (
     const [word, entries] of Object.entries(
@@ -356,20 +320,9 @@ export function setUniqueEntries(
     if (!entries) continue;
 
     if (entries.length > 1) {
-      const entry:
-        & PartialExcept<Entry<"word">, "word" | "children">
-        & Optional<
-          DatabaseEntry,
-          | "countAll"
-          | "searchable"
-          | "searchableCaseInsensitive"
-          | "searchableAtonic"
-          | "searchableAtonicCaseInsensitive"
-          | "directMatch"
-          | "morpheusMatch"
-        > = {
-          ...entries[0]
-        };
+      const entry: LookupEntry = {
+        ...entries[0]
+      };
 
       // @ts-ignore replace each key by an empty string.
       Object.keys(entries[0]).forEach((prop) => (entry[prop] = ""));
@@ -461,7 +414,7 @@ export async function getEntries<K extends keyof QueryableFields>({
     return emptyResponse();
   }
 
-  const wordRequested = fields.includes("word");
+  const wordRequested = (fields as string[]).includes("word");
   const queryFields = wordRequested ? fields : ["word", ...fields];
   const searchableField = formatSearchableField(
     caseSensitive,
@@ -535,7 +488,7 @@ export async function getEntries<K extends keyof QueryableFields>({
     db.prepare(sql).all(params)
   );
 
-  let internalResponse: ApiLookupResponse<keyof MatchedDatabaseEntry> = {
+  let internalResponse: LookupResponse = {
     data: {
       version: settings.dbVersion,
       count: data.length,
@@ -545,9 +498,7 @@ export async function getEntries<K extends keyof QueryableFields>({
   };
 
   if (morphology) {
-    console.log(morpheusAnalyses);
-
-    const morpheusMorphology: MorphologyResponse = Object.fromEntries(
+    const morpheusMorphology: MorpheusResponse<Morphology> = Object.fromEntries(
       Object.entries(morpheusAnalyses).map(([key, analyses]) => [
         key,
         analyses.map(getMorphology)
@@ -579,20 +530,7 @@ export async function getEntries<K extends keyof QueryableFields>({
         const isMorpheus = Boolean(entry.morpheusMatch) &&
           !Boolean(entry.directMatch);
 
-        const removeExtraFields = (
-          entry:
-            & Partial<Entry>
-            & Optional<
-              DatabaseEntry,
-              | "countAll"
-              | "searchable"
-              | "searchableCaseInsensitive"
-              | "searchableAtonic"
-              | "searchableAtonicCaseInsensitive"
-              | "directMatch"
-              | "morpheusMatch"
-            >
-        ): void => {
+        const removeExtraFields = (entry: Partial<LookupEntry>): void => {
           delete entry.countAll;
           if (!wordRequested) delete entry.word;
           delete entry.searchable;
@@ -611,7 +549,8 @@ export async function getEntries<K extends keyof QueryableFields>({
           isExact,
           isMorpheus
         };
-      })
+        // The internal fields have been removed by `removeExtraFields()`.
+      }) as ApiLookupResponse<keyof QueryableFields>["data"]["entries"]
     }
   };
 

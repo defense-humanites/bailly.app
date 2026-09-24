@@ -4,6 +4,7 @@
     "jsr:@db/sqlite@0.13": "0.13.0",
     "jsr:@denosaurs/plug@1": "1.1.0",
     "jsr:@hono/hono@^4.13.8": "4.13.8",
+    "jsr:@humanities/bailly-search-key@0.2": "0.2.0",
     "jsr:@humanities/greek-conversion@1.0.0-beta.5": "1.0.0-beta.5",
     "jsr:@libmorpheus/deno@0.4": "0.4.0",
     "jsr:@std/assert@^1.0.19": "1.0.19",
@@ -42,6 +43,9 @@
     },
     "@hono/hono@4.13.8": {
       "integrity": "bbb566d9ebb81e74c0d7eeff1f9221ba9f3fda6f1832e5ca66cbddcecb2f7fec"
+    },
+    "@humanities/bailly-search-key@0.2.0": {
+      "integrity": "d605f6a5f14638cf2b829b71ce4dd2770c749374068dba0c37b08c54ea2460c7"
     },
     "@humanities/greek-conversion@1.0.0-beta.5": {
       "integrity": "ab83df8e59ce28b43f911fa82243230217a790da957f2c7aa97b5de23ed1317d"
@@ -111,6 +115,7 @@
     "dependencies": [
       "jsr:@db/sqlite@0.13",
       "jsr:@hono/hono@^4.13.8",
+      "jsr:@humanities/bailly-search-key@0.2",
       "jsr:@humanities/greek-conversion@1.0.0-beta.5",
       "jsr:@libmorpheus/deno@0.4",
       "jsr:@std/assert@^1.0.19",
