@@ -1,0 +1,42 @@
+{
+  "name": "bailly-app-nuxt",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:unit": "vitest --project unit",
+    "test:nuxt": "vitest --project nuxt"
+  },
+  "dependencies": {
+    "@humanities/greek-conversion": "^1.0.0-beta.6",
+    "@nuxt/test-utils": "^4.3.2",
+    "@nuxt/ui": "^4.11.2",
+    "@pinia/nuxt": "^1.0.2",
+    "@vueuse/nuxt": "^15.0.0",
+    "idb": "^8.0.3",
+    "nuxt": "^4.5.2",
+    "pinia": "^4.0.3",
+    "sortablejs": "^1.15.7",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vue": "^3.5.43",
+    "vue-router": "^5.3.1"
+  },
+  "devDependencies": {
+    "@iconify-json/heroicons": "^1.2.3",
+    "@vue/test-utils": "^2.5.1",
+    "vitest": "^5.0.1"
+  },
+  "allowScripts": {
+    "vue-demi@0.14.10": true,
+    "esbuild@0.28.2": true,
+    "esbuild@0.27.7": true,
+    "fsevents@2.3.3": true
+  }
+}

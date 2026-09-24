@@ -1,0 +1,6 @@
+/* Entry classes */
+@source inline("{aut,entreea,es,etiqetymor,etiqetymrev,etymor,etymrev,fleche,flechea,des,gens,gras,ital,moyen,oeuv,oeuva,refch,refpa,refpb,rom,Rub,rub,Ruba,ruba,pp,ppa,sect,secta,up}");
+
+/* Tag colors, cf. 'app/TailwindColorClasses.ts'. */
+@source inline("{dark:,}{active:,hover:,}text-{blue,green,lime,orange,pink,rose,sky,slate,teal,violet,yellow}-{200,300,400,500,600,700,800}");
+@source inline("{dark:,}{active:,hover:,}{bg,border,ring}-{blue,green,lime,orange,pink,rose,sky,slate,teal,violet,yellow}-{100,200,300,400,500,600,700,800,900}{/50,}");

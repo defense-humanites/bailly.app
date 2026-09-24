@@ -1,0 +1,77 @@
+import "fake-indexeddb/auto";
+import { expect, test } from "vitest";
+import { clearIdb, entries, error, success, tags } from "../idbHelpers";
+import { Idb, IdbTaggedEntry, IdbTags } from "../../app/idb";
+
+test("Create tagged entry", async () => {
+  const banquetTag = await IdbTags.add(tags.banquet);
+  const theeteteTag = await IdbTags.add(tags.theetete);
+  const banquetTagKey = banquetTag.data.key;
+  const theeteteTagKey = theeteteTag.data.key;
+
+  // Acceptable values.
+  expect(await IdbTaggedEntry.add(entries.rhinokeros, banquetTagKey)).toSatisfy(success);
+  expect(await IdbTaggedEntry.add(entries.rhinokeros, theeteteTagKey)).toSatisfy(success);
+  expect(await IdbTaggedEntry.add(entries.alopex, banquetTagKey)).toSatisfy(success);
+  
+  expect(await IdbTaggedEntry.add(entries.alopex, theeteteTagKey, { setCurrentTag: true })).toSatisfy(success);
+  expect(IdbTags.getCurrentKey()).toBe(theeteteTagKey); // The previous line must have changed the current tag key.
+  
+  expect(await IdbTaggedEntry.add({ word: "foo", uri: "foo", excerpt: "foo" }, banquetTagKey)).toSatisfy(success);
+  expect(await IdbTaggedEntry.add({ word: "bar", uri: "bar", children: [{}] }, banquetTagKey)).toSatisfy(success); // Children must have length, but values are not checked.
+
+  // Wrong values.
+  expect(await IdbTaggedEntry.add(entries.rhinokeros, banquetTagKey)).toSatisfy(error); // Name exists.
+  expect(await IdbTaggedEntry.add({ word: "foo" }, banquetTagKey)).toSatisfy(error); // Missing fields.
+  expect(await IdbTaggedEntry.add({ uri: "foo" }, banquetTagKey)).toSatisfy(error); // Missing fields.
+  expect(await IdbTaggedEntry.add({ excerpt: "foo" }, banquetTagKey)).toSatisfy(error); // Missing fields.
+  expect(await IdbTaggedEntry.add({ word: "foo", uri: "", excerpt: "" }, banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add({ word: "", uri: "foo", excerpt: "" }, banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add({ word: "", uri: "", excerpt: "foo" }, banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add({ word: "foo", uri: "foo", excerpt: "" }, banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add({ word: "foo", uri: "", excerpt: "foo" }, banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add({ word: "", uri: "foo", excerpt: "foo" }, banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add({ word: "", uri: "foo", children: [] }, banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add({}, banquetTagKey)).toSatisfy(error); // Bad values.
+  
+  Idb.configure({ tagMaxItems: 1 });
+  expect(await IdbTaggedEntry.add({ word: "baz", uri: "baz", excerpt: "baz" }, banquetTagKey)).toSatisfy(error); // Too many tagged entries.
+
+  clearIdb();
+});
+
+test("Delete tagged entry", async () => {
+  const banquetTag = await IdbTags.add(tags.banquet);
+  const banquetTagKey = banquetTag.data.key;
+
+  await IdbTaggedEntry.add(entries.rhinokeros, banquetTagKey);
+  
+  expect(await IdbTaggedEntry.remove(entries.rhinokeros.uri, 999)).toSatisfy(error);
+  expect(await IdbTaggedEntry.remove("unknown", banquetTagKey)).toSatisfy(error);
+
+  expect(await IdbTaggedEntry.remove(entries.rhinokeros.uri, banquetTagKey)).toSatisfy(success);
+
+  clearIdb();
+});
+
+test("Get tagged entries", async () => {
+  const banquetTag = await IdbTags.add(tags.banquet);
+  const theeteteTag = await IdbTags.add(tags.theetete);
+  const banquetTagKey = banquetTag.data.key;
+  const theeteteTagKey = theeteteTag.data.key;
+
+  await IdbTaggedEntry.add(entries.rhinokeros, banquetTagKey);
+  await IdbTaggedEntry.add(entries.alopex, banquetTagKey);
+  await IdbTaggedEntry.add(entries.rhinokeros, theeteteTagKey);
+
+  expect(await IdbTaggedEntry.get(entries.rhinokeros.uri, banquetTagKey)).toBeTypeOf("object");
+  expect(await IdbTaggedEntry.get(entries.rhinokeros.uri, 999)).toBe(null);
+  expect(await IdbTaggedEntry.get("unknown", banquetTagKey)).toBe(null);
+
+  expect(await IdbTaggedEntry.getAll()).toHaveLength(3);
+
+  await IdbTaggedEntry.remove(entries.rhinokeros.uri, banquetTagKey);
+  expect(await IdbTaggedEntry.getAll()).toHaveLength(2);
+
+  clearIdb();
+});

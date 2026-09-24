@@ -1,0 +1,6 @@
+:root {
+  --ui-primary: var(--ui-color-primary-600);
+  --ui-text: var(--ui-color-neutral-900);
+
+  @apply overscroll-none;
+}

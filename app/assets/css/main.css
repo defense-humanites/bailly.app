@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/* Fonts */
+@import "~/assets/css/fonts.css";
+
+/* Tailwind config */
+@import "~/assets/css/safelist.css";
+@import "~/assets/css/theme.css";
+
+/* Global & Nuxt UI config (see also `../app.config.ts`) */
+@import "~/assets/css/root.css";
+
+/* Layers */
+@import "~/assets/css/layers/base.css";
+@import "~/assets/css/layers/components.css";
+@import "~/assets/css/layers/utilities.css";

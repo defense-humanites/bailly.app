@@ -1,0 +1,52 @@
+@theme static {
+  --color-hot-cinnamon-50: oklch(98.25% 0.02 89.35);
+  --color-hot-cinnamon-100: oklch(94.83% 0.05 88.81);
+  --color-hot-cinnamon-200: oklch(89.89% 0.1 89.39);
+  --color-hot-cinnamon-300: oklch(83.87% 0.14 84.12);
+  --color-hot-cinnamon-400: oklch(78.7% 0.15 75.78);
+  --color-hot-cinnamon-500: oklch(72.05% 0.16 62.22);
+  --color-hot-cinnamon-600: oklch(62.64% 0.16 51.88);
+  --color-hot-cinnamon-700: oklch(52.68% 0.14 43.99);
+  --color-hot-cinnamon-800: oklch(45.17% 0.12 41.12);
+  --color-hot-cinnamon-900: oklch(39.46% 0.1 39.86);
+  --color-hot-cinnamon-950: oklch(26.71% 0.07 39.61);
+
+  --color-domino-50: oklch(97.31% 0.005 91.45);
+  --color-domino-100: oklch(92.28% 0.01 84.58);
+  --color-domino-200: oklch(84.42% 0.02 84.59);
+  --color-domino-300: oklch(74.43% 0.04 79.6);
+  --color-domino-400: oklch(65.5% 0.05 74.77);
+  --color-domino-500: oklch(60.09% 0.05 70.18);
+  --color-domino-600: oklch(52.06% 0.04 61.28);
+  --color-domino-700: oklch(44.91% 0.03 53.34);
+  --color-domino-800: oklch(40.69% 0.03 45.23);
+  --color-domino-900: oklch(37.56% 0.02 38.06);
+  --color-domino-950: oklch(25.43% 0.02 37.34);
+
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", IFAOGrec;
+  --font-serif: Brill, "IFAOGrec", ui-serif, Georgia, Cambria, "Times New Roman",
+    Times, serif;
+
+  --animate-shake: shake 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+
+  @keyframes shake {
+    10%,
+    90% {
+      transform: translate3d(-1px, 0, 0);
+    }
+    20%,
+    80% {
+      transform: translate3d(2px, 0, 0);
+    }
+    30%,
+    50%,
+    70% {
+      transform: translate3d(-4px, 0, 0);
+    }
+    40%,
+    60% {
+      transform: translate3d(4px, 0, 0);
+    }
+  }
+}
