@@ -7,6 +7,7 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@nuxt/test-utils/module",
   ],
+  devServer: { port: 4321 },
   devtools: { enabled: true },
   css: ["~/assets/css/main.css"],
   ui: {
