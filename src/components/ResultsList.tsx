@@ -8,7 +8,8 @@ interface Props {
   id?: string;
   class: string;
   searchValue: string;
-  entries: Resource<ApiLookupResponse<"uri" | "excerpt" | "word">>;
+  // `undefined` before the first search (cf. `initialValue` in `SearchBar.tsx`).
+  entries: Resource<ApiLookupResponse<"uri" | "excerpt" | "word"> | undefined>;
   setResultsOpen: Setter<boolean>;
 }
 
