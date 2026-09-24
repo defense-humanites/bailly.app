@@ -6,7 +6,6 @@ import type {
   ApiLookupResponse,
   DatabaseEntry,
   Entry,
-  Optional,
   PartialExcept,
   QueryableFields
 } from "../definitions.ts";
@@ -546,7 +545,9 @@ export async function getEntries<K extends keyof QueryableFields>({
 
         return {
           ...entry,
-          isExact,
+          // Public contract (relied on by the front end, e.g. for highlighting and
+          // sorting): an entry found through Morpheus is an exact match of the form.
+          isExact: isExact || isMorpheus,
           isMorpheus
         };
         // The internal fields have been removed by `removeExtraFields()`.
