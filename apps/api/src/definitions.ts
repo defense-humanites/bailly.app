@@ -87,7 +87,6 @@ export interface ApiLookupResponse<
 }
 
 export type DatabaseEntry = {
-  countAll: number;
   orderedID: number;
   word: string;
   uri: string;

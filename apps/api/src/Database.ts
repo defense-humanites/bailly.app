@@ -1,4 +1,4 @@
-import { Database as Sqlite } from "@db/sqlite";
+import { Database as Sqlite, type Statement } from "@db/sqlite";
 import { Settings } from "./Settings.ts";
 
 export class Database {
@@ -85,5 +85,27 @@ export class Database {
     }
 
     return Database.connection;
+  }
+
+  static readonly #statements = new Map<string, Statement>();
+
+  /**
+   * Returns a prepared statement for `sql`, compiled once and then reused.
+   *
+   * The cache has no eviction: it is meant for SQL texts built from a small, closed
+   * set of fragments (never interpolate user input: bind it).
+   */
+  /** Number of cached prepared statements. */
+  static get preparedStatementCount(): number {
+    return Database.#statements.size;
+  }
+
+  static async prepare(sql: string): Promise<Statement> {
+    const cached = Database.#statements.get(sql);
+    if (cached) return cached;
+
+    const statement = (await Database.getConnection()).prepare(sql);
+    Database.#statements.set(sql, statement);
+    return statement;
   }
 }

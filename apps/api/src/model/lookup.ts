@@ -1,5 +1,5 @@
-import { toBaillySearchKey } from "@humanities/bailly-search-key";
-import { convert, removeDiacritics } from "@humanities/greek-conversion";
+import { toBaillySearchKey, toSearchKey } from "@humanities/bailly-search-key";
+import { convert } from "@humanities/greek-conversion";
 import { Database } from "../Database.ts";
 import type {
   ApiLookupParams,
@@ -175,6 +175,113 @@ function formatSearchableField(
   return `searchable${diacriticSensitive ? "" : "Atonic"}${
     caseSensitive ? "" : "CaseInsensitive"
   }`;
+}
+
+type ComparisonOperator = "=" | "GLOB";
+
+const COMPARISON_OPERATORS: readonly ComparisonOperator[] = ["=", "GLOB"];
+
+const SEARCHABLE_FIELDS: readonly string[] = [false, true].flatMap((caseSensitive) =>
+  [false, true].map((diacriticSensitive) =>
+    formatSearchableField(caseSensitive, diacriticSensitive)
+  )
+);
+
+/**
+ * The selected fields in a canonical order (that of `QUERY_ALLOWED_FIELDS`), `word`
+ * included: the SQL text then only depends on the *set* of requested fields, which
+ * bounds the number of statement variants (cf. `preloadLookupStatements()`).
+ */
+function canonicalFields(fields: readonly string[]): string[] {
+  const requested = new Set([...fields, "word"]);
+  const allowed = Settings.getSettings().queryAllowedFields;
+
+  return [
+    ...(allowed.includes("word") ? [] : ["word"]),
+    ...allowed.filter((field) => requested.has(field))
+  ];
+}
+
+function buildWhereClause(
+  searchableField: string,
+  operator: ComparisonOperator
+): string {
+  return `
+    WHERE ${searchableField} ${operator} $query
+       OR searchable IN (SELECT value FROM json_each($morpheusSearchableKeys))
+  `;
+}
+
+/**
+ * No `COUNT(*) OVER ()` here: the window function would force SQLite to read every
+ * match (and every selected column) before applying `LIMIT`. The total is counted
+ * separately (`buildCountSql()`), and only when the limit has been reached.
+ */
+function buildLookupSql(
+  fields: readonly string[],
+  searchableField: string,
+  operator: ComparisonOperator
+): string {
+  // `searchable` is always needed to resolve Morpheus lemmas, independently of the
+  // field used for the user's direct query.
+  const selectedFields = [
+    ...new Set([...canonicalFields(fields), "searchable", searchableField])
+  ].join(", ");
+
+  return `
+    SELECT
+      ${selectedFields},
+      ${searchableField} ${operator} $query AS directMatch,
+      searchable IN (SELECT value FROM json_each($morpheusSearchableKeys))
+        AS morpheusMatch
+    FROM bailly
+    ${buildWhereClause(searchableField, operator)}
+    ORDER BY orderedID
+    LIMIT $limit
+  `;
+}
+
+function buildCountSql(
+  searchableField: string,
+  operator: ComparisonOperator
+): string {
+  return `SELECT COUNT(*) FROM bailly ${
+    buildWhereClause(searchableField, operator)
+  }`;
+}
+
+/**
+ * Prepares every variant of the lookup statements (search column × operator ×
+ * set of allowed fields), so that no request pays for their compilation, even
+ * right after a restart. Returns the number of prepared statements.
+ */
+export async function preloadLookupStatements(): Promise<number> {
+  const optionalFields = Settings.getSettings().queryAllowedFields
+    .filter((field) => field !== "word");
+
+  // 2^n field sets: beyond a dozen fields, let the statements be prepared lazily.
+  if (optionalFields.length > 12) return 0;
+
+  const fieldSets = Array.from(
+    { length: 2 ** optionalFields.length },
+    (_, mask) => optionalFields.filter((_, i) => mask & (1 << i))
+  );
+
+  let count = 0;
+
+  for (const searchableField of SEARCHABLE_FIELDS) {
+    for (const operator of COMPARISON_OPERATORS) {
+      await Database.prepare(buildCountSql(searchableField, operator));
+      count++;
+
+      for (const fields of fieldSets) {
+        await Database.prepare(buildLookupSql(fields, searchableField, operator));
+        count++;
+      }
+    }
+  }
+
+  return count;
 }
 
 function formatMorpheusLemmaForSearch(lemma: string): string {
@@ -365,7 +472,9 @@ export function setUniqueEntries(
  *    (3) Allow a maximum of three identical characters in a row.
  */
 function validateQueryStr(greekStr: string): boolean {
-  greekStr = removeDiacritics(greekStr, "greek");
+  // Not `removeDiacritics(…, "greek")` from greek-conversion: since 1.0, it parses
+  // `?` as a Greek question mark (U+037E), which invalidated every `?` wildcard.
+  greekStr = toSearchKey(greekStr);
 
   if (!greekStr) return false;
   if (greekStr.length === 1) return /[^α-ωϝ]/i.test(greekStr) === false;
@@ -389,7 +498,6 @@ export async function getEntries<K extends keyof QueryableFields>({
 }: ApiLookupParams<K>): Promise<
   ApiLookupResponse<K> | ApiLookupResponse<never>
 > {
-  const db = await Database.getConnection();
   const settings = Settings.getSettings();
 
   if (["beta-code", "transliteration"].includes(inputMode)) {
@@ -405,7 +513,7 @@ export async function getEntries<K extends keyof QueryableFields>({
   if (!validateQueryStr(searchStr)) {
     if (settings.isDevEnv) {
       console.log(
-        `%cInvalid input '${removeDiacritics(searchStr, "greek")}' ` +
+        `%cInvalid input '${searchStr}' ` +
           "(will return an empty response).",
         "color:orange"
       );
@@ -414,21 +522,10 @@ export async function getEntries<K extends keyof QueryableFields>({
   }
 
   const wordRequested = (fields as string[]).includes("word");
-  const queryFields = wordRequested ? fields : ["word", ...fields];
   const searchableField = formatSearchableField(
     caseSensitive,
     diacriticSensitive
   );
-
-  // `searchable` is always needed to resolve Morpheus lemmas, independently
-  // of the field used for the user's direct query.
-  const selectedFields = [
-    ...new Set<string>([
-      ...queryFields,
-      "searchable",
-      searchableField
-    ])
-  ].join(", ");
 
   const morpheusAnalyses = skipMorpheus ? {} : await getMorpheusAnalyses(
     surfaceForm,
@@ -440,58 +537,54 @@ export async function getEntries<K extends keyof QueryableFields>({
     morpheusAnalyses
   );
 
-  const comparisonOperator = lookupMode === LookupMode.exact && !/[*?]/.test(searchStr)
-    ? "="
-    : "GLOB";
+  const comparisonOperator: ComparisonOperator =
+    lookupMode === LookupMode.exact && !/[*?]/.test(searchStr) ? "=" : "GLOB";
 
-  const directMatchExpression = `${searchableField} ${comparisonOperator} $query`;
+  const sql = buildLookupSql(fields, searchableField, comparisonOperator);
+  const countSql = buildCountSql(searchableField, comparisonOperator);
 
-  const morpheusMatchExpression = `searchable IN (
-    SELECT value FROM json_each($morpheusSearchableKeys)
-  )`;
+  const $query = (() => {
+    switch (lookupMode) {
+      case LookupMode.exact:
+        return searchStr;
+      case LookupMode.startsWith:
+        return /^[^*?]+/.test(searchStr) ? `*${searchStr}` : searchStr;
+      case LookupMode.endsWith:
+      default:
+        return /[^*?]+$/.test(searchStr) ? `${searchStr}*` : searchStr;
+    }
+  })();
 
-  const sql = `
-    SELECT
-      ${selectedFields},
-      ${directMatchExpression} AS directMatch,
-      ${morpheusMatchExpression} AS morpheusMatch,
-      COUNT(*) OVER () AS countAll
-    FROM bailly
-    WHERE ${directMatchExpression}
-       OR ${morpheusMatchExpression}
-    ORDER BY orderedID
-    LIMIT $limit
-  `;
+  const $morpheusSearchableKeys = JSON.stringify(morpheusSearchableKeys);
 
-  const params: { [key: string]: any } = {
-    $query: (() => {
-      switch (lookupMode) {
-        case LookupMode.exact:
-          return searchStr;
-        case LookupMode.startsWith:
-          return /^[^*?]+/.test(searchStr) ? `*${searchStr}` : searchStr;
-        case LookupMode.endsWith:
-        default:
-          return /[^*?]+$/.test(searchStr) ? `${searchStr}*` : searchStr;
-      }
-    })(),
-    $morpheusSearchableKeys: JSON.stringify(morpheusSearchableKeys),
-    $limit: limit && limit <= settings.queryMaxRows
-      ? limit
-      : settings.queryMaxRows === Infinity
-      ? -1
-      : settings.queryMaxRows
-  };
+  const $limit = limit && limit <= settings.queryMaxRows
+    ? limit
+    : settings.queryMaxRows === Infinity
+    ? -1
+    : settings.queryMaxRows;
 
+  // The SQL text only varies within a closed set (search column, operator, set of
+  // selected fields): the statements are prepared at startup and then reused.
   const data = <MatchedDatabaseEntry[]> (
-    db.prepare(sql).all(params)
+    (await Database.prepare(sql)).all({
+      $query,
+      $morpheusSearchableKeys,
+      $limit
+    })
   );
+
+  const countAll = $limit === -1 || data.length < $limit
+    ? data.length
+    : (await Database.prepare(countSql)).value<[number]>({
+      $query,
+      $morpheusSearchableKeys
+    })?.[0] ?? data.length;
 
   let internalResponse: LookupResponse = {
     data: {
       version: settings.dbVersion,
       count: data.length,
-      countAll: data[0]?.countAll ?? 0,
+      countAll,
       entries: setUniqueEntries(data)
     }
   };
@@ -530,7 +623,6 @@ export async function getEntries<K extends keyof QueryableFields>({
           !Boolean(entry.directMatch);
 
         const removeExtraFields = (entry: Partial<LookupEntry>): void => {
-          delete entry.countAll;
           if (!wordRequested) delete entry.word;
           delete entry.searchable;
           delete entry.searchableCaseInsensitive;

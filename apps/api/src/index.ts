@@ -5,7 +5,7 @@ import { secureHeaders } from "@hono/hono/secure-headers";
 import { Database } from "./Database.ts";
 import { setParams } from "./helpers.ts";
 import { getEntry } from "./model/entry.ts";
-import { getEntries } from "./model/lookup.ts";
+import { getEntries, preloadLookupStatements } from "./model/lookup.ts";
 import { getRandomEntry } from "./model/randomEntry.ts";
 import { Morpheus } from "./Morpheus.ts";
 import { logger } from "./logger.ts";
@@ -21,6 +21,17 @@ const settings = Settings.getSettings();
 
 await Database.getConnection();
 await Morpheus.getMorpheus();
+
+{
+  const start = performance.now();
+  const count = await preloadLookupStatements();
+  console.info(
+    `%c${count ? "✅" : "🟠"} Prepared ${count} lookup statements in ${
+      (performance.now() - start).toFixed(1)
+    } ms.`,
+    count ? "font-weight:bold;color:green" : "font-weight:bold;color:orange"
+  );
+}
 
 export const app = new Hono();
 
