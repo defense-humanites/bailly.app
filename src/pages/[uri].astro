@@ -99,6 +99,7 @@ const entries = entry.children ?? [entry];
 <script>
   import type { Entry } from "../api";
   import { IdbHistory } from "../idb";
+  import { convertLinkedEntries } from "../linkedEntries";
   //import Popover from "../components/MultipleLinkedEntriesPopover";
   //import { render } from "solid-js/web";
 
@@ -110,22 +111,7 @@ const entries = entry.children ?? [entry];
       > = JSON.parse(this.dataset.entry ?? "");
       IdbHistory.update(entry);
 
-      this.querySelectorAll<HTMLSpanElement>("span[data-linked-entries]").forEach(
-        (element) => {
-          const queryString = element.dataset.linkedEntries;
-          if (!queryString) return;
-
-          const anchor = document.createElement("a");
-          for (const attribute of element.attributes) {
-            if (attribute.name !== "data-linked-entries") {
-              anchor.setAttribute(attribute.name, attribute.value);
-            }
-          }
-          anchor.href = `/lecteur?q=${queryString}`;
-          anchor.innerHTML = element.innerHTML;
-          element.replaceWith(anchor);
-        }
-      );
+      convertLinkedEntries(this);
 
       /*this.querySelectorAll<HTMLAnchorElement>("span[data-linked-entries]").forEach(
         (link) => {
