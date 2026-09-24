@@ -1,15 +1,14 @@
-import {Idb, IdbEntryCreation, IdbResponse, IdbStore, IdbTagCreation} from "../app/idb/Idb";
+import { Idb, IdbResponse, IdbStore, type IdbEntryCreation, type IdbTagCreation } from "../app/idb/Idb";
 
 /**
- * Clears all the Idb stores.
- * @remrks Call this function at the end of each test to isolate IndexedDB interactions.
+ * Clears all the Idb stores and reverts the default `Idb` settings.
+ * @remarks Called after each test (cf. `test/setup.unit.ts`).
  */
-export const clearIdb = () => {
-  Object.values(IdbStore).forEach(async (store) =>
-    (await Idb.getIndexedDB()).clear(store)
-  );
-  Idb.configure(); // Revert defaults.
-}
+export const clearIdb = async (): Promise<void> => {
+  const db = await Idb.getIndexedDB();
+  await Promise.all(Object.values(IdbStore).map((store) => db.clear(store)));
+  Idb.configure();
+};
 
 export const success = (response: IdbResponse) => response.state === "success";
 export const error = (response: IdbResponse) => response.state === "error";

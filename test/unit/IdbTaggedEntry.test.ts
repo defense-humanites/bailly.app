@@ -1,6 +1,5 @@
-import "fake-indexeddb/auto";
 import { expect, test } from "vitest";
-import { clearIdb, entries, error, success, tags } from "../idbHelpers";
+import { entries, error, success, tags } from "../idbHelpers";
 import { Idb, IdbTaggedEntry, IdbTags } from "../../app/idb";
 
 test("Create tagged entry", async () => {
@@ -36,8 +35,6 @@ test("Create tagged entry", async () => {
   
   Idb.configure({ tagMaxItems: 1 });
   expect(await IdbTaggedEntry.add({ word: "baz", uri: "baz", excerpt: "baz" }, banquetTagKey)).toSatisfy(error); // Too many tagged entries.
-
-  clearIdb();
 });
 
 test("Delete tagged entry", async () => {
@@ -50,8 +47,6 @@ test("Delete tagged entry", async () => {
   expect(await IdbTaggedEntry.remove("unknown", banquetTagKey)).toSatisfy(error);
 
   expect(await IdbTaggedEntry.remove(entries.rhinokeros.uri, banquetTagKey)).toSatisfy(success);
-
-  clearIdb();
 });
 
 test("Get tagged entries", async () => {
@@ -72,6 +67,4 @@ test("Get tagged entries", async () => {
 
   await IdbTaggedEntry.remove(entries.rhinokeros.uri, banquetTagKey);
   expect(await IdbTaggedEntry.getAll()).toHaveLength(2);
-
-  clearIdb();
 });

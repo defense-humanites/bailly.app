@@ -1,6 +1,5 @@
-import "fake-indexeddb/auto";
 import { expect, test } from "vitest";
-import { clearIdb, entries, error, success } from "../idbHelpers";
+import { entries, error, success } from "../idbHelpers";
 import { Idb, IdbStarred } from "../../app/idb";
 
 test("Create starred entry", async () => {
@@ -26,8 +25,6 @@ test("Create starred entry", async () => {
   
   Idb.configure({ tagMaxItems: 1 });
   expect(await IdbStarred.add({ word: "baz", uri: "baz", excerpt: "baz" })).toSatisfy(error); // Too many starred entries.
-
-  clearIdb();
 });
 
 test("Delete starred entry", async () => {
@@ -35,8 +32,6 @@ test("Delete starred entry", async () => {
 
   expect(await IdbStarred.remove(entries.rhinokeros.uri)).toSatisfy(success);
   expect(await IdbStarred.remove("unknown")).toSatisfy(error);
-
-  clearIdb();
 });
 
 test("Get starred entries", async () => {
@@ -47,6 +42,4 @@ test("Get starred entries", async () => {
   expect(await IdbStarred.getAll()).toHaveLength(1);
   await IdbStarred.add(entries.alopex);
   expect(await IdbStarred.getAll()).toHaveLength(2);
-
-  clearIdb();
 });

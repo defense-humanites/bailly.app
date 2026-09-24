@@ -1,6 +1,5 @@
-import "fake-indexeddb/auto";
 import { expect, test } from "vitest";
-import { clearIdb, entries, error, success } from "../idbHelpers";
+import { entries, error, success } from "../idbHelpers";
 import { Idb, IdbHistory } from "../../app/idb";
 
 test("Create history entry", async () => {
@@ -29,8 +28,6 @@ test("Create history entry", async () => {
   expect(await IdbHistory.add({ word: "", uri: "foo", excerpt: "foo" })).toSatisfy(error); // Bad values.
   expect(await IdbHistory.add({ word: "", uri: "foo", children: [] })).toSatisfy(error); // Bad values.
   expect(await IdbHistory.add({})).toSatisfy(error); // Bad values.
-
-  clearIdb();
 });
 
 test("Get history entries", async () => {
@@ -55,8 +52,6 @@ test("Get history entries", async () => {
   // The entry creation must have deleted all other entries due to the history length settings.
   await IdbHistory.add({ word: "bar", uri: "bar", excerpt: "bar" });
   expect(await IdbHistory.get()).toHaveLength(1);
-
-  clearIdb();
 });
 
 test("Clear history", async () => {
@@ -65,6 +60,4 @@ test("Clear history", async () => {
   await IdbHistory.clear();
 
   expect(await IdbHistory.get()).toHaveLength(0);
-
-  clearIdb();
 });

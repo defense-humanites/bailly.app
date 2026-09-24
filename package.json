@@ -8,30 +8,37 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:unit": "vitest --project unit",
-    "test:nuxt": "vitest --project nuxt"
+    "typecheck": "nuxt typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run --project unit",
+    "test:nuxt": "vitest run --project nuxt"
   },
   "dependencies": {
     "@humanities/greek-conversion": "^1.0.0-beta.6",
-    "@nuxt/test-utils": "^4.3.2",
     "@nuxt/ui": "^4.11.2",
     "@pinia/nuxt": "^1.0.2",
+    "@vueuse/integrations": "^15.0.0",
     "@vueuse/nuxt": "^15.0.0",
     "idb": "^8.0.3",
     "nuxt": "^4.5.2",
     "pinia": "^4.0.3",
     "sortablejs": "^1.15.7",
     "tailwindcss": "^4.3.3",
-    "typescript": "^7.0.2",
     "vue": "^3.5.43",
     "vue-router": "^5.3.1"
   },
   "devDependencies": {
     "@iconify-json/heroicons": "^1.2.3",
+    "@nuxt/test-utils": "^4.3.2",
+    "@types/node": "^22.20.4",
+    "@types/sortablejs": "^1.15.9",
     "@vue/test-utils": "^2.5.1",
-    "vitest": "^5.0.1"
+    "fake-indexeddb": "^6.2.5",
+    "happy-dom": "^20.14.5",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.1",
+    "vue-tsc": "^3.3.11"
   },
   "allowScripts": {
     "vue-demi@0.14.10": true,

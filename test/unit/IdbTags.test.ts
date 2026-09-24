@@ -1,6 +1,5 @@
-import "fake-indexeddb/auto";
 import { expect, test } from "vitest";
-import { clearIdb, error, success, tags } from "../idbHelpers";
+import { error, success, tags } from "../idbHelpers";
 import { LocalStorageKey } from "../../app/enums";
 import { Idb, IdbTaggedEntry, IdbTags } from "../../app/idb";
 
@@ -21,8 +20,6 @@ test("Create tag", async () => {
 
   Idb.configure({ maxTags: 1 });
   expect(await IdbTags.add({ name: "foo" })).toSatisfy(error); // Too many tags.
-
-  clearIdb();
 });
 
 test("Update tag", async () => {
@@ -43,8 +40,6 @@ test("Update tag", async () => {
   expect(await IdbTags.update(theeteteTagKey, { name: "Favoris" })).toSatisfy(error); // Name is reserved.
   expect(await IdbTags.update(theeteteTagKey, { name: newData.name })).toSatisfy(error); // Already used.
   expect(await IdbTags.update(banquetTagKey, { name: "theetete" })).toSatisfy(error); // Already used (case/diacritics are ignored).
-
-  clearIdb();
 });
 
 test("Reorder tags", async () => {
@@ -64,8 +59,6 @@ test("Reorder tags", async () => {
   expect(await IdbTags.reorder([keys.b, keys.a, 999])).toSatisfy(error); // Different keys.
   expect(await IdbTags.reorder([keys.b, keys.a])).toSatisfy(error); // Partial keys.
   expect(await IdbTags.reorder([])).toSatisfy(error);
-
-  clearIdb();
 });
 
 test("Delete tag", async () => {
@@ -87,27 +80,25 @@ test("Delete tag", async () => {
   expect(await IdbTags.remove(timeeTagKey)).toSatisfy(success);
 
   expect(await IdbTags.remove(999)).toSatisfy(error);
-
-  clearIdb();
 });
 
 test("Get tags", async () => {
   const banquetTag = await IdbTags.add(tags.banquet);
+  const banquetTagKey = banquetTag.data.key;
 
   expect(await IdbTags.get(banquetTag.data.name)).toBeTypeOf("object");
   expect(await IdbTags.get("unknown")).toBe(null);
 
   expect(await IdbTags.getAll()).toHaveLength(1);
 
-  await IdbTags.add(tags.theetete);
+  const theeteteTag = await IdbTags.add(tags.theetete);
   expect(await IdbTags.getAll()).toHaveLength(2);
 
-  await IdbTags.reorder([2, 1]);
+  // Keys are not reset between tests (auto-increment), so use the actual ones.
+  await IdbTags.reorder([theeteteTag.data.key, banquetTagKey]);
   expect((await IdbTags.getAll()).map(tag => tag.name)).toEqual(["Théétète", "Banquet"]); // Defaults to `orderBy: "position"`.
   expect((await IdbTags.getAll({ orderBy: "position" })).map(tag => tag.name)).toEqual(["Théétète", "Banquet"]);
   expect((await IdbTags.getAll({ orderBy: "insertion" })).map(tag => tag.name)).toEqual(["Banquet", "Théétète"]);
-
-  clearIdb();
 });
 
 test("Get entry tags / tag keys (involves IdbTaggedEntry)", async () => {
@@ -158,8 +149,6 @@ test("Get entry tags / tag keys (involves IdbTaggedEntry)", async () => {
     expect.objectContaining({ key: banquetTagKey, name: "Banquet", color: "Rose" })
   ]);
   expect(updatedBarEntryTagKeys).toEqual([banquetTagKey]);
-
-  clearIdb();
 });
 
 test("Set current", async () => {
@@ -168,6 +157,4 @@ test("Set current", async () => {
 
   expect(await IdbTags.setCurrent(banquetTagKey)).toSatisfy(success);
   expect(await IdbTags.setCurrent(999)).toSatisfy(error);
-
-  clearIdb();
 });
