@@ -10,14 +10,39 @@ import { SpecialChar } from "./enums.ts";
 import { graveToAcute } from "./helpers.ts";
 import { Settings } from "./Settings.ts";
 
-export type { MorpheusAnalysis } from "@libmorpheus/deno";
+// `export type { … } from` doesn't bring the type into this module's scope.
+import type { MorpheusAnalysis } from "@libmorpheus/deno";
+export type { MorpheusAnalysis };
 
 type MorpheusLookupOptions = Pick<
   ApiLookupParams<never>,
   "caseSensitive" | "diacriticSensitive"
 >;
 
-export type MorpheusResponse = Record<string, MorpheusAnalysis[]>;
+/** Morphological data exposed by the API (a subset of a Morpheus analysis). */
+export type Morphology = Pick<
+  MorpheusAnalysis,
+  | "partOfSpeech"
+  | "dialects"
+  | "geographicRegions"
+  | "person"
+  | "grammaticalNumber"
+  | "genders"
+  | "grammaticalCases"
+  | "tense"
+  | "mood"
+  | "voices"
+  | "degree"
+  | "preverb"
+  | "augment"
+  | "morphFlags"
+>;
+
+/**
+ * Analyses grouped by key (e.g. "lemma|stem"). `T` is a full Morpheus analysis by
+ * default, or the morphological data exposed by the API (`Morphology`).
+ */
+export type MorpheusResponse<T = MorpheusAnalysis> = Record<string, T[]>;
 
 export class Morpheus {
   static #wrapper: Morpheus;

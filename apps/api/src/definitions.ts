@@ -9,7 +9,7 @@ export type PartialExcept<T, K extends keyof T> =
   & Pick<T, K>
   & Partial<Omit<T, K>>;
 
-export type GreekConversionFormatKey = keyof typeof GreekConversionFormat;
+export type GreekConversionFormatKey = GreekConversionFormat;
 
 export type ApiParams<K extends keyof QueryableFields> = {
   q: string;

@@ -33,7 +33,10 @@ app.get("/", (c) => {
 });
 
 app.get("/entry/random", async (c) => {
-  const params = setParams<ApiRandomEntryParams<keyof QueryableFields>>({
+  // `setParams()` always sets `q`, which is irrelevant here.
+  const params = setParams<
+    ApiRandomEntryParams<keyof QueryableFields> & { q?: string }
+  >({
     ...c.req.query()
   });
 

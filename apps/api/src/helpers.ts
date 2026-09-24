@@ -39,7 +39,7 @@ export function setParams<
     skipMorpheus: setBooleanParam(params.skipMorpheus)
   };
 
-  Object.keys(formatted).forEach((key) => {
+  (Object.keys(formatted) as (keyof typeof formatted)[]).forEach((key) => {
     if (key in params || key === "q" || key === "fields") {
       params[key] = formatted[key];
     }
@@ -114,10 +114,11 @@ export function setQueryParam(param?: unknown): string {
   }
 
   // The param can be encoded (GET) or not (POST); it can be a string (GET) or other types (POST).
-  param = safeDecodeURIComponent(String(param) ?? "");
+  // (`param ?? ""`: `String(undefined)` would give "undefined".)
+  const decoded = safeDecodeURIComponent(String(param ?? ""));
 
   // First split the param in order to trim all its (potential) parts.
-  return param.split(",").map((query) => query.trim()).join(",").normalize();
+  return decoded.split(",").map((query) => query.trim()).join(",").normalize();
 }
 
 export function setSelectedFields(
