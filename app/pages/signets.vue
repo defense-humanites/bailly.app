@@ -6,7 +6,7 @@
   });
 
   const bookmarksStore = useBookmarksStore();
-  const { tags, taggedEntries, starredEntries } = storeToRefs(bookmarksStore);
+  const { tags, starredEntries } = storeToRefs(bookmarksStore);
 </script>
 
 <template>
@@ -64,7 +64,7 @@
           v-for="tag in tags"
           :key="tag.key"
           :tag="tag"
-          :entries="taggedEntries.filter((entry) => entry.tagKey === tag.key)"
+          :entries="bookmarksStore.entriesOf(tag.key)"
           editable
         >
           Cette étiquette ne référence aucune entrée.

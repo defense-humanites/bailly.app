@@ -4,7 +4,7 @@
   import { TailwindColorClasses } from "~/TailwindColorClasses";
 
   const bookmarksStore = useBookmarksStore();
-  const { currentTag, starredEntries, taggedEntries } = storeToRefs(bookmarksStore);
+  const { currentTag } = storeToRefs(bookmarksStore);
 
   const props = defineProps<{
     /**
@@ -18,16 +18,13 @@
    * @remarks Derived from the store, so that it stays correct once the store
    * is initialized and when the entry is (un)starred elsewhere.
    */
-  const starred = computed((): boolean =>
-    starredEntries.value.some(el => el.uri === props.entry.uri),
-  );
+  const starred = computed((): boolean => bookmarksStore.isStarred(props.entry.uri));
   /**
    * A boolean representing whether the current entry belongs to the current tag.
    */
   const taggedAsCurrent = computed((): boolean =>
-    taggedEntries.value.some(
-      el => el.uri === props.entry.uri && el.tagKey === currentTag.value?.key,
-    ),
+    currentTag.value !== null
+    && bookmarksStore.tagKeysOf(props.entry.uri).includes(currentTag.value.key),
   );
 
   const handleTagChange = async (): Promise<void> => {

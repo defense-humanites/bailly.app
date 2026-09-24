@@ -1,273 +1,250 @@
-import { defineStore } from "pinia";
+import { defineStore, skipHydrate } from "pinia";
+import { LocalStorageKey } from "~/enums";
 import {
-  type IdbResponse,
   IdbStarred,
   IdbTaggedEntry,
+  IdbTags,
   type IdbEntry,
   type IdbEntryCreation,
+  type IdbResult,
   type IdbTagCreation,
   type IdbTagged,
   type IdbTagWithKey,
+  type TagColorKey,
 } from "~/idb";
-import { IdbTags, type TagColorKey } from "../idb/IdbTags";
 
-const errorToast = (message: string): void => {
-  useToast().add({
-    title: message,
-    icon: "i-heroicons-exclamation-circle",
-    color: "error",
-  });
-};
+const collator = new Intl.Collator("grc");
 
 /**
- * The pending initialization, shared by concurrent or repeated calls (e.g.
- * after a hot module replacement).
+ * Sorts entries alphabetically (Greek collation).
  */
-let initialization: Promise<void> | undefined;
-
-const sortEntries = <T extends IdbEntry[]>(entries: T): T => {
-  // Difference between 'grc' and 'el-polyton'?
-  const collator = new Intl.Collator("grc");
-  return entries.sort((a, b) => collator.compare(a.word, b.word));
-};
+const sortEntries = <T extends IdbEntry>(entries: T[]): T[] =>
+  entries.sort((a, b) => collator.compare(a.word, b.word));
 
 /**
- * A store for bookmarks-related data (e.g. favorites, tags).
- * @remarks This store centralizes data stored permanently in the browser storage (IndexedDB and LocaleStorage).
+ * A store for bookmarks-related data (favorites, tags and tagged entries).
+ * @remarks The store is the source of truth for the components: it mirrors
+ * the data stored in IndexedDB, and keeps the key of the current tag in
+ * `localStorage`. It is initialized on the client (cf. `plugins/bookmarks.client.ts`).
  */
-export const useBookmarksStore = defineStore("bookmarks", {
-  state: () => ({
-    /**
-     * A boolean representing the state of the store.
-     */
-    initialized: false,
-    /**
-     * List of existing tags.
-     */
-    tags: [] as IdbTagWithKey[],
-    /**
-     * The active tag, on which to perform actions if no other tag is explicitly chosen.
-     */
-    currentTag: null as IdbTagWithKey | null,
-    /**
-     * Entries linked to tags.
-     */
-    taggedEntries: [] as IdbTagged[],
-    /**
-     * Entries marked as favorites.
-     */
-    starredEntries: [] as IdbEntry[],
-    /**
-     * The color to use when creating a new tag.
-     * @remarks The color should be inferred from those already used.
-     */
-    newTagColor: undefined as TagColorKey | undefined,
-  }),
-  actions: {
-    /**
-     * Initializes the bookmarks store by fetching data stored in IndexedDB.
-     */
-    async initialize(): Promise<void> {
-      initialization ??= (async () => {
-        await this.fetchTags();
-        await this.fetchTaggedEntries();
-        await this.fetchStarredEntries();
-        this.newTagColor = await IdbTags.pickColor();
+export const useBookmarksStore = defineStore("bookmarks", () => {
+  const toast = useToast();
 
-        this.initialized = true;
-      })();
+  /**
+   * A boolean representing whether the data has been loaded from IndexedDB.
+   */
+  const initialized = ref(false);
+  /**
+   * List of existing tags, sorted by position.
+   */
+  const tags = ref<IdbTagWithKey[]>([]);
+  /**
+   * Entries linked to tags, sorted alphabetically.
+   */
+  const taggedEntries = ref<IdbTagged[]>([]);
+  /**
+   * Entries marked as favorites.
+   */
+  const starredEntries = ref<IdbEntry[]>([]);
+  /**
+   * The color to suggest when creating a new tag (inferred from those already used).
+   */
+  const newTagColor = ref<TagColorKey>();
+  /**
+   * The key of the current tag, on which to perform actions if no other tag is
+   * explicitly chosen.
+   * @remarks Stored under the same key as in the previous (Astro) application.
+   * Not hydrated from the server, which cannot read `localStorage`.
+   */
+  const currentTagKey = skipHydrate(useLocalStorage<number | null>(
+    LocalStorageKey.CurrentTagKey,
+    null,
+    {
+      serializer: {
+        read: (value: string) => (value ? Number(value) : null),
+        write: (value: number | null) => String(value),
+      },
+    },
+  ));
 
-      await initialization;
-    },
-    /**
-     * Fetches the starred entries from IndexedDB.
-     */
-    async fetchStarredEntries(): Promise<void> {
-      this.starredEntries = await IdbStarred.getAll();
-    },
-    /**
-     * Fetches the tags from IndexedDB and refreshes the current tag.
-     */
-    async fetchTags(): Promise<void> {
-      this.tags = await IdbTags.getAll({
-        orderBy: "position",
+  /**
+   * The current tag, if any.
+   */
+  const currentTag = computed(
+    (): IdbTagWithKey | null => tags.value.find(tag => tag.key === currentTagKey.value) ?? null,
+  );
+
+  const starredUris = computed(() => new Set(starredEntries.value.map(entry => entry.uri)));
+
+  /**
+   * Whether an entry has been starred.
+   */
+  const isStarred = (uri: string): boolean => starredUris.value.has(uri);
+  /**
+   * The keys of the tags to which an entry belongs.
+   */
+  const tagKeysOf = (uri: string): number[] =>
+    taggedEntries.value.filter(entry => entry.uri === uri).map(entry => entry.tagKey);
+  /**
+   * The entries that belong to a tag.
+   */
+  const entriesOf = (tagKey: number): IdbTagged[] =>
+    taggedEntries.value.filter(entry => entry.tagKey === tagKey);
+
+  /**
+   * Notifies the user of a failed operation.
+   */
+  const report = <T>(result: IdbResult<T>): IdbResult<T> => {
+    if (result.state === "error") {
+      toast.add({
+        title: result.message,
+        icon: "i-heroicons-exclamation-circle",
+        color: "error",
       });
-      this.currentTag = await IdbTags.getCurrent();
-    },
-    /**
-     * Fetches the tagged entries from IndexedDB, then sorts them.
-     */
-    async fetchTaggedEntries(): Promise<void> {
-      this.taggedEntries = sortEntries(
-        await IdbTaggedEntry.getAll(),
-      );
-    },
-    /**
-     * Adds an entry to the starred entries.
-     * @param entry An entry.
-     * @returns A response containing the starred entry data or an error message.
-     */
-    async starEntry(entry: IdbEntryCreation): Promise<IdbResponse<IdbEntry>> {
-      const response = await IdbStarred.add(entry);
+    }
+    return result;
+  };
 
-      switch (response.state) {
-        case "success":
-          await this.fetchStarredEntries();
-          break;
-        case "error":
-          errorToast(response.message);
-          break;
-      }
+  async function fetchStarredEntries(): Promise<void> {
+    starredEntries.value = await IdbStarred.getAll();
+  }
 
-      return response;
-    },
-    /**
-     * Removes an entry from the starred entries.
-     * @param uri An entry URI.
-     */
-    async unstarEntry(uri: string): Promise<IdbResponse> {
-      const response = await IdbStarred.remove(uri);
+  /**
+   * Fetches the tags; if the current tag no longer exists, the first tag
+   * becomes the current one.
+   */
+  async function fetchTags(): Promise<void> {
+    tags.value = await IdbTags.getAll({ orderBy: "position" });
+    if (!currentTag.value) currentTagKey.value = tags.value[0]?.key ?? null;
+  }
 
-      switch (response.state) {
-        case "success":
-          await this.fetchStarredEntries();
-          break;
-        case "error":
-          errorToast(response.message);
-          break;
-      }
+  async function fetchTaggedEntries(): Promise<void> {
+    taggedEntries.value = sortEntries(await IdbTaggedEntry.getAll());
+  }
 
-      return response;
-    },
-    /**
-     * Creates a new tag.
-     * @param data An object containing at least a tag name.
-     * @returns A response containing the new tag data or an error message.
-     */
-    async createTag(data: IdbTagCreation): Promise<IdbResponse<IdbTagWithKey>> {
-      const response = await IdbTags.add(data);
+  async function refreshNewTagColor(): Promise<void> {
+    newTagColor.value = await IdbTags.pickColor();
+  }
 
-      switch (response.state) {
-        case "success":
-          this.newTagColor = await IdbTags.pickColor();
-          await this.fetchTags();
-          break;
-        case "error":
-          errorToast(response.message);
-          break;
-      }
+  /**
+   * The pending initialization, shared by concurrent or repeated calls.
+   */
+  let initialization: Promise<void> | undefined;
 
-      return response;
-    },
-    /**
-     * Updates a tag.
-     * @param key The tag key.
-     * @param data An object containing at least a tag name.
-     * @returns A response containing the updated tag data or an error message.
-     */
-    async updateTag(
-      key: number,
-      data: IdbTagCreation,
-    ): Promise<IdbResponse<IdbTagWithKey>> {
-      const response = await IdbTags.update(key, data);
+  /**
+   * Loads the data stored in IndexedDB.
+   */
+  async function initialize(): Promise<void> {
+    initialization ??= (async () => {
+      await Promise.all([
+        fetchTags(),
+        fetchTaggedEntries(),
+        fetchStarredEntries(),
+        refreshNewTagColor(),
+      ]);
+      initialized.value = true;
+    })();
 
-      switch (response.state) {
-        case "success":
-          if (this.newTagColor === response.data.color) {
-            this.newTagColor = await IdbTags.pickColor();
-          }
-          await this.fetchTags();
-          break;
-        case "error":
-          errorToast(response.message);
-          break;
-      }
+    await initialization;
+  }
 
-      return response;
-    },
-    /**
-     * Reorder tags.
-     * @param orderedKeys The sorted tag keys.
-     * @param setFirstAsCurrent A boolean representing whether the new first tag must be marked as the new current tag.
-     */
-    async reorderTags(
-      orderedKeys: number[],
-      setFirstAsCurrent: boolean = true,
-    ): Promise<void> {
-      const response = await IdbTags.reorder(orderedKeys, {
-        setFirstAsCurrent,
-      });
+  async function starEntry(entry: IdbEntryCreation): Promise<IdbResult<IdbEntry>> {
+    const result = report(await IdbStarred.add(entry));
+    if (result.state === "success") await fetchStarredEntries();
+    return result;
+  }
 
-      switch (response.state) {
-        case "success":
-          await this.fetchTags();
-          break;
-        case "error":
-          errorToast(response.message);
-          break;
-      }
-    },
-    /**
-     * Removes a tag (and detaches its entries).
-     * @param key The tag key.
-     */
-    async removeTag(key: number): Promise<IdbResponse> {
-      const response = await IdbTags.remove(key);
+  async function unstarEntry(uri: string): Promise<IdbResult> {
+    const result = report(await IdbStarred.remove(uri));
+    if (result.state === "success") await fetchStarredEntries();
+    return result;
+  }
 
-      switch (response.state) {
-        case "success":
-          await this.fetchTags();
-          await this.fetchTaggedEntries();
-          this.newTagColor = await IdbTags.pickColor();
-          break;
-        case "error":
-          errorToast(response.message);
-          break;
-      }
+  /**
+   * Creates a tag, which becomes the current one.
+   */
+  async function createTag(data: IdbTagCreation): Promise<IdbResult<IdbTagWithKey>> {
+    const result = report(await IdbTags.add(data));
+    if (result.state === "success") {
+      currentTagKey.value = result.data.key;
+      await Promise.all([fetchTags(), refreshNewTagColor()]);
+    }
+    return result;
+  }
 
-      return response;
-    },
-    /**
-     * Adds an entry to a tag.
-     * @param entry An entry.
-     * @param tagKey The tag key.
-     * @returns A response containing the tagged entry data or an error message.
-     */
-    async tagEntry(
-      entry: IdbEntryCreation,
-      tagKey: number,
-    ): Promise<IdbResponse<IdbTagged>> {
-      const response = await IdbTaggedEntry.add(entry, tagKey);
+  async function updateTag(key: number, data: IdbTagCreation): Promise<IdbResult<IdbTagWithKey>> {
+    const result = report(await IdbTags.update(key, data));
+    if (result.state === "success") {
+      await fetchTags();
+      if (newTagColor.value === result.data.color) await refreshNewTagColor();
+    }
+    return result;
+  }
 
-      switch (response.state) {
-        case "success":
-          await this.fetchTaggedEntries();
-          break;
-        case "error":
-          errorToast(response.message);
-          break;
-      }
+  /**
+   * Reorders the tags.
+   * @param orderedKeys All the tag keys, in the new order.
+   * @param setFirstAsCurrent Whether the new first tag becomes the current one.
+   */
+  async function reorderTags(
+    orderedKeys: number[],
+    setFirstAsCurrent = true,
+  ): Promise<IdbResult<IdbTagWithKey[]>> {
+    const result = report(await IdbTags.reorder(orderedKeys));
+    if (result.state === "success") {
+      if (setFirstAsCurrent && orderedKeys[0] !== undefined) currentTagKey.value = orderedKeys[0];
+      await fetchTags();
+    }
+    return result;
+  }
 
-      return response;
-    },
-    /**
-     * Removes an entry linked to a tag.
-     * @param uri The entry URI.
-     * @param tagKey The tag key.
-     */
-    async untagEntry(uri: string, tagKey: number): Promise<IdbResponse> {
-      const response = await IdbTaggedEntry.remove(uri, tagKey);
+  /**
+   * Removes a tag and detaches its entries.
+   */
+  async function removeTag(key: number): Promise<IdbResult> {
+    const result = report(await IdbTags.remove(key));
+    if (result.state === "success") {
+      await Promise.all([fetchTags(), fetchTaggedEntries(), refreshNewTagColor()]);
+    }
+    return result;
+  }
 
-      switch (response.state) {
-        case "success":
-          await this.fetchTaggedEntries();
-          break;
-        case "error":
-          errorToast(response.message);
-          break;
-      }
+  function setCurrentTag(key: number): void {
+    if (tags.value.some(tag => tag.key === key)) currentTagKey.value = key;
+  }
 
-      return response;
-    },
-  },
+  async function tagEntry(entry: IdbEntryCreation, tagKey: number): Promise<IdbResult<IdbTagged>> {
+    const result = report(await IdbTaggedEntry.add(entry, tagKey));
+    if (result.state === "success") await fetchTaggedEntries();
+    return result;
+  }
+
+  async function untagEntry(uri: string, tagKey: number): Promise<IdbResult> {
+    const result = report(await IdbTaggedEntry.remove(uri, tagKey));
+    if (result.state === "success") await fetchTaggedEntries();
+    return result;
+  }
+
+  return {
+    initialized,
+    tags,
+    taggedEntries,
+    starredEntries,
+    newTagColor,
+    currentTagKey,
+    currentTag,
+    isStarred,
+    tagKeysOf,
+    entriesOf,
+    initialize,
+    starEntry,
+    unstarEntry,
+    createTag,
+    updateTag,
+    reorderTags,
+    removeTag,
+    setCurrentTag,
+    tagEntry,
+    untagEntry,
+  };
 });

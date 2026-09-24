@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { Color } from "~/enums";
-  import { IdbTags, type TagColorKey } from "~/idb/IdbTags";
+  import { IdbTags, type TagColorKey } from "~/idb";
   import { TailwindColorClasses } from "~/TailwindColorClasses";
 
   const emit = defineEmits<{

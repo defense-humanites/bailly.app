@@ -1,4 +1,4 @@
-import { Idb, type IdbResponse, IdbStore, type IdbEntryCreation, type IdbTagCreation } from "../app/idb/Idb";
+import { Idb, IdbStore, type IdbEntryCreation, type IdbResult, type IdbTagCreation } from "../app/idb/Idb";
 
 /**
  * Clears all the Idb stores and reverts the default `Idb` settings.
@@ -10,8 +10,24 @@ export const clearIdb = async (): Promise<void> => {
   Idb.configure();
 };
 
-export const success = (response: IdbResponse) => response.state === "success";
-export const error = (response: IdbResponse) => response.state === "error";
+export const success = (result: IdbResult<unknown>): boolean => result.state === "success";
+export const error = (result: IdbResult<unknown>): boolean => result.state === "error";
+
+/**
+ * Returns the data of a successful result.
+ * @throws If the result is an error.
+ */
+export const unwrap = <T>(result: IdbResult<T>): T => {
+  if (result.state === "error") throw new Error(`Unexpected error: ${result.message}`);
+  return result.data;
+};
+
+/**
+ * Passes an invalid value where a typed one is expected, to test the
+ * runtime validation.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- An unchecked cast is the point.
+export const invalid = <T>(value: unknown): T => value as T;
 
 export const entries: { [key in "rhinokeros" | "alopex"]: IdbEntryCreation; } = {
   rhinokeros: {

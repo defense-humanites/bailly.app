@@ -1,7 +1,10 @@
-export { Idb, IdbResponse } from "./Idb";
+export { attempt, Idb, IdbError, IdbStore } from "./Idb";
 export type {
   IdbEntry,
   IdbEntryCreation,
+  IdbFailure,
+  IdbResult,
+  IdbSuccess,
   IdbTag,
   IdbTagCreation,
   IdbTagged,
@@ -10,4 +13,4 @@ export type {
 export { IdbHistory } from "./IdbHistory";
 export { IdbStarred } from "./IdbStarred";
 export { IdbTaggedEntry } from "./IdbTaggedEntry";
-export { IdbTags } from "./IdbTags";
+export { IdbTags, type TagColorKey } from "./IdbTags";

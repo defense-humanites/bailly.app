@@ -1,37 +1,36 @@
 import { expect, test } from "vitest";
-import { entries, error, success, tags } from "../idbHelpers";
+import { entries, error, invalid, success, tags, unwrap } from "../idbHelpers";
 import { Idb, IdbTaggedEntry, IdbTags } from "../../app/idb";
 
 test("Create tagged entry", async () => {
   const banquetTag = await IdbTags.add(tags.banquet);
   const theeteteTag = await IdbTags.add(tags.theetete);
-  const banquetTagKey = banquetTag.data.key;
-  const theeteteTagKey = theeteteTag.data.key;
+  const banquetTagKey = unwrap(banquetTag).key;
+  const theeteteTagKey = unwrap(theeteteTag).key;
 
   // Acceptable values.
   expect(await IdbTaggedEntry.add(entries.rhinokeros, banquetTagKey)).toSatisfy(success);
   expect(await IdbTaggedEntry.add(entries.rhinokeros, theeteteTagKey)).toSatisfy(success);
   expect(await IdbTaggedEntry.add(entries.alopex, banquetTagKey)).toSatisfy(success);
 
-  expect(await IdbTaggedEntry.add(entries.alopex, theeteteTagKey, { setCurrentTag: true })).toSatisfy(success);
-  expect(IdbTags.getCurrentKey()).toBe(theeteteTagKey); // The previous line must have changed the current tag key.
+  expect(await IdbTaggedEntry.add(entries.alopex, theeteteTagKey)).toSatisfy(success);
 
   expect(await IdbTaggedEntry.add({ word: "foo", uri: "foo", excerpt: "foo" }, banquetTagKey)).toSatisfy(success);
-  expect(await IdbTaggedEntry.add({ word: "bar", uri: "bar", children: [{}] }, banquetTagKey)).toSatisfy(success); // Children must have length, but values are not checked.
+  expect(await IdbTaggedEntry.add(invalid({ word: "bar", uri: "bar", children: [{}] }), banquetTagKey)).toSatisfy(success); // Children must have length, but values are not checked.
 
   // Wrong values.
   expect(await IdbTaggedEntry.add(entries.rhinokeros, banquetTagKey)).toSatisfy(error); // Name exists.
-  expect(await IdbTaggedEntry.add({ word: "foo" }, banquetTagKey)).toSatisfy(error); // Missing fields.
-  expect(await IdbTaggedEntry.add({ uri: "foo" }, banquetTagKey)).toSatisfy(error); // Missing fields.
-  expect(await IdbTaggedEntry.add({ excerpt: "foo" }, banquetTagKey)).toSatisfy(error); // Missing fields.
-  expect(await IdbTaggedEntry.add({ word: "foo", uri: "", excerpt: "" }, banquetTagKey)).toSatisfy(error); // Bad values.
-  expect(await IdbTaggedEntry.add({ word: "", uri: "foo", excerpt: "" }, banquetTagKey)).toSatisfy(error); // Bad values.
-  expect(await IdbTaggedEntry.add({ word: "", uri: "", excerpt: "foo" }, banquetTagKey)).toSatisfy(error); // Bad values.
-  expect(await IdbTaggedEntry.add({ word: "foo", uri: "foo", excerpt: "" }, banquetTagKey)).toSatisfy(error); // Bad values.
-  expect(await IdbTaggedEntry.add({ word: "foo", uri: "", excerpt: "foo" }, banquetTagKey)).toSatisfy(error); // Bad values.
-  expect(await IdbTaggedEntry.add({ word: "", uri: "foo", excerpt: "foo" }, banquetTagKey)).toSatisfy(error); // Bad values.
-  expect(await IdbTaggedEntry.add({ word: "", uri: "foo", children: [] }, banquetTagKey)).toSatisfy(error); // Bad values.
-  expect(await IdbTaggedEntry.add({}, banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add(invalid({ word: "foo" }), banquetTagKey)).toSatisfy(error); // Missing fields.
+  expect(await IdbTaggedEntry.add(invalid({ uri: "foo" }), banquetTagKey)).toSatisfy(error); // Missing fields.
+  expect(await IdbTaggedEntry.add(invalid({ excerpt: "foo" }), banquetTagKey)).toSatisfy(error); // Missing fields.
+  expect(await IdbTaggedEntry.add(invalid({ word: "foo", uri: "", excerpt: "" }), banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add(invalid({ word: "", uri: "foo", excerpt: "" }), banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add(invalid({ word: "", uri: "", excerpt: "foo" }), banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add(invalid({ word: "foo", uri: "foo", excerpt: "" }), banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add(invalid({ word: "foo", uri: "", excerpt: "foo" }), banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add(invalid({ word: "", uri: "foo", excerpt: "foo" }), banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add(invalid({ word: "", uri: "foo", children: [] }), banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add(invalid({}), banquetTagKey)).toSatisfy(error); // Bad values.
 
   expect(await IdbTaggedEntry.add(entries.alopex, 999)).toSatisfy(error); // Unknown tag.
 
@@ -41,7 +40,7 @@ test("Create tagged entry", async () => {
 
 test("Delete tagged entry", async () => {
   const banquetTag = await IdbTags.add(tags.banquet);
-  const banquetTagKey = banquetTag.data.key;
+  const banquetTagKey = unwrap(banquetTag).key;
 
   await IdbTaggedEntry.add(entries.rhinokeros, banquetTagKey);
 
@@ -54,8 +53,8 @@ test("Delete tagged entry", async () => {
 test("Get tagged entries", async () => {
   const banquetTag = await IdbTags.add(tags.banquet);
   const theeteteTag = await IdbTags.add(tags.theetete);
-  const banquetTagKey = banquetTag.data.key;
-  const theeteteTagKey = theeteteTag.data.key;
+  const banquetTagKey = unwrap(banquetTag).key;
+  const theeteteTagKey = unwrap(theeteteTag).key;
 
   await IdbTaggedEntry.add(entries.rhinokeros, banquetTagKey);
   await IdbTaggedEntry.add(entries.alopex, banquetTagKey);

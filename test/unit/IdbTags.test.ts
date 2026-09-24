@@ -1,23 +1,22 @@
 import { expect, test } from "vitest";
-import { error, success, tags } from "../idbHelpers";
-import { LocalStorageKey } from "../../app/enums";
+import { error, invalid, success, tags, unwrap } from "../idbHelpers";
 import { Idb, IdbTaggedEntry, IdbTags } from "../../app/idb";
-import type { TagColorKey } from "../../app/idb/IdbTags";
+import type { IdbTagCreation } from "../../app/idb";
 
 test("Create tag", async () => {
   // Acceptable values.
   expect(await IdbTags.add(tags.banquet)).toSatisfy(success);
   expect(await IdbTags.add(tags.theetete)).toSatisfy(success);
-  const createPhedonTag = await IdbTags.add({ name: "Phédon", description: "De l'âme", color: "unknown" });
+  const createPhedonTag = await IdbTags.add({ name: "Phédon", description: "De l'âme", color: invalid("unknown") });
   expect(createPhedonTag).toSatisfy(success);
-  expect(IdbTags.isColorKey(createPhedonTag.data.color)).toBe(true); // A valid color must have been picked.
+  expect(IdbTags.isColorKey(unwrap(createPhedonTag).color)).toBe(true); // A valid color must have been picked.
 
   // Wrong values.
   expect(await IdbTags.add({ name: "" })).toSatisfy(error); // Name is mandatory.
   expect(await IdbTags.add({ name: "Favoris" })).toSatisfy(error); // Name is reserved.
   expect(await IdbTags.add({ name: "Banquet" })).toSatisfy(error); // Already used.
   expect(await IdbTags.add({ name: "theetete" })).toSatisfy(error); // Already used (case/diacritics are ignored).
-  expect(await IdbTags.add({})).toSatisfy(error); // Bad values.
+  expect(await IdbTags.add(invalid({}))).toSatisfy(error); // Bad values.
 
   Idb.configure({ maxTags: 1 });
   expect(await IdbTags.add({ name: "foo" })).toSatisfy(error); // Too many tags.
@@ -26,15 +25,15 @@ test("Create tag", async () => {
 test("Update tag", async () => {
   const banquetTag = await IdbTags.add(tags.banquet);
   const theeteteTag = await IdbTags.add(tags.theetete);
-  const banquetTagKey = banquetTag.data.key;
-  const theeteteTagKey = theeteteTag.data.key;
+  const banquetTagKey = unwrap(banquetTag).key;
+  const theeteteTagKey = unwrap(theeteteTag).key;
 
   // Acceptable values.
-  const newData = { name: "Les Acharniens", description: "Pièce de théâtre d'Aristophane", color: "Orange" };
+  const newData: IdbTagCreation = { name: "Les Acharniens", description: "Pièce de théâtre d'Aristophane", color: "Orange" };
   expect(await IdbTags.update(banquetTagKey, newData)).toSatisfy(success);
-  const updatedTag = await IdbTags.update(banquetTagKey, { ...newData, color: "unknown" });
+  const updatedTag = await IdbTags.update(banquetTagKey, { ...newData, color: invalid("unknown") });
   expect(updatedTag).toSatisfy(success);
-  expect(IdbTags.isColorKey(updatedTag.data.color)).toBe(true); // A valid color must have been picked.
+  expect(IdbTags.isColorKey(unwrap(updatedTag).color)).toBe(true); // A valid color must have been picked.
 
   // Wrong values.
   expect(await IdbTags.update(theeteteTagKey, { name: "" })).toSatisfy(error); // Name is mandatory.
@@ -48,7 +47,7 @@ test("Reorder tags", async () => {
   const tagB = await IdbTags.add({ name: "Sophocle" });
   const tagC = await IdbTags.add({ name: "Euripide" });
 
-  const keys = { a: tagA.data.key, b: tagB.data.key, c: tagC.data.key };
+  const keys = { a: unwrap(tagA).key, b: unwrap(tagB).key, c: unwrap(tagC).key };
 
   // Acceptable values.
   expect(await IdbTags.reorder(Object.values(keys))).toSatisfy(success); // Same order.
@@ -66,26 +65,21 @@ test("Delete tag", async () => {
   const banquetTag = await IdbTags.add(tags.banquet);
   const theeteteTag = await IdbTags.add(tags.theetete);
   const timeeTag = await IdbTags.add({ name: "Timée" });
-  const banquetTagKey = banquetTag.data.key;
-  const theeteteTagKey = theeteteTag.data.key;
-  const timeeTagKey = timeeTag.data.key;
+  const banquetTagKey = unwrap(banquetTag).key;
+  const theeteteTagKey = unwrap(theeteteTag).key;
+  const timeeTagKey = unwrap(timeeTag).key;
 
   expect(await IdbTags.remove(banquetTagKey)).toSatisfy(success);
-
-  // Force to determine a current key.
-  localStorage.removeItem(LocalStorageKey.CurrentTagKey);
   expect(await IdbTags.remove(theeteteTagKey)).toSatisfy(success);
-
-  // Force to determine a current key (but there are no more entries left).
-  localStorage.removeItem(LocalStorageKey.CurrentTagKey);
   expect(await IdbTags.remove(timeeTagKey)).toSatisfy(success);
+  expect(await IdbTags.getAll()).toHaveLength(0);
 
   expect(await IdbTags.remove(999)).toSatisfy(error);
 });
 
 test("Delete tag detaches its entries", async () => {
-  const banquetTagKey = (await IdbTags.add(tags.banquet)).data.key;
-  const theeteteTagKey = (await IdbTags.add(tags.theetete)).data.key;
+  const banquetTagKey = unwrap(await IdbTags.add(tags.banquet)).key;
+  const theeteteTagKey = unwrap(await IdbTags.add(tags.theetete)).key;
 
   await IdbTaggedEntry.add({ word: "foo", uri: "foo", excerpt: "foo" }, banquetTagKey);
   await IdbTaggedEntry.add({ word: "bar", uri: "bar", excerpt: "bar" }, banquetTagKey);
@@ -101,14 +95,14 @@ test("Delete tag detaches its entries", async () => {
 
 test("Tag colors", async () => {
   // `Yellow` is reserved for the favorites: a valid tag color is picked instead.
-  const tag = await IdbTags.add({ name: "Lachès", color: "Yellow" as TagColorKey });
+  const tag = await IdbTags.add({ name: "Lachès", color: invalid("Yellow") });
   expect(tag).toSatisfy(success);
-  expect(IdbTags.isColorKey(tag.data.color)).toBe(true);
+  expect(IdbTags.isColorKey(unwrap(tag).color)).toBe(true);
 
   // Picked colors are valid and, while some remain, not already used.
-  const usedColors = new Set<string>([tag.data.color]);
+  const usedColors = new Set<string>([unwrap(tag).color]);
   for (const name of ["a", "b", "c", "d", "e"]) {
-    const { data } = await IdbTags.add({ name });
+    const data = unwrap(await IdbTags.add({ name }));
     expect(IdbTags.isColorKey(data.color)).toBe(true);
     expect(usedColors.has(data.color)).toBe(false);
     usedColors.add(data.color);
@@ -117,9 +111,9 @@ test("Tag colors", async () => {
 
 test("Get tags", async () => {
   const banquetTag = await IdbTags.add(tags.banquet);
-  const banquetTagKey = banquetTag.data.key;
+  const banquetTagKey = unwrap(banquetTag).key;
 
-  expect(await IdbTags.get(banquetTag.data.name)).toBeTypeOf("object");
+  expect(await IdbTags.get(unwrap(banquetTag).name)).toBeTypeOf("object");
   expect(await IdbTags.get("unknown")).toBe(null);
 
   expect(await IdbTags.getAll()).toHaveLength(1);
@@ -128,7 +122,7 @@ test("Get tags", async () => {
   expect(await IdbTags.getAll()).toHaveLength(2);
 
   // Keys are not reset between tests (auto-increment), so use the actual ones.
-  await IdbTags.reorder([theeteteTag.data.key, banquetTagKey]);
+  await IdbTags.reorder([unwrap(theeteteTag).key, banquetTagKey]);
   expect((await IdbTags.getAll()).map(tag => tag.name)).toEqual(["Théétète", "Banquet"]); // Defaults to `orderBy: "position"`.
   expect((await IdbTags.getAll({ orderBy: "position" })).map(tag => tag.name)).toEqual(["Théétète", "Banquet"]);
   expect((await IdbTags.getAll({ orderBy: "insertion" })).map(tag => tag.name)).toEqual(["Banquet", "Théétète"]);
@@ -137,8 +131,8 @@ test("Get tags", async () => {
 test("Get entry tags / tag keys (involves IdbTaggedEntry)", async () => {
   const banquetTag = await IdbTags.add(tags.banquet);
   const theeteteTag = await IdbTags.add(tags.theetete);
-  const banquetTagKey = banquetTag.data.key;
-  const theeteteTagKey = theeteteTag.data.key;
+  const banquetTagKey = unwrap(banquetTag).key;
+  const theeteteTagKey = unwrap(theeteteTag).key;
 
   await IdbTaggedEntry.add({ word: "foo", uri: "foo", excerpt: "foo" }, banquetTagKey);
   await IdbTaggedEntry.add({ word: "bar", uri: "bar", excerpt: "bar" }, banquetTagKey);
@@ -182,10 +176,37 @@ test("Get entry tags / tag keys (involves IdbTaggedEntry)", async () => {
   expect(updatedBarEntryTagKeys).toEqual([banquetTagKey]);
 });
 
-test("Set current", async () => {
-  const banquetTag = await IdbTags.add(tags.banquet);
-  const banquetTagKey = banquetTag.data.key;
+test("New tags are placed first", async () => {
+  const a = unwrap(await IdbTags.add({ name: "Eschyle" }));
+  const b = unwrap(await IdbTags.add({ name: "Sophocle" }));
+  const c = unwrap(await IdbTags.add({ name: "Euripide" }));
 
-  expect(await IdbTags.setCurrent(banquetTagKey)).toSatisfy(success);
-  expect(await IdbTags.setCurrent(999)).toSatisfy(error);
+  expect(c.position).toBe(1);
+  expect((await IdbTags.getAll()).map(tag => [tag.key, tag.position])).toEqual([
+    [c.key, 1],
+    [b.key, 2],
+    [a.key, 3],
+  ]);
+});
+
+test("Update keeps omitted values", async () => {
+  const banquet = unwrap(await IdbTags.add(tags.banquet));
+
+  const renamed = unwrap(await IdbTags.update(banquet.key, { name: "Le Banquet" }));
+  expect(renamed).toMatchObject({
+    name: "Le Banquet",
+    description: banquet.description,
+    color: banquet.color,
+    position: banquet.position,
+  });
+
+  expect(await IdbTags.update(999, { name: "Timée" })).toSatisfy(error); // Unknown tag.
+});
+
+test("Reorder rejects duplicate keys", async () => {
+  const a = unwrap(await IdbTags.add({ name: "Eschyle" }));
+  const b = unwrap(await IdbTags.add({ name: "Sophocle" }));
+  unwrap(await IdbTags.add({ name: "Euripide" }));
+
+  expect(await IdbTags.reorder([a.key, b.key, a.key])).toSatisfy(error);
 });

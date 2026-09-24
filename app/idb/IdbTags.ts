@@ -1,19 +1,28 @@
-import type { IDBPCursorWithValue } from "idb";
+import type { IDBPObjectStore } from "idb";
 import {
+  attempt,
   Idb,
-  IdbResponse,
+  IdbError,
   IdbStore,
   type BaillyDB,
-  type IdbTagCreation,
+  type IdbResult,
   type IdbTag,
+  type IdbTagCreation,
   type IdbTagged,
   type IdbTagWithKey,
 } from "./Idb";
-import { Color, LocalStorageKey, type ColorKey } from "~/enums";
+import { Color, type ColorKey } from "~/enums";
 import { pickRandom } from "~/helpers";
 
 export type TagColorKey = Exclude<ColorKey, "Yellow">;
 type TagOrder = "position" | "insertion";
+type TagsStore = IDBPObjectStore<BaillyDB, IdbStore[], IdbStore.Tags, "readwrite">;
+
+/**
+ * Makes tag names comparable regardless of case and diacritics.
+ */
+const comparable = (name: string): string =>
+  name.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
 
 /**
  * A collection of methods for managing tags.
@@ -56,175 +65,150 @@ export class IdbTags {
     return pickRandom(this.colorKeys, excluded);
   }
 
-  static async #buildIdbTag(tag: IdbTagCreation): Promise<IdbTag> {
-    const newTag: IdbTag = {
-      name: tag.name.trim(),
-      description: tag.description?.trim() ?? "",
-      color: IdbTags.isColorKey(tag.color) ? tag.color : await this.pickColor(),
-      position: 1,
-    };
+  /**
+   * Validates and normalizes a tag name.
+   * @throws {IdbError} If the name is empty or reserved.
+   */
+  static #validateName(name: unknown): string {
+    const trimmed = typeof name === "string" ? name.trim() : "";
 
-    if (!newTag.name.length) {
-      throw new Error("Une étiquette doit être nommée.");
+    if (!trimmed.length) {
+      throw new IdbError("Une étiquette doit être nommée.");
     }
 
-    if (newTag.name.toLowerCase() === "favoris") {
-      throw new Error("Ce nom est réservé à la liste des favoris.");
+    if (comparable(trimmed) === "favoris") {
+      throw new IdbError("Ce nom est réservé à la liste des favoris.");
     }
 
-    return newTag;
+    return trimmed;
   }
 
   /**
-   * Checks if a tag name exists.
-   * @remarks If a tag key is passed, this method will ignore any matching entry.
+   * Checks, within a transaction, that no other tag has the same name.
+   * @param store The tags store of the ongoing transaction.
    * @param name A given tag name.
-   * @param tagKey The primary key that supposedly belongs to the given tag name.
-   * @returns The existing name, otherwise `undefined`.
+   * @param exceptKey The key of the tag being renamed (it is ignored).
+   * @throws {IdbError} If the name is already used (case and diacritics are ignored).
    */
-  static async #isExistingTagName(
+  static async #assertAvailableName(
+    store: TagsStore,
     name: string,
-    tagKey?: number,
-  ): Promise<string | undefined> {
-    const makeComparable = (input: string): string =>
-      input.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
+    exceptKey?: number,
+  ): Promise<void> {
+    const comparableName = comparable(name);
 
-    const comparableName: string = makeComparable(name);
-
-    return (await this.getAll()).find(
-      tag => makeComparable(tag.name) === comparableName && tag.key !== tagKey,
-    )?.name;
+    for await (const cursor of store) {
+      if (cursor.primaryKey !== exceptKey && comparable(cursor.value.name) === comparableName) {
+        throw new IdbError(`L'étiquette « ${cursor.value.name} » existe déjà.`);
+      }
+    }
   }
 
-  static async add(data: IdbTagCreation): Promise<IdbResponse<IdbTagWithKey>> {
-    try {
-      const { name, description, color, position }: IdbTag
-        = await this.#buildIdbTag(data);
-
-      // Avoid giving an existing name.
-      const nameExists = await this.#isExistingTagName(name);
-      if (nameExists) {
-        throw new Error(`L'étiquette "${nameExists}" existe déjà.`);
-      }
+  /**
+   * Creates a tag, placed first.
+   * @param data The tag data. If no valid color is given, one is picked.
+   * @returns The created tag with its key.
+   */
+  static async add(data: IdbTagCreation): Promise<IdbResult<IdbTagWithKey>> {
+    return attempt(async () => {
+      const name = this.#validateName(data.name);
+      // Pick the color before the transaction: awaiting anything else than
+      // IndexedDB requests would commit it.
+      const color = IdbTags.isColorKey(data.color) ? data.color : await this.pickColor();
 
       const db = await Idb.getIndexedDB();
       const tx = db.transaction(IdbStore.Tags, "readwrite");
 
-      const countTags = await tx.store.count();
-      if (countTags >= Idb.config.maxTags) {
-        throw new Error(`Le nombre maximal d'étiquettes a été atteint.`);
+      if ((await tx.store.count()) >= Idb.config.maxTags) {
+        throw new IdbError("Le nombre maximal d'étiquettes a été atteint.");
       }
 
-      const tagKeysByPosition = await tx.store.index("position").getAllKeys();
-      const newTagKey = await tx.store.add({
+      await this.#assertAvailableName(tx.store, name);
+
+      // Make room for the new tag.
+      for await (const cursor of tx.store) {
+        await cursor.update({ ...cursor.value, position: cursor.value.position + 1 });
+      }
+
+      const tag: IdbTag = {
         name,
-        description,
+        description: data.description?.trim() ?? "",
         color,
-        position,
-      });
-      const newTag = await tx.store.get(newTagKey);
+        position: 1,
+      };
+      const key = await tx.store.add(tag);
       await tx.done;
 
-      if (!newTag) {
-        throw new Error(
-          "Une erreur est survenue lors de la création de l'étiquette.",
-        );
-      }
-
-      await this.reorder([newTagKey, ...tagKeysByPosition], {
-        setFirstAsCurrent: true,
-      });
-
-      return new IdbResponse("success", {
-        data: {
-          ...newTag,
-          key: newTagKey,
-        },
-      });
-    } catch (error: unknown) {
-      return IdbResponse.defaultError(error);
-    }
+      return { ...tag, key };
+    });
   }
 
+  /**
+   * Updates a tag.
+   * @param tagKey The key of the tag to update.
+   * @param data The new tag data. Omitted (or invalid) optional values are kept.
+   * @returns The updated tag with its key.
+   */
   static async update(
     tagKey: number,
     data: IdbTagCreation,
-  ): Promise<IdbResponse<IdbTagWithKey>> {
-    try {
-      const { name, description, color }: IdbTag = await this.#buildIdbTag(
-        data,
-      );
-
-      // Avoid giving an existing name.
-      const nameExists = await this.#isExistingTagName(name, tagKey);
-      if (nameExists) {
-        throw new Error(`L'étiquette "${nameExists}" existe déjà.`);
-      }
+  ): Promise<IdbResult<IdbTagWithKey>> {
+    return attempt(async () => {
+      const name = this.#validateName(data.name);
 
       const db = await Idb.getIndexedDB();
       const tx = db.transaction(IdbStore.Tags, "readwrite");
 
-      // Check if the tag exists as `db.put()` would create a new tag otherwise.
       const storedTag = await tx.store.get(tagKey);
-      if (storedTag) {
-        await tx.store.put({ ...storedTag, name, description, color }, tagKey);
-        const updatedTag = (await tx.store.get(tagKey)) ?? ({} as IdbTag);
-        await tx.done;
-
-        return new IdbResponse("success", {
-          data: {
-            ...updatedTag,
-            key: tagKey,
-          },
-        });
-      } else {
-        throw new Error("L'étiquette n'a pas pu être mise à jour.");
+      if (!storedTag) {
+        throw new IdbError("L'étiquette à modifier n'existe pas.");
       }
-    } catch (error: unknown) {
-      return IdbResponse.defaultError(error);
-    }
+
+      await this.#assertAvailableName(tx.store, name, tagKey);
+
+      const tag: IdbTag = {
+        ...storedTag,
+        name,
+        description: data.description?.trim() ?? storedTag.description,
+        color: IdbTags.isColorKey(data.color) ? data.color : storedTag.color,
+      };
+      await tx.store.put(tag, tagKey);
+      await tx.done;
+
+      return { ...tag, key: tagKey };
+    });
   }
 
+  /**
+   * Gets a tag by its (exact) name.
+   * @returns The tag with its key, or `null`.
+   */
   static async get(name: string): Promise<IdbTagWithKey | null> {
     const db = await Idb.getIndexedDB();
-
     const tx = db.transaction(IdbStore.Tags);
-    const key = await tx.store.index("name").getKey(name);
-    const tag = await tx.store.index("name").get(name);
+    const cursor = await tx.store.index("name").openCursor(name);
     await tx.done;
 
-    return key && tag ? { key: key, ...tag } : null;
+    return cursor ? { ...cursor.value, key: cursor.primaryKey } : null;
   }
 
+  /**
+   * Gets all the tags.
+   * @param opts.orderBy Sort by `position` (default) or by `insertion`.
+   * @returns The tags with their keys.
+   */
   static async getAll(opts?: { orderBy: TagOrder }): Promise<IdbTagWithKey[]> {
     const db = await Idb.getIndexedDB();
     const tx = db.transaction(IdbStore.Tags);
+    const source = opts?.orderBy === "insertion" ? tx.store : tx.store.index("position");
 
-    let cursor: IDBPCursorWithValue<
-      BaillyDB,
-      [IdbStore.Tags],
-      IdbStore.Tags
-    > | null;
-    switch (opts?.orderBy) {
-      case "insertion":
-        cursor = await tx.store.openCursor();
-        break;
-      case "position":
-      default:
-        cursor = await tx.store.index("position").openCursor();
-        break;
-    }
-
-    const keys: number[] = [];
-    const tags: IdbTag[] = [];
-    while (cursor) {
-      keys.push(cursor.primaryKey);
-      tags.push(cursor.value);
-      cursor = await cursor.continue();
+    const tags: IdbTagWithKey[] = [];
+    for await (const cursor of source.iterate()) {
+      tags.push({ ...cursor.value, key: cursor.primaryKey });
     }
     await tx.done;
 
-    return tags.map((item, i) => ({ key: keys[i]!, ...item }));
+    return tags;
   }
 
   /**
@@ -246,34 +230,10 @@ export class IdbTags {
   }
 
   /**
-   * Retrieves the current tag by its key.
-   * @returns The current tag and its key if found, otherwise `null`;
-   * @remarks The current tag key is supposed to exist in `LocalStorage` (cf. `getCurrentKey()`).
+   * Gets the tags to which an entry belongs.
+   * @param uri The URI of the entry.
+   * @returns The tags with their keys, or `null` if there are none.
    */
-  static async getCurrent(): Promise<IdbTagWithKey | null> {
-    const currentTagKey = this.getCurrentKey();
-
-    let tag: IdbTag | undefined;
-    if (currentTagKey) {
-      const db = await Idb.getIndexedDB();
-      tag = await db.get(IdbStore.Tags, currentTagKey);
-    }
-
-    return tag ? { key: Number(currentTagKey), ...tag } : null;
-  }
-
-  /**
-   * Retrieves the current tag key in `LocalStorage`.
-   * @returns The current tag key if found, otherwise `null`.
-   */
-  static getCurrentKey(): number | null {
-    const currentTagKey: string | null = localStorage.getItem(
-      LocalStorageKey.CurrentTagKey,
-    );
-
-    return currentTagKey ? Number(currentTagKey) : null;
-  }
-
   static async getEntryTags(uri: string): Promise<IdbTagWithKey[] | null> {
     const db = await Idb.getIndexedDB();
 
@@ -284,13 +244,18 @@ export class IdbTags {
     const tx = db.transaction(IdbStore.Tags);
     for (const tagKey of tagKeys) {
       const tag = await tx.store.get(tagKey);
-      if (tag) tags.push({ key: tagKey, ...tag });
+      if (tag) tags.push({ ...tag, key: tagKey });
     }
     await tx.done;
 
     return tags.length ? tags : null;
   }
 
+  /**
+   * Gets the keys of the tags to which an entry belongs.
+   * @param uri The URI of the entry.
+   * @returns The tag keys, or `null` if there are none.
+   */
   static async getEntryTagKeys(uri: string): Promise<number[] | null> {
     const db = await Idb.getIndexedDB();
     const entries: IdbTagged[] = await db.getAllFromIndex(
@@ -306,14 +271,14 @@ export class IdbTags {
    * Removes a tag and detaches its entries.
    * @param tagKey The primary key of the tag to remove.
    */
-  static async remove(tagKey: number): Promise<IdbResponse> {
-    try {
+  static async remove(tagKey: number): Promise<IdbResult> {
+    return attempt(async () => {
       const db = await Idb.getIndexedDB();
       const tx = db.transaction([IdbStore.Tags, IdbStore.Tagged], "readwrite");
       const tags = tx.objectStore(IdbStore.Tags);
 
-      if (!(await tags.getKey(tagKey))) {
-        throw new Error("L'étiquette à supprimer n'existe pas.");
+      if ((await tags.getKey(tagKey)) === undefined) {
+        throw new IdbError("L'étiquette à supprimer n'existe pas.");
       }
 
       await tags.delete(tagKey);
@@ -325,55 +290,25 @@ export class IdbTags {
 
       await tx.done;
 
-      // Set the first tag (if it exists) as the new current tag if there
-      // is none (normally, if deleting the tag invalidated it).
-      if (!(await this.getCurrent())) {
-        const cursor = await db
-          .transaction(IdbStore.Tags)
-          .store.index("position")
-          .openCursor();
-        const firstTagKey = cursor?.primaryKey;
-        if (firstTagKey) {
-          localStorage.setItem(
-            LocalStorageKey.CurrentTagKey,
-            String(firstTagKey),
-          );
-        }
-      }
-
-      return new IdbResponse("success", {});
-    } catch (error: unknown) {
-      return IdbResponse.defaultError(error);
-    }
+      return undefined;
+    });
   }
 
   /**
    * Reorders the existing tags.
-   * @param orderedKeys A list of keys that must include all values stored in the database.
-   * @param opts An optional configuration object.
-   * @param opts.setFirstAsCurrent Update the tag marked as current.
-   * @returns A response object.
+   * @param orderedKeys All the tag keys, in the new order.
+   * @returns The tags with their keys, in the new order.
    */
-
-  static async reorder(
-    orderedKeys: number[],
-    opts?: {
-      setFirstAsCurrent: boolean;
-    },
-  ): Promise<IdbResponse<IdbTagWithKey[]>> {
-    try {
-      if (!orderedKeys[0]) {
-        throw new Error("An empty key array was passed.");
-      }
-
+  static async reorder(orderedKeys: number[]): Promise<IdbResult<IdbTagWithKey[]>> {
+    return attempt(async () => {
       const db = await Idb.getIndexedDB();
+      const tx = db.transaction(IdbStore.Tags, "readwrite");
 
-      const tags = await this.getAll({ orderBy: "position" });
-      const tagKeys = tags.map(el => el.key);
-
+      const storedKeys = await tx.store.getAllKeys();
       if (
-        orderedKeys.length !== tagKeys.length
-        || !orderedKeys.every(el => tagKeys.includes(el))
+        orderedKeys.length !== storedKeys.length
+        || new Set(orderedKeys).size !== orderedKeys.length
+        || !orderedKeys.every(key => storedKeys.includes(key))
       ) {
         throw new Error(
           "The keys passed and those stored in IndexedDB do not match "
@@ -381,47 +316,18 @@ export class IdbTags {
         );
       }
 
-      const tx = db.transaction(IdbStore.Tags, "readwrite");
+      const tags: IdbTagWithKey[] = [];
       for (const [i, key] of orderedKeys.entries()) {
-        const tagIndex = tags.findIndex(el => el.key === key);
-        if (tags[tagIndex]) {
-          const newPos: number = i + 1;
-          await tx.store.put({ ...tags[tagIndex], position: newPos }, key);
-          tags[tagIndex].position = newPos;
-        } else {
-          throw new Error(
-            "The keys passed and those stored in IndexedDB do not match "
-            + "(note that some data has already been modified).",
-          );
-        }
+        const storedTag = await tx.store.get(key);
+        if (!storedTag) throw new Error(`Tag ${key} disappeared during the reordering.`);
+
+        const tag: IdbTag = { ...storedTag, position: i + 1 };
+        await tx.store.put(tag, key);
+        tags.push({ ...tag, key });
       }
       await tx.done;
 
-      if (opts?.setFirstAsCurrent) await this.setCurrent(orderedKeys[0]);
-      return new IdbResponse("success", {
-        data: tags,
-      });
-    } catch (error: unknown) {
-      return IdbResponse.defaultError(error);
-    }
-  }
-
-  static async setCurrent(tagKey: number): Promise<IdbResponse> {
-    try {
-      const db = await Idb.getIndexedDB();
-      const keyExists = await db.getKey(IdbStore.Tags, tagKey);
-
-      if (keyExists) {
-        localStorage.setItem(LocalStorageKey.CurrentTagKey, String(tagKey));
-        return new IdbResponse("success", {});
-      } else {
-        throw new Error(
-          "L'étiquette sélectionnée n'a pas pu être promue "
-          + "en tant qu'étiquette courante.",
-        );
-      }
-    } catch (error: unknown) {
-      return IdbResponse.defaultError(error);
-    }
+      return tags;
+    });
   }
 }

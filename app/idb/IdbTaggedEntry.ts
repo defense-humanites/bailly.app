@@ -1,9 +1,10 @@
-import { LocalStorageKey } from "~/enums";
 import {
+  attempt,
   Idb,
-  IdbResponse,
+  IdbError,
   IdbStore,
   type IdbEntryCreation,
+  type IdbResult,
   type IdbTagged,
 } from "./Idb";
 
@@ -15,53 +16,38 @@ export class IdbTaggedEntry {
    * Associates an entry with a tag.
    * @param entry An input entry to convert into an `IdbTagged`.
    * @param tagKey The primary key of the tag to which the entry must belong.
-   * @param opts An optional configuration object.
-   * @param opts.setCurrentTag Update the tag marked as current with the used `tagKey`.
-   * @returns A response object containing the inserted entry with its tag key if the operation is successful; otherwise returns an error.
+   * @returns The inserted entry with its tag key.
    */
   static async add(
     entry: IdbEntryCreation,
     tagKey: number,
-    opts?: {
-      setCurrentTag: boolean;
-    },
-  ): Promise<IdbResponse<IdbTagged>> {
-    try {
+  ): Promise<IdbResult<IdbTagged>> {
+    return attempt(async () => {
+      const taggedEntry: IdbTagged = { tagKey, ...Idb.buildIdbEntry(entry) };
+
       const db = await Idb.getIndexedDB();
       const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags], "readwrite");
       const store = tx.objectStore(IdbStore.Tagged);
 
-      if (!(await tx.objectStore(IdbStore.Tags).getKey(tagKey))) {
-        throw new Error("L'étiquette demandée n'existe pas.");
+      if ((await tx.objectStore(IdbStore.Tags).getKey(tagKey)) === undefined) {
+        throw new IdbError("L'étiquette demandée n'existe pas.");
       }
 
-      if (await store.index("tagKey+uri").getKey([tagKey, entry.uri])) {
-        throw new Error(`L'étiquette contient déjà l'entrée ${entry.word}.`);
+      if ((await store.index("tagKey+uri").getKey([tagKey, taggedEntry.uri])) !== undefined) {
+        throw new IdbError(`L'étiquette contient déjà l'entrée ${taggedEntry.word}.`);
       }
 
-      const countEntries = await store.index("tagKey").count(tagKey);
-      if (countEntries >= Idb.config.tagMaxItems) {
-        throw new Error(
+      if ((await store.index("tagKey").count(tagKey)) >= Idb.config.tagMaxItems) {
+        throw new IdbError(
           `L'étiquette ne peut contenir plus de ${Idb.config.tagMaxItems} entrées.`,
         );
       }
 
-      const taggedEntry: IdbTagged = {
-        tagKey: tagKey,
-        ...Idb.buildIdbEntry(entry),
-      };
-
       await store.add(taggedEntry);
       await tx.done;
 
-      if (opts?.setCurrentTag) {
-        localStorage.setItem(LocalStorageKey.CurrentTagKey, String(tagKey));
-      }
-
-      return new IdbResponse("success", { data: taggedEntry });
-    } catch (error: unknown) {
-      return IdbResponse.defaultError(error);
-    }
+      return taggedEntry;
+    });
   }
 
   /**
@@ -69,22 +55,21 @@ export class IdbTaggedEntry {
    * @param uri The URI of the entry to detach.
    * @param tagKey The primary key of the tag to which the entry must not belong anymore.
    */
-  static async remove(uri: string, tagKey: number): Promise<IdbResponse> {
-    const db = await Idb.getIndexedDB();
-    const key = await db.getKeyFromIndex(
-      IdbStore.Tagged,
-      "tagKey+uri",
-      IDBKeyRange.only([tagKey, uri]),
-    );
+  static async remove(uri: string, tagKey: number): Promise<IdbResult> {
+    return attempt(async () => {
+      const db = await Idb.getIndexedDB();
+      const tx = db.transaction(IdbStore.Tagged, "readwrite");
 
-    if (key) {
-      await db.delete(IdbStore.Tagged, key);
-      return new IdbResponse("success", {});
-    } else {
-      return IdbResponse.defaultError(
-        "L'étiquette ne référence pas l'entrée à supprimer.",
-      );
-    }
+      const key = await tx.store.index("tagKey+uri").getKey([tagKey, uri]);
+      if (key === undefined) {
+        throw new IdbError("L'étiquette ne référence pas l'entrée à supprimer.");
+      }
+
+      await tx.store.delete(key);
+      await tx.done;
+
+      return undefined;
+    });
   }
 
   /**
@@ -95,13 +80,7 @@ export class IdbTaggedEntry {
    */
   static async get(uri: string, tagKey: number): Promise<IdbTagged | null> {
     const db = await Idb.getIndexedDB();
-    const taggedEntry = await db.getFromIndex(
-      IdbStore.Tagged,
-      "tagKey+uri",
-      IDBKeyRange.only([tagKey, uri]),
-    );
-
-    return taggedEntry ?? null;
+    return (await db.getFromIndex(IdbStore.Tagged, "tagKey+uri", [tagKey, uri])) ?? null;
   }
 
   /**

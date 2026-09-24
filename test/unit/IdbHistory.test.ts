@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { entries, error, success } from "../idbHelpers";
+import { entries, error, invalid, success } from "../idbHelpers";
 import { Idb, IdbHistory } from "../../app/idb";
 
 test("Create history entry", async () => {
@@ -17,17 +17,17 @@ test("Create history entry", async () => {
   expect(await IdbHistory.add({ word: "baz", uri: "baz", excerpt: "baz" })).toSatisfy(success);
 
   // Wrong values.
-  expect(await IdbHistory.add({ word: "foo" })).toSatisfy(error); // Missing fields.
-  expect(await IdbHistory.add({ uri: "foo" })).toSatisfy(error); // Missing fields.
-  expect(await IdbHistory.add({ excerpt: "foo" })).toSatisfy(error); // Missing fields.
-  expect(await IdbHistory.add({ word: "foo", uri: "", excerpt: "" })).toSatisfy(error); // Bad values.
-  expect(await IdbHistory.add({ word: "", uri: "foo", excerpt: "" })).toSatisfy(error); // Bad values.
-  expect(await IdbHistory.add({ word: "", uri: "", excerpt: "foo" })).toSatisfy(error); // Bad values.
-  expect(await IdbHistory.add({ word: "foo", uri: "foo", excerpt: "" })).toSatisfy(error); // Bad values.
-  expect(await IdbHistory.add({ word: "foo", uri: "", excerpt: "foo" })).toSatisfy(error); // Bad values.
-  expect(await IdbHistory.add({ word: "", uri: "foo", excerpt: "foo" })).toSatisfy(error); // Bad values.
-  expect(await IdbHistory.add({ word: "", uri: "foo", children: [] })).toSatisfy(error); // Bad values.
-  expect(await IdbHistory.add({})).toSatisfy(error); // Bad values.
+  expect(await IdbHistory.add(invalid({ word: "foo" }))).toSatisfy(error); // Missing fields.
+  expect(await IdbHistory.add(invalid({ uri: "foo" }))).toSatisfy(error); // Missing fields.
+  expect(await IdbHistory.add(invalid({ excerpt: "foo" }))).toSatisfy(error); // Missing fields.
+  expect(await IdbHistory.add(invalid({ word: "foo", uri: "", excerpt: "" }))).toSatisfy(error); // Bad values.
+  expect(await IdbHistory.add(invalid({ word: "", uri: "foo", excerpt: "" }))).toSatisfy(error); // Bad values.
+  expect(await IdbHistory.add(invalid({ word: "", uri: "", excerpt: "foo" }))).toSatisfy(error); // Bad values.
+  expect(await IdbHistory.add(invalid({ word: "foo", uri: "foo", excerpt: "" }))).toSatisfy(error); // Bad values.
+  expect(await IdbHistory.add(invalid({ word: "foo", uri: "", excerpt: "foo" }))).toSatisfy(error); // Bad values.
+  expect(await IdbHistory.add(invalid({ word: "", uri: "foo", excerpt: "foo" }))).toSatisfy(error); // Bad values.
+  expect(await IdbHistory.add(invalid({ word: "", uri: "foo", children: [] }))).toSatisfy(error); // Bad values.
+  expect(await IdbHistory.add(invalid({}))).toSatisfy(error); // Bad values.
 });
 
 test("Get history entries", async () => {
@@ -46,7 +46,7 @@ test("Get history entries", async () => {
   expect(await IdbHistory.get(1)).toHaveLength(1);
 
   expect(await IdbHistory.get(1.333)).toHaveLength(3);
-  expect(await IdbHistory.get("bad value")).toHaveLength(3);
+  expect(await IdbHistory.get(invalid("bad value"))).toHaveLength(3);
 
   Idb.configure({ searchHistoryLength: 1 });
   // The entry creation must have deleted all other entries due to the history length settings.

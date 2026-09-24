@@ -4,54 +4,40 @@ import type { Entry } from "~/plugins/api";
 import type { PartialExcept } from "~/types";
 import type { TagColorKey } from "./IdbTags";
 
-type IdbData = IdbEntry | IdbTagged | IdbTag | IdbTagWithKey;
-type IdbState = "success" | "error";
-type IdbResponseOptions<T extends IdbData | IdbData[]> = {
-  message?: string;
-} & ([T] extends [never] ? unknown : { data: NoInfer<T> });
+/**
+ * An error whose message is meant for the user (invalid data, limits…).
+ */
+export class IdbError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "IdbError";
+  }
+}
+
+export type IdbSuccess<T> = { state: "success"; data: T };
+export type IdbFailure = { state: "error"; message: string };
+/**
+ * The result of an `Idb` operation that may fail for an expected reason,
+ * which `message` explains to the user.
+ */
+export type IdbResult<T = undefined> = IdbSuccess<T> | IdbFailure;
 
 /**
- * A standard response for `Idb`-related operations.
+ * Runs an operation and turns its outcome into an `IdbResult`.
+ * @remarks `IdbError` messages are meant for the user; other errors (e.g. a
+ * failing browser storage) are logged and replaced by a generic message.
  */
-export class IdbResponse<T extends IdbData | IdbData[] = never> {
-  /**
-   * The resulting state of the operation.
-   */
-  state: IdbState;
-  /**
-   * An optional message to explain the current state.
-   */
-  message: string = "";
-  /**
-   * Optional (but mandatory if the generic parameter has been defined) data
-   * resulting from the operation.
-   */
-  data: T = {} as T;
+export async function attempt<T>(operation: () => Promise<T>): Promise<IdbResult<T>> {
+  try {
+    return { state: "success", data: await operation() };
+  } catch (error: unknown) {
+    if (error instanceof IdbError) return { state: "error", message: error.message };
 
-  /**
-   * Constructs a response for `Idb`-related operations.
-   * @param state A state representing the result of the operation.
-   * @param opts An optional configuration object.
-   */
-  constructor(state: IdbState, opts: IdbResponseOptions<T>) {
-    this.state = state;
-    this.message = (() => {
-      if (opts.message) return opts.message;
-      else if (state === "error") return "Une erreur est survenue.";
-      else return "";
-    })();
-    if ("data" in opts) this.data = (opts as { data: T }).data;
-  }
-
-  /**
-   * A helper method that takes a value and assigns it as a `message` to an `IdbResponse`.
-   * @param error Usually an `Error` object or a string. Any other type will be converted to a string.
-   * @returns An `IdbResponse` whith the `status` set to error and the `message` filled.
-   */
-  static defaultError(error: unknown): IdbResponse {
-    return new IdbResponse("error", {
-      message: error instanceof Error ? error.message : String(error),
-    });
+    console.error(error);
+    return {
+      state: "error",
+      message: "Une erreur est survenue lors de l'accès aux données enregistrées dans le navigateur.",
+    };
   }
 }
 
@@ -264,7 +250,7 @@ export class Idb {
       || !entry.uri
       || (!entry.excerpt && !entry.children?.length)
     ) {
-      throw new Error(
+      throw new IdbError(
         "La création de l'entrée nécessite un mot, une URI et un extrait "
         + "(ou des entrées enfants).",
       );

@@ -1,9 +1,5 @@
 <script setup lang="ts">
   import type { ToasterProps } from "@nuxt/ui";
-  import { useBookmarksStore } from "./stores/bookmarks";
-  import { Idb } from "./idb";
-
-  const runtimeConfig = useRuntimeConfig();
 
   /**
    * Nuxt UI toaster component configuration.
@@ -12,20 +8,6 @@
     expand: false,
     progress: false,
   };
-
-  /**
-   * Configures the Idb instance and initializes the bookmarks store.
-   * @remarks The app must be mounted to initialize the store as it deals with browser storage.
-   */
-  onMounted(async () => {
-    Idb.configure({
-      searchHistoryLength: runtimeConfig.public.searchHistoryLength,
-      tagMaxItems: runtimeConfig.public.tagMaxItems,
-      maxTags: runtimeConfig.public.maxTags,
-    });
-
-    await useBookmarksStore().initialize();
-  });
 
   useHead({
     titleTemplate: (title) => {
