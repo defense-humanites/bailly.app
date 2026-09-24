@@ -20,7 +20,7 @@ export class IdbHistory {
     let count = await tx.store.count();
     for await (const cursor of tx.store) {
       if (count <= Idb.config.searchHistoryLength) break;
-      cursor.delete();
+      await cursor.delete();
       count--;
     }
 

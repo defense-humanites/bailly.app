@@ -27,14 +27,19 @@ export class IdbTaggedEntry {
     },
   ): Promise<IdbResponse<IdbTagged>> {
     try {
-      if (await this.get(entry.uri, tagKey)) {
+      const db = await Idb.getIndexedDB();
+      const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags], "readwrite");
+      const store = tx.objectStore(IdbStore.Tagged);
+
+      if (!(await tx.objectStore(IdbStore.Tags).getKey(tagKey))) {
+        throw new Error("L'étiquette demandée n'existe pas.");
+      }
+
+      if (await store.index("tagKey+uri").getKey([tagKey, entry.uri])) {
         throw new Error(`L'étiquette contient déjà l'entrée ${entry.word}.`);
       }
 
-      const db = await Idb.getIndexedDB();
-      const tx = db.transaction(IdbStore.Tagged, "readwrite");
-
-      const countEntries = await tx.store.index("tagKey").count(tagKey);
+      const countEntries = await store.index("tagKey").count(tagKey);
       if (countEntries >= Idb.config.tagMaxItems) {
         throw new Error(
           `L'étiquette ne peut contenir plus de ${Idb.config.tagMaxItems} entrées.`,
@@ -46,7 +51,7 @@ export class IdbTaggedEntry {
         ...Idb.buildIdbEntry(entry),
       };
 
-      await tx.store.add(taggedEntry);
+      await store.add(taggedEntry);
       await tx.done;
 
       if (opts?.setCurrentTag) {

@@ -33,6 +33,8 @@ test("Create tagged entry", async () => {
   expect(await IdbTaggedEntry.add({ word: "", uri: "foo", children: [] }, banquetTagKey)).toSatisfy(error); // Bad values.
   expect(await IdbTaggedEntry.add({}, banquetTagKey)).toSatisfy(error); // Bad values.
 
+  expect(await IdbTaggedEntry.add(entries.alopex, 999)).toSatisfy(error); // Unknown tag.
+
   Idb.configure({ tagMaxItems: 1 });
   expect(await IdbTaggedEntry.add({ word: "baz", uri: "baz", excerpt: "baz" }, banquetTagKey)).toSatisfy(error); // Too many tagged entries.
 });

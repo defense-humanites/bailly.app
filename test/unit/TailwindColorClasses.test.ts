@@ -21,7 +21,7 @@ const defaultShades = {
 const blue = new TailwindColorClasses(Color.Blue, { shades: defaultShades });
 const greenTranslucent = new TailwindColorClasses(Color.Green, { shades: defaultShades, variant: "translucent" });
 
-test("Multiple color classes", async () => {
+test("Multiple color classes", () => {
   // Array of classes.
   expect(blue.classes(["bg"])).toBe("bg-blue-200");
   expect(blue.classes(["bg", "border"])).toBe("bg-blue-200 border-blue-300");
@@ -43,7 +43,7 @@ test("Multiple color classes", async () => {
     .toBe("bg-green-200/50 border-green-300/50 ring-green-300 text-green-600");
 });
 
-test("Single color classes", async () => {
+test("Single color classes", () => {
   // Background
   expect(blue.background()).toBe("bg-blue-200");
   expect(blue.background({ state: "hover" })).toBe("hover:bg-blue-300");

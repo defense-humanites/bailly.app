@@ -8,7 +8,7 @@ type IdbData = IdbEntry | IdbTagged | IdbTag | IdbTagWithKey;
 type IdbState = "success" | "error";
 type IdbResponseOptions<T extends IdbData | IdbData[]> = {
   message?: string;
-} & ([T] extends [never] ? {} : { data: NoInfer<T> });
+} & ([T] extends [never] ? unknown : { data: NoInfer<T> });
 
 /**
  * A standard response for `Idb`-related operations.
@@ -40,7 +40,7 @@ export class IdbResponse<T extends IdbData | IdbData[] = never> {
       else if (state === "error") return "Une erreur est survenue.";
       else return "";
     })();
-    if ("data" in opts) this.data = opts.data;
+    if ("data" in opts) this.data = (opts as { data: T }).data;
   }
 
   /**
@@ -113,7 +113,7 @@ export interface BaillyDB extends DBSchema {
     indexes: {
       "uri": string;
       "tagKey": number;
-      "tagKey+uri": string;
+      "tagKey+uri": [number, string];
     };
   };
   [IdbStore.Tags]: {
@@ -128,10 +128,12 @@ export interface BaillyDB extends DBSchema {
   };
 }
 
-enum IdbInfo {
-  Name = "bailly",
-  Version = 3,
-}
+const IDB_NAME = "bailly";
+/**
+ * The current schema version.
+ * @remarks Versions 1 and 2 were used by the previous (Astro) application.
+ */
+const IDB_VERSION = 3;
 
 type IdbConfig = {
   searchHistoryLength: number;
@@ -139,44 +141,76 @@ type IdbConfig = {
   maxTags: number;
 };
 
+const IDB_DEFAULT_CONFIG: Readonly<IdbConfig> = {
+  searchHistoryLength: 60,
+  tagMaxItems: 100,
+  maxTags: 50,
+};
+
 export class Idb {
-  static #instance: IDBPDatabase<BaillyDB>;
-  static #config: IdbConfig;
+  /**
+   * The pending or opened connection.
+   * @remarks The promise (rather than the connection) is cached so that
+   * concurrent calls share a single connection.
+   */
+  static #db: Promise<IDBPDatabase<BaillyDB>> | undefined;
+  static #config: IdbConfig | undefined;
 
   static get config(): IdbConfig {
+    if (Idb.#config === undefined) {
+      Idb.#config = { ...IDB_DEFAULT_CONFIG };
+      console.warn(
+        "`Idb.config` was read before `Idb.configure` was called, so default values were applied:",
+        Idb.#config,
+      );
+    }
     return Idb.#config;
   }
 
   private constructor() {}
 
-  static configure(opts?: Partial<IdbConfig>): void {
-    const defaultValues: IdbConfig = {
-      searchHistoryLength: 60,
-      tagMaxItems: 100,
-      maxTags: 50,
-    };
+  /**
+   * Sets the configuration.
+   * @param opts Values overriding the defaults. Values that are not positive
+   * integers (e.g. `NaN` from a missing environment variable) are ignored.
+   */
+  static configure(opts: Partial<IdbConfig> = {}): void {
+    const config: IdbConfig = { ...IDB_DEFAULT_CONFIG };
 
-    if (!opts) Idb.#config = defaultValues;
-    Idb.#config = Object.assign(defaultValues, opts);
-  }
-
-  static async getIndexedDB(): Promise<IDBPDatabase<BaillyDB>> {
-    if (!Idb.#config) {
-      Idb.configure();
-      console.warn(
-        "`Idb.getIndexedDB` was called before the `Idb.configure` method, so default values were applied:",
-        this.#config,
-      );
+    for (const key of Object.keys(config) as (keyof IdbConfig)[]) {
+      const value = opts[key];
+      if (value === undefined) continue;
+      if (Number.isInteger(value) && value > 0) {
+        config[key] = value;
+      } else {
+        console.warn(`Invalid \`Idb\` setting \`${key}\` (${value}), the default value applies.`);
+      }
     }
 
-    if (!Idb.#instance) {
-      Idb.#instance = await openDB<BaillyDB>(IdbInfo.Name, IdbInfo.Version, {
-        async upgrade(db, oldVersion) {
-          if (oldVersion === 2) {
-            db.deleteObjectStore("dictionarySlices" as IdbStore);
-            db.deleteObjectStore("lastWords" as IdbStore);
-          }
+    Idb.#config = config;
+  }
 
+  static getIndexedDB(): Promise<IDBPDatabase<BaillyDB>> {
+    Idb.#db ??= Idb.#open().catch((error: unknown) => {
+      // Allow a later call to retry.
+      Idb.#db = undefined;
+      throw error;
+    });
+
+    return Idb.#db;
+  }
+
+  static #open(): Promise<IDBPDatabase<BaillyDB>> {
+    return openDB<BaillyDB>(IDB_NAME, IDB_VERSION, {
+      upgrade(db, oldVersion) {
+        // Versions 1 and 2 only contained stores that are no longer used.
+        if (oldVersion > 0 && oldVersion < 3) {
+          for (const name of Array.from(db.objectStoreNames)) {
+            db.deleteObjectStore(name);
+          }
+        }
+
+        if (oldVersion < 3) {
           const history = db.createObjectStore(IdbStore.History, {
             autoIncrement: true,
           });
@@ -205,11 +239,19 @@ export class Idb {
           tags.createIndex("color", "color");
           tags.createIndex("position", "position");
           tags.createIndex("position+color", ["position", "color"]);
-        },
-      });
-    }
+        }
 
-    return Idb.#instance;
+        // Future versions: add `if (oldVersion < 4) { … }` blocks here.
+      },
+      blocking(_currentVersion, _blockedVersion, event) {
+        // Another tab needs to upgrade the database: release it.
+        (event.target as IDBDatabase).close();
+        Idb.#db = undefined;
+      },
+      terminated() {
+        Idb.#db = undefined;
+      },
+    });
   }
 
   /**
@@ -223,8 +265,8 @@ export class Idb {
       || (!entry.excerpt && !entry.children?.length)
     ) {
       throw new Error(
-        "La création de l'entrée nécessite certaines valeurs manquantes."
-        + [entry.word, entry.uri, entry.excerpt, entry.children?.length],
+        "La création de l'entrée nécessite un mot, une URI et un extrait "
+        + "(ou des entrées enfants).",
       );
     }
 
@@ -236,7 +278,7 @@ export class Idb {
           // Excerpts start with the word.
           return `${entry.word} (v. les ${entry.children.length} entrées)`;
         }
-        return String(entry.excerpt);
+        return entry.excerpt;
       })(),
     };
   }

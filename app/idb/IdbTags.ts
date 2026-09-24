@@ -10,7 +10,7 @@ import {
   type IdbTagWithKey,
 } from "./Idb";
 import { Color, LocalStorageKey, type ColorKey } from "~/enums";
-import { pickRandomEnumKey } from "~/helpers";
+import { pickRandom } from "~/helpers";
 
 export type TagColorKey = Exclude<ColorKey, "Yellow">;
 type TagOrder = "position" | "insertion";
@@ -28,48 +28,39 @@ export class IdbTags {
   ) as TagColorKey[];
 
   /**
+   * Checks that a value is a valid tag color key (at runtime, values may come
+   * from outdated or corrupted data).
+   */
+  static isColorKey(value: unknown): value is TagColorKey {
+    return IdbTags.colorKeys.includes(value as TagColorKey);
+  }
+
+  /**
    * Picks a color taking into account those already used.
    * @returns A `Color` enum key that is part of the `TagColorKey` type.
    */
   static async pickColor(): Promise<TagColorKey> {
-    /**
-     * Retrieve the used color keys from `IndexedDB`, then make sure that each color
-     * is present in the `Color` enum, considering that the latter may have changed
-     * since the insertion or an error may have entered `IndexedDB`.
-     */
+    // Keep only valid keys: the `Color` enum may have changed since the
+    // insertion, or invalid data may have entered IndexedDB.
     const usedColorKeys = (await this.getUsedColorKeys()).filter(el =>
-      (this.colorKeys as ColorKey[]).includes(el),
+      IdbTags.isColorKey(el),
     );
-    /**
-     * Check if the length of the legitimate keys retrieved from `IndexedDB`
-     * and the length of the filtered enum keys coincide, so that there is no
-     * color left.
-     */
-    const colorsExhausted: boolean
-      = usedColorKeys.length === this.colorKeys.length;
-    /**
-     * Exclude some colors from picking. See the comments below.
-     */
-    const filter: ColorKey[] = (() => {
-      // If no color remains, exclude those used by the first half of the tags.
-      const keys: ColorKey[] = colorsExhausted
-        ? usedColorKeys.slice(0, usedColorKeys.length / 2)
-        : usedColorKeys;
 
-      // Exclude the `Yellow` `ColorKey` which is reserved for starred entries.
-      keys.push("Yellow");
+    // If no color remains, only exclude those used by the first half of the
+    // tags (sorted by position).
+    const colorsExhausted = usedColorKeys.length === this.colorKeys.length;
+    const excluded = colorsExhausted
+      ? usedColorKeys.slice(0, Math.floor(usedColorKeys.length / 2))
+      : usedColorKeys;
 
-      return keys;
-    })();
-
-    return pickRandomEnumKey(Color, filter);
+    return pickRandom(this.colorKeys, excluded);
   }
 
   static async #buildIdbTag(tag: IdbTagCreation): Promise<IdbTag> {
     const newTag: IdbTag = {
       name: tag.name.trim(),
       description: tag.description?.trim() ?? "",
-      color: tag.color && Color[tag.color] ? tag.color : await this.pickColor(),
+      color: IdbTags.isColorKey(tag.color) ? tag.color : await this.pickColor(),
       position: 1,
     };
 
@@ -311,15 +302,27 @@ export class IdbTags {
     return entries.length ? entries.map(entry => entry.tagKey) : null;
   }
 
+  /**
+   * Removes a tag and detaches its entries.
+   * @param tagKey The primary key of the tag to remove.
+   */
   static async remove(tagKey: number): Promise<IdbResponse> {
     try {
       const db = await Idb.getIndexedDB();
-      const tx = db.transaction(IdbStore.Tags, "readwrite");
+      const tx = db.transaction([IdbStore.Tags, IdbStore.Tagged], "readwrite");
+      const tags = tx.objectStore(IdbStore.Tags);
 
-      const tag = await tx.store.get(IDBKeyRange.only(tagKey));
-      if (!tag) throw new Error("L'étiquette à supprimer n'existe pas.");
+      if (!(await tags.getKey(tagKey))) {
+        throw new Error("L'étiquette à supprimer n'existe pas.");
+      }
 
-      await tx.store.delete(tagKey);
+      await tags.delete(tagKey);
+
+      const tagged = tx.objectStore(IdbStore.Tagged).index("tagKey");
+      for await (const cursor of tagged.iterate(tagKey)) {
+        await cursor.delete();
+      }
+
       await tx.done;
 
       // Set the first tag (if it exists) as the new current tag if there
@@ -382,15 +385,9 @@ export class IdbTags {
       for (const [i, key] of orderedKeys.entries()) {
         const tagIndex = tags.findIndex(el => el.key === key);
         if (tags[tagIndex]) {
-          try {
-            const newPos: number = i + 1;
-            await tx.store.put({ ...tags[tagIndex], position: newPos }, key);
-            tags[tagIndex].position = newPos;
-          } catch (error: unknown) {
-            throw new Error(
-              error instanceof Error ? error.message : String(error),
-            );
-          }
+          const newPos: number = i + 1;
+          await tx.store.put({ ...tags[tagIndex], position: newPos }, key);
+          tags[tagIndex].position = newPos;
         } else {
           throw new Error(
             "The keys passed and those stored in IndexedDB do not match "

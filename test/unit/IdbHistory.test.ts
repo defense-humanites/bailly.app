@@ -35,7 +35,7 @@ test("Get history entries", async () => {
   await IdbHistory.add(entries.alopex);
 
   // Entries should be returned from newest to oldest.
-  expect((await IdbHistory.get(1))?.[0]).toEqual(entries.alopex);
+  expect((await IdbHistory.get(1))[0]).toEqual(entries.alopex);
 
   await IdbHistory.add({ word: "foo", uri: "foo", excerpt: "foo" });
   // Pushing an existing entry should not increase the history length but just change the entry position.

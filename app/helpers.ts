@@ -2,43 +2,21 @@ import { convert } from "@humanities/greek-conversion";
 import { LocalStorageKey } from "~/enums";
 
 /**
- * Return a random key from a given enum.
- * @param enumeration A given enum.
- * @param filter Keys that should not be selected.
- * @returns An enum key if found, otherwise `undefined`.
+ * Picks a random item from a list.
+ * @param items The candidate items.
+ * @param exclude Items that must not be picked.
+ * @returns A random item from `items` that is not part of `exclude`.
+ * @throws If no item remains after the exclusions.
  */
-/* export function pickRandomEnumKey<
-  T extends Record<string, string>,
-  K extends (keyof T)[],
-  F extends K
->(enumeration: T, filter: F): Exclude<K[number], F[number]> {
-  const keys = (Object.keys(enumeration) as K).filter(
-    (key) => Number.isNaN(Number(key)) && !filter?.includes(key)
-  );
-  return keys[Math.floor(Math.random() * keys.length)] as Exclude<
-    K[number],
-    F[number]
-  >;
-} */
+export function pickRandom<T>(items: readonly T[], exclude: readonly T[] = []): T {
+  const available = items.filter(item => !exclude.includes(item));
+  const picked = available[Math.floor(Math.random() * available.length)];
 
-type EnumLike = Record<string | number, string | number>;
-type ExcludeKeys<T, K extends keyof T> = Omit<T, K>;
-
-export function pickRandomEnumKey<
-  T extends EnumLike,
-  E extends keyof T = never,
->(enumObject: T, excludeKeys: E[] = [] as E[]): keyof ExcludeKeys<T, E> {
-  const allKeys = Object.keys(enumObject) as (keyof T)[];
-  const availableKeys = allKeys.filter(
-    key => !excludeKeys.includes(key as E),
-  );
-
-  if (!availableKeys.length) {
-    throw new Error("No available keys to pick from after exclusions");
+  if (picked === undefined) {
+    throw new Error("No available items to pick from after exclusions.");
   }
 
-  const randomIndex = Math.floor(Math.random() * availableKeys.length);
-  return availableKeys[randomIndex] as keyof ExcludeKeys<T, E>;
+  return picked;
 }
 
 export function highlightEntryInExcerpt(
