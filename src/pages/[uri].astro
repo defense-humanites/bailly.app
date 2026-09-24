@@ -86,8 +86,6 @@ const entries = entry.children ?? [entry];
   import type { Entry } from "../api";
   import { IdbHistory } from "../idb";
   import { convertLinkedEntries } from "../linkedEntries";
-  //import Popover from "../components/MultipleLinkedEntriesPopover";
-  //import { render } from "solid-js/web";
 
   class EntryArticle extends HTMLElement {
     connectedCallback() {
@@ -98,22 +96,6 @@ const entries = entry.children ?? [entry];
       IdbHistory.update(entry);
 
       convertLinkedEntries(this);
-
-      /*this.querySelectorAll<HTMLAnchorElement>("span[data-linked-entries]").forEach(
-        (link) => {
-          const hrefs = (link.getAttribute("href") ?? "").split(",");
-          // Remove the first character ('/') from the first href.
-          if (hrefs[0]) hrefs[0] = hrefs[0].slice(1);
-          const mount = document.createElement("span");
-
-          link.replaceWith(mount);
-          render(
-            () =>
-              Popover({ hrefs, label: link.textContent ?? "" }),
-            mount
-          );
-        }
-      );*/
     }
   }
 
