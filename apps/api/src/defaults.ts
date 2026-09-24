@@ -13,9 +13,10 @@
  * Current database revision (cf. `database/REVISION_HISTORY.md`). The `.gz` archive is
  * decompressed at startup if needed (cf. `Database.getConnection()`).
  *
- * To deploy a new revision: add `database/bailly-revN.db.gz`, update this constant
- * (and `.slugignore`, which keeps only the current archive in the Heroku slug), then
- * push: code and data are deployed together.
+ * To deploy a new revision: put `database/bailly-revN.db`, update this constant (and
+ * `.slugignore`, which keeps only the current archive in the Heroku slug), run
+ * `deno task db:pack`, commit the `.gz` archive, then push: code and data are deployed
+ * together. `tests/database.test.ts` fails if the archive is missing or untracked.
  */
 export const DATABASE = {
   filePath: "database/bailly-rev4.db",

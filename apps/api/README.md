@@ -35,7 +35,7 @@ Le déploiement sur Heroku repose sur le buildpack [chibat/heroku-buildpack-deno
 
 Aucune variable de configuration n'est nécessaire pour la base de données ni pour libmorpheus : la révision de la base et les chemins de libmorpheus sont versionnés avec le code (`src/defaults.ts`), de sorte que le code et les données sont toujours déployés ensemble. Les variables `DB_FILE_PATH`, `DB_VERSION` et `MORPHEUS_*` ne servent qu'à les surcharger (développement, Docker) et doivent rester absentes de la configuration Heroku ; en production, l'API signale au démarrage toute surcharge.
 
-Pour publier une nouvelle révision de la base : ajouter l'archive `database/bailly-revN.db.gz`, mettre à jour `DATABASE` dans `src/defaults.ts` et `.slugignore`, puis pousser. La phase de publication vérifie que la base s'ouvre avant toute mise en service.
+Pour publier une nouvelle révision de la base : placer `database/bailly-revN.db`, mettre à jour `DATABASE` dans `src/defaults.ts` et `.slugignore`, compresser la base avec `deno task db:pack`, commiter l'archive `.gz`, puis pousser. Les tests échouent si l'archive de la révision courante manque ou n'est pas suivie par git. La phase de publication vérifie que la base s'ouvre avant toute mise en service.
 
 ## Licence
 

@@ -2,6 +2,7 @@
   "tasks": {
     "dev": "docker compose up --build --watch",
     "dev-native": "deno run --allow-env --allow-ffi --allow-net --allow-read --allow-run --allow-write --env-file=.env.development --watch src/index.ts",
+    "db:pack": "deno run --allow-read=database,src --allow-write=database scripts/db_pack.ts",
     "test-native": "deno test --allow-env --allow-ffi --allow-net --allow-read --allow-run --allow-write --env-file=.env.development tests/*.test.ts"
   },
   "imports": {

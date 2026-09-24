@@ -8,7 +8,6 @@ database/bailly-rev3.db.gz
 
 # Development and Docker files.
 tests/
-.husky/
 Dockerfile
 docker-compose*.yml
 .dockerignore
