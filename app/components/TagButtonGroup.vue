@@ -1,7 +1,5 @@
 <script setup lang="ts">
-  import { Color } from "~/enums";
   import type { IdbEntry } from "~/idb";
-  import { TailwindColorClasses } from "~/TailwindColorClasses";
 
   const bookmarksStore = useBookmarksStore();
   const { currentTag } = storeToRefs(bookmarksStore);
@@ -45,12 +43,6 @@
       await bookmarksStore.starEntry(props.entry);
     }
   };
-
-  const currentTagColor = computed(() =>
-    currentTag.value
-      ? new TailwindColorClasses(Color[currentTag.value.color])
-      : undefined,
-  );
 </script>
 
 <template>
@@ -70,10 +62,8 @@
       v-if="currentTag"
       :label="currentTag.name"
       :icon="taggedAsCurrent ? 'i-heroicons-tag-solid' : 'i-heroicons-tag'"
-      :class="taggedAsCurrent
-        ? currentTagColor?.text()
-        : currentTagColor?.classes(['hover:text'])
-      "
+      :data-tag-color="currentTag.color"
+      :class="taggedAsCurrent ? 'text-tag-600' : 'hover:text-tag-700'"
       :ui="{
         label:
           'max-w-8 overflow-hidden whitespace-nowrap mask-r-from-50% mask-r-to-100% text-clip text-xs tracking-tighter',

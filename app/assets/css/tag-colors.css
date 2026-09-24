@@ -1,0 +1,154 @@
+/*
+ * Tag colors.
+ *   An element carrying `data-tag-color="<Color key>"` (cf. `app/enums.ts`, the
+ *   keys being those stored in IndexedDB) exposes the matching palette, to
+ *   itself and its descendants, through the `tag-*` colors: e.g.
+ *   `bg-tag-200/50`, `hover:text-tag-700`. As these class names are static,
+ *   they need no safelist.
+ */
+
+@theme inline {
+  --color-tag-100: var(--tag-100);
+  --color-tag-200: var(--tag-200);
+  --color-tag-300: var(--tag-300);
+  --color-tag-400: var(--tag-400);
+  --color-tag-500: var(--tag-500);
+  --color-tag-600: var(--tag-600);
+  --color-tag-700: var(--tag-700);
+  --color-tag-800: var(--tag-800);
+  --color-tag-900: var(--tag-900);
+}
+
+@layer base {
+  [data-tag-color="Blue"] {
+    --tag-100: var(--color-blue-100);
+    --tag-200: var(--color-blue-200);
+    --tag-300: var(--color-blue-300);
+    --tag-400: var(--color-blue-400);
+    --tag-500: var(--color-blue-500);
+    --tag-600: var(--color-blue-600);
+    --tag-700: var(--color-blue-700);
+    --tag-800: var(--color-blue-800);
+    --tag-900: var(--color-blue-900);
+  }
+
+  [data-tag-color="Green"] {
+    --tag-100: var(--color-green-100);
+    --tag-200: var(--color-green-200);
+    --tag-300: var(--color-green-300);
+    --tag-400: var(--color-green-400);
+    --tag-500: var(--color-green-500);
+    --tag-600: var(--color-green-600);
+    --tag-700: var(--color-green-700);
+    --tag-800: var(--color-green-800);
+    --tag-900: var(--color-green-900);
+  }
+
+  [data-tag-color="Lime"] {
+    --tag-100: var(--color-lime-100);
+    --tag-200: var(--color-lime-200);
+    --tag-300: var(--color-lime-300);
+    --tag-400: var(--color-lime-400);
+    --tag-500: var(--color-lime-500);
+    --tag-600: var(--color-lime-600);
+    --tag-700: var(--color-lime-700);
+    --tag-800: var(--color-lime-800);
+    --tag-900: var(--color-lime-900);
+  }
+
+  [data-tag-color="Orange"] {
+    --tag-100: var(--color-orange-100);
+    --tag-200: var(--color-orange-200);
+    --tag-300: var(--color-orange-300);
+    --tag-400: var(--color-orange-400);
+    --tag-500: var(--color-orange-500);
+    --tag-600: var(--color-orange-600);
+    --tag-700: var(--color-orange-700);
+    --tag-800: var(--color-orange-800);
+    --tag-900: var(--color-orange-900);
+  }
+
+  [data-tag-color="Purple"] {
+    --tag-100: var(--color-violet-100);
+    --tag-200: var(--color-violet-200);
+    --tag-300: var(--color-violet-300);
+    --tag-400: var(--color-violet-400);
+    --tag-500: var(--color-violet-500);
+    --tag-600: var(--color-violet-600);
+    --tag-700: var(--color-violet-700);
+    --tag-800: var(--color-violet-800);
+    --tag-900: var(--color-violet-900);
+  }
+
+  [data-tag-color="Red"] {
+    --tag-100: var(--color-rose-100);
+    --tag-200: var(--color-rose-200);
+    --tag-300: var(--color-rose-300);
+    --tag-400: var(--color-rose-400);
+    --tag-500: var(--color-rose-500);
+    --tag-600: var(--color-rose-600);
+    --tag-700: var(--color-rose-700);
+    --tag-800: var(--color-rose-800);
+    --tag-900: var(--color-rose-900);
+  }
+
+  [data-tag-color="Rose"] {
+    --tag-100: var(--color-pink-100);
+    --tag-200: var(--color-pink-200);
+    --tag-300: var(--color-pink-300);
+    --tag-400: var(--color-pink-400);
+    --tag-500: var(--color-pink-500);
+    --tag-600: var(--color-pink-600);
+    --tag-700: var(--color-pink-700);
+    --tag-800: var(--color-pink-800);
+    --tag-900: var(--color-pink-900);
+  }
+
+  [data-tag-color="Sky"] {
+    --tag-100: var(--color-sky-100);
+    --tag-200: var(--color-sky-200);
+    --tag-300: var(--color-sky-300);
+    --tag-400: var(--color-sky-400);
+    --tag-500: var(--color-sky-500);
+    --tag-600: var(--color-sky-600);
+    --tag-700: var(--color-sky-700);
+    --tag-800: var(--color-sky-800);
+    --tag-900: var(--color-sky-900);
+  }
+
+  [data-tag-color="Slate"] {
+    --tag-100: var(--color-slate-100);
+    --tag-200: var(--color-slate-200);
+    --tag-300: var(--color-slate-300);
+    --tag-400: var(--color-slate-400);
+    --tag-500: var(--color-slate-500);
+    --tag-600: var(--color-slate-600);
+    --tag-700: var(--color-slate-700);
+    --tag-800: var(--color-slate-800);
+    --tag-900: var(--color-slate-900);
+  }
+
+  [data-tag-color="Teal"] {
+    --tag-100: var(--color-teal-100);
+    --tag-200: var(--color-teal-200);
+    --tag-300: var(--color-teal-300);
+    --tag-400: var(--color-teal-400);
+    --tag-500: var(--color-teal-500);
+    --tag-600: var(--color-teal-600);
+    --tag-700: var(--color-teal-700);
+    --tag-800: var(--color-teal-800);
+    --tag-900: var(--color-teal-900);
+  }
+
+  [data-tag-color="Yellow"] {
+    --tag-100: var(--color-yellow-100);
+    --tag-200: var(--color-yellow-200);
+    --tag-300: var(--color-yellow-300);
+    --tag-400: var(--color-yellow-400);
+    --tag-500: var(--color-yellow-500);
+    --tag-600: var(--color-yellow-600);
+    --tag-700: var(--color-yellow-700);
+    --tag-800: var(--color-yellow-800);
+    --tag-900: var(--color-yellow-900);
+  }
+}

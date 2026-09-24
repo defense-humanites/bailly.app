@@ -1,7 +1,8 @@
 @layer components {
   /*
-   * Entry classes. As the entries are stored in a database, the following
-   * classes must be added to the Tailwind's safelist.
+   * Entry classes (from the dictionary HTML, stored in the database). These
+   * are plain CSS rules, emitted whether or not Tailwind finds the classes in
+   * the sources: no safelist is needed.
    */
 
   .entreea,

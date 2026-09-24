@@ -1,9 +1,7 @@
 <script setup lang="ts">
   import { moveArrayElement, useSortable } from "@vueuse/integrations/useSortable";
   import type { SortableEvent } from "sortablejs";
-  import { Color, type ColorKey } from "~/enums";
   import type { IdbTagWithKey } from "~/idb";
-  import { TailwindColorClasses } from "~/TailwindColorClasses";
 
   const emit = defineEmits<{
     (e: "reorderTags", orderedKeys: number[]): void;
@@ -48,11 +46,6 @@
       });
     },
   });
-
-  /** Return Tailwind color classes. */
-  const tagColor = (colorKey: ColorKey): TailwindColorClasses => {
-    return new TailwindColorClasses(Color[colorKey]);
-  };
 </script>
 
 <template>
@@ -71,8 +64,8 @@
       />
       <UIcon
         name="i-heroicons-tag-solid"
-        class="mr-3 size-5"
-        :class="tagColor(tag.color).text()"
+        class="mr-3 size-5 text-tag-600"
+        :data-tag-color="tag.color"
       />
       {{ tag.name }}
     </li>

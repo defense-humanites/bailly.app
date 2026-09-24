@@ -1,7 +1,6 @@
 <script setup lang="ts">
-  import { Color, type ColorKey } from "~/enums";
+  import type { ColorKey } from "~/enums";
   import { IdbTags, type IdbEntry, type IdbTagWithKey } from "~/idb";
-  import { TailwindColorClasses } from "~/TailwindColorClasses";
 
   const bookmarksStore = useBookmarksStore();
 
@@ -113,14 +112,6 @@
     return "i-heroicons-tag-solid";
   });
 
-  /** Returns Tailwind color classes. */
-  const color = computed(
-    () =>
-      new TailwindColorClasses(Color[tagColor.value], {
-        variant: "translucent",
-      }),
-  );
-
   const editableEditMode = computed(
     (): boolean => props.editable && editMode.value,
   );
@@ -172,9 +163,10 @@
   <UCard
     ref="bookmark-group"
     class="group"
+    :data-tag-color="tagColor"
     variant="bookmarkGroup"
     :ui="{
-      root: color.classes(['bg', 'border']),
+      root: 'bg-tag-200/50 border-tag-300/50',
       header: 'flex justify-between !px-3 pb-0',
       body: '!p-3 text-default',
     }"
@@ -183,8 +175,7 @@
     <template #header>
       <div class="flex w-full h-8">
         <div
-          class="flex grow items-center"
-          :class="color.text()"
+          class="flex grow items-center text-tag-600"
         >
           <!-- Edit tag data -->
           <div
@@ -199,6 +190,7 @@
               <template #trigger="trigger">
                 <UButton
                   :icon="trigger.icon"
+                  :data-tag-color="trigger.color"
                   size="xl"
                   variant="ghost"
                   color="neutral"
@@ -217,7 +209,7 @@
               variant="none"
               :class="{ 'animate-shake': isTagNameErrored }"
               :ui="{
-                base: `shadow-none px-2 py-1 text-2xl font-bold rounded-l-none rounded-r-full bg-white/60 hover:bg-white/90 focus:bg-white/90 ${color.text()}`,
+                base: `shadow-none px-2 py-1 text-2xl font-bold rounded-l-none rounded-r-full bg-white/60 hover:bg-white/90 focus:bg-white/90 text-tag-600`,
               }"
             />
           </div>
@@ -245,7 +237,7 @@
             size="sm"
             variant="subtle"
             color="neutral"
-            :ui="{ base: editMode ? `text-white ${color.classes([{ 'bg': { shade: 400, variant: 'solid' }, 'hover:bg': { shade: 400, variant: 'solid' } }, 'ring'])}` : `bg-white/50 hover:bg-white/90 active:bg-white/75 ${color.classes(['ring', 'text'])}` }"
+            :ui="{ base: editMode ? 'text-white bg-tag-400 hover:bg-tag-400 ring-tag-300/50' : 'bg-white/50 hover:bg-white/90 active:bg-white/75 ring-tag-300/50 text-tag-600' }"
             @click="toggleEditMode"
           />
           <UButton
@@ -263,8 +255,7 @@
     <!-- Content -->
     <template v-if="!entries.length">
       <p
-        class="sm:ml-9 font-semibold"
-        :class="color.text()"
+        class="sm:ml-9 font-semibold text-tag-600"
       >
         <slot />
       </p>
@@ -291,11 +282,7 @@
             link
             prefetch-on="visibility"
             :ui="{
-              root: `bg-white/75 ${color.classes([
-                'ring',
-                'hover:ring',
-                'text',
-              ])} shadow-none`,
+              root: 'bg-white/75 ring-tag-300/50 hover:ring-tag-400 text-tag-600 shadow-none',
               entry: 'mx-3 my-1.5 line-clamp-4',
             }"
           />
