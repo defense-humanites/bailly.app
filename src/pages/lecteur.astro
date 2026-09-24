@@ -1,6 +1,7 @@
 ---
 import { fetchOneEntry, type ApiEntryResponse } from "../api";
 import EntriesReader from "../components/EntriesReader.astro";
+import { replaceBetaSymbol } from "../helpers";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 export const prerender = false;
@@ -41,7 +42,7 @@ if (entries.length === 1 && !missingItems.length) {
 }
 
 const countLabel = `${entries.length} ${entries.length > 1 ? "entrées" : "entrée"}`;
-const title = form ? `${form} (graphie ambiguë)` : "Lecteur";
+const title = form ? `${replaceBetaSymbol(form)} (graphie ambiguë)` : "Lecteur";
 ---
 
 <BaseLayout title={title} description="" noindex>

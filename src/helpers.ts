@@ -36,6 +36,14 @@ export function highlightEntryInExcerpt(word: string, excerpt: string): string {
   );
 }
 
+/**
+ * Replace the Greek Beta Symbol with the regular letter as some browsers
+ * may not display it accurately.
+ */
+export function replaceBetaSymbol(str?: string): string {
+  return str?.replace(/\u03D0/g, "β") ?? "";
+}
+
 export function romanizeGreekStrings(): void {
   const lsKey = localStorage.getItem(LocalStorageKey.EnableGreekRomanization);
   const romanizationRequested = lsKey === "true";

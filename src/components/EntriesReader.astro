@@ -8,6 +8,7 @@
  */
 import { KeyType, Preset, toTransliteration } from "greek-conversion";
 import type { ApiEntryResponse } from "../api";
+import { replaceBetaSymbol } from "../helpers";
 import EntryDefinitions from "./EntryDefinitions.astro";
 import Icon from "./Icon";
 
@@ -21,12 +22,8 @@ interface Props {
 
 const { entries } = Astro.props;
 
-/*
- * Replace the Greek Beta Symbol with the regular letter as some browsers
- * may not display it accurately (cf. `[uri].astro`).
- */
 const transliterate = (word: string) =>
-  toTransliteration(word.replace(/\u03D0/g, "β"), KeyType.GREEK, Preset.ALA_LC);
+  toTransliteration(replaceBetaSymbol(word), KeyType.GREEK, Preset.ALA_LC);
 
 const items = entries.map((entry, i) => ({
   id: `entree-${i + 1}`,

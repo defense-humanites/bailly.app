@@ -5,6 +5,7 @@
 
 import { applyGreekVariants, KeyType, removeDiacritics } from "greek-conversion";
 import { fetchEntries, type ApiLookupResponse } from "../api";
+import { replaceBetaSymbol } from "../helpers";
 import SingleColumn from "../layouts/SingleColumn.astro";
 
 export const prerender = false;
@@ -44,11 +45,7 @@ if (sanitizedGreekStr && isGreekStr) {
   }
 }
 
-/*
- * Replace the Greek Beta Symbol with the regular letter as some browsers
- * may not display it accurately.
- */
-const title = sanitizedGreekStr?.replace(/\u03D0/g, "β") ?? "";
+const title = replaceBetaSymbol(sanitizedGreekStr);
 ---
 
 <SingleColumn title={title} description="" noindex>
