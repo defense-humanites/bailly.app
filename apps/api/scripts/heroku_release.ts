@@ -1,16 +1,23 @@
 /**
- * Heroku release phase (cf. `Procfile`): checks that libmorpheus loads and analyzes a
- * form before the new release is deployed. On failure, Heroku keeps the current
- * release running.
+ * Heroku release phase (cf. `Procfile`): checks, before the new release is deployed,
+ * that the database opens and that libmorpheus analyzes a form. On failure, Heroku
+ * keeps the current release running.
  *
- * This guards against a failed `heroku_build.ts` (whose exit code the buildpack
- * ignores) and against missing or wrong MORPHEUS_* config vars.
+ * This guards against a missing database revision, a failed `heroku_build.ts` (whose
+ * exit code the buildpack ignores) and wrong environment overrides.
  */
 
 import { toSearchKey } from "@humanities/bailly-search-key";
+import { Database } from "../src/Database.ts";
 import { Morpheus } from "../src/Morpheus.ts";
 
 try {
+  // Throws if the database file (or its `.gz` archive) is missing.
+  const db = await Database.getConnection();
+  const [rows] = db.prepare("SELECT COUNT(*) FROM bailly").value<[number]>() ?? [0];
+  if (!rows) throw new Error("the database is empty");
+  console.info(`✅ Database: ${rows} rows.`);
+
   // Throws in production when libmorpheus is unavailable.
   const morpheus = await Morpheus.getMorpheus();
   const analyses = await morpheus.lookup("λόγου", {

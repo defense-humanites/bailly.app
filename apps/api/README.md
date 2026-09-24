@@ -33,13 +33,9 @@ Le déploiement sur Heroku repose sur le buildpack [chibat/heroku-buildpack-deno
 - la phase de publication (`release:` dans le `Procfile`, cf. `scripts/heroku_release.ts`) vérifie que libmorpheus fonctionne ; en cas d'échec, la nouvelle version n'est pas déployée ;
 - `.slugignore` écarte du slug les révisions inutilisées de la base et les fichiers de développement.
 
-Variables de configuration attendues (outre celles de `.env.example`) :
+Aucune variable de configuration n'est nécessaire pour la base de données ni pour libmorpheus : la révision de la base et les chemins de libmorpheus sont versionnés avec le code (`src/defaults.ts`), de sorte que le code et les données sont toujours déployés ensemble. Les variables `DB_FILE_PATH`, `DB_VERSION` et `MORPHEUS_*` ne servent qu'à les surcharger (développement, Docker) et doivent rester absentes de la configuration Heroku ; en production, l'API signale au démarrage toute surcharge.
 
-```sh
-DB_FILE_PATH=database/bailly-rev4.db
-MORPHEUS_LIBRARY_PATH=vendor/morpheus-native/lib/libmorpheus.so
-MORPHEUS_STEMLIB_PATH=vendor/morpheus-data
-```
+Pour publier une nouvelle révision de la base : ajouter l'archive `database/bailly-revN.db.gz`, mettre à jour `DATABASE` dans `src/defaults.ts` et `.slugignore`, puis pousser. La phase de publication vérifie que la base s'ouvre avant toute mise en service.
 
 ## Licence
 

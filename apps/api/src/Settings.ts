@@ -1,3 +1,4 @@
+import { DATABASE, MORPHEUS_VENDOR } from "./defaults.ts";
 import type { DatabaseEntry } from "./definitions.ts";
 
 const ENV_KEYS = [
@@ -22,6 +23,11 @@ function getEnv(keyName: EnvKeys): string | undefined {
   const row = ENV_KV.find(({ key }) => key === keyName);
   if (!row) throw new Error("Invalid env key");
   return row.value;
+}
+
+/** Returns an environment override, an empty value meaning no override. */
+function getOverride(keyName: EnvKeys): string | undefined {
+  return getEnv(keyName)?.trim() || undefined;
 }
 
 export class Settings {
@@ -57,11 +63,37 @@ export class Settings {
       this.isHostDb = true;
       this.hostDbUnderlyingPath = hostDb;
     }
-    this.dbFilePath = hostDb ? this.hostDbPath.copyDest : getEnv("DB_FILE_PATH") ?? "";
-    this.dbVersion = getEnv("DB_VERSION") ?? "";
+    // Defaults versioned with the code (cf. `src/defaults.ts`); the environment
+    // variables are overrides only.
+    this.dbFilePath = hostDb
+      ? this.hostDbPath.copyDest
+      : getOverride("DB_FILE_PATH") ?? DATABASE.filePath;
+    this.dbVersion = getOverride("DB_VERSION") ?? DATABASE.version;
 
-    this.morpheusLibraryPath = getEnv("MORPHEUS_LIBRARY_PATH") ?? "";
-    this.morpheusStemlibPath = getEnv("MORPHEUS_STEMLIB_PATH") ?? "";
+    this.morpheusLibraryPath = getOverride("MORPHEUS_LIBRARY_PATH") ??
+      MORPHEUS_VENDOR.libraryPath;
+    this.morpheusStemlibPath = getOverride("MORPHEUS_STEMLIB_PATH") ??
+      MORPHEUS_VENDOR.dataOutput;
+
+    // An override left in the production config would silently pin the database
+    // (or libmorpheus) and mask the next change of the code: make it visible.
+    if (!this.isDevEnv) {
+      const overrides = (
+        [
+          "DB_FILE_PATH",
+          "DB_VERSION",
+          "MORPHEUS_LIBRARY_PATH",
+          "MORPHEUS_STEMLIB_PATH"
+        ] as const
+      ).filter((key) => getOverride(key));
+
+      if (overrides.length) {
+        console.warn(
+          `⚠️ Environment overrides in production: ${overrides.join(", ")} ` +
+            "(the defaults of src/defaults.ts are ignored)."
+        );
+      }
+    }
     this.morpheusPoolSize = Settings.formatNumber(getEnv("MORPHEUS_POOL_SIZE"), 4)!;
     if (!Number.isInteger(this.morpheusPoolSize) || this.morpheusPoolSize < 1) {
       throw new Error(`Invalid MORPHEUS_POOL_SIZE: ${this.morpheusPoolSize}`);

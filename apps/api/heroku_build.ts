@@ -6,9 +6,7 @@
  * the Alpheios stem dataset, the one embedded in the `morpheus-deno` development
  * image. The version follows the `@libmorpheus/deno` binding pinned by `deno.lock`.
  *
- * Heroku config vars to set accordingly:
- *   MORPHEUS_LIBRARY_PATH=vendor/morpheus-native/lib/libmorpheus.so
- *   MORPHEUS_STEMLIB_PATH=vendor/morpheus-data
+ * The install paths (`src/defaults.ts`) are the API's defaults: no config var needed.
  *
  * NB: the buildpack ignores the exit code of this script (`set +e`); a failed install
  * is caught by the release phase (`scripts/heroku_release.ts`), which prevents the
@@ -16,9 +14,9 @@
  */
 
 import { setupMorpheus } from "@libmorpheus/deno/setup";
+import { MORPHEUS_VENDOR } from "./src/defaults.ts";
 
-const NATIVE_OUTPUT = "vendor/morpheus-native";
-const DATA_OUTPUT = "vendor/morpheus-data";
+const { nativeOutput: NATIVE_OUTPUT, dataOutput: DATA_OUTPUT } = MORPHEUS_VENDOR;
 
 try {
   // `setupMorpheus()` refuses to overwrite existing directories.
@@ -36,6 +34,14 @@ try {
     nativeOutput: NATIVE_OUTPUT,
     dataOutput: DATA_OUTPUT
   });
+
+  // The API loads the library from `MORPHEUS_VENDOR.libraryPath` by default.
+  const expected = await Deno.realPath(MORPHEUS_VENDOR.libraryPath);
+  if ((await Deno.realPath(receipt.nativeLibraryPath)) !== expected) {
+    throw new Error(
+      `library installed at ${receipt.nativeLibraryPath}, expected ${expected}`
+    );
+  }
 
   console.info("-----> libmorpheus installed:", {
     nativeLibraryPath: receipt.nativeLibraryPath,
