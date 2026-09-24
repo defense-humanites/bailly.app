@@ -7,6 +7,14 @@ Veuillez noter que la base de données utilisée par l'API n'est PAS distribuée
 
 Par ailleurs, l'analyse morphologique repose sur [libmorpheus](https://github.com/defense-humanites/libmorpheus), une bibliothèque dérivée de l'analyseur [Morpheus](https://github.com/PerseusDL/morpheus), chargée par FFI (`@libmorpheus/deno`). Elle requiert la bibliothèque native et un jeu de stems (`stemlib`), désignés par les variables d'environnement `MORPHEUS_LIBRARY_PATH` et `MORPHEUS_STEMLIB_PATH`.
 
+## Dépôts
+
+Le code est publié, conformément à la licence AGPL, dans le dépôt [defense-humanites/bailly-api](https://github.com/defense-humanites/bailly-api). Heroku imposant de livrer la base de données avec le code, le déploiement s'effectue depuis un dépôt distinct, identique à l'exception des archives de la base. Le script `scripts/sync_public.sh` reporte le code du second vers le premier, sans les archives :
+
+```sh
+scripts/sync_public.sh ../bailly-api # depuis le commit déployé ; puis vérifier et pousser
+```
+
 ## Mise en route
 
 Cette API fait usage de code natif (libmorpheus), mais peut être déployée aisément, en local comme en production, à l'aide de Docker. L'image de développement repose sur l'image `morpheus-deno` de libmorpheus, qui fournit la bibliothèque et le stemlib Alpheios :
