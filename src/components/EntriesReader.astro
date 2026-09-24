@@ -1,0 +1,225 @@
+---
+/*
+ * Displays several entries on a single page: an index (headword + excerpt) and
+ * one section per entry, whose children (if any) are grouped and numbered.
+ *
+ * Used by the reader (`/lecteur`) for the ambiguous forms linked to multiple
+ * entries. Meant to be reused to display the entries of a bookmark.
+ */
+import { KeyType, Preset, toTransliteration } from "greek-conversion";
+import type { ApiEntryResponse } from "../api";
+import EntryDefinitions from "./EntryDefinitions.astro";
+import Icon from "./Icon";
+
+type ReaderEntry = ApiEntryResponse<
+  "word" | "uri" | "htmlDefinition" | "excerpt"
+>["entry"];
+
+interface Props {
+  entries: ReaderEntry[];
+}
+
+const { entries } = Astro.props;
+
+/*
+ * Replace the Greek Beta Symbol with the regular letter as some browsers
+ * may not display it accurately (cf. `[uri].astro`).
+ */
+const transliterate = (word: string) =>
+  toTransliteration(word.replace(/\u03D0/g, "β"), KeyType.GREEK, Preset.ALA_LC);
+
+const items = entries.map((entry, i) => ({
+  id: `entree-${i + 1}`,
+  entry,
+  transliteration: transliterate(entry.word),
+  // Grouped entries have an empty excerpt: use the first child's one.
+  excerpt: entry.excerpt || entry.children?.[0]?.excerpt || "",
+  definitions: entry.children ?? [entry]
+}));
+
+// The index is only useful when there are several entries.
+const withIndex = items.length > 1;
+---
+
+<entries-reader
+  class:list={[
+    // The content column has the same width as the entry page (cf. `SingleColumn`).
+    "mx-auto box-content block max-w-screen-sm px-6 pb-12 lg:py-12",
+    withIndex
+      ? "lg:grid lg:max-w-none lg:grid-cols-[16rem_minmax(0,theme(maxWidth.screen-sm))] lg:items-start lg:justify-center lg:gap-12 xl:grid-cols-[18rem_minmax(0,theme(maxWidth.screen-sm))]"
+      : "space-y-6 lg:space-y-12"
+  ]}
+>
+  {/* Sidebar (sticky on large screens): the title, then the index (headword,
+      transliteration & excerpt). On mobile, only the title is shown, the quick
+      access bar being enough to navigate. */}
+  <div
+    class:list={[
+      withIndex &&
+        "lg:sticky lg:top-6 lg:col-start-1 lg:row-start-1 lg:flex lg:max-h-[calc(100dvh-theme(spacing.16)-theme(spacing.12))] lg:flex-col"
+    ]}
+  >
+    <slot />
+
+  {withIndex && (
+  <>
+  <nav
+    aria-label="Entrées affichées"
+    class="mt-6 hidden min-h-0 lg:flex lg:flex-col"
+  >
+    <ol
+      class="min-h-0 divide-y divide-secondary-100 overflow-hidden rounded-lg border border-secondary-100 bg-white shadow-xl lg:overflow-y-auto dark:divide-neutral-700/50 dark:border-neutral-700/50 dark:bg-neutral-800 dark:shadow-neutral-950"
+    >
+      {
+        items.map(({ id, entry, excerpt }) => (
+          <li>
+            <a
+              href={`#${id}`}
+              data-reader-link={id}
+              class="unstyled-link block border-l-4 border-transparent px-4 py-3 transition-colors hover:bg-primary-50 aria-[current=true]:border-primary-600 aria-[current=true]:bg-primary-50 dark:hover:bg-primary-950 dark:aria-[current=true]:border-primary-500 dark:aria-[current=true]:bg-primary-950"
+            >
+              <span class="grec text-xl font-bold">{entry.word}</span>
+              {excerpt && (
+                <span class="mt-1 line-clamp-2 text-base text-neutral-600 dark:text-neutral-300">
+                  {excerpt}
+                </span>
+              )}
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+  </>
+  )}
+  </div>
+
+  {/* Quick access (mobile): sticky bar of headwords, under the title. */}
+  {withIndex && (
+    <nav
+      aria-label="Accès rapide aux entrées"
+      data-reader-bar
+      class="sticky top-2 z-50 mb-6 flex gap-2 overflow-x-auto rounded-lg border border-secondary-200 bg-secondary-50/95 p-2 font-sans shadow-lg backdrop-blur lg:hidden dark:border-neutral-700 dark:bg-neutral-900/95 dark:shadow-neutral-950"
+    >
+      {
+        items.map(({ id, entry }) => (
+          <a
+            href={`#${id}`}
+            data-reader-link={id}
+            class="unstyled-link grec shrink-0 whitespace-nowrap rounded-full border border-secondary-200 bg-white px-3 py-1 text-lg text-neutral-700 transition-colors hover:border-primary-600 aria-[current=true]:border-primary-600 aria-[current=true]:bg-primary-600 aria-[current=true]:text-white dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:aria-[current=true]:border-primary-500 dark:aria-[current=true]:bg-primary-700"
+          >
+            {entry.word}
+          </a>
+        ))
+      }
+    </nav>
+  )}
+
+  <div class="space-y-16 lg:col-start-2 lg:row-start-1">
+    {
+      items.map(({ id, entry, definitions }) => (
+        <entry-section
+          id={id}
+          class="block scroll-mt-20 lg:scroll-mt-6"
+          aria-labelledby={`${id}-titre`}
+          role="region"
+        >
+          <header class="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h2 id={`${id}-titre`} class="grec text-2xl font-bold lg:text-3xl">
+              {entry.word}
+            </h2>
+            <a
+              href={`/${encodeURIComponent(entry.uri)}`}
+              class="unstyled-link ml-auto self-center rounded-lg p-1 text-neutral-500 transition-colors hover:text-primary-700 focus-visible:text-primary-700 dark:text-neutral-400 dark:hover:text-primary-200 dark:focus-visible:text-primary-200"
+              aria-label={`Ouvrir l'entrée ${entry.word}`}
+              title="Ouvrir l'entrée"
+            >
+              <Icon name="ArrowUpRight" />
+            </a>
+          </header>
+
+          <EntryDefinitions definitions={definitions} idPrefix={`${id}-`} />
+        </entry-section>
+      ))
+    }
+  </div>
+</entries-reader>
+
+<script>
+  import { convertLinkedEntries } from "../linkedEntries";
+
+  class EntrySection extends HTMLElement {
+    connectedCallback() {
+      convertLinkedEntries(this);
+    }
+  }
+
+  customElements.define("entry-section", EntrySection);
+
+  /*
+   * Highlight, in the index and the quick access bar, the entry being read.
+   */
+  class EntriesReader extends HTMLElement {
+    #scroller?: HTMLElement;
+    #onScroll?: () => void;
+
+    connectedCallback() {
+      const sections = [...this.querySelectorAll<HTMLElement>("entry-section")];
+      const links = [...this.querySelectorAll<HTMLAnchorElement>("[data-reader-link]")];
+      if (sections.length < 2) return;
+
+      // The scroll container is `main` (cf. `global.css`).
+      const scroller = this.closest("main") ?? document.documentElement;
+      let currentId: string | undefined;
+
+      const setCurrent = (id: string) => {
+        if (id === currentId) return;
+        currentId = id;
+
+        for (const link of links) {
+          const isCurrent = link.dataset.readerLink === id;
+          link.setAttribute("aria-current", String(isCurrent));
+          // Keep the current headword visible in the (horizontally scrollable) bar.
+          if (isCurrent && link.closest("[data-reader-bar]")) {
+            link.scrollIntoView({ block: "nearest", inline: "nearest" });
+          }
+        }
+      };
+
+      /*
+       * The current entry is the last one whose top has passed a "reading line"
+       * (a quarter of the scroll container height), or the last one when the
+       * bottom of the page is reached.
+       */
+      const update = () => {
+        const { top, height } = scroller.getBoundingClientRect();
+        const atBottom =
+          scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2;
+        const readingLine = top + height / 4;
+
+        let current = sections[0];
+        for (const section of sections) {
+          if (section.getBoundingClientRect().top <= readingLine) current = section;
+        }
+        setCurrent(atBottom ? sections[sections.length - 1].id : current.id);
+      };
+
+      let frame = 0;
+      this.#onScroll = () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(update);
+      };
+      this.#scroller = scroller;
+      scroller.addEventListener("scroll", this.#onScroll, { passive: true });
+      update();
+    }
+
+    disconnectedCallback() {
+      if (this.#onScroll) {
+        this.#scroller?.removeEventListener("scroll", this.#onScroll);
+      }
+    }
+  }
+
+  customElements.define("entries-reader", EntriesReader);
+</script>

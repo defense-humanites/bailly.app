@@ -1,0 +1,56 @@
+---
+/*
+ * Displays the definition(s) of an entry. When the entry has several children,
+ * they are numbered (1, 2…) along a vertical rail linking them together, so that
+ * they read as the parts of a same entry.
+ *
+ * Used by the entry page (`[uri].astro`) and the reader (`EntriesReader.astro`).
+ */
+import type { Entry } from "../api";
+import Card from "./Card";
+import TagToolbar from "./TagToolbar";
+
+type Definition = Pick<
+  Entry<"word" | "uri" | "htmlDefinition" | "excerpt">,
+  "word" | "uri" | "htmlDefinition" | "excerpt"
+>;
+
+interface Props {
+  definitions: Definition[];
+  // Prefix of the children's ids (e.g. "entree-2-" gives "entree-2-1"…).
+  idPrefix?: string;
+}
+
+const { definitions, idPrefix = "" } = Astro.props;
+---
+
+{
+  definitions.length > 1 ? (
+    <ol class="space-y-6 border-l-2 border-secondary-200 pl-6 lg:space-y-12 dark:border-neutral-700">
+      {definitions.map((definition, j) => (
+        <li id={`${idPrefix}${j + 1}`} class="relative">
+          <span
+            aria-hidden="true"
+            class="absolute -left-[calc(theme(spacing.6)+theme(spacing.3)+1px)] top-4 flex h-6 w-6 items-center justify-center rounded-full border-2 border-secondary-200 bg-secondary-50 font-sans text-xs font-semibold text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+          >
+            {j + 1}
+          </span>
+          <Card contentClass="definition" content={definition.htmlDefinition}>
+            <TagToolbar client:load transition:persist slot="toolBar" entry={definition} />
+          </Card>
+        </li>
+      ))}
+    </ol>
+  ) : (
+    <div id={`${idPrefix}1`}>
+      <Card contentClass="definition" content={definitions[0].htmlDefinition}>
+        <TagToolbar
+          client:load
+          transition:persist
+          slot="toolBar"
+          entry={definitions[0]}
+        />
+      </Card>
+    </div>
+  )
+}

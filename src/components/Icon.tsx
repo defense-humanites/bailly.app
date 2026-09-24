@@ -6,6 +6,7 @@ enum Heroicons {
   ArrowPath,
   ArrowRightCircle,
   ArrowUpOnSquare,
+  ArrowUpRight,
   Bars3,
   Bookmark,
   BookmarkSlash,
@@ -117,6 +118,22 @@ export default function Icon(props: Props) {
         <path
           fill-rule="evenodd"
           d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm4.28 10.28a.75.75 0 0 0 0-1.06l-3-3a.75.75 0 1 0-1.06 1.06l1.72 1.72H8.25a.75.75 0 0 0 0 1.5h5.69l-1.72 1.72a.75.75 0 1 0 1.06 1.06l3-3Z"
+          clip-rule="evenodd"
+        />
+      )
+    },
+    ArrowUpRight: {
+      outline: (
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25"
+        />
+      ),
+      solid: (
+        <path
+          fill-rule="evenodd"
+          d="M8.25 3.75H19.5a.75.75 0 0 1 .75.75v11.25a.75.75 0 0 1-1.5 0V6.31L5.03 20.03a.75.75 0 0 1-1.06-1.06L17.69 5.25H8.25a.75.75 0 0 1 0-1.5Z"
           clip-rule="evenodd"
         />
       )

@@ -1,115 +1,87 @@
 ---
 import { fetchOneEntry, type ApiEntryResponse } from "../api";
-import Card from "../components/Card";
-import Icon from "../components/Icon";
-import TagToolbar from "../components/TagToolbar";
+import EntriesReader from "../components/EntriesReader.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 export const prerender = false;
 
-// Accessed via /lecteur?q=foo,bar
+/*
+ * Accessed via /lecteur?q=foo,bar[&forme=…], where `forme` is the (ambiguous)
+ * form whose link led to the reader (cf. `linkedEntries.ts`).
+ */
 const url = new URL(Astro.request.url);
 const itemsParam = url.searchParams.get("q") ?? url.searchParams.get("items");
+const form = url.searchParams.get("forme")?.trim().slice(0, 50) || undefined;
 
-const itemsArray = itemsParam ? itemsParam.split(",") : [];
+const itemsArray = (itemsParam ?? "")
+  .split(",")
+  .map((item) => item.trim())
+  .filter(Boolean);
 
-let queries: ApiEntryResponse<"word" | "uri" | "htmlDefinition" | "excerpt">[] =
+const responses: ApiEntryResponse<"word" | "uri" | "htmlDefinition" | "excerpt">[] =
   await Promise.all(
     itemsArray.map((item) =>
       fetchOneEntry(item, {
-        fields: ["word", "uri", "htmlDefinition", "excerpt"],
-        siblings: true,
+        fields: ["word", "uri", "htmlDefinition", "excerpt"]
       })
     )
   );
 
-queries = queries.filter(query => Object.keys(query.entry).length);
+// Keep track of the requested entries that don't exist, so as to report them.
+const entries = responses
+  .map((response) => response.entry)
+  .filter((entry) => Object.keys(entry).length);
+const missingItems = itemsArray.filter(
+  (_, i) => !Object.keys(responses[i].entry).length
+);
 
-const title = "Lecteur";
+// The reader is useless for a single entry: go to the entry page.
+if (entries.length === 1 && !missingItems.length) {
+  return Astro.redirect(`/${encodeURIComponent(entries[0].uri)}`);
+}
+
+const countLabel = `${entries.length} ${entries.length > 1 ? "entrées" : "entrée"}`;
+const title = form ? `${form} (graphie ambiguë)` : "Lecteur";
 ---
 
-<BaseLayout title={title} description="">
-  <section class="px-6 max-lg:py-6 max-lg:max-w-screen-md m-auto lg:grid lg:gap-6 lg:grid-cols-2 2xl:m-12 2xl:gap-12 2xl:grid-cols-3">
-    {queries.map((query, i) => (
-      <entry-article
-        id={String(i + 1)}
-        class="py-6 text-xl md:py-12"
-        data-entry={JSON.stringify(query.entry)}
-        role="article"
-      >
-        <header class="mb-3 flex items-center lg:mb-6">
-          {
-            query.siblings?.previous?.uri && (
-              <span class="flex flex-1 items-center">
-                <a href={"/" + query.siblings.previous.uri}>
-                  <span class="lg:hidden">
-                    <Icon name="ArrowLeftCircle" />
-                  </span>
-                  <span class="grec max-lg:hidden">{query.siblings.previous.word}</span>
-                </a>
-              </span>
-            )
-          }
-          <h1
-            class={`grec shrink-0 text-2xl lg:text-3xl leading-loose font-bold ${
-              !query.siblings?.next?.uri ? "text-right" : "text-center"
-            }`}
+<BaseLayout title={title} description="" noindex>
+  <EntriesReader entries={entries}>
+    <header class="mb-6 pt-6 lg:mb-0 lg:pt-0">
+      {
+        form ? (
+          <>
+            <h1 class="grec text-3xl font-bold lg:text-4xl">{form}</h1>
+            <p class="mt-1 font-sans text-neutral-600 dark:text-neutral-300">
+              Graphie ambiguë
+              {entries.length > 1 && (
+                <span class="text-neutral-500 dark:text-neutral-400">
+                  {" "}· {countLabel}
+                </span>
+              )}
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 class="font-sans text-2xl font-bold lg:text-3xl">Lecteur</h1>
+            {entries.length > 0 && (
+              <p class="mt-1 font-sans text-neutral-500 dark:text-neutral-400">
+                {countLabel}
+              </p>
+            )}
+          </>
+        )
+      }
+      {
+        missingItems.length > 0 && (
+          <p
+            role="status"
+            class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 font-sans text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200"
           >
-            {query.entry.word}
-          </h1>
-          {
-            query.siblings?.next?.uri && (
-              <span class="flex flex-1 items-center justify-end">
-                <a href={"/" + query.siblings.next.uri}>
-                  <span class="lg:hidden">
-                    <Icon name="ArrowRightCircle" />
-                  </span>
-                  <span class="grec max-lg:hidden">{query.siblings.next.word}</span>
-                </a>
-              </span>
-            )
-          }
-        </header>
-        <section class="space-y-6 lg:space-y-12">
-          {(query.entry.children ?? [query.entry]).map((entry, i) => (
-            <article id={String(i + 1)}>
-              <Card contentClass="definition" content={entry.htmlDefinition}>
-                <TagToolbar
-                  client:load
-                  transition:persist
-                  slot="toolBar"
-                  entry={entry}
-                />
-              </Card>
-            </article>
-          ))}
-        </section>
-      </entry-article>
-    ))}
-  </section>
+            {missingItems.length > 1 ? "Entrées introuvables" : "Entrée introuvable"}&nbsp;:
+            {missingItems.map((item, i) => <>{i > 0 && ", "}<span class="font-semibold">{item}</span></>)}.
+          </p>
+        )
+      }
+    </header>
+  </EntriesReader>
 </BaseLayout>
-
-<script>
-  class EntryArticle extends HTMLElement {
-    connectedCallback() {
-      this.querySelectorAll<HTMLSpanElement>("span[data-linked-entries]").forEach(
-        (element) => {
-          const queryString = element.dataset.linkedEntries;
-          if (!queryString) return;
-
-          const anchor = document.createElement("a");
-          for (const attribute of element.attributes) {
-            if (attribute.name !== "data-linked-entries") {
-              anchor.setAttribute(attribute.name, attribute.value);
-            }
-          }
-          anchor.href = `/lecteur?q=${queryString.slice(1)}`;
-          anchor.innerHTML = element.innerHTML;
-          element.replaceWith(anchor);
-        }
-      );
-    }
-  }
-
-  customElements.define("entry-article", EntryArticle);
-</script>

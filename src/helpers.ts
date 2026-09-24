@@ -45,12 +45,13 @@ export function romanizeGreekStrings(): void {
   const greekElements = document.querySelectorAll(".grec, .gens, .es, .des");
   greekElements.forEach((item) => {
     if (item.textContent) {
-      // Don't transliterate Greek Ano Teleia ('\u0387').
+      // Don't transliterate Greek Ano Teleia ('\u0387'), nor its NFC form, the
+      // middle dot ('\u00B7'), used by the database: both would become ";".
       item.textContent = toTransliteration(
-        item.textContent.replace(/\u0387/g, "§"),
+        item.textContent.replace(/[\u0387\u00B7]/g, "§"),
         KeyType.GREEK,
         Preset.ALA_LC
-      ).replace(/§/g, "\u0387");
+      ).replace(/§/g, "\u00B7");
     }
   });
 }

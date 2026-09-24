@@ -1,9 +1,8 @@
 ---
 import { KeyType, Preset, toTransliteration } from "greek-conversion";
 import { fetchOneEntry } from "../api";
-import Card from "../components/Card";
+import EntryDefinitions from "../components/EntryDefinitions.astro";
 import Icon from "../components/Icon";
-import TagToolbar from "../components/TagToolbar";
 import SingleColumn from "../layouts/SingleColumn.astro";
 
 export const prerender = false;
@@ -79,20 +78,7 @@ const entries = entry.children ?? [entry];
         )
       }
     </header>
-    <section class="space-y-6 lg:space-y-12">
-      {entries.map((entry, i) => (
-        <article id={String(i + 1)}>
-          <Card contentClass="definition" content={entry.htmlDefinition}>
-            <TagToolbar
-              client:load
-              transition:persist
-              slot="toolBar"
-              entry={entry}
-            />
-          </Card>
-        </article>
-      ))}
-    </section>
+    <EntryDefinitions definitions={entries} />
   </entry-article>
 </SingleColumn>
 
