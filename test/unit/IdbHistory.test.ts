@@ -8,7 +8,7 @@ test("Create history entry", async () => {
   expect(await IdbHistory.add(entries.alopex)).toSatisfy(success);
   expect(await IdbHistory.add({ word: "foo", uri: "foo", excerpt: "foo" })).toSatisfy(success);
   // Children must have length, but values are not checked.
-  expect(await IdbHistory.add({ word: "bar", uri: "bar", children: [{}] })).toSatisfy(success);
+  expect(await IdbHistory.add(invalid({ word: "bar", uri: "bar", children: [{}] }))).toSatisfy(success);
   // Pushing an existing entry should just change the entry position.
   expect(await IdbHistory.add(entries.rhinokeros)).toSatisfy(success);
 
