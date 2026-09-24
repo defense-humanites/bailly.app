@@ -14,7 +14,7 @@
 
 ## Licence
 
-Copyright (C) 2021, 2022, 2023, 2024, 2025 Antoine Boquet, Benjamin Georges
+Copyright (C) 2021-2026 Antoine Boquet, Benjamin Georges
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU Affero General Public License as published by the Free
@@ -38,10 +38,11 @@ de Modification_ (CC&nbsp;BY-NC-ND&nbsp;4.0).
 
 ### Analyse morphologique
 
-Cette application utilise l'analyseur morphologique
-[Morpheus](https://github.com/PerseusDL/morpheus) (Gregory Crane _et al._ pour
-le compte de l'université Tufts), distribué sous licence _Creative Commons
-Attribution-ShareAlike 3.0 United States_ (CC&nbsp;BY-SA&nbsp;3.0&nbsp;US).
+Cette application utilise [libmorpheus](https://github.com/defense-humanites/libmorpheus),
+qui modernise et étend les capacités de l'analyseur morphologique Morpheus, lequel a
+initialement été développé dans le cadre de la Perseus Digital Library (Gregory Crane
+_et al._ pour le compte de l'université Tufts). `libmorpheus` est distribuée sous licence
+mixte, MPL-2.0 et AGPL-3.0-or-later.
 
 ### Fontes grecques
 
