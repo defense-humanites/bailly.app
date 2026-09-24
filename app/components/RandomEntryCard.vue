@@ -1,21 +1,22 @@
 <script setup lang="ts">
-  import type { Entry } from "~/plugins/api";
-
-  const entry = ref<Entry<"word" | "uri" | "excerpt" | "htmlDefinition"> | undefined>();
-
   const { data: payload } = await useApiRandomEntry({
     fields: ["word", "uri", "excerpt", "htmlDefinition"],
     lengthRange: [600, 700],
   });
 
-  const children = entry.value?.children;
-  entry.value = children?.length ? children.at(0) : payload.value?.data.entry;
+  /**
+   * The random entry or, if it groups several entries, the first of them.
+   */
+  const entry = computed(() => {
+    const randomEntry = payload.value?.data.entry;
+    return randomEntry?.children?.[0] ?? randomEntry;
+  });
 </script>
 
 <template>
   <EntryCard
     v-if="entry"
-    :entry="entry?.children?.at(0) ?? entry"
+    :entry="entry"
     toolbar
     link
     :ui="{

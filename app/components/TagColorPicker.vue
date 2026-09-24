@@ -99,10 +99,14 @@
 
     <template #content>
       <div class="grid grid-cols-4 gap-1.5">
-        <span
+        <button
           v-for="color in colors"
-          class="p-3 rounded-full border transition-colors"
+          :key="color.key"
+          type="button"
+          class="p-3 rounded-full border transition-colors cursor-pointer"
           :class="color.key === selected ? color.selected : color.base"
+          :aria-label="`Couleur : ${color.key}`"
+          :aria-pressed="color.key === selected"
           @click="pickColor(color.key)"
         />
       </div>

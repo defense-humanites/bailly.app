@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { moveArrayElement, useSortable } from "@vueuse/integrations/useSortable";
+  import type { SortableEvent } from "sortablejs";
   import { Color, type ColorKey } from "~/enums";
   import type { IdbTagWithKey } from "~/idb";
   import { TailwindColorClasses } from "~/TailwindColorClasses";
@@ -17,14 +18,16 @@
 
   /**
    * Sortable tags.
+   * @remarks A copy: sorting must not mutate the array passed as a prop
+   * (i.e. the store state).
    */
-  const sortableTags = ref<IdbTagWithKey[]>(props.tags);
+  const sortableTags = ref<IdbTagWithKey[]>([...props.tags]);
 
   /**
    * Updates `sortableTags` when `props.tags` change.
    */
   watch(() => props.tags, (tags) => {
-    sortableTags.value = tags;
+    sortableTags.value = [...tags];
   }, { deep: true });
 
   /**
@@ -36,14 +39,15 @@
     /**
      * Sorts the array and emits the new order when the change is completed.
      */
-    onUpdate: (e: any) => {
+    onUpdate: (e: SortableEvent) => {
+      if (e.oldIndex === undefined || e.newIndex === undefined) return;
+
       moveArrayElement(sortableTags, e.oldIndex, e.newIndex, e);
-      nextTick(() => {
-        const orderedKeys: number[] = [];
-        for (const tag of sortableTags.value) orderedKeys.push(tag.key);
-        emit("reorderTags", orderedKeys);
+      void nextTick(() => {
+        emit("reorderTags", sortableTags.value.map(tag => tag.key));
       });
-    } });
+    },
+  });
 
   /** Return Tailwind color classes. */
   const tagColor = (colorKey: ColorKey): TailwindColorClasses => {

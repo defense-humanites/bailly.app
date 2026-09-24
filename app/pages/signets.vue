@@ -1,6 +1,4 @@
 <script setup lang="ts">
-  import type { IdbEntry } from "~/idb";
-
   useSeoMeta({
     title: "Signets",
     description:
@@ -53,7 +51,8 @@
             name: 'Favoris',
             color: 'Yellow',
           }"
-          :entries="starredEntries as IdbEntry[]"
+          :entries="starredEntries"
+          favorites
           custom-icon="i-heroicons-star"
         >
           Ajoutez à cette liste les entrées que vous souhaitez retrouver

@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import { Color } from "~/enums";
-  import { IdbTags, type IdbEntry } from "~/idb";
+  import type { IdbEntry } from "~/idb";
   import { TailwindColorClasses } from "~/TailwindColorClasses";
 
   const bookmarksStore = useBookmarksStore();
-  const { currentTag, starredEntries } = storeToRefs(bookmarksStore);
+  const { currentTag, starredEntries, taggedEntries } = storeToRefs(bookmarksStore);
 
   const props = defineProps<{
     /**
@@ -15,41 +15,38 @@
 
   /**
    * A boolean representing whether the current entry has been starred.
+   * @remarks Derived from the store, so that it stays correct once the store
+   * is initialized and when the entry is (un)starred elsewhere.
    */
-  const starred = ref<boolean>(starredEntries.value.some(el => el.uri === props.entry.uri));
-  /**
-   * The selected tag keys for the current entry.
-   */
-  const selectedTagKeys = ref<number[] | null>(null);
+  const starred = computed((): boolean =>
+    starredEntries.value.some(el => el.uri === props.entry.uri),
+  );
   /**
    * A boolean representing whether the current entry belongs to the current tag.
    */
   const taggedAsCurrent = computed((): boolean =>
-    Boolean(selectedTagKeys.value?.includes(currentTag.value?.key ?? -1)),
+    taggedEntries.value.some(
+      el => el.uri === props.entry.uri && el.tagKey === currentTag.value?.key,
+    ),
   );
 
-  onMounted(async () => {
-    selectedTagKeys.value = await IdbTags.getEntryTagKeys(props.entry.uri);
-  });
-
   const handleTagChange = async (): Promise<void> => {
-    const currentTagKey: number | undefined = currentTag.value?.key;
+    const currentTagKey = currentTag.value?.key;
+    if (currentTagKey === undefined) return;
 
-    if (!currentTagKey) return;
-
-    taggedAsCurrent.value
-      ? await bookmarksStore.untagEntry(props.entry.uri, currentTagKey)
-      : await bookmarksStore.tagEntry(props.entry, currentTagKey);
-
-    selectedTagKeys.value = await IdbTags.getEntryTagKeys(props.entry.uri);
+    if (taggedAsCurrent.value) {
+      await bookmarksStore.untagEntry(props.entry.uri, currentTagKey);
+    } else {
+      await bookmarksStore.tagEntry(props.entry, currentTagKey);
+    }
   };
 
   const toggleStar = async (): Promise<void> => {
-    const response = starred.value
-      ? await bookmarksStore.unstarEntry(props.entry.uri)
-      : await bookmarksStore.starEntry(props.entry);
-
-    if (response.state === "success") starred.value = !starred.value;
+    if (starred.value) {
+      await bookmarksStore.unstarEntry(props.entry.uri);
+    } else {
+      await bookmarksStore.starEntry(props.entry);
+    }
   };
 
   const currentTagColor = computed(() =>

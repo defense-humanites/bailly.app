@@ -1,8 +1,6 @@
 <script setup lang="ts">
-  import type { IconProps } from "@nuxt/ui";
-  import { Color } from "~/enums";
-  import type { IdbEntry, IdbTagWithKey } from "~/idb";
-  import type { TagColorKey } from "~/idb/IdbTags";
+  import { Color, type ColorKey } from "~/enums";
+  import { IdbTags, type IdbEntry, type IdbTagWithKey } from "~/idb";
   import { TailwindColorClasses } from "~/TailwindColorClasses";
 
   const bookmarksStore = useBookmarksStore();
@@ -11,59 +9,33 @@
     /**
      * The tag that the bookmark group represents.
      */
-    tag: Pick<IdbTagWithKey, "key" | "name" | "color">;
+    tag: Pick<IdbTagWithKey, "key" | "name"> & { color: ColorKey };
     /**
      * The entries that are part of the group.
      */
     entries: IdbEntry[];
     /**
+     * If enabled, the group represents the favorites (starred entries)
+     * rather than a tag.
+     */
+    favorites?: boolean;
+    /**
      * An icon that overrides the default tag icon.
      */
-    customIcon?: IconProps["name"];
-    /**
-     * Style variants affecting the appearance of the card.
-     * @remarks Defaults to `translucent`.
-     */
-    variant?: "solid" | "translucent";
+    customIcon?: string;
     /**
      * If enabled, make the tag data and its related entries editable.
      */
     editable?: boolean;
   }>();
 
-  onMounted(() => {
-    tagName.value = props.tag.name;
-  });
-
   const bookmarkGroup = useTemplateRef("bookmark-group");
   const tagNameInput = useTemplateRef("tag-name-input");
 
   /**
-   * Exists the edit mode when clicking outside the bookmark group.
+   * The editable tag name.
    */
-  onClickOutside(bookmarkGroup, () => {
-    if (editableEditMode && !isTagColorPopoverOpen.value) exitEditMode();
-  });
-
-  /**
-   * Adds shortcuts to exit the edit mode/blur the tag name input.
-   */
-  onKeyStroke(["Enter", "Escape"], () => {
-    // Process shortcuts only if the edit mode is set and the tag color popover isn't open.
-    if (editMode.value && !isTagColorPopoverOpen.value) {
-      // Process the tag name input if it's active, otherwise exit the edit mode.
-      if (tagNameInput.value?.inputRef === document.activeElement) {
-        tagNameInput.value.inputRef?.blur();
-        onUpdateTag();
-      } else {
-        exitEditMode();
-      }
-    }
-  });
-  /**
-   * A model to handle the tag name change.
-   */
-  const tagName = defineModel<string>({ default: "" });
+  const tagName = ref<string>(props.tag.name);
   /**
    * A boolean representing the state of the tag name input.
    */
@@ -71,7 +43,7 @@
   /**
    * The editable tag color.
    */
-  const tagColor = ref<TagColorKey>(props.tag.color);
+  const tagColor = ref<ColorKey>(props.tag.color);
   /**
    * A boolean representing whether the tag color popover is open.
    */
@@ -82,25 +54,32 @@
   const editMode = ref<boolean>(false);
 
   /**
+   * Keeps the editable values in sync with the stored tag.
+   */
+  watch(() => props.tag.name, (name) => {
+    tagName.value = name;
+  });
+  watch(() => props.tag.color, (color) => {
+    tagColor.value = color;
+  });
+
+  /**
    * Updates the tag properties.
    */
   const onUpdateTag = async (): Promise<void> => {
     isTagNameErrored.value = false;
 
-    if (tagName.value !== props.tag.name || tagColor.value !== props.tag.color) {
-      const response = await bookmarksStore.updateTag(props.tag.key, {
-        name: tagName.value,
-        color: tagColor.value,
-      });
+    if (tagName.value === props.tag.name && tagColor.value === props.tag.color) return;
 
-      switch (response.state) {
-        case "success":
-          break;
-        case "error":
-          isTagNameErrored.value = true;
-          tagName.value = props.tag.name;
-          break;
-      }
+    const response = await bookmarksStore.updateTag(props.tag.key, {
+      name: tagName.value,
+      color: IdbTags.isColorKey(tagColor.value) ? tagColor.value : undefined,
+    });
+
+    if (response.state === "error") {
+      isTagNameErrored.value = true;
+      tagName.value = props.tag.name;
+      tagColor.value = props.tag.color;
     }
   };
 
@@ -109,19 +88,23 @@
   };
 
   const onDeleteEntry = async (entry: IdbEntry): Promise<void> => {
-    // @fixme: find a better way to differentiate the favorites.
-    if (props.tag.key === -1) {
+    if (props.favorites) {
       await bookmarksStore.unstarEntry(entry.uri);
     } else {
       await bookmarksStore.untagEntry(entry.uri, props.tag.key);
     }
   };
 
+  const onPickColor = (colorKey: ColorKey): void => {
+    tagColor.value = colorKey;
+    void onUpdateTag();
+  };
+
   /**
    * Returns the default tag icon or a custom icon (in that case, make sure the
    * icon uses its `solid` variant).
    */
-  const icon = computed(() => {
+  const icon = computed((): string => {
     if (props.customIcon) {
       return !props.customIcon.endsWith("-solid")
         ? props.customIcon + "-solid"
@@ -152,12 +135,37 @@
 
   const exitEditMode = (): void => {
     editMode.value = false;
-    onUpdateTag();
+    void onUpdateTag();
   };
 
   const toggleEditMode = (): void => {
-    editMode.value ? exitEditMode() : enterEditMode();
+    if (editMode.value) exitEditMode();
+    else enterEditMode();
   };
+
+  /**
+   * Exits the edit mode when clicking outside the bookmark group.
+   */
+  onClickOutside(bookmarkGroup, () => {
+    if (editableEditMode.value && !isTagColorPopoverOpen.value) exitEditMode();
+  });
+
+  /**
+   * Adds shortcuts to exit the edit mode/blur the tag name input.
+   */
+  onKeyStroke(["Enter", "Escape"], () => {
+    // Process shortcuts only if the edit mode is set and the tag color popover isn't open.
+    if (!editableEditMode.value || isTagColorPopoverOpen.value) return;
+
+    // Process the tag name input if it's active, otherwise exit the edit mode.
+    const input = tagNameInput.value?.inputRef as HTMLInputElement | undefined;
+    if (input && input === document.activeElement) {
+      input.blur();
+      void onUpdateTag();
+    } else {
+      exitEditMode();
+    }
+  });
 </script>
 
 <template>
@@ -184,23 +192,17 @@
             class="contents"
           >
             <TagColorPicker
-              ref="tag-color-picker"
-              :selected="tagColor"
+              :selected="IdbTags.isColorKey(tagColor) ? tagColor : undefined"
               @popover-state="(isOpen) => (isTagColorPopoverOpen = isOpen)"
-              @pick-color="
-                (colorKey) => {
-                  tagColor = colorKey;
-                  onUpdateTag();
-                }
-              "
+              @pick-color="onPickColor"
             >
-              <template #trigger="props">
+              <template #trigger="trigger">
                 <UButton
-                  :icon="props.icon"
+                  :icon="trigger.icon"
                   size="xl"
                   variant="ghost"
                   color="neutral"
-                  :class="props.class"
+                  :class="trigger.class"
                   :ui="{
                     base: `shadow-none rounded-l-full rounded-r-none ${isTagColorPopoverOpen ? 'bg-white/90 hover:bg-white/90 active:bg-white/90' : 'bg-white/60 hover:bg-white/90 active:bg-white/90'}`,
                   }"
