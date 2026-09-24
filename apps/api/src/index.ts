@@ -1,4 +1,3 @@
-import { reencode } from "@humanities/greek-conversion";
 import { Hono } from "@hono/hono";
 import { cors } from "@hono/hono/cors";
 import { HTTPException } from "@hono/hono/http-exception";
@@ -50,26 +49,13 @@ app.get("/entry/random", async (c) => {
   });
 });
 
-/**
- * Handle malformed URIs smoothly.
- * @param q A query string.
- */
-function formatEntryQuery(q: string): string {
-  return reencode(q, "transliteration", {
-    removeDiacritics: true,
-    orthography: {
-      longVowels: "circumflex"
-    }
-  });
-}
-
 app.get("/entry/:uri", async (c) => {
   const q = c.req.param("uri");
   const params = setParams<ApiEntryParams<keyof QueryableFields>>({
     ...c.req.query(),
     q
   });
-  const entry = await getEntry({ ...params, q: formatEntryQuery(params.q) });
+  const entry = await getEntry(params);
 
   return c.json({
     data: {
@@ -99,7 +85,7 @@ app.post("/entry", async (c) => {
   }
 
   const responses = await Promise.all(
-    queries.map((query) => getEntry({ ...params, q: formatEntryQuery(query) }))
+    queries.map((query) => getEntry({ ...params, q: query }))
   );
 
   return c.json({
