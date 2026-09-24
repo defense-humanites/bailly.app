@@ -57,7 +57,7 @@
 </script>
 
 <template>
-  <UButtonGroup
+  <UFieldGroup
     orientation="horizontal"
     class="border border-neutral-200 rounded-lg [&>button]:rounded-lg shadow-xs [&>button]:shadow-none"
   >
@@ -95,5 +95,5 @@
       :ui="{ base: 'border-l border-neutral-200' }"
       @click="toggleStar"
     />
-  </UButtonGroup>
+  </UFieldGroup>
 </template>

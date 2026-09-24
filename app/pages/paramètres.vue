@@ -111,18 +111,6 @@
             translittérée correspond à la manière usuelle de présenter du grec à
             l'usage d'un public non helléniste.
           </p>
-          <p>
-            Voyez la
-            <ModalLink
-              client:load
-              label="table de correspondance"
-              modal-title="Table de correspondance"
-            >
-              <template #modalContent>
-                <ConversionChart />
-              </template>
-            </ModalLink>.
-          </p>
           <URadioGroup
             variant="table"
             orientation="horizontal"

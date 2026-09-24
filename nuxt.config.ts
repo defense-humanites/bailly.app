@@ -28,6 +28,14 @@ export default defineNuxtConfig({
     },
   },
   compatibilityDate: "2025-07-15",
+  typescript: {
+    tsConfig: {
+      // Report components that don't exist (e.g. renamed Nuxt UI components).
+      vueCompilerOptions: {
+        checkUnknownComponents: true,
+      },
+    },
+  },
   eslint: {
     config: {
       stylistic: {

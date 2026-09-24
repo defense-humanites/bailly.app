@@ -21,17 +21,7 @@
       <h2>Bailly 2020 Hugo Chávez</h2>
       <p>
         Gérard Gréco, André Charbonnet, Mark De Wilde, Bernard Maréchal
-        <em>
-          <ModalLink
-            client:load
-            label="et al."
-            modal-title="Contributeurs au Bailly 2020"
-          >
-            <template #modalContent>
-              <ContributorsList />
-            </template>
-          </ModalLink>
-        </em> / licence <em>Creative Commons Attribution - Pas d'Utilisation Commerciale - Pas de
+        <em>et al.</em> / licence <em>Creative Commons Attribution - Pas d'Utilisation Commerciale - Pas de
           Modification</em> (CC&nbsp;BY-NC-ND&nbsp;4.0) (<a
           href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr"
           target="_blank"
