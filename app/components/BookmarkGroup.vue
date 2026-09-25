@@ -194,14 +194,18 @@
     :ui="{
       root: 'bg-tag-200/50 border-tag-300/50',
       header: 'flex justify-between !px-3 pb-0',
-      body: '!p-3 text-default',
+      body: '@container !p-3 text-default',
     }"
   >
     <!-- Tag data and actions -->
+    <!--
+      A long tag name wraps: the row grows (`min-h-8`), the icon and the
+      actions staying on its first line.
+    -->
     <template #header>
-      <div class="flex w-full h-8 gap-3">
+      <div class="flex min-h-8 w-full items-start gap-3">
         <div
-          class="flex min-w-0 grow items-center text-tag-600"
+          class="flex min-w-0 grow items-start text-tag-600"
         >
           <!-- Edit tag data -->
           <div
@@ -251,9 +255,9 @@
           >
             <UIcon
               :name="icon"
-              class="mx-2 size-6"
+              class="mx-2 mt-1 size-6 shrink-0"
             />
-            <span class="ml-2 text-2xl font-bold">{{ tagName }}</span>
+            <span class="ml-2 min-w-0 text-2xl font-bold wrap-break-word">{{ tagName }}</span>
           </div>
         </div>
 
@@ -264,7 +268,7 @@
           hover).
         -->
         <span
-          class="flex items-center gap-3"
+          class="flex h-8 items-center gap-3"
           :class="editMode ? '' : 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100'"
         >
           <UButton
@@ -321,7 +325,8 @@
       </p>
     </template>
     <template v-else>
-      <div class="grid grid-cols-2 gap-3">
+      <!-- Two columns when the card is wide enough (not on mobile). -->
+      <div class="grid grid-cols-1 gap-3 @sm:grid-cols-2">
         <div
           v-for="entry in entries"
           :key="entry.uri"

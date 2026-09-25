@@ -36,7 +36,7 @@
 
 <template>
   <!--
-    The text stops before the submit button, in the trailing slot (`pe-12`,
+    The text stops before the submit button, in the trailing slot (`pe-10`,
     `pe-28` with its label from `xl`, cf. `useButtonLabels`).
   -->
   <UInput
@@ -45,7 +45,7 @@
     placeholder="Nouvelle étiquette"
     aria-label="Nom de la nouvelle étiquette"
     :class="{ 'animate-shake': isNewTagNameErrored }"
-    :ui="{ root: 'w-96', base: 'pe-12 xl:pe-28', leading: 'ps-1.5', trailing: 'pe-1.5' }"
+    :ui="{ base: 'pe-10 xl:pe-28', leading: 'ps-1.5', trailing: 'pe-1.5' }"
     @keydown.enter="createTag"
   >
     <!-- Color picker -->
@@ -70,7 +70,7 @@
           variant="soft"
           color="secondary"
           icon="i-lucide-plus"
-          :ui="{ base: 'shadow-none', label: 'max-xl:sr-only' }"
+          :ui="{ base: 'shadow-none max-xl:px-1.5', label: 'max-xl:sr-only' }"
           @click="createTag"
         />
       </UTooltip>
