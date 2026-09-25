@@ -7,6 +7,9 @@
   import { entryRoute } from "~/utils/entryUri";
   import { toSearchGreek, toSearchQuery } from "~/utils/searchInput";
 
+  // (The input text is 16px on mobile, `max-md:text-base`: below, iOS Safari
+  // zooms in when the input gets the focus.)
+
   type ResultItem = InputMenuItem & {
     /** The entry excerpt (or headword, for homonyms). */
     label: string;
@@ -177,7 +180,7 @@
     lang="grc"
     :content="{ align: 'start', collisionPadding: 12 }"
     :ui="{
-      base: 'shadow-xs',
+      base: 'shadow-xs max-md:text-base',
       content: 'w-[min(40rem,calc(100dvw-2rem))] max-h-[min(32rem,var(--reka-combobox-content-available-height))]',
       item: 'items-start',
       itemLabel: 'whitespace-normal line-clamp-2',
