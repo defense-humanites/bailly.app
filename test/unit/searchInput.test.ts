@@ -1,36 +1,56 @@
 import { expect, test } from "vitest";
 import { normalizeSearchGreek, toSearchGreek, toSearchQuery } from "../../app/utils/searchInput";
 
-test("converts Beta Code", () => {
+/**
+ * Types the input one character at a time, as in the search bar.
+ */
+const type = (input: string): string => {
+  let value = "";
+  for (const character of input) value = toSearchGreek(value + character);
+  return value;
+};
+
+test("converts Beta Code letters", () => {
   expect(toSearchGreek("logos")).toBe("λογος");
   expect(toSearchGreek("LOGOS")).toBe("λογος");
   expect(toSearchGreek("hqcywxf")).toBe("ηθξψωχφ");
   expect(toSearchGreek("vergon")).toBe("ϝεργον"); // Digamma.
-  expect(toSearchGreek("h(me/ra")).toBe("ημερα"); // Diacritics are dropped.
   expect(toSearchGreek("logos ergon")).toBe("λογος εργον");
 });
 
-test("converts capitals and drops diacritics", () => {
-  expect(toSearchGreek("*)aqh=nai")).toBe("Αθηναι");
-  expect(toSearchGreek("*swkra/ths")).toBe("Σωκρατης");
-  expect(toSearchGreek("*os")).toBe("Ος");
-  expect(toSearchGreek("a(/|")).toBe("α");
-  expect(toSearchGreek("i+")).toBe("ι");
-  expect(toSearchGreek("lo?gos")).toBe("λογος"); // Underdot.
+test("converts Beta Code diacritics and capitals", () => {
+  expect(toSearchGreek("h(me/ra")).toBe("ἡμέρα");
+  expect(toSearchGreek("a)nh/r")).toBe("ἀνήρ");
+  expect(toSearchGreek("*)aqh=nai")).toBe("Ἀθῆναι");
+  expect(toSearchGreek("*swkra/ths")).toBe("Σωκράτης");
+  expect(toSearchGreek("a(/|")).toBe("ᾅ");
+  expect(toSearchGreek("i+/")).toBe("ΐ");
+  expect(toSearchGreek("r(")).toBe("ῥ");
+  expect(toSearchGreek("lo?gos")).toBe("λο̣γος"); // Underdot.
 });
 
-test("drops the diacritics typed after a converted letter", () => {
-  expect(toSearchGreek("α)")).toBe("α");
-  expect(toSearchGreek("ημε/")).toBe("ημε");
-  expect(toSearchGreek(")")).toBe("");
+test("adds a diacritic to a letter already converted", () => {
+  expect(toSearchGreek("α)")).toBe("ἀ");
+  expect(toSearchGreek("ἀ/")).toBe("ἄ");
+  expect(toSearchGreek("ανη/")).toBe("ανή");
 });
 
-test("keeps a capital mark until its letter comes", () => {
+test("keeps a diacritic waiting for its letter, like a dead key", () => {
+  expect(toSearchGreek(")")).toBe("᾿");
   expect(toSearchGreek("*")).toBe("*");
-  expect(toSearchGreek("*)")).toBe("*");
-  expect(toSearchGreek("*λογος")).toBe("Λογος");
-  expect(toSearchQuery("*")).toBe("");
-  expect(toSearchQuery("λογ*")).toBe("λογ");
+  expect(toSearchGreek("*)")).toBe("*᾿");
+  expect(toSearchGreek("*)/")).toBe("*᾿´");
+  expect(toSearchGreek("*᾿α")).toBe("Ἀ");
+  expect(toSearchGreek(")a")).toBe("ἀ");
+  expect(toSearchGreek("λ)")).toBe("λ᾿"); // λ can't take a breathing.
+  expect(toSearchGreek("a))")).toBe("ἀ᾿"); // α already has one.
+});
+
+test("leaves alone a diacritic its letter can't take", () => {
+  expect(toSearchGreek(")s")).toBe("᾿ς");
+  expect(toSearchGreek("*=o")).toBe("῀Ο");
+  expect(toSearchGreek(") log")).toBe("᾿ λογ");
+  expect(toSearchGreek("?")).toBe(""); // No spacing underdot.
 });
 
 test("keeps the search metacharacters", () => {
@@ -41,20 +61,25 @@ test("keeps the search metacharacters", () => {
 });
 
 test("handles input typed one character at a time", () => {
-  const type = (input: string): string => {
-    let value = "";
-    for (const character of input) value = toSearchGreek(value + character);
-    return value;
-  };
   expect(type("logosa ergon")).toBe("λογοσα εργον");
-  expect(type("h(me/ra")).toBe("ημερα");
-  expect(type("*)aqh=nai")).toBe("Αθηναι");
-  expect(type("a)/|")).toBe("α");
+  expect(type("h(me/ra")).toBe("ἡμέρα");
+  expect(type("*)aqh=nai")).toBe("Ἀθῆναι");
+  expect(type("a)/|")).toBe("ᾄ");
+  expect(type("*)/anqrwpos")).toBe("Ἄνθρωπος");
 });
 
 test("normalizes Greek (typed or pasted)", () => {
-  expect(toSearchGreek("λόγος")).toBe("λογος");
-  expect(toSearchGreek("ἄνθρωπος")).toBe("ανθρωπος");
+  expect(toSearchGreek("λόγος")).toBe("λόγος");
+  expect(toSearchGreek("ἄνθρωπος")).toBe("ἄνθρωπος");
+  expect(toSearchGreek("ά")).toBe("ά"); // Oxia → tonos (NFC).
   expect(normalizeSearchGreek("ϐιοσ ϲωμα")).toBe("βιος σωμα");
   expect(normalizeSearchGreek("λογοςα")).toBe("λογοσα");
+});
+
+test("leaves out of the query what waits for a letter", () => {
+  expect(toSearchQuery("*")).toBe("");
+  expect(toSearchQuery("*᾿")).toBe("");
+  expect(toSearchQuery("λογ*")).toBe("λογ");
+  expect(toSearchQuery("᾿ς")).toBe("ς");
+  expect(toSearchQuery("ἀνήρ")).toBe("ἀνήρ");
 });
