@@ -1,2 +1,8 @@
 @layer utilities {
 }
+
+/* The header's row from `md`: title, search bar, menu (cf. `root.css`). */
+@utility grid-cols-header {
+  grid-template-columns: var(--header-title-width) minmax(0, 1fr) var(--header-menu-width);
+  column-gap: var(--header-gap);
+}

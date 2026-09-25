@@ -15,5 +15,23 @@
    */
   --app-width: max(100dvw, var(--app-min-width));
 
+  /*
+   * The header's row from `md` (cf. `AppNavHorizontal` and the
+   * `grid-cols-header` utility), shared with the single-column layout, whose
+   * column thus lies under the search bar: fixed tracks for the title and the
+   * menu (a little wider than their content; to adjust if it changes), the
+   * search bar taking the space left.
+   */
+  --header-max-width: var(--container-6xl);
+  --header-inset: calc(var(--spacing) * 3 + 1px); /* Padding and border. */
+  --header-title-width: 5.5rem;
+  --header-menu-width: 7.5rem; /* Icons only. */
+  --header-gap: 2rem;
+
+  @variant lg {
+    --header-menu-width: 20.5rem; /* Icons and labels. */
+    --header-gap: 3rem;
+  }
+
   @apply overscroll-none;
 }

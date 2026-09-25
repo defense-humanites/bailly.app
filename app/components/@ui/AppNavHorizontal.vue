@@ -50,23 +50,25 @@
     row scrolls away with the page, and the search bar stays at the top. The
     first row slides back (offset `0`) when the user scrolls up, over the
     content: the layout doesn't change. From `md`, a single floating row, at
-    most `6xl` wide (as the home page), the search bar taking the space left
-    between the title and the menu.
+    most `6xl` wide, on a grid shared with the single-column layout (whose
+    column thus lies under the search bar): fixed tracks for the title and the
+    menu, the search bar taking the space left (cf. `grid-cols-header`).
   -->
   <header
     ref="header"
-    class="sticky z-[99] border-b border-black/10 bg-white/90 backdrop-blur-sm transition-[top] duration-300 ease-out motion-reduce:transition-none md:fixed md:top-3 md:h-14 md:w-dvw md:border-0 md:bg-transparent md:px-6 md:backdrop-blur-none md:transition-none"
+    class="sticky z-[99] border-b border-black/10 bg-white/90 backdrop-blur-sm transition-[top] duration-300 ease-out motion-reduce:transition-none md:fixed md:inset-x-0 md:top-3 md:h-14 md:border-0 md:bg-transparent md:px-6 md:backdrop-blur-none md:transition-none"
     :class="titleRowShown ? 'top-0' : '-top-12'"
   >
     <nav
-      class="grid grid-cols-[1fr_auto] items-center gap-x-3 px-4 pb-2 md:mx-auto md:flex md:h-full md:w-full md:max-w-6xl md:justify-between md:gap-x-8 lg:gap-x-12 md:px-3 md:py-1 md:bg-radial-[at_50%_0%] md:from-75% md:from-white/50 md:to-100% md:to-primary-50/75 md:bg-white/65 md:backdrop-blur-sm md:border md:border-black/10 md:shadow-xl md:shadow-black/10 md:rounded-xl"
+      class="grid grid-cols-[1fr_auto] items-center gap-x-3 px-4 pb-2 md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:px-3 md:py-1 md:bg-radial-[at_50%_0%] md:from-75% md:from-white/50 md:to-100% md:to-primary-50/75 md:bg-white/65 md:backdrop-blur-sm md:border md:border-black/10 md:shadow-xl md:shadow-black/10 md:rounded-xl"
     >
       <ULink
         class="flex h-12 items-center font-serif text-xl tracking-wider text-black md:h-auto"
         href="/"
       >Bailly.app</ULink>
-      <SearchBar class="col-span-2 row-start-2 w-full md:w-auto md:min-w-0 md:flex-1" />
+      <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1" />
       <UNavigationMenu
+        class="md:col-start-3 md:row-start-1 md:justify-self-end"
         :items="menuItems"
         :ui="{ link: 'max-md:p-2.5', linkLabel: 'max-lg:sr-only' }"
       />
