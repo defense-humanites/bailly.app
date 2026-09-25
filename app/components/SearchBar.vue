@@ -24,7 +24,7 @@
     isMorpheus?: boolean;
   };
 
-  const { query, result, status, pending } = useEntrySearch();
+  const { query, result, resultQuery, status, pending } = useEntrySearch();
   const { position, diacriticSensitive, inputMode, isDefault: defaultOptions, reset: resetOptions } = useSearchOptions();
 
   const transliterating = computed((): boolean => inputMode.value === InputMode.Transliteration);
@@ -230,6 +230,94 @@
   const hasMoreResults = computed(
     (): boolean => (result.value?.countAll ?? 0) > (result.value?.count ?? 0),
   );
+
+  /**
+   * Whether the highlighted result was chosen by the user (arrow keys,
+   * pointer). The input menu highlights the first result by itself: that
+   * highlight isn't shown, and Enter doesn't open it (cf. `onKeydown`).
+   */
+  const highlightChosen = ref(false);
+
+  /**
+   * Whether Enter was pressed before the results of the query came.
+   */
+  let enterPending = false;
+
+  watch([query, result], () => {
+    highlightChosen.value = false;
+  });
+
+  watch(query, () => {
+    enterPending = false;
+  });
+
+  /**
+   * Enter without a chosen result: the only exact match (an entry, or
+   * homonyms under their headword) is opened; otherwise, the first result is
+   * highlighted, for a second Enter to open it.
+   */
+  const onEnter = (): void => {
+    const exact = result.value?.entries.filter(entry => entry.isExact) ?? [];
+    const input = menu.value?.inputRef as HTMLInputElement | undefined;
+
+    if (exact.length === 1) {
+      // (Closes the results, and the mobile keyboard.)
+      input?.blur();
+      void navigateTo(entryRoute(exact[0]!.uri));
+    } else if (items.value.length) {
+      highlightChosen.value = true;
+    }
+  };
+
+  // Enter pressed before the results came: applied once they are those of
+  // the query (cf. `resultQuery`).
+  watch([pending, resultQuery], ([value]) => {
+    if (enterPending && !value && resultQuery.value === query.value) {
+      enterPending = false;
+      onEnter();
+    }
+  });
+
+  /**
+   * Handles the keys typed in the input before the input menu (capture): the
+   * first arrow key shows the highlighted (first) result rather than moving
+   * past it, and Enter without a chosen result follows `onEnter`.
+   */
+  const onKeydown = (event: KeyboardEvent): void => {
+    if (event.target !== menu.value?.inputRef || event.isComposing || highlightChosen.value) return;
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      if (!items.value.length) return;
+      event.preventDefault();
+      event.stopPropagation();
+      highlightChosen.value = true;
+    } else if (event.key === "Enter" && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (pending.value || resultQuery.value !== query.value) enterPending = true;
+      else onEnter();
+    }
+  };
+
+  // A pointer moving over the results highlights them (the results are in a
+  // portal: the list is found through the input's `aria-controls`).
+  useEventListener(import.meta.client ? document : undefined, "pointermove", (event: PointerEvent) => {
+    if (highlightChosen.value) return;
+    const listId = (menu.value?.inputRef as HTMLInputElement | undefined)?.getAttribute("aria-controls");
+    if (listId && (event.target as Element | null)?.closest(`#${CSS.escape(listId)}`)) {
+      highlightChosen.value = true;
+    }
+  }, { passive: true });
+
+  /**
+   * The results' highlight is hidden until the user chooses one (cf.
+   * `highlightChosen`), from the results container: the items aren't
+   * rendered again when only their class changes.
+   */
+  const contentClass = computed((): string => [
+    "w-[min(40rem,calc(100dvw-2rem))] max-h-[min(32rem,var(--reka-combobox-content-available-height))]",
+    highlightChosen.value ? "" : "[&_[data-highlighted]]:before:bg-transparent! [&_[data-highlighted]]:text-default!",
+  ].join(" "));
 </script>
 
 <template>
@@ -244,7 +332,10 @@
     The input isn't raised when focused (unlike in other field groups), so
     that the button's neutral left edge remains the divider (cf. SearchOptions).
   -->
-  <UFieldGroup class="group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3">
+  <UFieldGroup
+    class="group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
+    @keydown.capture="onKeydown"
+  >
     <UInputMenu
       ref="menu"
       class="w-full"
@@ -269,7 +360,7 @@
       :ui="{
         root: 'has-focus-visible:z-auto',
         base: 'shadow-xs max-md:text-base focus-visible:outline-transparent',
-        content: 'w-[min(40rem,calc(100dvw-2rem))] max-h-[min(32rem,var(--reka-combobox-content-available-height))]',
+        content: contentClass,
         item: 'items-start',
         itemLabel: 'whitespace-normal line-clamp-2',
         itemTrailingIcon: 'hidden',

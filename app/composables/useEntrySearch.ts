@@ -32,16 +32,25 @@ export function useEntrySearch() {
     debouncedQuery.value = value;
   }, { debounce: searchDebounceTime });
 
+  /**
+   * The query the result belongs to (the result may be that of a previous
+   * query, until the new one is looked up).
+   */
+  const resultQuery = useState("entry-search-result-query", () => "");
+
   const { data: result, status } = useAsyncData(
     "entry-search",
-    (): Promise<LookupResult<SearchField>> => {
-      const greek = toLookupQuery(debouncedQuery.value, inputMode.value);
-      return lookup(toPositionedQuery(greek, position.value), {
+    async (): Promise<LookupResult<SearchField>> => {
+      const input = debouncedQuery.value;
+      const greek = toLookupQuery(input, inputMode.value);
+      const found = await lookup(toPositionedQuery(greek, position.value), {
         fields: ["word", "uri", "excerpt"],
         inputMode: "greek",
         diacriticSensitive: diacriticSensitive.value,
         skipMorpheus: !(lemmatization.value && isLemmatizable(position.value, hasWildcards(greek))),
       });
+      resultQuery.value = input;
+      return found;
     },
     {
       server: false,
@@ -58,5 +67,5 @@ export function useEntrySearch() {
     (): boolean => toSearchQuery(query.value) !== "" && (query.value !== debouncedQuery.value || status.value === "pending"),
   );
 
-  return { query, result, status, pending };
+  return { query, result, resultQuery, status, pending };
 }
