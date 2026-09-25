@@ -33,12 +33,16 @@
 
 <template>
   <UPopover :content="{ align: 'end', collisionPadding: 12 }">
-    <!-- A dot on the button when an option isn't the default one. -->
+    <!--
+      A dot on the button when an option isn't the default one. When the input
+      has the focus, the button's ring takes its color, except on the left
+      edge (a pseudo-element): the divider stays neutral.
+    -->
     <UButton
       color="neutral"
       variant="outline"
       size="lg"
-      class="shadow-xs group-has-[input:focus-visible]/search:ring-primary"
+      class="relative shadow-xs before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-(--ui-border-accented) group-has-[input:focus-visible]/search:ring-primary"
       aria-label="Options de recherche"
     >
       <UChip

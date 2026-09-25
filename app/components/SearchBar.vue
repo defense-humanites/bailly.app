@@ -234,6 +234,8 @@
   <!--
     The focus halo (outline) and ring of the input surround the whole bar,
     options button included: the input's own halo would stop short of it.
+    The input isn't raised when focused (unlike in other field groups), so
+    that the button's neutral left edge remains the divider (cf. SearchOptions).
   -->
   <UFieldGroup class="group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3">
     <UInputMenu
@@ -258,6 +260,7 @@
       :lang="transliterating ? 'grc-Latn' : 'grc'"
       :content="{ align: 'start', collisionPadding: 12 }"
       :ui="{
+        root: 'has-focus-visible:z-auto',
         base: 'shadow-xs max-md:text-base focus-visible:outline-transparent',
         content: 'w-[min(40rem,calc(100dvw-2rem))] max-h-[min(32rem,var(--reka-combobox-content-available-height))]',
         item: 'items-start',
