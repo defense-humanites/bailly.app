@@ -19,6 +19,23 @@ export enum Color {
 export type ColorKey = keyof typeof Color;
 
 /**
+ * The colors' French names (e.g. for accessible names).
+ */
+export const colorNames: Record<ColorKey, string> = {
+  Blue: "bleu",
+  Green: "vert",
+  Lime: "vert citron",
+  Orange: "orange",
+  Purple: "violet",
+  Red: "rouge",
+  Rose: "rose",
+  Sky: "bleu ciel",
+  Slate: "gris ardoise",
+  Teal: "bleu canard",
+  Yellow: "jaune",
+};
+
+/**
  * Input modes that can be used to type greek in the search bar.
  */
 export enum InputMode {

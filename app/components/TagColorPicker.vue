@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { colorNames } from "~/enums";
   import { IdbTags, type TagColorKey } from "~/idb";
 
   const emit = defineEmits<{
@@ -11,6 +12,11 @@
      * The tag color key selected by the parent component.
      */
     selected?: TagColorKey;
+    /**
+     * The trigger's accessible name, completed with the selected color
+     * (e.g. "Couleur de l'étiquette" → "Couleur de l'étiquette : bleu").
+     */
+    label?: string;
   }>();
 
   watch(
@@ -39,6 +45,12 @@
    * The icon to display in the 'trigger' slot.
    */
   const icon: string = "i-bailly-tag-filled";
+  /**
+   * The trigger's accessible name.
+   */
+  const triggerLabel = computed(
+    (): string => `${props.label ?? "Couleur"} : ${colorNames[selected.value]}`,
+  );
 
   watch(open, (open) => {
     emit("popoverState", open);
@@ -61,15 +73,20 @@
     :arrow="{ rounded: true, width: 16, height: 8 }"
     :ui="{ content: 'z-99 p-3', arrow: 'fill-white' }"
   >
-    <!-- The trigger must carry `data-tag-color="color"` for `class` to apply. -->
+    <!--
+      The trigger must carry `data-tag-color="color"` for `class` to apply,
+      and `aria-label="label"`.
+    -->
     <slot
       name="trigger"
       :icon="icon"
       :color="selected"
+      :label="triggerLabel"
       class="text-tag-600"
     >
       <UButton
         :icon="icon"
+        :aria-label="triggerLabel"
         color="neutral"
         variant="outline"
         :data-tag-color="selected"
@@ -89,7 +106,7 @@
           :class="colorKey === selected
             ? 'bg-tag-500 border-tag-500'
             : 'bg-tag-200 hover:bg-tag-300 border-tag-300 hover:border-tag-400'"
-          :aria-label="`Couleur : ${colorKey}`"
+          :aria-label="colorNames[colorKey]"
           :aria-pressed="colorKey === selected"
           @click="pickColor(colorKey)"
         />

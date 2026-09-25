@@ -34,17 +34,21 @@
 </script>
 
 <template>
+  <!-- The text stops before the submit button, in the trailing slot (`pe-28`). -->
   <UInput
     v-model="newTagName"
     size="2xl"
+    placeholder="Nouvelle étiquette"
+    aria-label="Nom de la nouvelle étiquette"
     :class="{ 'animate-shake': isNewTagNameErrored }"
-    :ui="{ root: 'w-96', leading: 'ps-1.5', trailing: 'pe-1.5' }"
+    :ui="{ root: 'w-96', base: 'pe-28', leading: 'ps-1.5', trailing: 'pe-1.5' }"
     @keydown.enter="createTag"
   >
     <!-- Color picker -->
     <template #leading>
       <TagColorPicker
         :selected="newTagColor"
+        label="Couleur de la nouvelle étiquette"
         @pick-color="(colorKey) => (newTagColor = colorKey)"
       />
     </template>

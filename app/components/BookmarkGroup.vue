@@ -48,9 +48,14 @@
    */
   const isTagColorPopoverOpen = ref<boolean>(false);
   /**
-   * A boolean representing whether the user can edit the tag data.
+   * A boolean representing whether the user can edit the group: the tag data
+   * (if `editable`) and the entries it contains.
    */
   const editMode = ref<boolean>(false);
+  /**
+   * A boolean representing whether the tag deletion confirmation is open.
+   */
+  const isDeleteConfirmationOpen = ref<boolean>(false);
 
   /**
    * Keeps the editable values in sync with the stored tag.
@@ -82,8 +87,13 @@
     }
   };
 
+  /**
+   * Deletes the tag (its entries, if any, are detached from it), once the
+   * user has confirmed it.
+   */
   const onDeleteTag = async (): Promise<void> => {
-    await bookmarksStore.removeTag(props.tag.key);
+    const response = await bookmarksStore.removeTag(props.tag.key);
+    if (response.state === "success") isDeleteConfirmationOpen.value = false;
   };
 
   const onDeleteEntry = async (entry: IdbEntry): Promise<void> => {
@@ -108,9 +118,23 @@
     (): boolean => props.editable && editMode.value,
   );
 
-  const editableHasNoEntries = computed(
-    (): boolean => props.editable && !props.entries.length,
+  /**
+   * The group's name, for accessible names.
+   */
+  const groupName = computed(
+    (): string => props.favorites ? "les favoris" : `l'étiquette « ${props.tag.name} »`,
   );
+
+  /**
+   * The consequence of the tag deletion, for its confirmation.
+   */
+  const deleteDescription = computed((): string => {
+    const count = props.entries.length;
+    if (!count) return "Cette étiquette ne référence aucune entrée.";
+    return count === 1
+      ? "L'entrée qu'elle référence ne sera plus étiquetée ainsi."
+      : `Les ${count} entrées qu'elle référence ne seront plus étiquetées ainsi.`;
+  });
 
   const enterEditMode = (): void => {
     editMode.value = true;
@@ -127,25 +151,35 @@
   };
 
   /**
+   * Whether an overlay of the group (the tag color popover, the deletion
+   * confirmation) is open: the edit mode shortcuts then leave it alone.
+   */
+  const isOverlayOpen = computed(
+    (): boolean => isTagColorPopoverOpen.value || isDeleteConfirmationOpen.value,
+  );
+
+  /**
    * Exits the edit mode when clicking outside the bookmark group.
    */
   onClickOutside(bookmarkGroup, () => {
-    if (editableEditMode.value && !isTagColorPopoverOpen.value) exitEditMode();
+    if (editMode.value && !isOverlayOpen.value) exitEditMode();
   });
 
   /**
    * Adds shortcuts to exit the edit mode/blur the tag name input.
    */
-  onKeyStroke(["Enter", "Escape"], () => {
-    // Process shortcuts only if the edit mode is set and the tag color popover isn't open.
-    if (!editableEditMode.value || isTagColorPopoverOpen.value) return;
+  onKeyStroke(["Enter", "Escape"], (event) => {
+    // Process shortcuts only if the edit mode is set and no overlay is open.
+    if (!editMode.value || isOverlayOpen.value) return;
 
     // Process the tag name input if it's active, otherwise exit the edit mode.
     const input = tagNameInput.value?.inputRef as HTMLInputElement | undefined;
     if (input && input === document.activeElement) {
       input.blur();
       void onUpdateTag();
-    } else {
+    } else if (event.key === "Escape" || !(event.target as Element | null)?.closest("button, a")) {
+      // `Enter` on a button or a link activates it instead (e.g. the edit
+      // button, which would otherwise exit the edit mode and enter it again).
       exitEditMode();
     }
   });
@@ -176,6 +210,7 @@
           >
             <TagColorPicker
               :selected="IdbTags.isColorKey(tagColor) ? tagColor : undefined"
+              label="Couleur de l'étiquette"
               @popover-state="(isOpen) => (isTagColorPopoverOpen = isOpen)"
               @pick-color="onPickColor"
             >
@@ -183,6 +218,7 @@
                 <UButton
                   :icon="trigger.icon"
                   :data-tag-color="trigger.color"
+                  :aria-label="trigger.label"
                   size="xl"
                   variant="ghost"
                   color="neutral"
@@ -197,6 +233,7 @@
             <UInput
               ref="tag-name-input"
               v-model="tagName"
+              aria-label="Nom de l'étiquette"
               size="xl"
               variant="none"
               :class="{ 'animate-shake': isTagNameErrored }"
@@ -219,28 +256,54 @@
           </div>
         </div>
 
-        <!-- Actions -->
-        <span
-          class="flex items-center gap-3 group-hover:visible"
-          :class="[editMode ? '' : 'invisible']"
-        >
+        <!--
+          Actions, always shown (a touch screen has no hover, and hidden
+          buttons can't be reached with the keyboard): the edit button, and in
+          edit mode the tag deletion.
+        -->
+        <span class="flex items-center gap-3">
+          <UButton
+            v-if="editableEditMode"
+            icon="i-lucide-trash-2"
+            size="sm"
+            color="error"
+            variant="subtle"
+            :aria-label="`Supprimer ${groupName}`"
+            @click="isDeleteConfirmationOpen = true"
+          />
           <UButton
             icon="i-lucide-pencil"
             size="sm"
             variant="subtle"
             color="neutral"
-            :ui="{ base: editMode ? 'text-white bg-tag-400 hover:bg-tag-400 ring-tag-300/50' : 'bg-white/50 hover:bg-white/90 active:bg-white/75 ring-tag-300/50 text-tag-600' }"
+            :aria-label="`Modifier ${groupName}`"
+            :aria-pressed="editMode"
+            :ui="{ base: editMode ? 'text-white bg-tag-400 hover:bg-tag-400 ring-tag-300/50' : 'bg-white/50 hover:bg-white/90 active:bg-white/75 ring-tag-300/50 text-tag-600/75 hover:text-tag-600' }"
             @click="toggleEditMode"
           />
-          <UButton
-            v-if="editableHasNoEntries"
-            icon="i-lucide-x"
-            size="sm"
-            color="error"
-            :variant="editMode ? 'solid' : 'subtle'"
-            @click="onDeleteTag"
-          />
         </span>
+
+        <UModal
+          v-if="editable"
+          v-model:open="isDeleteConfirmationOpen"
+          :title="`Supprimer ${groupName} ?`"
+          :description="deleteDescription"
+          :ui="{ footer: 'justify-end' }"
+        >
+          <template #footer>
+            <UButton
+              label="Annuler"
+              color="neutral"
+              variant="outline"
+              @click="isDeleteConfirmationOpen = false"
+            />
+            <UButton
+              label="Supprimer"
+              color="error"
+              @click="onDeleteTag"
+            />
+          </template>
+        </UModal>
       </div>
     </template>
 
@@ -259,13 +322,15 @@
           :key="entry.uri"
           class="group/item relative"
         >
+          <!-- Shown on every entry in edit mode (not only on hover). -->
           <UButton
-            class="absolute top-1.5 right-1.5 z-50 invisible"
-            :class="[editMode ? 'group-hover/item:visible' : '']"
+            v-if="editMode"
+            class="absolute top-1.5 right-1.5 z-50"
             icon="i-lucide-x"
             size="xs"
             color="error"
             variant="subtle"
+            :aria-label="`Retirer « ${entry.word} » ${favorites ? 'des favoris' : `de l'étiquette « ${tag.name} »`}`"
             @click="onDeleteEntry(entry)"
           />
 

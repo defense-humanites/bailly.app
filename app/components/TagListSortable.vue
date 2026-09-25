@@ -46,6 +46,28 @@
       });
     },
   });
+
+  /**
+   * The last move, announced to screen readers.
+   */
+  const announcement = ref<string>("");
+
+  /**
+   * Moves a tag up or down (the keyboard equivalent of dragging it).
+   * @param index The tag index.
+   * @param offset `-1` to move it up, `1` to move it down.
+   */
+  const moveTag = (index: number, offset: -1 | 1): void => {
+    const target = index + offset;
+    const tags = [...sortableTags.value];
+    const [tag] = tags.splice(index, 1);
+    if (!tag || target < 0 || target > tags.length) return;
+
+    tags.splice(target, 0, tag);
+    sortableTags.value = tags;
+    announcement.value = `« ${tag.name} » est en position ${target + 1} sur ${tags.length}.`;
+    emit("reorderTags", tags.map(t => t.key));
+  };
 </script>
 
 <template>
@@ -54,7 +76,7 @@
     class="space-y-3 select-none"
   >
     <li
-      v-for="tag in sortableTags"
+      v-for="(tag, index) in sortableTags"
       :key="tag.key"
       class="px-3 py-1.5 flex items-center hover:bg-neutral-100 rounded-lg text-lg font-semibold cursor-default"
     >
@@ -67,7 +89,34 @@
         class="mr-3 size-5 text-tag-600"
         :data-tag-color="tag.color"
       />
-      {{ tag.name }}
+      <span class="grow">{{ tag.name }}</span>
+      <!-- Keyboard (and precise) equivalent of dragging. -->
+      <span class="flex gap-1">
+        <UButton
+          icon="i-lucide-chevron-up"
+          size="sm"
+          color="neutral"
+          variant="ghost"
+          :aria-label="`Monter « ${tag.name} »`"
+          :disabled="index === 0"
+          @click="moveTag(index, -1)"
+        />
+        <UButton
+          icon="i-lucide-chevron-down"
+          size="sm"
+          color="neutral"
+          variant="ghost"
+          :aria-label="`Descendre « ${tag.name} »`"
+          :disabled="index === sortableTags.length - 1"
+          @click="moveTag(index, 1)"
+        />
+      </span>
     </li>
   </ol>
+  <p
+    class="sr-only"
+    aria-live="polite"
+  >
+    {{ announcement }}
+  </p>
 </template>
