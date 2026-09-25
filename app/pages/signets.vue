@@ -7,6 +7,8 @@
 
   const bookmarksStore = useBookmarksStore();
   const { tags, starredEntries } = storeToRefs(bookmarksStore);
+
+  const showButtonLabels = useButtonLabels();
 </script>
 
 <template>
@@ -17,19 +19,28 @@
           Mes signets
         </h1>
 
-        <!-- Actions -->
+        <!--
+          Actions: icons only below `xl`, as the header menu (the labels stay
+          for screen readers and show in tooltips; cf. `useButtonLabels`).
+        -->
         <aside class="flex items-center gap-x-3 xl:gap-x-6">
           <!-- Order tags -->
           <UModal
             title="Arranger les étiquettes"
             :close="{ variant: 'outline', class: 'shadow-none' }"
           >
-            <UButton
-              label="Arranger"
-              icon="i-lucide-list-ordered"
-              size="2xl"
-              variant="subtle"
-            />
+            <UTooltip
+              text="Arranger"
+              :disabled="showButtonLabels"
+            >
+              <UButton
+                label="Arranger"
+                icon="i-lucide-list-ordered"
+                size="2xl"
+                variant="subtle"
+                :ui="{ label: 'max-xl:sr-only' }"
+              />
+            </UTooltip>
             <template #body>
               <TagListSortable
                 :tags="tags"

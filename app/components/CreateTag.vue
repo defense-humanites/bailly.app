@@ -1,5 +1,6 @@
 <script setup lang="ts">
   const bookmarksStore = useBookmarksStore();
+  const showButtonLabels = useButtonLabels();
   const { newTagColor } = storeToRefs(bookmarksStore);
 
   /**
@@ -34,14 +35,17 @@
 </script>
 
 <template>
-  <!-- The text stops before the submit button, in the trailing slot (`pe-28`). -->
+  <!--
+    The text stops before the submit button, in the trailing slot (`pe-12`,
+    `pe-28` with its label from `xl`, cf. `useButtonLabels`).
+  -->
   <UInput
     v-model="newTagName"
     size="2xl"
     placeholder="Nouvelle étiquette"
     aria-label="Nom de la nouvelle étiquette"
     :class="{ 'animate-shake': isNewTagNameErrored }"
-    :ui="{ root: 'w-96', base: 'pe-28', leading: 'ps-1.5', trailing: 'pe-1.5' }"
+    :ui="{ root: 'w-96', base: 'pe-12 xl:pe-28', leading: 'ps-1.5', trailing: 'pe-1.5' }"
     @keydown.enter="createTag"
   >
     <!-- Color picker -->
@@ -55,17 +59,21 @@
 
     <!-- Submit button -->
     <template #trailing>
-      <UButton
-        :disabled="!newTagName.length"
-        size="md"
-        variant="soft"
-        color="secondary"
-        icon="i-lucide-plus"
-        :ui="{ base: 'shadow-none' }"
-        @click="createTag"
+      <UTooltip
+        text="Ajouter"
+        :disabled="showButtonLabels"
       >
-        Ajouter
-      </UButton>
+        <UButton
+          :disabled="!newTagName.length"
+          label="Ajouter"
+          size="md"
+          variant="soft"
+          color="secondary"
+          icon="i-lucide-plus"
+          :ui="{ base: 'shadow-none', label: 'max-xl:sr-only' }"
+          @click="createTag"
+        />
+      </UTooltip>
     </template>
   </UInput>
 </template>
