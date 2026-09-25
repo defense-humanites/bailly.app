@@ -32,6 +32,13 @@
   const menu = useTemplateRef("menu");
 
   /**
+   * The whole bar (input and options button): the results are positioned
+   * against it, rather than against the input alone, to be exactly as wide.
+   */
+  const group = useTemplateRef("group");
+  const groupElement = computed((): HTMLElement | undefined => group.value?.$el as HTMLElement | undefined);
+
+  /**
    * Makes the input show `text` (the query just set), with the caret at
    * `caret` (by default, where it is).
    * @remarks When the query doesn't change (e.g. `α` + `)` → `α`), or while
@@ -319,10 +326,11 @@
   /**
    * The results' highlight is hidden until the user chooses one (cf.
    * `highlightChosen`), from the results container: the items aren't
-   * rendered again when only their class changes.
+   * rendered again when only their class changes. The results are exactly
+   * as wide as the bar (cf. `groupElement`).
    */
   const contentClass = computed((): string => [
-    "w-[min(40rem,calc(var(--app-width)-2rem))] max-h-[min(32rem,var(--reka-combobox-content-available-height))]",
+    "w-(--reka-combobox-trigger-width) max-h-[min(32rem,var(--reka-combobox-content-available-height))]",
     highlightChosen.value ? "" : "[&_[data-highlighted]]:before:bg-transparent! [&_[data-highlighted]]:text-default!",
   ].join(" "));
 </script>
@@ -340,6 +348,7 @@
     that the button's neutral left edge remains the divider (cf. SearchOptions).
   -->
   <UFieldGroup
+    ref="group"
     class="group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
     @keydown.capture="onKeydown"
   >
@@ -364,7 +373,7 @@
       spellcheck="false"
       enterkeyhint="search"
       :lang="transliterating ? 'grc-Latn' : 'grc'"
-      :content="{ align: 'start', collisionPadding: 12 }"
+      :content="{ align: 'start', collisionPadding: 12, reference: groupElement }"
       :ui="{
         root: 'has-focus-visible:z-auto',
         base: 'shadow-xs max-md:text-base focus-visible:outline-transparent',
