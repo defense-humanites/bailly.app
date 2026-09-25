@@ -3,7 +3,14 @@
   import { InputMode } from "~/enums";
   import { isLemmatizable, type SearchPosition } from "~/utils/searchInput";
 
+  const props = defineProps<{
+    /** Whether the query has wildcards (no inflected forms then). */
+    wildcards?: boolean;
+  }>();
+
   const { position, diacriticSensitive, inputMode, lemmatization, isDefault, reset } = useSearchOptions();
+
+  const lemmatizable = computed((): boolean => isLemmatizable(position.value, props.wildcards));
 
   const positionItems: RadioGroupItem[] = [
     { label: "Début", value: "start" },
@@ -19,11 +26,12 @@
     exact: "L'entrée identique à la saisie, et ses formes fléchies.",
   };
 
-  const lemmatizationHint = computed((): string =>
-    isLemmatizable(position.value)
-      ? "Par l'analyse morphologique (p. ex. λόγοι → λόγος)."
-      : "Sans objet pour une partie de mot (« Contient », « Fin »).",
-  );
+  const lemmatizationHint = computed((): string => {
+    if (lemmatizable.value) return "Par l'analyse morphologique (p. ex. λόγοι → λόγος).";
+    return props.wildcards
+      ? "Sans objet avec des jokers."
+      : "Sans objet pour une partie de mot (« Contient », « Fin »).";
+  });
 
   const inputModeItems: RadioGroupItem[] = [
     { label: "Beta code", value: InputMode.BetaCode },
@@ -78,6 +86,9 @@
           <p class="mt-1.5 text-xs text-muted">
             {{ positionHints[position] }}
           </p>
+          <p class="mt-1 text-xs text-muted">
+            Dans un mot, <kbd>?</kbd> remplace une lettre et <kbd>*</kbd> plusieurs (λ?γος, φιλ*ος).
+          </p>
         </fieldset>
 
         <USwitch
@@ -104,7 +115,7 @@
           v-model="lemmatization"
           label="Inclure les formes fléchies"
           :description="lemmatizationHint"
-          :disabled="!isLemmatizable(position)"
+          :disabled="!lemmatizable"
           size="sm"
         />
 

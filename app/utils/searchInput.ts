@@ -10,7 +10,7 @@ const GREEK_LETTER_RE = new RegExp(`^${GREEK_LETTER}$`, "u");
 /**
  * Diacritics sharing a class can't stack on a letter.
  */
-type DiacriticClass = "breathingOrDiaeresis" | "accent" | "iotaSubscript" | "underdot";
+type DiacriticClass = "breathingOrDiaeresis" | "accent" | "iotaSubscript";
 
 interface Diacritic {
   class: DiacriticClass;
@@ -35,8 +35,7 @@ const DIACRITICS: Record<string, Diacritic> = {
   "\\": { class: "accent", mark: "̀", spacing: "`", letters: VOWELS },
   "=": { class: "accent", mark: "͂", spacing: "῀", letters: "αηιυω" },
   "|": { class: "iotaSubscript", mark: "ͅ", spacing: "ͺ", letters: "αηω" },
-  // No spacing form: an underdot without a letter to take it is dropped.
-  "?": { class: "underdot", mark: "̣", letters: "αβγδεζηθικλμνξοπρστυφχψωϝ" },
+  // (`?`, the underdot, is a wildcard: cf. `WILDCARDS`.)
 };
 
 /**
@@ -50,14 +49,26 @@ const DIACRITICS_BY_FORM = new Map<string, Diacritic>(Object.values(DIACRITICS).
 DIACRITICS_BY_FORM.set("´", DIACRITICS["/"]!); // Oxia.
 DIACRITICS_BY_FORM.set("΄", DIACRITICS["/"]!); // Tonos.
 DIACRITICS_BY_FORM.set("`", DIACRITICS["\\"]!); // Varia.
-DIACRITICS_BY_FORM.set("́̓"[0]!, DIACRITICS["/"]!);
 
-const CLASS_ORDER: DiacriticClass[] = ["breathingOrDiaeresis", "accent", "iotaSubscript", "underdot"];
+const CLASS_ORDER: DiacriticClass[] = ["breathingOrDiaeresis", "accent", "iotaSubscript"];
 
 /**
- * The spacing forms and the capital mark, as long as they wait for a letter.
+ * The wildcards, within a word: `?` stands for one letter, `*` for any number
+ * of letters (after a letter: at the start of a word, `*` is the Beta Code
+ * capital mark). The position in the headwords is a search option.
  */
-const PENDING_SIGNS = new RegExp(`[*${[...DIACRITICS_BY_FORM.keys()].filter(form => !/\p{M}/u.test(form)).join("")}]`, "gu");
+const WILDCARDS = /[?*]/;
+
+/**
+ * The spacing forms of the diacritics, as long as they wait for a letter.
+ */
+const PENDING_DIACRITICS = new RegExp(`[${[...DIACRITICS_BY_FORM.keys()].filter(form => !/\p{M}/u.test(form)).join("")}]`, "gu");
+
+/**
+ * A capital mark waiting for its letter: a `*` at the start of a word (after
+ * a letter or a wildcard, it's a wildcard).
+ */
+const PENDING_CAPITAL = /(?<![\p{L}\p{M}?])\*/gu;
 
 /**
  * Beta Code letters (the case doesn't matter).
@@ -136,6 +147,9 @@ function applyDiacritics(text: string): string {
       }
     } else if (/\p{M}/u.test(character) && letter && !pending) {
       letter.others += character;
+    } else if (character === "*" && !pending && (letter || previous === "*" || previous === "?")) {
+      // Within a word, a wildcard (cf. `WILDCARDS`).
+      output.push(character);
     } else if (character === "*") {
       flush();
       pending = { capital: true, diacritics: [] };
@@ -180,8 +194,9 @@ export function normalizeSearchGreek(greek: string): string {
 /**
  * Converts the search bar input into Greek: Beta Code is converted, with its
  * diacritics (e.g. `logos` → `λογος`, `a)nh/r` → `ἀνήρ`, `*)aqh=nai` →
- * `Ἀθῆναι`, `vergon` → `ϝεργον`), Greek is normalized, and the position
- * metacharacters (`^`, `$`, `"`) are dropped (cf. `toPositionedQuery`).
+ * `Ἀθῆναι`, `vergon` → `ϝεργον`), Greek is normalized, the wildcards are
+ * kept (`l?gos` → `λ?γος`, `fil*os` → `φιλ*ος`, cf. `WILDCARDS`), and the
+ * position metacharacters (`^`, `$`, `"`) are dropped (cf. `toPositionedQuery`).
  * @remarks The input may mix Greek (already converted) and Beta Code (the
  * last characters typed). Diacritics and capital marks without a letter yet
  * wait for it (cf. `applyDiacritics`), and are left out of the query (cf.
@@ -196,10 +211,17 @@ export function toSearchGreek(input: string): string {
 /**
  * The query to look up, from the search bar input converted into Greek:
  * without the diacritics and capital marks left without a letter (the API
- * would read `*` as a wildcard).
+ * would read such a `*` as a wildcard).
  */
 export function toSearchQuery(greek: string): string {
-  return greek.replace(PENDING_SIGNS, "").trim();
+  return greek.replace(PENDING_DIACRITICS, "").replace(PENDING_CAPITAL, "").trim();
+}
+
+/**
+ * Whether the query has wildcards (cf. `WILDCARDS`).
+ */
+export function hasWildcards(query: string): boolean {
+  return WILDCARDS.test(query);
 }
 
 /**
@@ -232,10 +254,10 @@ export function toPositionedQuery(query: string, position: SearchPosition): stri
 /**
  * Whether inflected forms can be looked up too (through the morphological
  * analysis): not for a part of a word (`contains`, `end`), which can't be
- * analyzed (and the API doesn't apply its wildcards to the analyses).
+ * analyzed, nor with wildcards (the API doesn't apply them to the analyses).
  */
-export function isLemmatizable(position: SearchPosition): boolean {
-  return position === "start" || position === "exact";
+export function isLemmatizable(position: SearchPosition, wildcards = false): boolean {
+  return (position === "start" || position === "exact") && !wildcards;
 }
 
 /**
@@ -247,9 +269,20 @@ export function isLemmatizable(position: SearchPosition): boolean {
 export function toLookupQuery(input: string, inputMode: InputMode): string {
   if (inputMode !== InputMode.Transliteration) return toSearchQuery(input);
 
-  return toSearchQuery(normalizeSearchGreek(
-    convert(input.replace(POSITION_METACHARACTERS, ""), "transliteration", "greek"),
-  ));
+  // The segments between wildcards are converted one by one: the conversion
+  // would read `?` as a question mark, and `*` as the end of a word.
+  const segments = input.replace(POSITION_METACHARACTERS, "").split(/([?*])/);
+  const greek = segments.map((segment, index) => {
+    if (index % 2) return segment;
+    const converted = convert(segment, "transliteration", "greek");
+    // Within a word, no breathing (added to the vowel starting a segment).
+    const before = segments.slice(0, index).join("").replace(/[?*]/g, "");
+    return before && !/\s$/.test(before)
+      ? converted.normalize("NFD").replace(/^(\p{L})[\u0313\u0314]/u, "$1").normalize("NFC")
+      : converted;
+  }).join("");
+
+  return toSearchQuery(normalizeSearchGreek(greek));
 }
 
 /**

@@ -1,5 +1,5 @@
 import type { LookupResult } from "./useApi";
-import { isLemmatizable, toLookupQuery, toPositionedQuery, toSearchQuery } from "~/utils/searchInput";
+import { hasWildcards, isLemmatizable, toLookupQuery, toPositionedQuery, toSearchQuery } from "~/utils/searchInput";
 
 /**
  * The entry fields shown in the search results.
@@ -34,13 +34,15 @@ export function useEntrySearch() {
 
   const { data: result, status } = useAsyncData(
     "entry-search",
-    (): Promise<LookupResult<SearchField>> =>
-      lookup(toPositionedQuery(toLookupQuery(debouncedQuery.value, inputMode.value), position.value), {
+    (): Promise<LookupResult<SearchField>> => {
+      const greek = toLookupQuery(debouncedQuery.value, inputMode.value);
+      return lookup(toPositionedQuery(greek, position.value), {
         fields: ["word", "uri", "excerpt"],
         inputMode: "greek",
         diacriticSensitive: diacriticSensitive.value,
-        skipMorpheus: !(lemmatization.value && isLemmatizable(position.value)),
-      }),
+        skipMorpheus: !(lemmatization.value && isLemmatizable(position.value, hasWildcards(greek))),
+      });
+    },
     {
       server: false,
       immediate: false,

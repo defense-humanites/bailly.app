@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { InputMode } from "../../app/enums";
-import { convertSearchInput, isLemmatizable, normalizeSearchGreek, toLookupQuery, toPositionedQuery, toSearchGreek, toSearchQuery } from "../../app/utils/searchInput";
+import { convertSearchInput, hasWildcards, isLemmatizable, normalizeSearchGreek, toLookupQuery, toPositionedQuery, toSearchGreek, toSearchQuery } from "../../app/utils/searchInput";
 
 /**
  * Types the input one character at a time, as in the search bar.
@@ -27,7 +27,6 @@ test("converts Beta Code diacritics and capitals", () => {
   expect(toSearchGreek("a(/|")).toBe("ᾅ");
   expect(toSearchGreek("i+/")).toBe("ΐ");
   expect(toSearchGreek("r(")).toBe("ῥ");
-  expect(toSearchGreek("lo?gos")).toBe("λο̣γος"); // Underdot.
 });
 
 test("adds a diacritic to a letter already converted", () => {
@@ -51,7 +50,6 @@ test("leaves alone a diacritic its letter can't take", () => {
   expect(toSearchGreek(")s")).toBe("᾿ς");
   expect(toSearchGreek("*=o")).toBe("῀Ο");
   expect(toSearchGreek(") log")).toBe("᾿ λογ");
-  expect(toSearchGreek("?")).toBe(""); // No spacing underdot.
 });
 
 test("drops the position metacharacters (a search option now)", () => {
@@ -74,6 +72,37 @@ test("looks inflected forms up for whole words only", () => {
   expect(isLemmatizable("exact")).toBe(true);
   expect(isLemmatizable("contains")).toBe(false);
   expect(isLemmatizable("end")).toBe(false);
+  expect(isLemmatizable("start", true)).toBe(false); // Wildcards.
+});
+
+test("keeps the wildcards within a word", () => {
+  expect(toSearchGreek("l?gos")).toBe("λ?γος");
+  expect(toSearchGreek("fil*os")).toBe("φιλ*ος");
+  expect(toSearchGreek("*swkra/ths")).toBe("Σωκράτης"); // Capital mark.
+  expect(toSearchGreek("a?*n")).toBe("α?*ν");
+  expect(toSearchGreek("lo/g?s")).toBe("λόγ?ς");
+  expect(toSearchGreek("?")).toBe("?");
+  expect(type("fil*os")).toBe("φιλ*ος");
+  expect(type("l?gos")).toBe("λ?γος");
+  expect(type("*)aqh=nai")).toBe("Ἀθῆναι");
+  expect(hasWildcards("φιλ*ος")).toBe(true);
+  expect(hasWildcards("λόγος")).toBe(false);
+});
+
+test("sends the wildcards, not the pending capital marks", () => {
+  expect(toSearchQuery("φιλ*ος")).toBe("φιλ*ος");
+  expect(toSearchQuery("λ?γος")).toBe("λ?γος");
+  expect(toSearchQuery("*᾿")).toBe("");
+  expect(toSearchQuery("λογ *")).toBe("λογ");
+});
+
+test("keeps the wildcards of transliterated input", () => {
+  expect(toLookupQuery("l?gos", InputMode.Transliteration)).toBe("λ?γος");
+  expect(toLookupQuery("phil*os", InputMode.Transliteration)).toBe("φιλ*ος");
+  expect(toLookupQuery("ph?*os", InputMode.Transliteration)).toBe("φ?*ος");
+  expect(toLookupQuery("*anthrōpos", InputMode.Transliteration)).toBe("ἀνθρωπος");
+  expect(convertSearchInput("φιλ*ος", InputMode.Transliteration)).toBe("phil*os");
+  expect(convertSearchInput("phil*os", InputMode.BetaCode)).toBe("φιλ*ος");
 });
 
 test("handles input typed one character at a time", () => {
@@ -95,7 +124,7 @@ test("normalizes Greek (typed or pasted)", () => {
 test("leaves out of the query what waits for a letter", () => {
   expect(toSearchQuery("*")).toBe("");
   expect(toSearchQuery("*᾿")).toBe("");
-  expect(toSearchQuery("λογ*")).toBe("λογ");
+  expect(toSearchQuery("λογ*")).toBe("λογ*"); // A wildcard, after a letter.
   expect(toSearchQuery("᾿ς")).toBe("ς");
   expect(toSearchQuery("ἀνήρ")).toBe("ἀνήρ");
 });

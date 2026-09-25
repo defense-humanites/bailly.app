@@ -1,5 +1,5 @@
 import { InputMode } from "~/enums";
-import { isLemmatizable, type SearchPosition } from "~/utils/searchInput";
+import type { SearchPosition } from "~/utils/searchInput";
 
 /**
  * The search options of the search bar, and the search preferences.
@@ -26,15 +26,9 @@ export function useSearchOptions() {
 
   /**
    * Preference: whether inflected forms are looked up too, when possible (cf.
-   * `lemmatized`).
+   * `isLemmatizable`).
    */
   const lemmatization = useState<boolean>("search-lemmatization", () => true);
-
-  /**
-   * Whether inflected forms are looked up too: if the preference allows it,
-   * and for whole words only (cf. `isLemmatizable`).
-   */
-  const lemmatized = computed((): boolean => lemmatization.value && isLemmatizable(position.value));
 
   /**
    * Whether all the options (not the preferences) have their default value.
@@ -46,5 +40,5 @@ export function useSearchOptions() {
     diacriticSensitive.value = false;
   };
 
-  return { position, diacriticSensitive, inputMode, lemmatization, lemmatized, isDefault, reset };
+  return { position, diacriticSensitive, inputMode, lemmatization, isDefault, reset };
 }

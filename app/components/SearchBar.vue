@@ -5,7 +5,7 @@
   import { splitExcerpt } from "~/helpers";
   import type { SearchField } from "~/composables/useEntrySearch";
   import { entryRoute } from "~/utils/entryUri";
-  import { convertSearchInput, toSearchGreek, toSearchQuery } from "~/utils/searchInput";
+  import { convertSearchInput, hasWildcards, toLookupQuery, toSearchGreek, toSearchQuery } from "~/utils/searchInput";
 
   // (The input text is 16px on mobile, `max-md:text-base`: below, iOS Safari
   // zooms in when the input gets the focus.)
@@ -60,18 +60,25 @@
   });
 
   /**
-   * A reminder of the search options that aren't the default ones, above the
-   * results (e.g. « Entrées finissant par « λογος » · diacritiques respectés »).
+   * Whether the query has wildcards (cf. `hasWildcards`).
+   */
+  const wildcards = computed((): boolean => hasWildcards(toLookupQuery(query.value, inputMode.value)));
+
+  /**
+   * A reminder of the search options that aren't the default ones, and of the
+   * wildcards, above the results (e.g. « Entrées finissant par « λογος » ·
+   * diacritiques respectés »).
    */
   const optionsSummary = computed((): string => {
     const term = `« ${toSearchQuery(query.value)} »`;
     const parts = [
       {
-        start: "",
+        start: wildcards.value ? `Entrées commençant par ${term}` : "",
         contains: `Entrées contenant ${term}`,
         end: `Entrées finissant par ${term}`,
-        exact: `Entrée identique à ${term}`,
+        exact: wildcards.value ? `Entrées correspondant à ${term}` : `Entrée identique à ${term}`,
       }[position.value],
+      wildcards.value ? "? : une lettre, * : plusieurs" : "",
       diacriticSensitive.value ? "diacritiques respectés" : "",
     ].filter(Boolean);
     const summary = parts.join(" · ");
@@ -321,7 +328,7 @@
 
       <template #content-top>
         <p
-          v-if="!defaultOptions && toSearchQuery(query)"
+          v-if="(!defaultOptions || wildcards) && toSearchQuery(query)"
           class="flex items-center gap-2 px-2.5 pt-2 text-xs text-muted"
         >
           <UIcon
@@ -330,6 +337,7 @@
           />
           <span class="grow">{{ optionsSummary }}</span>
           <UButton
+            v-if="!defaultOptions"
             label="Réinitialiser"
             color="neutral"
             variant="link"
@@ -385,6 +393,6 @@
         </p>
       </template>
     </UInputMenu>
-    <SearchOptions />
+    <SearchOptions :wildcards="wildcards" />
   </UFieldGroup>
 </template>
