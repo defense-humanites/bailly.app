@@ -15,14 +15,7 @@
         class="font-serif text-xl tracking-wider text-black"
         href="/"
       >Bailly.app</ULink>
-      <UInput
-        placeholder="Rechercher..."
-        size="lg"
-        class="w-full max-w-96"
-        icon="i-lucide-search"
-        variant="outline"
-        :ui="{ base: 'shadow-xs' }"
-      />
+      <SearchBar class="w-full max-w-96" />
       <UNavigationMenu :items="items" />
     </nav>
   </header>

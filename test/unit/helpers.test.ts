@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { highlightEntryInExcerpt, pickRandom } from "../../app/helpers";
+import { pickRandom, splitExcerpt } from "../../app/helpers";
 
 test("pickRandom", () => {
   for (let i = 0; i < 20; i++) {
@@ -10,12 +10,16 @@ test("pickRandom", () => {
   expect(() => pickRandom([])).toThrow();
 });
 
-test("highlightEntryInExcerpt", () => {
-  const html = (rest: string) => `<span class="font-semibold">ῥινόκερως</span>${rest}`;
+test("splitExcerpt", () => {
+  const split = (rest: string, before = "") => ({ before, word: "ῥινόκερως", rest });
 
   // The middle dot inside the word is not part of the separated word.
-  expect(highlightEntryInExcerpt("ῥινόκερως", "ῥινό·κερως, ωτος (ὁ)")).toBe(html(", ωτος (ὁ)"));
+  expect(splitExcerpt("ῥινόκερως", "ῥινό·κερως, ωτος (ὁ)")).toEqual(split(", ωτος (ὁ)"));
   // Special characters after the word must not shift the cut.
-  expect(highlightEntryInExcerpt("ῥινόκερως", "ῥινό·κερως, ω·τος *x")).toBe(html(", ω·τος *x"));
-  expect(highlightEntryInExcerpt("ῥινόκερως", "*ῥινόκερως, ωτος")).toBe(html(", ωτος"));
+  expect(splitExcerpt("ῥινόκερως", "ῥινό·κερως, ω·τος *x")).toEqual(split(", ω·τος *x"));
+  expect(splitExcerpt("ῥινόκερως", "*ῥινόκερως, ωτος")).toEqual(split(", ωτος"));
+  // A homonym number.
+  expect(splitExcerpt("ῥινόκερως", "2 ῥινόκερως, ωτος")).toEqual(split(", ωτος", "2 "));
+  // Not found.
+  expect(splitExcerpt("λόγος", "ῥινόκερως, ωτος")).toEqual({ before: "", word: "", rest: "ῥινόκερως, ωτος" });
 });
