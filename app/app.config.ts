@@ -49,6 +49,11 @@ export default defineAppConfig({
         },
       ],
     },
+    inputMenu: {
+      slots: {
+        base: "rounded-full",
+      },
+    },
     card: {
       slots: {
         root: "rounded-lg shadow-xl shadow-black/10",
