@@ -5,7 +5,7 @@
   import { splitExcerpt } from "~/helpers";
   import type { SearchField } from "~/composables/useEntrySearch";
   import { entryRoute } from "~/utils/entryUri";
-  import { toSearchGreek } from "~/utils/searchInput";
+  import { toSearchGreek, toSearchQuery } from "~/utils/searchInput";
 
   type ResultItem = InputMenuItem & {
     /** The entry excerpt (or headword, for homonyms). */
@@ -54,6 +54,13 @@
     if (input && converted !== value) {
       const position = toSearchGreek(value.slice(0, caret)).length;
       void nextTick(() => {
+        // When the query doesn't change (e.g. `α` + `)` → `α`), nothing is
+        // rendered again: the input text is then updated here, and the input
+        // event keeps the input menu's own search term in sync.
+        if (input.value !== converted) {
+          input.value = converted;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        }
         input.setSelectionRange(position, position);
       });
     }
@@ -236,7 +243,7 @@
     </template>
 
     <template #empty="{ searchTerm }">
-      <span v-if="!searchTerm.trim()">Saisissez un mot en beta code (p. ex. <em>logos</em>) ou en grec.</span>
+      <span v-if="!toSearchQuery(searchTerm)">Saisissez un mot en beta code (p. ex. <em>logos</em>) ou en grec.</span>
       <span v-else-if="pending">Recherche…</span>
       <span v-else-if="status === 'error'">La recherche a échoué. Veuillez réessayer.</span>
       <span v-else>Aucun résultat pour « {{ searchTerm }} ».</span>

@@ -1,4 +1,5 @@
 import type { LookupResult } from "./useApi";
+import { toSearchQuery } from "~/utils/searchInput";
 
 /**
  * The entry fields shown in the search results.
@@ -17,7 +18,7 @@ export function useEntrySearch() {
   const lookup = useApiLookup();
 
   /**
-   * The query, in Greek (with search metacharacters).
+   * The search bar input, converted into Greek (cf. `toSearchGreek`).
    */
   const query = useState("entry-search-query", () => "");
   /**
@@ -32,7 +33,7 @@ export function useEntrySearch() {
   const { data: result, status } = useAsyncData(
     "entry-search",
     (): Promise<LookupResult<SearchField>> =>
-      lookup(debouncedQuery.value, { fields: ["word", "uri", "excerpt"], inputMode: "greek" }),
+      lookup(toSearchQuery(debouncedQuery.value), { fields: ["word", "uri", "excerpt"], inputMode: "greek" }),
     { server: false, immediate: false, watch: [debouncedQuery], default: () => null },
   );
 
@@ -40,7 +41,7 @@ export function useEntrySearch() {
    * Whether results are on their way (including during the debounce delay).
    */
   const pending = computed(
-    (): boolean => query.value.trim() !== "" && (query.value !== debouncedQuery.value || status.value === "pending"),
+    (): boolean => toSearchQuery(query.value) !== "" && (query.value !== debouncedQuery.value || status.value === "pending"),
   );
 
   return { query, result, status, pending };

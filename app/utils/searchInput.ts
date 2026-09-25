@@ -1,11 +1,15 @@
 import { convert } from "@humanities/greek-conversion";
 
 /**
- * Beta Code letters and diacritics (as typed in the search bar).
- * @remarks Search metacharacters (`^`, `$`, `?`, `*`, `"`) are left out: in
- * Beta Code, `*` marks a capital and `?` an underdot.
+ * Beta Code letters, and the capital mark (`*`).
  */
-const BETA_CODE_RUN = /[a-z()/\\=|+]+/gi;
+const BETA_CODE_RUN = /[a-z*]+/gi;
+/**
+ * Beta Code diacritics: breathings, accents, iota subscript, diaeresis and
+ * underdot (`?`). The search ignores diacritics, so they are dropped, even
+ * when typed after a letter already converted into Greek (`α` + `)`).
+ */
+const BETA_CODE_DIACRITICS = /[()/\\=|+?]/g;
 const GREEK_LETTER = String.raw`\p{Script=Greek}`;
 
 /**
@@ -25,14 +29,27 @@ export function normalizeSearchGreek(greek: string): string {
 }
 
 /**
- * Converts the search bar input into Greek: Beta Code runs are converted
- * (e.g. `logos` → `λογος`, `vergon` → `ϝεργον`), Greek and search
- * metacharacters are kept.
+ * Converts the search bar input into Greek: Beta Code is converted (e.g.
+ * `logos` → `λογος`, `vergon` → `ϝεργον`, `*)aqh=nai` → `Αθηναι`), Greek is
+ * normalized, and the search metacharacters (`^`, `$`, `"`) are kept.
  * @remarks The input may mix Greek (already converted) and Beta Code (the
- * last characters typed).
+ * last characters typed). A capital mark not followed by a letter yet is kept
+ * (cf. `toSearchQuery`), and capitalizes a Greek letter that follows it.
  */
 export function toSearchGreek(input: string): string {
   return normalizeSearchGreek(
-    input.replace(BETA_CODE_RUN, run => convert(run, "beta-code", "greek", { removeDiacritics: true })),
+    input
+      .replace(BETA_CODE_DIACRITICS, "")
+      .replace(BETA_CODE_RUN, run => convert(run, "beta-code", "greek", { removeDiacritics: true }))
+      .replace(new RegExp(`\\*+(${GREEK_LETTER})`, "gu"), (_, letter: string) => letter.toUpperCase()),
   );
+}
+
+/**
+ * The query to look up, from the search bar input converted into Greek:
+ * without the capital marks still waiting for their letter, which the API
+ * would read as wildcards.
+ */
+export function toSearchQuery(greek: string): string {
+  return greek.replace(/\*/g, "").trim();
 }
