@@ -2,6 +2,7 @@
   import type { NuxtLinkProps } from "#app";
   import type { CardProps } from "@nuxt/ui";
   import type { Entry, EntryData } from "#shared/types/api";
+  import { entryRoute, homonymAnchor } from "~/utils/entryUri";
 
   type DisplayedEntry = Entry<"word" | "uri" | "excerpt"> & Partial<Pick<EntryData, "htmlDefinition">>;
 
@@ -66,7 +67,7 @@
       <NuxtLink
         v-if="link"
         :class="[shown.htmlDefinition ? '[&>*]:p-4 [&>*]:sm:p-6' : '']"
-        :to="`/${shown.uri}`"
+        :to="entryRoute(shown.uri)"
         :prefetch-on="prefetchOn ?? 'interaction'"
       >
         <ReuseEntry :entry="shown" />
@@ -83,11 +84,24 @@
     v-if="entry.children?.length"
     class="flex flex-col gap-6"
   >
-    <ReuseEntryCard
-      v-for="childEntry in entry.children"
+    <!--
+      Each homonym is anchored by its number (e.g. `oudos#2` → `#2`). The
+      anchor is offset to clear the fixed header: the router's scroll ignores
+      `scroll-margin-top` for ids starting with a digit (`#2` isn't a valid
+      CSS selector).
+    -->
+    <div
+      v-for="(childEntry, index) in entry.children"
       :key="childEntry.uri"
-      :entry="childEntry"
-    />
+      class="relative"
+    >
+      <span
+        :id="homonymAnchor(childEntry.uri) ?? String(index + 1)"
+        class="absolute -top-24"
+        aria-hidden="true"
+      />
+      <ReuseEntryCard :entry="childEntry" />
+    </div>
   </div>
 
   <ReuseEntryCard

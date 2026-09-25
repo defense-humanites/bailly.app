@@ -11,15 +11,13 @@ test("pickRandom", () => {
 });
 
 test("splitExcerpt", () => {
-  const split = (rest: string, before = "") => ({ before, word: "ῥινόκερως", rest });
+  const split = (rest: string) => ({ word: "ῥινόκερως", rest });
 
   // The middle dot inside the word is not part of the separated word.
   expect(splitExcerpt("ῥινόκερως", "ῥινό·κερως, ωτος (ὁ)")).toEqual(split(", ωτος (ὁ)"));
   // Special characters after the word must not shift the cut.
   expect(splitExcerpt("ῥινόκερως", "ῥινό·κερως, ω·τος *x")).toEqual(split(", ω·τος *x"));
   expect(splitExcerpt("ῥινόκερως", "*ῥινόκερως, ωτος")).toEqual(split(", ωτος"));
-  // A homonym number.
-  expect(splitExcerpt("ῥινόκερως", "2 ῥινόκερως, ωτος")).toEqual(split(", ωτος", "2 "));
   // Not found.
-  expect(splitExcerpt("λόγος", "ῥινόκερως, ωτος")).toEqual({ before: "", word: "", rest: "ῥινόκερως, ωτος" });
+  expect(splitExcerpt("λόγος", "ῥινόκερως, ωτος")).toEqual({ word: "", rest: "ῥινόκερως, ωτος" });
 });

@@ -4,6 +4,7 @@
   import { LocalStorageKey } from "~/enums";
   import { splitExcerpt } from "~/helpers";
   import type { SearchField } from "~/composables/useEntrySearch";
+  import { entryRoute } from "~/utils/entryUri";
   import { toSearchGreek } from "~/utils/searchInput";
 
   type ResultItem = InputMenuItem & {
@@ -81,21 +82,23 @@
     parts: splitExcerpt(entry.word, entry.excerpt),
     text: query.value,
     isMorpheus: entry.isMorpheus,
-    onSelect: () => void navigateTo(`/${entry.uri}`),
+    // A homonym leads to its anchor in the entry page (e.g. `oudos#2`).
+    onSelect: () => void navigateTo(entryRoute(entry.uri)),
   });
 
   /**
-   * An entry, or its homonyms under their common headword.
+   * An entry, or its homonyms under their common headword (which leads to the
+   * whole entry page).
    */
   const toItems = (entry: LookupEntry<SearchField>): ResultItem[] =>
     entry.children?.length
       ? [
         {
-          type: "label",
           label: entry.word,
+          parts: { word: entry.word, rest: "" },
+          text: query.value,
           isMorpheus: entry.isMorpheus,
-          // A headword, not a group heading.
-          ui: { label: "normal-case tracking-normal text-base font-serif font-semibold text-highlighted" },
+          onSelect: () => void navigateTo(entryRoute(entry.uri)),
         },
         // The homonyms are indented under their headword.
         ...entry.children.map(child => toItem(child, "ps-5")),
@@ -209,7 +212,7 @@
       <span
         v-if="item.parts"
         class="font-serif text-base"
-      >{{ item.parts.before }}<span class="font-semibold">{{ item.parts.word }}</span>{{ item.parts.rest }}</span>
+      ><span class="font-semibold">{{ item.parts.word }}</span>{{ item.parts.rest }}</span>
       <template v-else>
         {{ item.label }}
       </template>
