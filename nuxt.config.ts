@@ -29,6 +29,18 @@ export default defineNuxtConfig({
   },
   devServer: { port: 4321 },
   compatibilityDate: "2025-07-15",
+  nitro: {
+    /**
+     * Development only: relays `/_api/**` to `DEV_API_PROXY` (e.g. a local
+     * API on `http://localhost:3000`), so that the browser calls the API on
+     * the app's own origin (some browsers, e.g. embedded ones, block pages
+     * from calling another local port). Point `NUXT_PUBLIC_API_HOST` to
+     * `http://localhost:4321/_api` to use it (cf. `.env.example`).
+     */
+    devProxy: process.env.DEV_API_PROXY
+      ? { "/_api": { target: process.env.DEV_API_PROXY, changeOrigin: true } }
+      : {},
+  },
   typescript: {
     tsConfig: {
       // Type-check the tests with the app code they exercise.
