@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import { isLemmatizable, normalizeSearchGreek, toPositionedQuery, toSearchGreek, toSearchQuery } from "../../app/utils/searchInput";
+import { InputMode } from "../../app/enums";
+import { convertSearchInput, isLemmatizable, normalizeSearchGreek, toLookupQuery, toPositionedQuery, toSearchGreek, toSearchQuery } from "../../app/utils/searchInput";
 
 /**
  * Types the input one character at a time, as in the search bar.
@@ -97,4 +98,20 @@ test("leaves out of the query what waits for a letter", () => {
   expect(toSearchQuery("λογ*")).toBe("λογ");
   expect(toSearchQuery("᾿ς")).toBe("ς");
   expect(toSearchQuery("ἀνήρ")).toBe("ἀνήρ");
+});
+
+test("converts transliterated input when looked up", () => {
+  expect(toLookupQuery("lógos", InputMode.Transliteration)).toBe("λόγος");
+  expect(toLookupQuery("hēméra", InputMode.Transliteration)).toBe("ἡμέρα");
+  expect(toLookupQuery("psychḗ", InputMode.Transliteration)).toBe("ψυχή");
+  expect(toLookupQuery("logos$", InputMode.Transliteration)).toBe("λογος");
+  expect(toLookupQuery("λόγος", InputMode.Transliteration)).toBe("λόγος"); // Greek is accepted.
+  expect(toLookupQuery("λόγος", InputMode.BetaCode)).toBe("λόγος");
+  expect(toLookupQuery("*᾿", InputMode.BetaCode)).toBe("");
+});
+
+test("converts the input when the input mode changes", () => {
+  expect(convertSearchInput("λόγος", InputMode.Transliteration)).toBe("lógos");
+  expect(convertSearchInput("ἡμέρα", InputMode.Transliteration)).toBe("hēméra");
+  expect(convertSearchInput("lógos", InputMode.BetaCode)).toBe("λόγος");
 });

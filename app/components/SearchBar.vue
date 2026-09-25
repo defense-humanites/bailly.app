@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import type { InputMenuItem } from "@nuxt/ui";
   import type { LookupEntry } from "#shared/types/api";
-  import { LocalStorageKey } from "~/enums";
+  import { InputMode, LocalStorageKey } from "~/enums";
   import { splitExcerpt } from "~/helpers";
   import type { SearchField } from "~/composables/useEntrySearch";
   import { entryRoute } from "~/utils/entryUri";
-  import { toSearchGreek, toSearchQuery } from "~/utils/searchInput";
+  import { convertSearchInput, toSearchGreek, toSearchQuery } from "~/utils/searchInput";
 
   // (The input text is 16px on mobile, `max-md:text-base`: below, iOS Safari
   // zooms in when the input gets the focus.)
@@ -25,7 +25,39 @@
   };
 
   const { query, result, status, pending } = useEntrySearch();
-  const { position, diacriticSensitive, isDefault: defaultOptions, reset: resetOptions } = useSearchOptions();
+  const { position, diacriticSensitive, inputMode, isDefault: defaultOptions, reset: resetOptions } = useSearchOptions();
+
+  const transliterating = computed((): boolean => inputMode.value === InputMode.Transliteration);
+
+  const menu = useTemplateRef("menu");
+
+  /**
+   * Makes the input show `text` (the query just set), with the caret at
+   * `caret` (by default, where it is).
+   * @remarks When the query doesn't change (e.g. `α` + `)` → `α`), or while
+   * the input has the focus, the input menu doesn't render its text again: it
+   * is then updated here, and the input event keeps the input menu's own
+   * search term in sync.
+   */
+  const syncInputText = (text: string, caret?: number): void => {
+    const input = menu.value?.inputRef as HTMLInputElement | undefined;
+    if (!input) return;
+
+    void nextTick(() => {
+      if (input.value !== text) {
+        input.value = text;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      if (caret !== undefined) input.setSelectionRange(caret, caret);
+    });
+  };
+
+  // The input text follows the input mode (e.g. `λόγος` ⇄ `lógos`).
+  watch(inputMode, (mode) => {
+    if (!query.value) return;
+    query.value = convertSearchInput(query.value, mode);
+    syncInputText(query.value);
+  });
 
   /**
    * A reminder of the search options that aren't the default ones, above the
@@ -46,8 +78,6 @@
     return summary.charAt(0).toUpperCase() + summary.slice(1);
   });
 
-  const menu = useTemplateRef("menu");
-
   /**
    * Whether the input method is composing (e.g. with dead keys): the input
    * must not be rewritten meanwhile.
@@ -63,7 +93,8 @@
   const onInput = (value: unknown): void => {
     if (typeof value !== "string") return;
 
-    if (composing) {
+    // Transliterated input is converted when looked up (cf. `toLookupQuery`).
+    if (composing || transliterating.value) {
       query.value = value;
       return;
     }
@@ -74,18 +105,8 @@
 
     query.value = converted;
 
-    if (input && converted !== value) {
-      const position = toSearchGreek(value.slice(0, caret)).length;
-      void nextTick(() => {
-        // When the query doesn't change (e.g. `α` + `)` → `α`), nothing is
-        // rendered again: the input text is then updated here, and the input
-        // event keeps the input menu's own search term in sync.
-        if (input.value !== converted) {
-          input.value = converted;
-          input.dispatchEvent(new Event("input", { bubbles: true }));
-        }
-        input.setSelectionRange(position, position);
-      });
+    if (converted !== value) {
+      syncInputText(converted, toSearchGreek(value.slice(0, caret)).length);
     }
   };
 
@@ -196,15 +217,15 @@
       ignore-filter
       icon="i-lucide-search"
       :loading="pending"
-      placeholder="ἀναζητέω…"
-      aria-label="Rechercher une entrée (beta code ou grec)"
+      :placeholder="transliterating ? 'anazētéō…' : 'ἀναζητέω…'"
+      :aria-label="`Rechercher une entrée (${transliterating ? 'translittération' : 'beta code'} ou grec)`"
       size="lg"
       autocapitalize="off"
       autocomplete="off"
       autocorrect="off"
       spellcheck="false"
       enterkeyhint="search"
-      lang="grc"
+      :lang="transliterating ? 'grc-Latn' : 'grc'"
       :content="{ align: 'start', collisionPadding: 12 }"
       :ui="{
         base: 'shadow-xs max-md:text-base',
@@ -297,7 +318,7 @@
       </template>
 
       <template #empty="{ searchTerm }">
-        <span v-if="!toSearchQuery(searchTerm)">Saisissez un mot en beta code (p. ex. <em>logos</em>) ou en grec.</span>
+        <span v-if="!toSearchQuery(searchTerm)">Saisissez un mot {{ transliterating ? "translittéré" : "en beta code" }} (p. ex. <em>{{ transliterating ? "lógos" : "logos" }}</em>) ou en grec.</span>
         <span v-else-if="pending">Recherche…</span>
         <span v-else-if="status === 'error'">La recherche a échoué. Veuillez réessayer.</span>
         <span v-else>Aucun résultat pour « {{ searchTerm }} ».</span>

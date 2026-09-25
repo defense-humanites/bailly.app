@@ -1,8 +1,9 @@
 <script setup lang="ts">
   import type { RadioGroupItem } from "@nuxt/ui";
-  import type { SearchPosition } from "~/utils/searchInput";
+  import { InputMode } from "~/enums";
+  import { isLemmatizable, type SearchPosition } from "~/utils/searchInput";
 
-  const { position, diacriticSensitive, isDefault, reset } = useSearchOptions();
+  const { position, diacriticSensitive, inputMode, lemmatization, isDefault, reset } = useSearchOptions();
 
   const positionItems: RadioGroupItem[] = [
     { label: "Début", value: "start" },
@@ -17,6 +18,17 @@
     end: "Les entrées qui se terminent par la saisie (λογος → διάλογος…).",
     exact: "L'entrée identique à la saisie, et ses formes fléchies.",
   };
+
+  const lemmatizationHint = computed((): string =>
+    isLemmatizable(position.value)
+      ? "Par l'analyse morphologique (p. ex. λόγοι → λόγος)."
+      : "Sans objet pour une partie de mot (« Contient », « Fin »).",
+  );
+
+  const inputModeItems: RadioGroupItem[] = [
+    { label: "Beta code", value: InputMode.BetaCode },
+    { label: "Translittération", value: InputMode.Transliteration },
+  ];
 </script>
 
 <template>
@@ -81,6 +93,34 @@
             @click="reset"
           />
         </div>
+
+        <USeparator label="Préférences" />
+
+        <USwitch
+          v-model="lemmatization"
+          label="Inclure les formes fléchies"
+          :description="lemmatizationHint"
+          :disabled="!isLemmatizable(position)"
+          size="sm"
+        />
+
+        <fieldset>
+          <legend class="mb-2 text-sm font-medium">
+            Saisie
+          </legend>
+          <URadioGroup
+            v-model="inputMode"
+            :items="inputModeItems"
+            variant="table"
+            orientation="horizontal"
+            indicator="hidden"
+            size="sm"
+            :ui="{ item: 'flex-1 justify-center' }"
+          />
+          <p class="mt-1.5 text-xs text-muted">
+            Le grec est toujours accepté. Préférences enregistrées sur cet appareil.
+          </p>
+        </fieldset>
       </form>
     </template>
   </UPopover>

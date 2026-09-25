@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import type { RadioGroupItem } from "@nuxt/ui";
+  import { InputMode } from "~/enums";
 
   definePageMeta({
     layout: "single-column",
@@ -36,16 +37,26 @@
     },
   ];
 
+  // The search preferences are shared with the options of the search bar.
+  const { inputMode, lemmatization } = useSearchOptions();
+
   const searchInputModeOptions = ref<RadioGroupItem[]>([
     {
       label: "Beta code",
-      value: "betaCode",
+      value: InputMode.BetaCode,
     },
     {
       label: "Translittération",
-      value: "transliteration",
+      value: InputMode.Transliteration,
     },
   ]);
+
+  const lemmatizationSetting = computed({
+    get: (): string => (lemmatization.value ? "enabled" : "disabled"),
+    set: (value: string) => {
+      lemmatization.value = value === "enabled";
+    },
+  });
 
   const searchLemmatizationOptions = ref<RadioGroupItem[]>([
     {
@@ -53,7 +64,6 @@
       value: "disabled",
     },
     {
-      default: true,
       label: "Activé",
       value: "enabled",
     },
@@ -112,9 +122,9 @@
             l'usage d'un public non helléniste.
           </p>
           <URadioGroup
+            v-model="inputMode"
             variant="table"
             orientation="horizontal"
-            default-value="betaCode"
             :items="searchInputModeOptions"
           />
         </fieldset>
@@ -127,9 +137,9 @@
             produire des résultats de recherche.
           </p>
           <URadioGroup
+            v-model="lemmatizationSetting"
             variant="table"
             orientation="horizontal"
-            default-value="enabled"
             :items="searchLemmatizationOptions"
           />
         </fieldset>

@@ -1,9 +1,11 @@
+import { InputMode } from "~/enums";
 import { isLemmatizable, type SearchPosition } from "~/utils/searchInput";
 
 /**
- * The search options of the search bar.
- * @remarks They last for the visit only (shared state, not stored): an option
- * forgotten from one day to the next would silently distort the results.
+ * The search options of the search bar, and the search preferences.
+ * @remarks The options last for the visit only (shared state, not stored): an
+ * option forgotten from one day to the next would silently distort the
+ * results. The preferences are stored (cf. `plugins/searchPreferences.client.ts`).
  */
 export function useSearchOptions() {
   /**
@@ -17,12 +19,25 @@ export function useSearchOptions() {
   const diacriticSensitive = useState<boolean>("search-diacritic-sensitive", () => false);
 
   /**
-   * Whether inflected forms are looked up too (cf. `isLemmatizable`).
+   * Preference: how Greek is typed in the search bar (Greek itself is always
+   * accepted).
    */
-  const lemmatized = computed((): boolean => isLemmatizable(position.value));
+  const inputMode = useState<InputMode>("search-input-mode", () => InputMode.BetaCode);
 
   /**
-   * Whether all the options have their default value.
+   * Preference: whether inflected forms are looked up too, when possible (cf.
+   * `lemmatized`).
+   */
+  const lemmatization = useState<boolean>("search-lemmatization", () => true);
+
+  /**
+   * Whether inflected forms are looked up too: if the preference allows it,
+   * and for whole words only (cf. `isLemmatizable`).
+   */
+  const lemmatized = computed((): boolean => lemmatization.value && isLemmatizable(position.value));
+
+  /**
+   * Whether all the options (not the preferences) have their default value.
    */
   const isDefault = computed((): boolean => position.value === "start" && !diacriticSensitive.value);
 
@@ -31,5 +46,5 @@ export function useSearchOptions() {
     diacriticSensitive.value = false;
   };
 
-  return { position, diacriticSensitive, lemmatized, isDefault, reset };
+  return { position, diacriticSensitive, inputMode, lemmatization, lemmatized, isDefault, reset };
 }

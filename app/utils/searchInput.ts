@@ -1,4 +1,5 @@
 import { convert } from "@humanities/greek-conversion";
+import { InputMode } from "~/enums";
 
 /**
  * A Greek letter (not a modifier letter such as the spacing ypogegrammeni).
@@ -235,4 +236,28 @@ export function toPositionedQuery(query: string, position: SearchPosition): stri
  */
 export function isLemmatizable(position: SearchPosition): boolean {
   return position === "start" || position === "exact";
+}
+
+/**
+ * The Greek query to look up, from the search bar input: already converted
+ * from Beta Code while typing (cf. `toSearchGreek`), or transliterated, which
+ * is converted now (`ph` can't be converted before the `h`).
+ * @example toLookupQuery("lógos", InputMode.Transliteration) // "λόγος"
+ */
+export function toLookupQuery(input: string, inputMode: InputMode): string {
+  if (inputMode !== InputMode.Transliteration) return toSearchQuery(input);
+
+  return toSearchQuery(normalizeSearchGreek(
+    convert(input.replace(POSITION_METACHARACTERS, ""), "transliteration", "greek"),
+  ));
+}
+
+/**
+ * Converts the search bar input when the input mode changes.
+ * @example convertSearchInput("λόγος", InputMode.Transliteration) // "lógos"
+ */
+export function convertSearchInput(input: string, inputMode: InputMode): string {
+  return inputMode === InputMode.Transliteration
+    ? convert(toSearchQuery(input), "greek", "transliteration")
+    : toLookupQuery(input, InputMode.Transliteration);
 }
