@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import type { RadioGroupItem } from "@nuxt/ui";
   import { InputMode } from "~/enums";
-  import { isLemmatizable, type SearchPosition } from "~/utils/searchInput";
+  import { isLemmatizable } from "~/utils/searchInput";
 
   const props = defineProps<{
     /** Whether the query has wildcards (no inflected forms then). */
@@ -19,24 +19,24 @@
     { label: "Exact", value: "exact" },
   ];
 
-  const positionHints: Record<SearchPosition, string> = {
-    start: "Les entrées qui commencent par la saisie (λογ → λόγος, λογικός…).",
-    contains: "Les entrées qui contiennent la saisie (λογ → ἀναλογία…).",
-    end: "Les entrées qui se terminent par la saisie (λογος → διάλογος…).",
-    exact: "L'entrée identique à la saisie, et ses formes fléchies.",
-  };
-
-  const lemmatizationHint = computed((): string => {
-    if (lemmatizable.value) return "Par l'analyse morphologique (p. ex. λόγοι → λόγος).";
-    return props.wildcards
-      ? "Sans objet avec des jokers."
-      : "Sans objet pour une partie de mot (« Contient », « Fin »).";
-  });
+  /**
+   * Inflected forms can't be looked up for a part of a word, nor with
+   * wildcards: the switch is then disabled.
+   */
+  const lemmatizationLabel = computed((): string =>
+    lemmatizable.value ? "Formes fléchies" : "Formes fléchies (sans objet)",
+  );
 
   const inputModeItems: RadioGroupItem[] = [
     { label: "Beta code", value: InputMode.BetaCode },
     { label: "Translittération", value: InputMode.Transliteration },
   ];
+
+  /**
+   * Compact rows: a label on the left, the control on the right.
+   */
+  const radioUi = { legend: "sr-only", fieldset: "w-full", item: "flex-1 justify-center py-1 px-2" };
+  const switchUi = { root: "flex-row-reverse items-center justify-between gap-3", wrapper: "ms-0", label: "text-sm font-normal" };
 </script>
 
 <template>
@@ -65,77 +65,85 @@
       </UChip>
     </UButton>
 
+    <!--
+      Compact rows (label, control). The options first, then, below a line,
+      the preferences (stored: cf. the settings page).
+    -->
     <template #content>
       <form
-        class="w-72 space-y-5 p-4"
+        class="w-[min(22rem,calc(100dvw-2rem))] space-y-2.5 p-3 text-sm"
         @submit.prevent
       >
-        <fieldset>
-          <legend class="mb-2 text-sm font-medium">
-            Position dans l'entrée
-          </legend>
-          <URadioGroup
-            v-model="position"
-            :items="positionItems"
-            variant="table"
-            orientation="horizontal"
-            indicator="hidden"
-            size="sm"
-            :ui="{ item: 'flex-1 justify-center' }"
-          />
-          <p class="mt-1.5 text-xs text-muted">
-            {{ positionHints[position] }}
-          </p>
-          <p class="mt-1 text-xs text-muted">
-            Dans un mot, <kbd>?</kbd> remplace une lettre et <kbd>*</kbd> plusieurs (λ?γος, φιλ*ος).
-          </p>
-        </fieldset>
-
-        <USwitch
-          v-model="diacriticSensitive"
-          label="Tenir compte des diacritiques"
-          description="Accents, esprits, iota souscrit… (p. ex. ἆρα ≠ ἄρα)."
-          size="sm"
-        />
-
-        <div class="flex justify-end">
+        <div class="flex h-5 items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wide text-muted">Options</span>
           <UButton
+            v-if="!isDefault"
             label="Réinitialiser"
             color="neutral"
             variant="link"
-            size="sm"
-            :disabled="isDefault"
+            size="xs"
+            class="p-0 shadow-none"
             @click="reset"
           />
         </div>
 
-        <USeparator label="Préférences" />
+        <div>
+          <div class="flex items-center gap-3">
+            <span
+              class="w-24 shrink-0"
+              aria-hidden="true"
+            >Position</span>
+            <URadioGroup
+              v-model="position"
+              :items="positionItems"
+              legend="Position dans l'entrée"
+              variant="table"
+              orientation="horizontal"
+              indicator="hidden"
+              size="xs"
+              class="grow"
+              :ui="radioUi"
+            />
+          </div>
+          <p class="mt-1 ps-27 text-xs text-muted">
+            <kbd>?</kbd> une lettre · <kbd>*</kbd> plusieurs
+          </p>
+        </div>
+
+        <USwitch
+          v-model="diacriticSensitive"
+          label="Diacritiques"
+          size="sm"
+          :ui="switchUi"
+        />
+
+        <USeparator />
 
         <USwitch
           v-model="lemmatization"
-          label="Inclure les formes fléchies"
-          :description="lemmatizationHint"
+          :label="lemmatizationLabel"
           :disabled="!lemmatizable"
           size="sm"
+          :ui="switchUi"
         />
 
-        <fieldset>
-          <legend class="mb-2 text-sm font-medium">
-            Saisie
-          </legend>
+        <div class="flex items-center gap-3">
+          <span
+            class="w-24 shrink-0"
+            aria-hidden="true"
+          >Saisie</span>
           <URadioGroup
             v-model="inputMode"
             :items="inputModeItems"
+            legend="Mode de saisie"
             variant="table"
             orientation="horizontal"
             indicator="hidden"
-            size="sm"
-            :ui="{ item: 'flex-1 justify-center' }"
+            size="xs"
+            class="grow"
+            :ui="radioUi"
           />
-          <p class="mt-1.5 text-xs text-muted">
-            Le grec est toujours accepté. Préférences enregistrées sur cet appareil.
-          </p>
-        </fieldset>
+        </div>
       </form>
     </template>
   </UPopover>
