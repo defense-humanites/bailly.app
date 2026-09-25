@@ -14,17 +14,44 @@
   const menuItems = computed((): NavigationMenuItem[] =>
     props.items.map(item => ({ ...item, tooltip: !showLabels.value })),
   );
+
+  const header = useTemplateRef<HTMLElement>("header");
+  const { y } = useWindowScroll();
+
+  /**
+   * Below `md`, whether the title row (and the menu) is shown again while the
+   * page is scrolled: it slides back as soon as the user scrolls up, and away
+   * when they scroll down. It stays as it is while the header has the focus
+   * (e.g. when the mobile keyboard, opening, scrolls the page).
+   */
+  const titleRowShown = ref(false);
+
+  /**
+   * Scrolls shorter than this (in px) are ignored, e.g. iOS rubber-banding.
+   */
+  const SCROLL_THRESHOLD = 8;
+  let lastY = 0;
+
+  watch(y, (value) => {
+    const delta = value - lastY;
+    if (Math.abs(delta) < SCROLL_THRESHOLD) return;
+    if (!header.value?.matches(":focus-within")) titleRowShown.value = delta < 0;
+    lastY = value;
+  });
 </script>
 
 <template>
   <!--
     Below `md`, two rows: the title and the menu, then the search bar. The
     header is sticky with an offset of the first row's height (`h-12`): that
-    row scrolls away with the page, and the search bar stays at the top.
-    From `md`, a single floating row.
+    row scrolls away with the page, and the search bar stays at the top. The
+    first row slides back (offset `0`) when the user scrolls up, over the
+    content: the layout doesn't change. From `md`, a single floating row.
   -->
   <header
-    class="sticky -top-12 z-[99] border-b border-black/10 bg-white/90 backdrop-blur-sm md:fixed md:top-3 md:h-14 md:w-dvw md:border-0 md:bg-transparent md:px-6 md:backdrop-blur-none"
+    ref="header"
+    class="sticky z-[99] border-b border-black/10 bg-white/90 backdrop-blur-sm transition-[top] duration-300 ease-out motion-reduce:transition-none md:fixed md:top-3 md:h-14 md:w-dvw md:border-0 md:bg-transparent md:px-6 md:backdrop-blur-none md:transition-none"
+    :class="titleRowShown ? 'top-0' : '-top-12'"
   >
     <nav
       class="grid grid-cols-[1fr_auto] items-center gap-x-3 px-4 pb-2 md:flex md:h-full md:w-full md:justify-between md:gap-x-6 md:px-3 md:py-1 md:bg-radial-[at_50%_0%] md:from-75% md:from-white/50 md:to-100% md:to-primary-50/75 md:bg-white/65 md:backdrop-blur-sm md:border md:border-black/10 md:shadow-xl md:shadow-black/10 md:rounded-xl"
