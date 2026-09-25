@@ -63,6 +63,12 @@ const PENDING_SIGNS = new RegExp(`[*${[...DIACRITICS_BY_FORM.keys()].filter(form
  */
 const BETA_CODE_LETTERS = /[a-z]+/gi;
 
+/**
+ * The API's metacharacters for the position of the query in the headwords:
+ * this position is now a search option (cf. `toPositionedQuery`).
+ */
+const POSITION_METACHARACTERS = /[\^$"]/g;
+
 interface Letter {
   base: string;
   diacritics: Diacritic[];
@@ -173,8 +179,8 @@ export function normalizeSearchGreek(greek: string): string {
 /**
  * Converts the search bar input into Greek: Beta Code is converted, with its
  * diacritics (e.g. `logos` → `λογος`, `a)nh/r` → `ἀνήρ`, `*)aqh=nai` →
- * `Ἀθῆναι`, `vergon` → `ϝεργον`), Greek is normalized, and the search
- * metacharacters (`^`, `$`, `"`) are kept.
+ * `Ἀθῆναι`, `vergon` → `ϝεργον`), Greek is normalized, and the position
+ * metacharacters (`^`, `$`, `"`) are dropped (cf. `toPositionedQuery`).
  * @remarks The input may mix Greek (already converted) and Beta Code (the
  * last characters typed). Diacritics and capital marks without a letter yet
  * wait for it (cf. `applyDiacritics`), and are left out of the query (cf.
@@ -182,7 +188,7 @@ export function normalizeSearchGreek(greek: string): string {
  */
 export function toSearchGreek(input: string): string {
   return normalizeSearchGreek(applyDiacritics(
-    input.replace(BETA_CODE_LETTERS, run => convert(run.toLowerCase(), "beta-code", "greek", { removeDiacritics: true })),
+    input.replace(POSITION_METACHARACTERS, "").replace(BETA_CODE_LETTERS, run => convert(run.toLowerCase(), "beta-code", "greek", { removeDiacritics: true })),
   ));
 }
 
@@ -193,4 +199,40 @@ export function toSearchGreek(input: string): string {
  */
 export function toSearchQuery(greek: string): string {
   return greek.replace(PENDING_SIGNS, "").trim();
+}
+
+/**
+ * Where the query is looked up in the headwords.
+ */
+export type SearchPosition = "start" | "contains" | "end" | "exact";
+
+/**
+ * The query with the API's metacharacters for its position in the headwords:
+ * the API looks prefixes up by default, a leading `*` makes it look the query
+ * up anywhere, a trailing `$` at the end, and quotes the whole headword.
+ * @example toPositionedQuery("λογος", "end") // "λογος$"
+ */
+export function toPositionedQuery(query: string, position: SearchPosition): string {
+  if (!query) return "";
+
+  switch (position) {
+    case "contains":
+      return `*${query}`;
+    case "end":
+      return `${query}$`;
+    case "exact":
+      return `"${query}"`;
+    case "start":
+    default:
+      return query;
+  }
+}
+
+/**
+ * Whether inflected forms can be looked up too (through the morphological
+ * analysis): not for a part of a word (`contains`, `end`), which can't be
+ * analyzed (and the API doesn't apply its wildcards to the analyses).
+ */
+export function isLemmatizable(position: SearchPosition): boolean {
+  return position === "start" || position === "exact";
 }

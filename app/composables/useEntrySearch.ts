@@ -1,5 +1,5 @@
 import type { LookupResult } from "./useApi";
-import { toSearchQuery } from "~/utils/searchInput";
+import { isLemmatizable, toPositionedQuery, toSearchQuery } from "~/utils/searchInput";
 
 /**
  * The entry fields shown in the search results.
@@ -16,6 +16,7 @@ export type SearchField = "word" | "uri" | "excerpt";
 export function useEntrySearch() {
   const { searchDebounceTime } = useRuntimeConfig().public;
   const lookup = useApiLookup();
+  const { position, diacriticSensitive } = useSearchOptions();
 
   /**
    * The search bar input, converted into Greek (cf. `toSearchGreek`).
@@ -33,8 +34,13 @@ export function useEntrySearch() {
   const { data: result, status } = useAsyncData(
     "entry-search",
     (): Promise<LookupResult<SearchField>> =>
-      lookup(toSearchQuery(debouncedQuery.value), { fields: ["word", "uri", "excerpt"], inputMode: "greek" }),
-    { server: false, immediate: false, watch: [debouncedQuery], default: () => null },
+      lookup(toPositionedQuery(toSearchQuery(debouncedQuery.value), position.value), {
+        fields: ["word", "uri", "excerpt"],
+        inputMode: "greek",
+        diacriticSensitive: diacriticSensitive.value,
+        skipMorpheus: !isLemmatizable(position.value),
+      }),
+    { server: false, immediate: false, watch: [debouncedQuery, position, diacriticSensitive], default: () => null },
   );
 
   /**

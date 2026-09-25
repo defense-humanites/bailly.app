@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { normalizeSearchGreek, toSearchGreek, toSearchQuery } from "../../app/utils/searchInput";
+import { isLemmatizable, normalizeSearchGreek, toPositionedQuery, toSearchGreek, toSearchQuery } from "../../app/utils/searchInput";
 
 /**
  * Types the input one character at a time, as in the search bar.
@@ -53,11 +53,26 @@ test("leaves alone a diacritic its letter can't take", () => {
   expect(toSearchGreek("?")).toBe(""); // No spacing underdot.
 });
 
-test("keeps the search metacharacters", () => {
-  expect(toSearchGreek("^log")).toBe("^λογ");
-  expect(toSearchGreek("log$")).toBe("λογ$");
-  expect(toSearchGreek("\"logos\"")).toBe("\"λογος\"");
+test("drops the position metacharacters (a search option now)", () => {
+  expect(toSearchGreek("^log")).toBe("λογ");
+  expect(toSearchGreek("log$")).toBe("λογ");
+  expect(toSearchGreek("\"logos\"")).toBe("λογος");
   expect(toSearchGreek("log-os")).toBe("λογ-ος");
+});
+
+test("adds the metacharacters of the position", () => {
+  expect(toPositionedQuery("λογος", "start")).toBe("λογος");
+  expect(toPositionedQuery("λογ", "contains")).toBe("*λογ");
+  expect(toPositionedQuery("λογος", "end")).toBe("λογος$");
+  expect(toPositionedQuery("λογος", "exact")).toBe("\"λογος\"");
+  expect(toPositionedQuery("", "end")).toBe("");
+});
+
+test("looks inflected forms up for whole words only", () => {
+  expect(isLemmatizable("start")).toBe(true);
+  expect(isLemmatizable("exact")).toBe(true);
+  expect(isLemmatizable("contains")).toBe(false);
+  expect(isLemmatizable("end")).toBe(false);
 });
 
 test("handles input typed one character at a time", () => {

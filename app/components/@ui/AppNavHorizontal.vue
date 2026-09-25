@@ -8,11 +8,14 @@
   /**
    * Below `lg`, the menu only shows its icons: their labels are then shown in
    * tooltips (and remain the links' accessible names).
+   * @remarks The tooltips are disabled rather than removed from `lg`: the
+   * server doesn't know the viewport width, and the markup must not change
+   * after hydration.
    */
   const showLabels = useMediaQuery("(min-width: 64rem)");
 
   const menuItems = computed((): NavigationMenuItem[] =>
-    props.items.map(item => ({ ...item, tooltip: !showLabels.value })),
+    props.items.map(item => ({ ...item, tooltip: { disabled: showLabels.value } })),
   );
 
   const header = useTemplateRef<HTMLElement>("header");
