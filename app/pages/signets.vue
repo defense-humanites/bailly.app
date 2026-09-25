@@ -16,9 +16,11 @@
     <!--
       As wide as the header at most, with the same side margins (cf.
       `--header-*`): the content lines up with the header's title and menu.
+      Where supported, the cards are laid out in lanes (masonry: each card
+      goes, in order, into the shortest column), otherwise on a grid.
     -->
     <section
-      class="mx-auto grid max-w-(--header-max-width) grid-flow-row-dense grid-cols-1 items-start gap-6 md:px-(--header-inset) lg:grid-cols-2"
+      class="mx-auto grid max-w-(--header-max-width) grid-cols-1 items-start gap-6 supports-[display:grid-lanes]:[display:grid-lanes] md:px-(--header-inset) lg:grid-cols-2"
       :aria-busy="!initialized"
     >
       <header class="col-span-full flex gap-6 max-md:flex-col md:items-center xl:mb-6">
@@ -83,9 +85,10 @@
 
         <!-- Tags -->
         <BookmarkGroup
-          v-for="tag in tags"
+          v-for="(tag, index) in tags"
           :key="tag.key"
           :tag="tag"
+          :position="index + 1"
           :entries="bookmarksStore.entriesOf(tag.key)"
           editable
         >

@@ -84,6 +84,12 @@
         name="i-lucide-grip-vertical"
         class="mr-3 size-5"
       />
+      <!-- The position, as on the bookmarks page cards. -->
+      <span
+        :data-tag-color="tag.color"
+        class="mr-3 flex size-6 shrink-0 items-center justify-center rounded-full bg-tag-100 text-xs tabular-nums text-tag-700"
+        aria-hidden="true"
+      >{{ index + 1 }}</span>
       <UIcon
         name="i-bailly-tag-filled"
         class="mr-3 size-5 text-tag-600"
