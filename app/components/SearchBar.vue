@@ -123,6 +123,12 @@
     ].filter(group => group.length) as ResultItem[][];
   });
 
+  /**
+   * Whether the input isn't empty: the results then show up again when the
+   * input gets the focus (or is clicked, e.g. after closing them with Escape).
+   */
+  const hasQuery = computed((): boolean => query.value.trim() !== "");
+
   const hasMorpheusResults = computed((): boolean =>
     Boolean(result.value?.entries.some(entry => entry.isMorpheus)),
   );
@@ -146,6 +152,8 @@
     ref="menu"
     :model-value="query"
     mode="autocomplete"
+    :open-on-focus="hasQuery"
+    :open-on-click="hasQuery"
     value-key="text"
     :items="items"
     ignore-filter
