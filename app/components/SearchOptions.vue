@@ -68,12 +68,11 @@
 
     <!--
       Compact rows (label, control). The options first, then, below a line,
-      the preferences (stored: cf. the settings page). Full width (but the
-      margins) below `xs`.
+      the preferences (stored: cf. the settings page).
     -->
     <template #content>
       <form
-        class="w-[calc(100dvw-2rem)] xs:w-[22rem] space-y-2.5 p-3 text-sm"
+        class="w-[min(22rem,calc(100dvw-2rem))] space-y-2.5 p-3 text-sm"
         @submit.prevent
       >
         <div class="flex h-5 items-center justify-between">
