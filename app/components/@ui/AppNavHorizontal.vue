@@ -61,10 +61,16 @@
     <nav
       class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 max-md:px-safe-4 md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:px-3 md:py-1 md:bg-radial-[at_50%_0%] md:from-75% md:from-white/50 md:to-100% md:to-primary-50/75 md:bg-white/65 md:backdrop-blur-sm md:border md:border-black/10 md:shadow-xl md:shadow-black/10 md:rounded-xl"
     >
-      <ULink
-        class="flex h-12 items-center font-serif text-xl tracking-wider text-black md:h-auto"
-        href="/"
-      >Bailly.app</ULink>
+      <!--
+        The title is a menu link as well: same padding and hover effect as the
+        menu, so that it lines up with the search bar as the menu does (and as
+        high as the menu links, whatever its font size: `py-1.5`).
+      -->
+      <UNavigationMenu
+        aria-label="Accueil"
+        :items="[{ label: 'Bailly.app', to: '/', active: false }]"
+        :ui="{ link: 'py-1.5 font-serif text-xl font-normal tracking-wider text-black hover:text-black' }"
+      />
       <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1" />
       <UNavigationMenu
         class="md:col-start-3 md:row-start-1 md:justify-self-end"

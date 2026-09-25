@@ -24,7 +24,7 @@
    */
   --header-max-width: var(--container-6xl);
   --header-inset: calc(var(--spacing) * 3 + 1px); /* Padding and border. */
-  --header-title-width: 5.5rem;
+  --header-title-width: 6.75rem; /* A menu link (padding included). */
   --header-menu-width: 7.5rem; /* Icons only. */
   --header-gap: 2rem;
 
