@@ -56,7 +56,7 @@
         size="md"
         variant="soft"
         color="secondary"
-        icon="i-heroicons-plus"
+        icon="i-lucide-plus"
         :ui="{ base: 'shadow-none' }"
         @click="createTag"
       >

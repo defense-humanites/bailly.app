@@ -59,11 +59,11 @@
       class="px-3 py-1.5 flex items-center hover:bg-neutral-100 rounded-lg text-lg font-semibold cursor-default"
     >
       <UIcon
-        name="i-heroicons-bars-3"
+        name="i-lucide-grip-vertical"
         class="mr-3 size-5"
       />
       <UIcon
-        name="i-heroicons-tag-solid"
+        name="i-bailly-tag-filled"
         class="mr-3 size-5 text-tag-600"
         :data-tag-color="tag.color"
       />

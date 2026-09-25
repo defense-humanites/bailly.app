@@ -26,7 +26,7 @@
           >
             <UButton
               label="Arranger"
-              icon="i-heroicons-queue-list"
+              icon="i-lucide-list-ordered"
               size="2xl"
               variant="subtle"
             />
@@ -53,7 +53,7 @@
           }"
           :entries="starredEntries"
           favorites
-          custom-icon="i-heroicons-star"
+          custom-icon="i-bailly-star-filled"
         >
           Ajoutez à cette liste les entrées que vous souhaitez retrouver
           facilement plus tard.

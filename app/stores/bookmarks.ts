@@ -98,7 +98,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     if (result.state === "error") {
       toast.add({
         title: result.message,
-        icon: "i-heroicons-exclamation-circle",
+        icon: "i-lucide-circle-alert",
         color: "error",
       });
     }

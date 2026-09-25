@@ -19,7 +19,7 @@
         placeholder="Rechercher..."
         size="lg"
         class="w-full max-w-96"
-        icon="i-heroicons-magnifying-glass"
+        icon="i-lucide-search"
         variant="outline"
         :ui="{ base: 'shadow-xs' }"
       />

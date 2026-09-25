@@ -100,17 +100,9 @@
   };
 
   /**
-   * Returns the default tag icon or a custom icon (in that case, make sure the
-   * icon uses its `solid` variant).
+   * The group icon: a custom one, or a (filled) tag.
    */
-  const icon = computed((): string => {
-    if (props.customIcon) {
-      return !props.customIcon.endsWith("-solid")
-        ? props.customIcon + "-solid"
-        : props.customIcon;
-    }
-    return "i-heroicons-tag-solid";
-  });
+  const icon = computed((): string => props.customIcon ?? "i-bailly-tag-filled");
 
   const editableEditMode = computed(
     (): boolean => props.editable && editMode.value,
@@ -233,7 +225,7 @@
           :class="[editMode ? '' : 'invisible']"
         >
           <UButton
-            icon="i-heroicons-pencil"
+            icon="i-lucide-pencil"
             size="sm"
             variant="subtle"
             color="neutral"
@@ -242,7 +234,7 @@
           />
           <UButton
             v-if="editableHasNoEntries"
-            icon="i-heroicons-x-mark"
+            icon="i-lucide-x"
             size="sm"
             color="error"
             :variant="editMode ? 'solid' : 'subtle'"
@@ -270,7 +262,7 @@
           <UButton
             class="absolute top-1.5 right-1.5 z-50 invisible"
             :class="[editMode ? 'group-hover/item:visible' : '']"
-            icon="i-heroicons-x-mark"
+            icon="i-lucide-x"
             size="xs"
             color="error"
             variant="subtle"

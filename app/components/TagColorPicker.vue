@@ -38,7 +38,7 @@
   /**
    * The icon to display in the 'trigger' slot.
    */
-  const icon: string = "i-heroicons-tag-solid";
+  const icon: string = "i-bailly-tag-filled";
 
   watch(open, (open) => {
     emit("popoverState", open);

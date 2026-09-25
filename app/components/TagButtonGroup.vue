@@ -52,7 +52,7 @@
   >
     <!-- Manage tags -->
     <UButton
-      icon="i-heroicons-ellipsis-horizontal-circle"
+      icon="i-lucide-circle-ellipsis"
       color="neutral"
       variant="ghost"
     />
@@ -61,7 +61,7 @@
     <UButton
       v-if="currentTag"
       :label="currentTag.name"
-      :icon="taggedAsCurrent ? 'i-heroicons-tag-solid' : 'i-heroicons-tag'"
+      :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
       :data-tag-color="currentTag.color"
       :class="taggedAsCurrent ? 'text-tag-600' : 'hover:text-tag-700'"
       :ui="{
@@ -75,7 +75,7 @@
 
     <!-- Toggle star -->
     <UButton
-      :icon="starred ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+      :icon="starred ? 'i-bailly-star-filled' : 'i-lucide-star'"
       color="neutral"
       variant="ghost"
       :class="starred ? 'text-primary-400' : 'hover:text-primary-400'"

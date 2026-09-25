@@ -54,4 +54,15 @@ export default defineNuxtConfig({
       },
     },
   },
+  icon: {
+    // Icons from the Lucide collection (also used by Nuxt UI) and our own
+    // (`i-bailly-*`, cf. `app/assets/icons`).
+    customCollections: [
+      { prefix: "bailly", dir: "./app/assets/icons" },
+    ],
+    // Embed the icons found in the sources in the client bundle.
+    clientBundle: { scan: true },
+    // Never rely on the Iconify API: a missing icon must show up in development.
+    fallbackToApi: false,
+  },
 });

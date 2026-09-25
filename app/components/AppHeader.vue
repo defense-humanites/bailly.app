@@ -5,17 +5,17 @@
   const items = ref<NavigationMenuItem[]>([
     {
       label: "Signets",
-      icon: "i-heroicons-bookmark",
+      icon: "i-lucide-bookmark",
       to: "/signets",
     },
     {
       label: "Paramètres",
-      icon: "i-heroicons-adjustments-horizontal",
+      icon: "i-lucide-sliders-horizontal",
       to: encodeURI("/paramètres"),
     },
     {
       label: "À propos",
-      icon: "i-heroicons-information-circle",
+      icon: "i-lucide-info",
       to: encodeURI("/à-propos"),
     },
   ]);

@@ -46,21 +46,21 @@
     siblings.previous
       ? {
         label: siblings.previous.word,
-        icon: "i-heroicons-arrow-left",
+        icon: "i-lucide-arrow-left",
         to: `/${siblings.previous.uri}`,
       }
       : placeholder,
     {
       as: "h1",
       label: entry.word,
-      trailingIcon: entry.children?.length ? "i-heroicons-square-2-stack" : undefined,
+      trailingIcon: entry.children?.length ? "i-lucide-layers" : undefined,
       active: true,
       class: "text-2xl text-center",
     },
     siblings.next
       ? {
         label: siblings.next.word,
-        trailingIcon: "i-heroicons-arrow-right",
+        trailingIcon: "i-lucide-arrow-right",
         to: `/${siblings.next.uri}`,
         class: "text-right",
       }
