@@ -51,12 +51,13 @@
         "ui": { linkLabel: "max-sm:sr-only" },
       }
       : placeholder,
+    // The title: active (no hover effect), without the active background.
     {
       as: "h1",
       label: entry.word,
       trailingIcon: entry.children?.length ? "i-lucide-layers" : undefined,
       active: true,
-      class: "text-2xl text-center",
+      class: "text-2xl text-center before:bg-transparent",
     },
     siblings.next
       ? {
