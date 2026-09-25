@@ -239,6 +239,11 @@
   const highlightChosen = ref(false);
 
   /**
+   * Whether the results are shown.
+   */
+  const open = ref(false);
+
+  /**
    * Whether Enter was pressed before the results of the query came.
    */
   let enterPending = false;
@@ -261,7 +266,9 @@
     const input = menu.value?.inputRef as HTMLInputElement | undefined;
 
     if (exact.length === 1) {
-      // (Closes the results, and the mobile keyboard.)
+      // The results don't close when the input loses the focus (the header
+      // remains, unless the layout changes); the blur closes the mobile keyboard.
+      open.value = false;
       input?.blur();
       void navigateTo(entryRoute(exact[0]!.uri));
     } else if (items.value.length) {
@@ -338,6 +345,7 @@
   >
     <UInputMenu
       ref="menu"
+      v-model:open="open"
       class="w-full"
       :model-value="query"
       mode="autocomplete"
