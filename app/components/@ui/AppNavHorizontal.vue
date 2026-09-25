@@ -56,11 +56,11 @@
   -->
   <header
     ref="header"
-    class="sticky z-[99] border-b border-black/10 bg-white/90 backdrop-blur-sm transition-[top] duration-300 ease-out motion-reduce:transition-none md:fixed md:inset-x-0 md:top-3 md:h-14 md:border-0 md:bg-transparent md:px-6 md:backdrop-blur-none md:transition-none"
+    class="sticky z-[99] border-b border-black/10 bg-white/90 backdrop-blur-sm transition-[top] duration-300 ease-out motion-reduce:transition-none md:fixed md:inset-x-0 md:top-3 md:h-14 md:border-0 md:bg-transparent md:px-safe-6 md:backdrop-blur-none md:transition-none"
     :class="titleRowShown ? 'top-0' : '-top-12'"
   >
     <nav
-      class="grid grid-cols-[1fr_auto] items-center gap-x-3 px-4 pb-2 md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:px-3 md:py-1 md:bg-radial-[at_50%_0%] md:from-75% md:from-white/50 md:to-100% md:to-primary-50/75 md:bg-white/65 md:backdrop-blur-sm md:border md:border-black/10 md:shadow-xl md:shadow-black/10 md:rounded-xl"
+      class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 max-md:px-safe-4 md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:px-3 md:py-1 md:bg-radial-[at_50%_0%] md:from-75% md:from-white/50 md:to-100% md:to-primary-50/75 md:bg-white/65 md:backdrop-blur-sm md:border md:border-black/10 md:shadow-xl md:shadow-black/10 md:rounded-xl"
     >
       <ULink
         class="flex h-12 items-center font-serif text-xl tracking-wider text-black md:h-auto"

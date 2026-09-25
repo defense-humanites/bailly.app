@@ -8,6 +8,17 @@ export default defineNuxtConfig({
     "@nuxt/test-utils/module",
   ],
   devtools: { enabled: true },
+  app: {
+    head: {
+      /**
+       * `viewport-fit=cover`: the page extends under the device chrome (e.g. a
+       * landscape notch, the iPhone home indicator), and the edges clear it
+       * with the safe-area utilities (`px-safe-4`…); the insets are 0
+       * otherwise.
+       */
+      viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
+    },
+  },
   css: ["~/assets/css/main.css"],
   ui: {
     // Fonts are self-hosted (cf. `app/assets/css/fonts.css`).

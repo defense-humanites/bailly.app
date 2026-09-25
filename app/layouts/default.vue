@@ -8,7 +8,7 @@
   <div>
     <AppHeader />
     <main
-      class="pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]"
+      class="px-safe pb-safe"
       :class="[props.noMargin ? 'h-dvh' : 'md:h-[calc(100dvh-(var(--spacing)*20))] md:mt-20']"
     >
       <slot />

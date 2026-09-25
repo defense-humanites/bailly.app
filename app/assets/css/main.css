@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+/* Safe-area-aware utilities (`px-safe-4`…; cf. `viewport-fit` in `nuxt.config.ts`) */
+@import "tailwind-safe-insets";
+
 /* Fonts */
 @import "~/assets/css/fonts.css";
 
