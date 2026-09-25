@@ -199,9 +199,9 @@
   >
     <!-- Tag data and actions -->
     <template #header>
-      <div class="flex w-full h-8">
+      <div class="flex w-full h-8 gap-3">
         <div
-          class="flex grow items-center text-tag-600"
+          class="flex min-w-0 grow items-center text-tag-600"
         >
           <!-- Edit tag data -->
           <div
@@ -236,6 +236,7 @@
               aria-label="Nom de l'étiquette"
               size="xl"
               variant="none"
+              class="min-w-0 grow"
               :class="{ 'animate-shake': isTagNameErrored }"
               :ui="{
                 base: `shadow-none px-2 py-1 text-2xl font-bold rounded-l-none rounded-r-full bg-white/60 hover:bg-white/90 focus:bg-white/90 text-tag-600`,
@@ -257,11 +258,15 @@
         </div>
 
         <!--
-          Actions, always shown (a touch screen has no hover, and hidden
-          buttons can't be reached with the keyboard): the edit button, and in
-          edit mode the tag deletion.
+          Actions: the edit button, and in edit mode the tag deletion. Out of
+          edit mode, they show on hover, on focus (they stay in the tab order:
+          transparent, not hidden) and always on a touch screen (which has no
+          hover).
         -->
-        <span class="flex items-center gap-3">
+        <span
+          class="flex items-center gap-3"
+          :class="editMode ? '' : 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100'"
+        >
           <UButton
             v-if="editableEditMode"
             icon="i-lucide-trash-2"
