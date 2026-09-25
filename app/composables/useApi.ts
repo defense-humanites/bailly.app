@@ -1,165 +1,88 @@
-import type { UseFetchOptions } from "nuxt/app";
-import type { OptionalKeysOf } from "~/types";
 import type {
-  ApiEndpointParams,
-  ApiEndpointResponse,
-  ApiEntryParams,
-  ApiEntryResponse,
-  ApiLookupParams,
-  ApiLookupResponse,
-  ApiRandomEntryParams,
-  ApiRandomEntryResponse,
-  ApiWrappedResponse,
-  QueryableFields,
-} from "~/plugins/api";
+  ApiEntryData,
+  ApiLookupData,
+  ApiRandomEntryData,
+  ApiResponse,
+  Entry,
+  EntryField,
+  EntryParams,
+  LookupEntry,
+  LookupParams,
+  MorphologyGroups,
+  RandomEntryParams,
+  Siblings,
+} from "#shared/types/api";
+import { sortLookupEntries, toApiQuery } from "#shared/utils/api";
 
-enum ApiEndpoint {
-  Entry = "entry",
-  RandomEntry = "entry/random",
-  Lookup = "lookup",
-}
-
-const formatApiParams = <K extends keyof QueryableFields>(
-  params: ApiEndpointParams<K> | null,
-): string => {
-  return (Object.entries(params ?? {}) as [string, string | number | boolean | string[] | undefined][]).reduce((acc, item) => {
-    const [key, value] = item;
-
-    if (value) {
-      const param = `${key}=${String(value)}`;
-      return acc ? `${acc}&${param}` : param;
-    }
-
-    return acc;
-  }, "");
+export type EntryResult<F extends EntryField> = {
+  /** The entry, or `null` if it doesn't exist. */
+  entry: Entry<F> | null;
+  siblings: Siblings<F>;
 };
 
-export function buildApiCall<K extends keyof QueryableFields>(
-  endpoint: ApiEndpoint,
-  query: ApiEndpointParams<K>,
-): string;
-export function buildApiCall<K extends keyof QueryableFields>(
-  endpoint: ApiEndpoint,
-  query: string,
-  params?: ApiEndpointParams<K>,
-): string;
-export function buildApiCall<K extends keyof QueryableFields>(
-  endpoint: ApiEndpoint,
-  queryOrParams: string | ApiEndpointParams<K>,
-  params?: ApiEndpointParams<K>,
-): string {
-  let query: string = "";
-  if (typeof queryOrParams === "string") {
-    query = `/${encodeURIComponent(queryOrParams)}`;
-  }
-
-  const path: string = endpoint + query;
-  const request: string = formatApiParams(
-    (typeof queryOrParams !== "string" ? queryOrParams : params) ?? null,
-  );
-
-  return `${path}?${request}`;
-}
-
-export const useApi = <
-  E extends ApiEndpointResponse<OptionalKeysOf<QueryableFields>>,
->(
-  url: string | (() => string),
-  opts?: UseFetchOptions<ApiWrappedResponse<E>>,
-) => {
-  return useFetch(url, {
-    ...opts,
-    $fetch: useNuxtApp().$api,
-  });
-};
-
-export const useApiEntry = async <K extends keyof QueryableFields>(
-  uri: string,
-  params: ApiEntryParams<K>,
-  opts?: UseFetchOptions<ApiWrappedResponse<ApiEntryResponse<K>>>,
-) => {
-  const url = buildApiCall(ApiEndpoint.Entry, uri, params);
-  return await useApi<ApiEntryResponse<K>>(url, opts);
-};
-
-export const useApiRandomEntry = async <K extends keyof QueryableFields>(
-  params: ApiRandomEntryParams<K>,
-  opts?: UseFetchOptions<ApiWrappedResponse<ApiRandomEntryResponse<K>>>,
-) => {
-  const url = buildApiCall(ApiEndpoint.RandomEntry, params);
-  return await useApi<ApiRandomEntryResponse<K>>(url, opts);
-};
-
-export const useApiLookup = async <K extends keyof QueryableFields>(
-  betaCodeStr: string,
-  params: ApiLookupParams<K>,
-  opts?: UseFetchOptions<ApiWrappedResponse<ApiLookupResponse<K>>>,
-) => {
-  const runtimeConfig = useRuntimeConfig();
-
-  // Don't mutate the caller's object.
-  params = {
-    morphology: false,
-    caseSensitive: false,
-    limit: runtimeConfig.public.searchResultsLength,
-    skipMorpheus: false,
-    ...params,
-  };
-
-  /* if (localStorage.getItem("searchInputMode") === "transliteration") {
-      // @fixme: `greek-conversion` should implement a character exclusion list.
-      searchStr = searchStr.replace(/\?/g, "§");
-
-      searchStr = toGreek(searchStr, KeyType.TRANSLITERATION, {
-        additionalChars: AdditionalChar.DIGAMMA,
-        removeDiacritics: true,
-        removeExtraWhitespace: true,
-        transliterationStyle: {
-          useCxOverMacron: true,
-        },
-      }).replace(/§/g, "?");
-    }
-  } catch (error: unknown) {
-    console.error(
-      `Le mode de saisie n'a pas pu être déterminé.`,
-      `<${error instanceof Error ? error.message : String(error)}>`
-    );
-  } */
-
-  if (!validateInput(betaCodeStr)) return;
-
-  const url = buildApiCall(ApiEndpoint.Lookup, betaCodeStr, params);
-  const response = await useApi<ApiLookupResponse<K>>(url, opts);
-
-  response.data.value?.data.entries.sort(
-    (b, a) => Number(a.isExact) - Number(b.isExact),
-  );
-
-  return response;
+export type LookupResult<F extends EntryField> = {
+  count: number;
+  countAll: number;
+  orphanMorphology: MorphologyGroups;
+  /** The entries, exact matches first. */
+  entries: LookupEntry<F>[];
 };
 
 /**
- * A. [one char] Only allow greek letters (digamma included).
- * B. (1) Allow fewer than 50 characters.
- *    (2) Only allow greek letters (digamma included), spaces
- *        and metacharacters `^`, `$`, `?`, `*` and `"`;
- *    (3) Only allow `^` in first position;
- *    (4) Only allow `$` in last position;
- *    (5) Allow a maximum of three identical characters in a row.
+ * Fetches an entry (reactive to `uri`).
+ * @param uri The entry URI.
+ * @param params The requested fields and options.
  */
-function validateInput(str: string): boolean {
-  switch (str.length) {
-    case 0:
-      return false;
-    case 1:
-      return !/[^α-ωϝ]/i.test(str);
-    default:
-      return (
-        str.length < 50
-        && !/[^α-ωϝ\s^$?*"]/i.test(str)
-        && !/^.+\^/.test(str)
-        && !/\$.+$/.test(str)
-        && !/(.)\1{3,}/.test(str)
-      );
-  }
+export function useApiEntry<F extends EntryField>(
+  uri: MaybeRefOrGetter<string>,
+  params: EntryParams<F>,
+) {
+  return useFetch(() => `entry/${encodeURIComponent(toValue(uri))}`, {
+    $fetch: useNuxtApp().$api,
+    query: toApiQuery(params),
+    transform: ({ data }: ApiResponse<ApiEntryData<F>>): EntryResult<F> => ({
+      // The API answers unknown entries with an empty object.
+      entry: Object.keys(data.entry).length ? (data.entry as Entry<F>) : null,
+      siblings: data.siblings ?? {},
+    }),
+  });
+}
+
+/**
+ * Fetches a random entry.
+ * @param params The requested fields and options.
+ */
+export function useApiRandomEntry<F extends EntryField>(params: RandomEntryParams<F>) {
+  return useFetch("entry/random", {
+    $fetch: useNuxtApp().$api,
+    query: toApiQuery(params),
+    transform: ({ data }: ApiResponse<ApiRandomEntryData<F>>): Entry<F> => data.entry,
+  });
+}
+
+/**
+ * Returns a function that looks entries up, e.g. for a search as you type.
+ * @remarks The API validates the query: an invalid one gets an empty result.
+ */
+export function useApiLookup() {
+  const { $api, $config } = useNuxtApp();
+
+  return async <F extends EntryField>(
+    query: string,
+    params: LookupParams<F>,
+  ): Promise<LookupResult<F>> => {
+    const q = query.trim();
+    if (!q) return { count: 0, countAll: 0, orphanMorphology: {}, entries: [] };
+
+    const { data } = await $api<ApiResponse<ApiLookupData<F>>>(`lookup/${encodeURIComponent(q)}`, {
+      query: toApiQuery({ limit: $config.public.searchResultsLength, ...params }),
+    });
+
+    return {
+      count: data.count,
+      countAll: data.countAll,
+      orphanMorphology: data.orphanMorphology ?? {},
+      entries: sortLookupEntries(data.entries),
+    };
+  };
 }

@@ -1,6 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import type { ColorKey } from "~/enums";
-import type { Entry } from "~/plugins/api";
+import type { Entry, EntryData } from "#shared/types/api";
 import type { PartialExcept } from "~/types";
 import type { TagColorKey } from "./IdbTags";
 
@@ -44,7 +44,7 @@ export async function attempt<T>(operation: () => Promise<T>): Promise<IdbResult
 /**
  * A flat entry with selected fields.
  */
-export type IdbEntry = Omit<Entry<"word" | "uri" | "excerpt">, "children">;
+export type IdbEntry = Pick<EntryData, "word" | "uri" | "excerpt">;
 /**
  * A given entry with selected fields that may have children.
  */

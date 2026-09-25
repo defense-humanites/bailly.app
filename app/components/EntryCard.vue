@@ -1,10 +1,9 @@
 <script setup lang="ts">
   import type { NuxtLinkProps } from "#app";
   import type { CardProps } from "@nuxt/ui";
-  import type { Entry } from "~/plugins/api";
-  import type { Optional } from "~/types";
+  import type { Entry, EntryData } from "#shared/types/api";
 
-  type DisplayedEntry = Entry<"word" | "uri" | "excerpt"> & Optional<Entry, "htmlDefinition">;
+  type DisplayedEntry = Entry<"word" | "uri" | "excerpt"> & Partial<Pick<EntryData, "htmlDefinition">>;
 
   defineProps<{
     /**

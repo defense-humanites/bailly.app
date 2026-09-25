@@ -9,7 +9,7 @@
   const route = useRoute();
   const uri = String(route.params.uri);
 
-  const { data: payload, error } = await useApiEntry(uri, {
+  const { data, error } = await useApiEntry(uri, {
     fields: ["word", "uri", "excerpt", "htmlDefinition"],
     siblings: true,
   });
@@ -21,9 +21,8 @@
     });
   }
 
-  // The API answers unknown URIs with an empty entry.
-  const entry = payload.value?.data.entry;
-  if (!entry?.word) {
+  const entry = data.value?.entry;
+  if (!entry) {
     throw createError({
       status: 404,
       statusText: "La page demandée n'existe pas.",
@@ -35,7 +34,7 @@
     await navigateTo(`/${encodeURIComponent(entry.uri)}`, { redirectCode: 301 });
   }
 
-  const siblings = payload.value?.data.siblings ?? {};
+  const siblings = data.value?.siblings ?? {};
 
   /**
    * Keeps the title centered when there is no previous/next entry.
@@ -87,9 +86,9 @@
         color="neutral"
       />
     </header>
-    <section v-if="payload?.data.entry">
+    <section>
       <EntryCard
-        :entry="payload.data.entry"
+        :entry="entry"
         toolbar
       />
     </section>

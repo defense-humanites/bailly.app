@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  const { data: payload } = await useApiRandomEntry({
+  const { data: randomEntry } = await useApiRandomEntry({
     fields: ["word", "uri", "excerpt", "htmlDefinition"],
     lengthRange: [600, 700],
   });
@@ -7,10 +7,7 @@
   /**
    * The random entry or, if it groups several entries, the first of them.
    */
-  const entry = computed(() => {
-    const randomEntry = payload.value?.data.entry;
-    return randomEntry?.children?.[0] ?? randomEntry;
-  });
+  const entry = computed(() => randomEntry.value?.children?.[0] ?? randomEntry.value);
 </script>
 
 <template>
