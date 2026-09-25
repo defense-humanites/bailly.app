@@ -42,7 +42,8 @@
 <template>
   <UPopover :content="{ align: 'end', collisionPadding: 12 }">
     <!--
-      A dot on the button when an option isn't the default one. When the input
+      A dot on the button when an option isn't the default one; a background
+      while the panel is open. When the input
       has the focus, the button's ring takes its color, except on the left
       edge (a pseudo-element): the divider stays neutral.
     -->
@@ -50,7 +51,7 @@
       color="neutral"
       variant="outline"
       size="lg"
-      class="relative shadow-xs before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-(--ui-border-accented) group-has-[input:focus-visible]/search:ring-primary"
+      class="relative shadow-xs before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-(--ui-border-accented) data-[state=open]:bg-elevated group-has-[input:focus-visible]/search:ring-primary"
       aria-label="Options de recherche"
     >
       <UChip
@@ -67,11 +68,12 @@
 
     <!--
       Compact rows (label, control). The options first, then, below a line,
-      the preferences (stored: cf. the settings page).
+      the preferences (stored: cf. the settings page). Full width (but the
+      margins) below `xs`.
     -->
     <template #content>
       <form
-        class="w-[min(22rem,calc(100dvw-2rem))] space-y-2.5 p-3 text-sm"
+        class="w-[calc(100dvw-2rem)] xs:w-[22rem] space-y-2.5 p-3 text-sm"
         @submit.prevent
       >
         <div class="flex h-5 items-center justify-between">

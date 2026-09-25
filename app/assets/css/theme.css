@@ -1,4 +1,7 @@
 @theme static {
+  /* Small phones and narrow windows (e.g. full-width panels below it). */
+  --breakpoint-xs: 30rem;
+
   --color-hot-cinnamon-50: oklch(98.25% 0.02 89.35);
   --color-hot-cinnamon-100: oklch(94.83% 0.05 88.81);
   --color-hot-cinnamon-200: oklch(89.89% 0.1 89.39);
