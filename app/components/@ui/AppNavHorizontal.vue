@@ -49,7 +49,9 @@
     header is sticky with an offset of the first row's height (`h-12`): that
     row scrolls away with the page, and the search bar stays at the top. The
     first row slides back (offset `0`) when the user scrolls up, over the
-    content: the layout doesn't change. From `md`, a single floating row.
+    content: the layout doesn't change. From `md`, a single floating row, at
+    most `5xl` wide (as the home page), the search bar taking the space left
+    between the title and the menu.
   -->
   <header
     ref="header"
@@ -57,13 +59,13 @@
     :class="titleRowShown ? 'top-0' : '-top-12'"
   >
     <nav
-      class="grid grid-cols-[1fr_auto] items-center gap-x-3 px-4 pb-2 md:flex md:h-full md:w-full md:justify-between md:gap-x-6 md:px-3 md:py-1 md:bg-radial-[at_50%_0%] md:from-75% md:from-white/50 md:to-100% md:to-primary-50/75 md:bg-white/65 md:backdrop-blur-sm md:border md:border-black/10 md:shadow-xl md:shadow-black/10 md:rounded-xl"
+      class="grid grid-cols-[1fr_auto] items-center gap-x-3 px-4 pb-2 md:mx-auto md:flex md:h-full md:w-full md:max-w-5xl md:justify-between md:gap-x-8 lg:gap-x-12 md:px-3 md:py-1 md:bg-radial-[at_50%_0%] md:from-75% md:from-white/50 md:to-100% md:to-primary-50/75 md:bg-white/65 md:backdrop-blur-sm md:border md:border-black/10 md:shadow-xl md:shadow-black/10 md:rounded-xl"
     >
       <ULink
         class="flex h-12 items-center font-serif text-xl tracking-wider text-black md:h-auto"
         href="/"
       >Bailly.app</ULink>
-      <SearchBar class="col-span-2 row-start-2 w-full md:max-w-96" />
+      <SearchBar class="col-span-2 row-start-2 w-full md:w-auto md:min-w-0 md:flex-1" />
       <UNavigationMenu
         :items="menuItems"
         :ui="{ link: 'max-md:p-2.5', linkLabel: 'max-lg:sr-only' }"
