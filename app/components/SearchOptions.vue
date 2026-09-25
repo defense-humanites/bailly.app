@@ -38,7 +38,7 @@
       color="neutral"
       variant="outline"
       size="lg"
-      class="shadow-xs"
+      class="shadow-xs group-has-[input:focus-visible]/search:ring-primary"
       aria-label="Options de recherche"
     >
       <UChip

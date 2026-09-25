@@ -231,7 +231,11 @@
     Nuxt UI renders that slot in a button (the menu trigger), where another
     button would be invalid.
   -->
-  <UFieldGroup>
+  <!--
+    The focus halo (outline) and ring of the input surround the whole bar,
+    options button included: the input's own halo would stop short of it.
+  -->
+  <UFieldGroup class="group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3">
     <UInputMenu
       ref="menu"
       class="w-full"
@@ -254,7 +258,7 @@
       :lang="transliterating ? 'grc-Latn' : 'grc'"
       :content="{ align: 'start', collisionPadding: 12 }"
       :ui="{
-        base: 'shadow-xs max-md:text-base',
+        base: 'shadow-xs max-md:text-base focus-visible:outline-transparent',
         content: 'w-[min(40rem,calc(100dvw-2rem))] max-h-[min(32rem,var(--reka-combobox-content-available-height))]',
         item: 'items-start',
         itemLabel: 'whitespace-normal line-clamp-2',
@@ -273,7 +277,7 @@
           color="neutral"
           variant="link"
           size="sm"
-          class="p-0"
+          class="p-0 shadow-none"
           :ui="{ leadingIcon: 'size-5' }"
           aria-label="Effacer la recherche"
           @click.stop="clear"
@@ -287,26 +291,29 @@
 
       <!--
         The result count (instead of the menu chevron), or a loading indicator
-        when the lookup is slow. The previous count remains meanwhile.
+        when the lookup is slow. The previous count remains meanwhile. The
+        wrapper is always rendered: an empty slot would fall back to the chevron.
       -->
       <template #trailing>
-        <UBadge
-          v-if="query && (slow || result)"
-          color="neutral"
-          variant="soft"
-          size="sm"
-          class="min-w-6 justify-center"
-          :aria-label="slow ? 'Recherche en cours' : undefined"
-        >
-          <UIcon
-            v-if="slow"
-            name="i-lucide-loader-circle"
-            class="size-3.5 animate-spin"
-          />
-          <template v-else>
-            {{ result?.countAll }}
-          </template>
-        </UBadge>
+        <span class="flex items-center">
+          <UBadge
+            v-if="query && (slow || result)"
+            color="neutral"
+            variant="soft"
+            size="sm"
+            class="min-w-6 justify-center"
+            :aria-label="slow ? 'Recherche en cours' : undefined"
+          >
+            <UIcon
+              v-if="slow"
+              name="i-lucide-loader-circle"
+              class="size-3.5 animate-spin"
+            />
+            <template v-else>
+              {{ result?.countAll }}
+            </template>
+          </UBadge>
+        </span>
       </template>
 
       <template #content-top>
