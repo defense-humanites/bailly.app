@@ -119,6 +119,33 @@
     onInput((event.target as HTMLInputElement).value);
   };
 
+  /**
+   * Delay (in ms) after which a lookup is slow: a loading indicator then
+   * replaces the result count (a shorter wait isn't signaled, to avoid
+   * flickering).
+   */
+  const SLOW_LOOKUP_DELAY = 400;
+
+  /**
+   * Whether the current lookup is slow (cf. `SLOW_LOOKUP_DELAY`).
+   */
+  const slow = ref(false);
+  let slowTimer: ReturnType<typeof setTimeout> | undefined;
+
+  watch(status, (value) => {
+    clearTimeout(slowTimer);
+    slow.value = false;
+    if (value === "pending") {
+      slowTimer = setTimeout(() => {
+        slow.value = true;
+      }, SLOW_LOOKUP_DELAY);
+    }
+  });
+
+  onBeforeUnmount(() => {
+    clearTimeout(slowTimer);
+  });
+
   const clear = (): void => {
     query.value = "";
     (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
@@ -216,7 +243,6 @@
       :items="items"
       ignore-filter
       icon="i-lucide-search"
-      :loading="pending"
       :placeholder="transliterating ? 'anazētéō…' : 'ἀναζητέω…'"
       :aria-label="`Rechercher une entrée (${transliterating ? 'translittération' : 'beta code'} ou grec)`"
       size="lg"
@@ -239,32 +265,48 @@
       @compositionstart="onCompositionStart"
       @compositionend="onCompositionEnd"
     >
+      <!-- The clear button replaces the search icon once the input isn't empty. -->
+      <template #leading>
+        <UButton
+          v-if="query"
+          icon="i-lucide-x"
+          color="neutral"
+          variant="link"
+          size="sm"
+          class="p-0"
+          :ui="{ leadingIcon: 'size-5' }"
+          aria-label="Effacer la recherche"
+          @click.stop="clear"
+        />
+        <UIcon
+          v-else
+          name="i-lucide-search"
+          class="size-5 shrink-0 text-dimmed"
+        />
+      </template>
+
       <!--
-        Result count and clear button (instead of the menu chevron). The slot
-        is rendered in a button: like Nuxt UI's own clear button, ours is a
-        `span`, out of the tab order (the input can be cleared from the keyboard).
+        The result count (instead of the menu chevron), or a loading indicator
+        when the lookup is slow. The previous count remains meanwhile.
       -->
       <template #trailing>
-        <span class="flex items-center gap-1.5">
-          <UBadge
-            v-if="query && result && !pending"
-            :label="String(result.countAll)"
-            color="neutral"
-            variant="soft"
-            size="sm"
+        <UBadge
+          v-if="query && (slow || result)"
+          color="neutral"
+          variant="soft"
+          size="sm"
+          class="min-w-6 justify-center"
+          :aria-label="slow ? 'Recherche en cours' : undefined"
+        >
+          <UIcon
+            v-if="slow"
+            name="i-lucide-loader-circle"
+            class="size-3.5 animate-spin"
           />
-          <UButton
-            v-if="query"
-            as="span"
-            tabindex="-1"
-            icon="i-lucide-x"
-            color="neutral"
-            variant="link"
-            size="sm"
-            aria-label="Effacer la recherche"
-            @click.stop="clear"
-          />
-        </span>
+          <template v-else>
+            {{ result?.countAll }}
+          </template>
+        </UBadge>
       </template>
 
       <template #content-top>
