@@ -68,11 +68,13 @@
 
     <!--
       Compact rows (label, control). The options first, then, below a line,
-      the preferences (stored: cf. the settings page).
+      the preferences (stored: cf. the settings page). In a narrow panel
+      (below 18rem, at the application's minimum width), the labels of the
+      radio groups go above them.
     -->
     <template #content>
       <form
-        class="w-[min(22rem,calc(100dvw-2rem))] space-y-2.5 p-3 text-sm"
+        class="@container w-[min(22rem,calc(var(--app-width)-2rem))] space-y-2.5 p-3 text-sm"
         @submit.prevent
       >
         <div class="flex h-5 items-center justify-between">
@@ -89,9 +91,9 @@
         </div>
 
         <div>
-          <div class="flex items-center gap-3">
+          <div class="flex flex-col gap-1 @2xs:flex-row @2xs:items-center @2xs:gap-3">
             <span
-              class="w-24 shrink-0"
+              class="shrink-0 @2xs:w-24"
               aria-hidden="true"
             >Position</span>
             <URadioGroup
@@ -106,7 +108,7 @@
               :ui="radioUi"
             />
           </div>
-          <p class="mt-1 ps-27 text-xs text-muted">
+          <p class="mt-1 text-xs text-muted @2xs:ps-27">
             <kbd>?</kbd> une lettre · <kbd>*</kbd> plusieurs
           </p>
         </div>
@@ -128,9 +130,9 @@
           :ui="switchUi"
         />
 
-        <div class="flex items-center gap-3">
+        <div class="flex flex-col gap-1 @2xs:flex-row @2xs:items-center @2xs:gap-3">
           <span
-            class="w-24 shrink-0"
+            class="shrink-0 @2xs:w-24"
             aria-hidden="true"
           >Saisie</span>
           <URadioGroup

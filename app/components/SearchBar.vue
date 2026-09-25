@@ -322,7 +322,7 @@
    * rendered again when only their class changes.
    */
   const contentClass = computed((): string => [
-    "w-[min(40rem,calc(100dvw-2rem))] max-h-[min(32rem,var(--reka-combobox-content-available-height))]",
+    "w-[min(40rem,calc(var(--app-width)-2rem))] max-h-[min(32rem,var(--reka-combobox-content-available-height))]",
     highlightChosen.value ? "" : "[&_[data-highlighted]]:before:bg-transparent! [&_[data-highlighted]]:text-default!",
   ].join(" "));
 </script>

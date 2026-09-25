@@ -2,5 +2,18 @@
   --ui-primary: var(--ui-color-primary-600);
   --ui-text: var(--ui-color-neutral-900);
 
+  /*
+   * The narrowest width the application is laid out for (320px at the
+   * default font size, and more for a larger one): below it, the page
+   * scrolls horizontally (cf. `body`).
+   */
+  --app-min-width: 20rem;
+
+  /*
+   * The viewport width, but at least `--app-min-width`: for the elements
+   * sized on the viewport rather than on the page (e.g. popovers).
+   */
+  --app-width: max(100dvw, var(--app-min-width));
+
   @apply overscroll-none;
 }
