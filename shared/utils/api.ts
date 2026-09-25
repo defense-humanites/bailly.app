@@ -22,8 +22,10 @@ export function toApiQuery(params: Record<string, ApiQueryValue>): Record<string
 }
 
 /**
- * Sorts lookup entries, exact matches first (the order is otherwise kept).
+ * Sorts lookup entries: exact matches first (those found through their
+ * inflected form after the others), then the rest. The order is otherwise kept.
  */
-export function sortLookupEntries<E extends { isExact: boolean }>(entries: readonly E[]): E[] {
-  return [...entries].sort((a, b) => Number(b.isExact) - Number(a.isExact));
+export function sortLookupEntries<E extends { isExact: boolean; isMorpheus: boolean }>(entries: readonly E[]): E[] {
+  const rank = (entry: E): number => (entry.isExact ? (entry.isMorpheus ? 1 : 0) : 2);
+  return [...entries].sort((a, b) => rank(a) - rank(b));
 }

@@ -25,12 +25,13 @@ test("toApiQuery", () => {
 
 test("sortLookupEntries", () => {
   const entries = [
-    { word: "a", isExact: false },
-    { word: "b", isExact: true },
-    { word: "c", isExact: false },
-    { word: "d", isExact: true },
+    { word: "a", isExact: false, isMorpheus: false },
+    { word: "b", isExact: true, isMorpheus: true },
+    { word: "c", isExact: true, isMorpheus: false },
+    { word: "d", isExact: false, isMorpheus: false },
+    { word: "e", isExact: true, isMorpheus: false },
   ];
 
-  expect(sortLookupEntries(entries).map(entry => entry.word)).toEqual(["b", "d", "a", "c"]);
-  expect(entries.map(entry => entry.word)).toEqual(["a", "b", "c", "d"]); // Not mutated.
+  expect(sortLookupEntries(entries).map(entry => entry.word)).toEqual(["c", "e", "b", "a", "d"]);
+  expect(entries.map(entry => entry.word)).toEqual(["a", "b", "c", "d", "e"]); // Not mutated.
 });
