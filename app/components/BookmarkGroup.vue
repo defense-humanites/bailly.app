@@ -23,11 +23,6 @@
      */
     customIcon?: string;
     /**
-     * The tag position (from 1), as set in "Arranger": shown on the card, so
-     * that the chosen order remains clear whatever the layout.
-     */
-    position?: number;
-    /**
      * If enabled, make the tag data and its related entries editable.
      */
     editable?: boolean;
@@ -296,13 +291,6 @@
             @click="toggleEditMode"
           />
         </span>
-
-        <!-- The position (the order is also the one of the document). -->
-        <span
-          v-if="position"
-          class="mt-1 flex size-6 shrink-0 items-center justify-center rounded-full bg-white/60 text-xs font-semibold tabular-nums text-tag-600"
-          aria-hidden="true"
-        >{{ position }}</span>
 
         <UModal
           v-if="editable"

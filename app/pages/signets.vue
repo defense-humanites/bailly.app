@@ -85,10 +85,9 @@
 
         <!-- Tags -->
         <BookmarkGroup
-          v-for="(tag, index) in tags"
+          v-for="tag in tags"
           :key="tag.key"
           :tag="tag"
-          :position="index + 1"
           :entries="bookmarksStore.entriesOf(tag.key)"
           editable
         >
