@@ -44,9 +44,11 @@
   const items: NavigationMenuItem[] = [
     siblings.previous
       ? {
-        label: siblings.previous.word,
-        icon: "i-lucide-arrow-left",
-        to: `/${siblings.previous.uri}`,
+        "label": siblings.previous.word,
+        "icon": "i-lucide-arrow-left",
+        "to": `/${siblings.previous.uri}`,
+        "aria-label": `Entrée précédente : ${siblings.previous.word}`,
+        "ui": { linkLabel: "max-sm:sr-only" },
       }
       : placeholder,
     {
@@ -58,10 +60,12 @@
     },
     siblings.next
       ? {
-        label: siblings.next.word,
-        trailingIcon: "i-lucide-arrow-right",
-        to: `/${siblings.next.uri}`,
-        class: "text-right",
+        "label": siblings.next.word,
+        "trailingIcon": "i-lucide-arrow-right",
+        "to": `/${siblings.next.uri}`,
+        "aria-label": `Entrée suivante : ${siblings.next.word}`,
+        "class": "justify-end text-right",
+        "ui": { linkLabel: "max-sm:sr-only" },
       }
       : placeholder,
   ];
@@ -92,5 +96,8 @@
         toolbar
       />
     </section>
+    <footer class="mt-8">
+      <EntrySurround :siblings="siblings" />
+    </footer>
   </article>
 </template>
