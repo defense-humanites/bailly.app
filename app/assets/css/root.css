@@ -29,8 +29,11 @@
   --header-gap: 2rem;
 
   @variant lg {
-    --header-menu-width: 20.5rem; /* Icons and labels. */
     --header-gap: 3rem;
+  }
+
+  @variant xl {
+    --header-menu-width: 20.5rem; /* Icons and labels. */
   }
 
   @apply overscroll-none;

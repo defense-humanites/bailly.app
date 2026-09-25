@@ -6,13 +6,13 @@
   }>();
 
   /**
-   * Below `lg`, the menu only shows its icons: their labels are then shown in
+   * Below `xl`, the menu only shows its icons: their labels are then shown in
    * tooltips (and remain the links' accessible names).
-   * @remarks The tooltips are disabled rather than removed from `lg`: the
+   * @remarks The tooltips are disabled rather than removed from `xl`: the
    * server doesn't know the viewport width, and the markup must not change
    * after hydration.
    */
-  const showLabels = useMediaQuery("(min-width: 64rem)");
+  const showLabels = useMediaQuery("(min-width: 80rem)");
 
   const menuItems = computed((): NavigationMenuItem[] =>
     props.items.map(item => ({ ...item, tooltip: { disabled: showLabels.value } })),
@@ -70,7 +70,7 @@
       <UNavigationMenu
         class="md:col-start-3 md:row-start-1 md:justify-self-end"
         :items="menuItems"
-        :ui="{ link: 'max-md:p-2.5', linkLabel: 'max-lg:sr-only' }"
+        :ui="{ link: 'max-md:p-2.5', linkLabel: 'max-xl:sr-only' }"
       />
     </nav>
   </header>
