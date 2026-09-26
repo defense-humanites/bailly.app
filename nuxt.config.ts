@@ -53,6 +53,10 @@ export default defineNuxtConfig({
       : {},
   },
   typescript: {
+    // Type-check the Playwright config with the other tooling configs.
+    nodeTsConfig: {
+      include: ["../playwright.config.ts"],
+    },
     tsConfig: {
       // Type-check the tests with the app code they exercise.
       include: ["../test/**/*"],

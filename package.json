@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:unit": "vitest run --project unit",
-    "test:nuxt": "vitest run --project nuxt"
+    "test:nuxt": "vitest run --project nuxt",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@humanities/greek-conversion": "^1.0.0-beta.6",
@@ -35,6 +36,7 @@
     "@iconify-json/lucide": "^1.2.136",
     "@nuxt/eslint": "^1.17.0",
     "@nuxt/test-utils": "^4.3.2",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.20.4",
     "@types/sortablejs": "^1.15.9",
     "@vue/test-utils": "^2.5.1",

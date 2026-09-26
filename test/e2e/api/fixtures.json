@@ -1,0 +1,703 @@
+{
+ "/entry/logades?fields=word,uri,excerpt,htmlDefinition&siblings=true": {
+  "data": {
+   "$query": {
+    "fields": [
+     "word",
+     "uri",
+     "excerpt",
+     "htmlDefinition"
+    ],
+    "siblings": true,
+    "q": "logades"
+   },
+   "version": "2023-02-28",
+   "entry": {
+    "word": "λογάδες",
+    "uri": "logades",
+    "excerpt": "",
+    "htmlDefinition": "",
+    "children": [
+     {
+      "word": "λογάδες",
+      "uri": "logades#1",
+      "excerpt": "λογάδες, ων (αἱ) 1 blanc de l’œil, Nic. Th. 292 || 2 d’où œil, Anth. 5, 270. ",
+      "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">λογάδες,</span></span> <span class=\"gens\">ων</span> <span class=\"art\">(<span class=\"grec\"><span data-linked-entries=\"hai_(1),ho_(1)\">αἱ</span></span>)</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> blanc de l’œil,\n<span class=\"aut\">Nic.</span> <span class=\"oeuv\">Th.</span>\n<span class=\"refch\">292</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> <span class=\"ital\">d’où</span> œil, <span class=\"aut\">Anth.</span> <span class=\"refch\">5, 270</span>.</div>\n"
+     },
+     {
+      "word": "λογάδες",
+      "uri": "logades#2",
+      "excerpt": "λογάδες, v. λογάς.",
+      "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">λογάδες,</span></span> <span class=\"ital\">v.</span> <span class=\"grec\"><a href=\"/logas\">λογάς</a></span>."
+     }
+    ]
+   },
+   "siblings": {
+    "previous": {
+     "word": "Λοϐρίνη",
+     "uri": "Lobrinê",
+     "excerpt": "Λοϐρίνη, ης (ἡ) surn. de Rhéa, Nic. Al. 8.",
+     "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">Λοϐρίνη,</span></span> <span class=\"gens\">ης</span>\n<span class=\"art\">(<span class=\"grec\"><span data-linked-entries=\"hê_(1),ho_(1)\">ἡ</span></span>)</span> <span class=\"ital\">surn. de Rhéa,</span> <span class=\"aut\">Nic.</span>\n<span class=\"oeuv\">Al.</span> <span class=\"refch\">8</span>."
+    },
+    "next": {
+     "word": "λογάδην",
+     "uri": "logadên",
+     "excerpt": "λογάδην [ᾰ] adv. 1 en tas, en monceau, Thc. 4, 31 ; 6, 66 || 2 avec choix, Thc. 4, 4 ; Plut. Oth. 6. Étym. λογάς, -δην. ",
+     "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">λογάδην</span></span> [<span class=\"grec-longueur\">ᾰ</span>]\n<span class=\"ital\">adv.</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> en tas, en monceau,\n<span class=\"aut\">Thc.</span> <span class=\"refch\">4, 31 ;</span>\n<span class=\"refch\">6, 66</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> avec choix, <span class=\"aut\">Thc.</span> <span class=\"refch\">4, 4 ;</span> <span class=\"aut\">Plut.</span> <span class=\"oeuv\">Oth.</span> <span class=\"refch\">6</span>.</div>\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/logas\">λογάς</a></span>, <span class=\"grec\">-δην</span>.</div>\n"
+    }
+   }
+  }
+ },
+ "/entry/logos?fields=word,uri,excerpt,htmlDefinition&siblings=true": {
+  "data": {
+   "$query": {
+    "fields": [
+     "word",
+     "uri",
+     "excerpt",
+     "htmlDefinition"
+    ],
+    "siblings": true,
+    "q": "logos"
+   },
+   "version": "2023-02-28",
+   "entry": {
+    "word": "λόγος",
+    "uri": "logos",
+    "excerpt": "λόγος, ου (ὁ) A parole : I la parole, en gén. : ἔργα λόγου μέζω, Hdt. 2, 35, actions au-dessus de ce qu’on en pourrait dire ; λόγου κρεῖσσον, Thc. 2,…",
+    "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">λόγος,</span></span> <span class=\"gens\">ου</span>\n<span class=\"art\">(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)</span>\n<div class=\"Rub\"><span class=\"Ruba\">A</span> parole :\n<div class=\"rub\"><span class=\"ruba\">I</span> la parole,\n<span class=\"ital\">en gén. :</span> <span class=\"grec\"><a href=\"/ergon\">ἔργα</a>\n<span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/megas\">μέζω</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">2, 35,</span> actions au-dessus de ce qu’on en pourrait\ndire ; <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/kreissôn\">κρεῖσσον</a></span>, <span class=\"aut\">Thc.</span> <span class=\"refch\">2, 50,</span> au-dessus de\ntoute expression ; <span class=\"ital\">p. opp. à</span> <span class=\"grec\"><span data-linked-entries=\"ergnumi,ergon,ergô\">ἔργον</span></span> (l’action) <span class=\"grec\"><span data-linked-self>λόγῳ</span> <a href=\"/men\">μὲν</a>..., <a href=\"/ergon\">ἔργῳ</a>\n<a href=\"/de\">δέ</a>,</span> <span class=\"aut\">Hdt.</span> <span class=\"refch\">4,\n8 ;</span> <span class=\"aut\">Thc.</span> <span class=\"refch\">1, 22,\netc.</span> en parole, mais en fait, <span class=\"ital\">etc. ;</span> <span class=\"grec\"><a href=\"/ergon\">ἔργῳ</a> <span data-linked-entries=\"kou_(1),ou_(2)\">κοὐ</span> <span data-linked-self>λόγῳ</span>,</span>\n<span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Pr.</span>\n<span class=\"refch\">336,</span> en réalité et non en parole ;\n<span class=\"ital\">de même</span> <span class=\"ital\">p. opp.\nà</span> <span class=\"grec\"><span data-linked-entries=\"naô,noos-nous\">νόῳ</span></span> (intelligence, esprit,\npensée) <span class=\"aut\">Hdt.</span> <span class=\"refch\">2,\n100 ;</span> <span class=\"ital\">à</span> <span class=\"grec\"><a href=\"/alêtheia\">ἀλήθεια</a></span> (réalité), <span class=\"aut\">Lycurg.</span>\n<span class=\"refch\">150, 44</span> ||</div>\n<div class=\"rub\"><span class=\"ruba\">II</span> <span class=\"ital\">particul.</span> une parole, un mot : <span class=\"grec\"><a href=\"/hôs_(2)\">ὡς</a> <a href=\"/eipon\">εἰπεῖν</a> <span data-linked-self>λόγῳ</span></span>, <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">2, 37 ;</span> <span class=\"grec\"><a href=\"/legô\">λέγειν</a> <span data-linked-entries=\"heis,heni\">ἑνὶ</span>\n<span data-linked-self>λόγῳ</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phædr.</span> <span class=\"refpa\">241</span><span class=\"refpb\">e</span>, <span class=\"ital\">etc. ;</span> <span class=\"grec\"><a href=\"/hôs_(2)\">ὡς</a> <span data-linked-entries=\"haploos-ous,haplos\">ἁπλῷ</span> <span data-linked-self>λόγῳ</span></span>, <span class=\"aut\">Att.</span>\n<span class=\"ital\">ou</span> <span class=\"grec\"><span data-linked-entries=\"haploos-ous,haplos\">ἁπλῷ</span> <span data-linked-self>λόγῳ</span></span>,\n<span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Pr.</span>\n<span class=\"refch\">975,</span> pour le dire en un mot, en un seul\nmot, d’un simple mot ; <span class=\"ital\">au plur.</span> mots,\nparoles, <span class=\"ital\">d’où</span> langage, <span class=\"ital\">us. seul. en ce sens dans Hom. et Hés.</span> <span class=\"aut\">Il.</span> <span class=\"refch\">15, 393 ;</span> <span class=\"grec\"><span data-linked-entries=\"haimulios,haimulos\">αἱμύλιοι</span> <span data-linked-self>λόγοι</span></span>, <span class=\"aut\">Od.</span>\n<span class=\"refch\">1, 56,</span> paroles de flatterie,\nflatteries ; <span class=\"ital\">cf.</span> <span class=\"aut\">Hh.</span> <span class=\"oeuv\">Merc.</span> <span class=\"refch\">317 ;</span> <span class=\"grec\"><a href=\"/pseudês\">ψευδεῖς</a> <span data-linked-self>λόγοι</span></span>,\n<span class=\"aut\">Hés.</span> <span class=\"oeuv\">Th.</span>\n<span class=\"refch\">229,</span> mensonges (<span class=\"ital\">ttef.</span> <span class=\"grec\"><span data-linked-self>λόγος</span></span> <span class=\"ital\">ne signifie jamais</span> « mot » <span class=\"ital\">au sens\ngrammatical comme</span> <span class=\"grec\"><a href=\"/onoma\">ὄνομα</a></span>\n<span class=\"ital\">ou</span> <span class=\"grec\"><a href=\"/rhêma\">ῥῆμα</a></span> ;\n<span class=\"ital\">il suppose toujours l’usage réel de la\nparole</span>) ||</div>\n<div class=\"rub\"><span class=\"ruba\">III</span> <span class=\"ital\">p. suite,</span> une parole, <span class=\"ital\">pour marquer\ndiverses applications particulières :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> <span class=\"ital\">t. de\nlog.</span> proposition, <span class=\"aut\">Plat.</span>\n<span class=\"oeuv\">Theæt.</span> <span class=\"refpa\">201</span><span class=\"refpb\">e</span>, <span class=\"ital\">etc. ;</span> <span class=\"grec\">λ. <a href=\"/horistikos\">ὁριστικός</a></span>,\n<span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Metaph.</span>\n<span class=\"refch\">7, 3, 8,</span> proposition servant à définir,\ndéfinition ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> ce qu’on dit, un dire,\n<span class=\"aut\">Thc.</span> <span class=\"refch\">1, 2</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">3</span> révélation divine,\n<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phæd.</span>\n<span class=\"refpa\">78</span><span class=\"refpb\">d</span> ;\n<span class=\"ital\">d’où</span> réponse d’oracle, <span class=\"aut\">Pd.</span> <span class=\"oeuv\">P.</span> <span class=\"refch\">4, 105</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">4</span> sentence, maxime,\nproverbe, <span class=\"aut\">Pd.</span> <span class=\"oeuv\">N.</span>\n<span class=\"refch\">9, 6 ;</span> <span class=\"aut\">Eschl.</span>\n<span class=\"oeuv\">Sept.</span> <span class=\"refch\">218,\netc.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">5</span> exemple :\n<span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/heneka\">ἕνεκα</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Crit.</span> <span class=\"refpa\">46</span><span class=\"refpb\">d</span> ; <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/charis\">χάριν</a></span>, <span class=\"aut\">Arstt.</span>\n<span class=\"oeuv\">Nic.</span> <span class=\"refch\">6, 13,</span>\npar exemple, <span class=\"ital\">c. à d.</span> pour la forme, en\napparence ||</div>\n<div class=\"pp\"><span class=\"ppa\">6</span> décision, résolution,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 141, 166,\netc.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">7</span> condition, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 60 ;</span> <span class=\"grec\"><a href=\"/epi_(1)\">ἐπὶ</a> <span data-linked-self>λόγῳ</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">7, 158,</span> à une condition ||</div>\n<div class=\"pp\"><span class=\"ppa\">8</span> promesse, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">O.C.</span> <span class=\"refch\">651</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">9</span> prétexte, <span class=\"aut\">Xén.</span> <span class=\"oeuv\">An.</span> <span class=\"refch\">6, 2, 6 ;</span> <span class=\"grec\"><a href=\"/ek\">ἐκ</a> <span data-linked-entries=\"mikros,smikros\">σμικροῦ</span>\n<span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span></span>, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">O.C.</span> <span class=\"refch\">620,</span> sous un prétexte\nfrivole ||</div>\n<div class=\"pp\"><span class=\"ppa\">10</span> argument, <span class=\"aut\">Xén.</span> <span class=\"oeuv\">Cyr.</span> <span class=\"refch\">1, 5, 3, etc. ;</span> <span class=\"oeuv\">An.</span>\n<span class=\"refch\">2, 6, 3, etc.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">11</span> ordre, <span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Pr.</span> <span class=\"refch\">17, 40 ;</span> <span class=\"oeuv\">Pers.</span>\n<span class=\"refch\">363</span> ||</div>\n</div>\n<div class=\"rub\"><span class=\"ruba\">IV</span> mention :\n<span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/axios\">ἄξιον</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">4, 28</span> (pour que cela)\nvaille la peine qu’on en parle ; <span class=\"ital\">particul. en b.\npart,</span> renommée, renom : <span class=\"grec\"><span data-linked-self>λόγος</span> <span data-linked-entries=\"echei,echis,echô,cheô_(1)\">ἔχει</span>\n<a href=\"/su\">σε</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">7, 5,\netc.</span> on parle de toi ; <span class=\"grec\"><a href=\"/peri_(1)\">περὶ</a> <span data-linked-entries=\"theô,seo,su\">σέο</span> <span data-linked-self>λόγος</span>\n<a href=\"/aphikneomai-oumai\">ἀπῖκται</a> <span data-linked-entries=\"pollos,polus\">πολλός</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 30,</span> ta renommée est venue jusqu’à moi ;\n<span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/akouô\">ἀκούειν</a></span>, <span class=\"aut\">Att.</span> entendre parler de soi (<span class=\"ital\">v.</span> <span class=\"grec\"><a href=\"/akouô\">ἀκούω</a></span>) ; <span class=\"ital\">en mauv. part :</span> mauvais bruit, mauvaise\nréputation, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">Aj.</span> <span class=\"refch\">138 ;</span> <span class=\"aut\">Eur.</span> <span class=\"oeuv\">Her.</span> <span class=\"refch\">165, etc.</span> ||</div>\n<div class=\"rub\"><span class=\"ruba\">V</span> bruit qui court, bruit\nrépandu : <span class=\"grec\"><span data-linked-self>λόγος</span> <span data-linked-entries=\"eimi_(1),esti\">ἐστί</span>, <span data-linked-self>λόγος</span> <span data-linked-entries=\"echei,echis,echô,cheô_(1)\">ἔχει</span>, <span data-linked-self>λόγος</span>\n<a href=\"/pherô\">φέρεται</a></span>, <span class=\"ital\">avec une prop. inf.</span>\n<span class=\"aut\">Att.</span> c’est un bruit répandu que,\n<span class=\"ital\">etc. ;</span> le bruit se répand que,\n<span class=\"ital\">etc. ;</span> <span class=\"ital\">rar.</span>\n<span class=\"ital\">avec un n. de pers. pour sujet :</span>\n<span class=\"grec\"><a href=\"/Kleisthenês\">Κλεισθένης</a> <span data-linked-self>λόγον</span> <span data-linked-entries=\"echei,echis,echô,cheô_(1)\">ἔχει</span> <span data-linked-entries=\"ho_(1),tên\">τὴν</span> <span data-linked-entries=\"Puthia_(1),Puthios\">Πυθίαν</span>\n<span data-linked-entries=\"ana_(1),anapeithô,anaptô\">ἀναπεῖσαι</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">5, 66,</span> Kleisthénès passe pour avoir inspiré la\nPythie ; <span class=\"ital\">particul.</span> nouvelle, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">O.C.</span> <span class=\"refch\">1150</span> ||</div>\n<div class=\"rub\"><span class=\"ruba\">VI</span> entretien,\n<span class=\"ital\">d’où :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> <span class=\"ital\">propr.</span> entretien, conversation : <span class=\"grec\"><a href=\"/eis_(1)\">εἰς</a> <span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγους</span> <span data-linked-entries=\"elthein,erchomai\">ἐλθεῖν</span>, <a href=\"/sunerchomai\">συνελθεῖν</a>, <span data-linked-entries=\"eimi_(2),ienai\">ἰέναι</span>, <span data-linked-entries=\"aphikesthai,aphikneomai-oumai\">ἀφικέσθαι</span> <a href=\"/tis_(2)\">τινί</a></span>,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 82 ;</span>\n<span class=\"refch\">2, 32, etc. ;</span> <span class=\"aut\">Att.</span> ; <span class=\"grec\"><a href=\"/dia\">διὰ</a> <span data-linked-self data-linked-alternatives=\"logaô-ô,logoô-ô\">λόγων</span> <span data-linked-entries=\"eimi_(2),ienai\">ἰέναι</span></span>,\n<span class=\"aut\">Eur.</span> <span class=\"oeuv\">Tr.</span>\n<span class=\"refch\">916 ;</span> <span class=\"grec\"><a href=\"/dia\">διὰ</a> <span data-linked-self data-linked-alternatives=\"logaô-ô,logoô-ô\">λόγων</span>\n<a href=\"/gignomai\">γίγνεσθαί</a> <a href=\"/tis_(2)\">τινι</a></span>, <span class=\"aut\">Pol.</span> <span class=\"refch\">22, 21, 12,</span> s’entretenir <span class=\"ital\">ou</span> conférer avec qqn ; <span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/peri_(1)\">περί</a>\n<a href=\"/tis_(2)\">τινος</a> <a href=\"/legô\">λέγειν</a></span>, <span class=\"aut\">Ant.</span> <span class=\"refch\">135, 22,</span> <span class=\"ital\">ou</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγους</span> <a href=\"/poieô-ô\">ποιεῖσθαι</a> <a href=\"/pros\">πρός</a> <a href=\"/tis_(2)\">τινα</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Prot.</span> <span class=\"refpa\">348</span><span class=\"refpb\">a</span>, <span class=\"ital\">etc.</span> s’entretenir de qqn <span class=\"ital\">ou</span>\nde qqe ch. ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> discussion, <span class=\"ital\">particul.</span> discussion philosophique, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Gorg.</span> <span class=\"refpa\">506</span><span class=\"refpb\">a</span>, <span class=\"oeuv\">Prot.</span> <span class=\"refpa\">329</span><span class=\"refpb\">c</span>, <span class=\"ital\">etc. ;</span> <span class=\"grec\"><span data-linked-entries=\"he,ho_(1),hoi_(1)\">οἱ</span> <span data-linked-entries=\"eis_(1),en\">ἐν</span> <a href=\"/ho_(1)\">τοῖς</a> <span data-linked-self>λόγοις</span></span>, <span class=\"aut\">Arstt.</span>\n<span class=\"oeuv\">Metaph.</span> <span class=\"refch\">8, 8,\n20,</span> les dialecticiens, <span class=\"ital\">c. à d.</span>\nPlaton et son école ||</div>\n</div>\n<div class=\"rub\"><span class=\"ruba\">VII</span> récit, <span class=\"ital\">d’où :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> fable, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 141 ;</span> <span class=\"aut\">Xén.</span> <span class=\"oeuv\">Mem.</span> <span class=\"refch\">2, 7, 13 ;</span> <span class=\"aut\">Plat.</span>\n<span class=\"oeuv\">Phæd.</span> <span class=\"refpa\">61</span><span class=\"refpb\">b</span>, <span class=\"ital\">etc. ;</span> <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Rhet.</span> <span class=\"refch\">2, 20 ;</span> <span class=\"grec\"><span data-linked-entries=\"he,ho_(1),hoi_(1)\">οἱ</span> <span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tou_(2)\">τοῦ</span> <a href=\"/Aisôpos\">Αἰσώπου</a> <span data-linked-self>λόγοι</span></span>, <span class=\"aut\">Plat.</span>\n<span class=\"oeuv\">Phæd.</span> <span class=\"refpa\">60</span><span class=\"refpb\">d</span>, les fables d’Ésope ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> récit d’histoire,\n<span class=\"ital\">p. opp. à la légende</span> (<span class=\"grec\"><a href=\"/muthos\">μῦθος</a></span>), <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Prot.</span> <span class=\"refpa\">320</span><span class=\"refpb\">c</span>, <span class=\"oeuv\">Gorg.</span> <span class=\"refpa\">523</span><span class=\"refpb\">a</span>, <span class=\"ital\">etc. ;</span> <span class=\"ital\">à l’histoire proprement\ndite</span> (<span class=\"grec\"><a href=\"/historia\">ἱστορία</a></span>), <span class=\"aut\">Hdt.</span> <span class=\"refch\">2, 99, etc. ;</span>\n<span class=\"ital\">d’où</span> <span class=\"ital\">au plur.</span>\ntraditions historiques, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 184, etc. ;</span> <span class=\"ital\">à la poésie\népique</span> (<span class=\"grec\"><a href=\"/epos\">ἔπος</a></span>) (<span class=\"ital\">sens conservé dans les composés</span> <span class=\"grec\"><a href=\"/logographos\">λογογράφος</a>, <a href=\"/logopoios\">λογοποιός</a></span>, <span class=\"ital\">etc.</span>) ||</div>\n</div>\n<div class=\"rub\"><span class=\"ruba\">VIII</span> <span class=\"ital\">par ext.</span> composition en prose (<span class=\"ital\">les\nouvrages d’histoire ayant été les premiers écrits grecs en\nprose</span>) <span class=\"ital\">p. opp. à</span> <span class=\"grec\"><a href=\"/poiêsis\">ποίησις</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">390</span><span class=\"refpb\">a</span> ; <span class=\"ital\">à</span> <span class=\"grec\"><a href=\"/poiêma\">ποίημα</a></span>, <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Poet.</span> <span class=\"refch\">2, 5, 6, etc. ;</span>\n<span class=\"ital\">à</span> <span class=\"grec\"><span data-linked-entries=\"aoidê,ôdê\">ᾠδαί</span></span>,\n<span class=\"aut\">Xén.</span> <span class=\"oeuv\">Cyr.</span>\n<span class=\"refch\">1, 4, 25 ;</span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Leg.</span> <span class=\"refpa\">835</span><span class=\"refpb\">a</span>, <span class=\"ital\">etc. ;</span> <span class=\"ital\">particul. :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> discours oratoire,\ndiscours, <span class=\"aut\">Orat.</span> ; <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Rhet.</span> <span class=\"refch\">1, 3, etc.</span> (<span class=\"ital\">cf.</span>\n<span class=\"grec\"><a href=\"/logographos\">λογογράφος</a>, <a href=\"/logopoios\">λογοποιός</a></span>, <span class=\"ital\">etc.</span>) ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> traité de philosophie,\nde morale, de médecine, <span class=\"ital\">etc.</span> <span class=\"aut\">Hpc.</span> <span class=\"aut\">Plut.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">3</span> ouvrage, <span class=\"ital\">en gén.</span> <span class=\"ital\">ou</span> partie d’un\nouvrage, <span class=\"aut\">Xén.</span> <span class=\"oeuv\">Cyr.</span> <span class=\"refch\">4, 5, 12, etc. ;</span>\n<span class=\"grec\"><span data-linked-entries=\"eis_(1),en\">ἐν</span> <span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tô_(3)\">τῷ</span> <a href=\"/emprosthen\">ἔμπροσθεν</a> <span data-linked-self>λόγῳ</span></span>, <span class=\"aut\">Xén.</span> <span class=\"oeuv\">An.</span> <span class=\"refch\">2, 1, 1 ;</span> <span class=\"grec\"><span data-linked-entries=\"eis_(1),en\">ἐν</span> <span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tô_(3)\">τῷ</span> <a href=\"/prosthen\">πρόσθεν</a>\n<span data-linked-self>λόγῳ</span></span>, <span class=\"aut\">Xén.</span> <span class=\"oeuv\">An.</span> <span class=\"refch\">3, 1, 1,</span> dans le livre\nprécédent ||</div>\n</div>\n<div class=\"rub\"><span class=\"ruba\">IX</span> <span class=\"ital\">p.\nsuite,</span> <span class=\"ital\">au pl.</span> belles-lettres,\nsciences, études, <span class=\"ital\">en gén. :</span>\n<span class=\"grec\"><span data-linked-entries=\"he,ho_(1),hoi_(1)\">οἱ</span> <a href=\"/epi_(1)\">ἐπὶ</a> <span data-linked-self>λόγοις</span> <a href=\"/eudokimos\">εὐδόκιμοι</a></span>, <span class=\"aut\">Hdn</span> <span class=\"refch\">6, 1,</span> les gens de\nlettres célèbres ; <span class=\"grec\"><span data-linked-entries=\"he,ho_(1),hoi_(1)\">οἱ</span> <span data-linked-self>λόγοι</span></span>, <span class=\"aut\">Anth.</span> <span class=\"refch\">9, 171,</span> lettres,\nlittérature, compositions littéraires ; <span class=\"grec\"><span data-linked-entries=\"he,ho_(1),hoi_(1)\">οἱ</span>\n<span data-linked-entries=\"exôthen,exôtheô-ô\">ἔξωθεν</span> <span data-linked-self>λόγοι</span></span>, <span class=\"aut\">Eccl.</span> les études du\ndehors, <span class=\"ital\">c. à d.</span> profanes ||</div>\n<div class=\"rub\"><span class=\"ruba\">X</span> <span class=\"ital\">p.\next.</span> sujet d’entretien, d’étude <span class=\"ital\">ou</span>\nde discussion (<span class=\"ital\">cf. la même relat. de sens pour\nle mot</span> <span class=\"grec\"><a href=\"/rhêma\">ῥῆμα</a></span>) <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 21, etc. ;</span>\n<span class=\"aut\">Att.</span> ; <span class=\"grec\"><a href=\"/peri_(1)\">περὶ</a> <span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/tis_(2)\">τινὸς</a>\n<a href=\"/dialegô\">διαλέγεσθαι</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Ap.</span> <span class=\"refpa\">34</span><span class=\"refpb\">e</span>, s’entretenir d’un sujet d’étude ; <span class=\"grec\"><span data-linked-entries=\"eis_(1),es\">ἐς</span> <span data-linked-self>λόγον</span> <a href=\"/tis_(2)\">τινός</a></span>, <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">3, 99 ;</span> <span class=\"grec\"><a href=\"/pros\">πρὸς</a> <span data-linked-self>λόγον</span>\n<a href=\"/tis_(2)\">τινός</a></span>, <span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Sept.</span> <span class=\"refch\">519,</span> ce dont il\ns’agit, l’objet en cause, en discussion, <span class=\"ital\">etc. ;</span> <span class=\"grec\"><a href=\"/ean_(2)\">ἐὰν</a> <a href=\"/pros\">πρὸς</a> <span data-linked-self>λόγον</span> <span data-linked-entries=\"eimi_(1),ê_(3)\">ᾖ</span></span>,\n<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phil.</span>\n<span class=\"refpa\">33</span><span class=\"refpb\">c</span>, si cela\nrentre dans le sujet ; <span class=\"grec\"><a href=\"/metechô\">μετέχειν</a> <span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tou_(2)\">τοῦ</span>\n<span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1,\n127,</span> participer à l’objet (de l’entretien) <span class=\"ital\">c. à d.</span> être dans le secret ; <span class=\"ital\">p.\nsuite :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> point de départ d’une\ndiscussion, proposition, principe, <span class=\"aut\">Plat.</span>\n<span class=\"oeuv\">Gorg.</span> <span class=\"refpa\">508</span><span class=\"refpb\">b</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> définition, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phædr.</span> <span class=\"refpa\">245</span><span class=\"refpb\">e</span>, <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">343</span><span class=\"refpb\">a</span>, <span class=\"ital\">etc. ;</span> <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Metaph.</span> <span class=\"refch\">3, 4, 3, etc. ;</span> <span class=\"aut\">DL.</span>\n<span class=\"refch\">7, 60</span> ||</div>\n</div>\n</div>\n<div class=\"Rub\"><span class=\"Ruba\">B</span> raison, <span class=\"ital\">d’où :</span>\n<div class=\"rub\"><span class=\"ruba\">I</span> faculté de raisonner,\nraison, intelligence, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phædr.</span> <span class=\"refpa\">270</span><span class=\"refpb\">c</span>, <span class=\"oeuv\">Tim.</span> <span class=\"refpa\">52</span><span class=\"refpb\">c</span>, <span class=\"ital\">etc. ;</span> <span class=\"grec\"><span data-linked-entries=\"ha_(2),ho_(1),hos\">ἃ</span> <a href=\"/malista\">μάλιστά</a> <a href=\"/tis_(2)\">τις</a> <span data-linked-entries=\"an_(1),ana_(1),ean_(2)\">ἂν</span> <span data-linked-self>λόγῳ</span>\n<a href=\"/lambanô\">λάϐοι</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Parm.</span> <span class=\"refpa\">135</span><span class=\"refpb\">e</span>, ce qu’on peut surtout saisir par la raison ;\n<span class=\"grec\"><span data-linked-entries=\"ho_(1),ta_(1),tis_(1)\">τὰ</span> <span data-linked-self>λόγῳ</span> <a href=\"/kai\">καὶ</a> <a href=\"/dianoia\">διανοίᾳ</a> <a href=\"/lêptos\">ληπτά</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">529</span><span class=\"refpb\">d</span>, ce que la raison et\nl’intelligence peuvent saisir ; <span class=\"grec\"><span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tô_(3)\">τῷ</span> <span data-linked-self>λόγῳ</span>\n<span data-linked-entries=\"hepomai,hepô\">ἕπεσθαι</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">582</span><span class=\"refpb\">e</span>, <span class=\"refpa\">586</span><span class=\"refpb\">d</span>, prendre la raison pour guide ||</div>\n<div class=\"rub\"><span class=\"ruba\">II</span> raison, bon\nsens : <span class=\"grec\"><a href=\"/orthos\">ὀρθὸς</a> <span data-linked-self>λόγος</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phæd.</span> <span class=\"refpa\">73</span><span class=\"refpb\">a</span> ; <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Nic.</span> <span class=\"refch\">6, 1, etc.</span> droite raison ; <span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a>\n<a href=\"/eoikôs\">ἐοικὼς</a> <span data-linked-self>λόγος</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Leg.</span> <span class=\"refpa\">647</span><span class=\"refpb\">d</span>, la juste raison ; <span class=\"grec\"><a href=\"/meta\">μετὰ</a>\n<span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Tim.</span> <span class=\"refpa\">28</span><span class=\"refpb\">a</span>, <span class=\"oeuv\">Theæt.</span> <span class=\"refpa\">206</span><span class=\"refpb\">e</span>, <span class=\"ital\">etc.</span> avec raison ; <span class=\"grec\"><a href=\"/kata_(1)\">κατὰ</a>\n<span data-linked-self>λόγον</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">500</span><span class=\"refpb\">c</span>, <span class=\"ital\">etc.</span> selon la raison ;\n<span class=\"grec\"><a href=\"/echô\">ἔχειν</a> <span data-linked-self>λόγον</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phæd.</span> <span class=\"refpa\">62</span><span class=\"refpb\">d</span>, <span class=\"ital\">etc.</span> être conforme à la raison, être juste\n<span class=\"ital\">ou</span> raisonnable ; <span class=\"grec\"><a href=\"/hôs_(2)\">ὡς</a>\n<span data-linked-entries=\"echei,echis,echô,cheô_(1)\">ἔχει</span> <span data-linked-self>λόγον</span></span>, <span class=\"aut\">Dém.</span> <span class=\"refch\">1090, 12,</span> comme cela est naturel ; <span class=\"grec\"><span data-linked-entries=\"ou_(2),ouk\">οὐκ</span> <span data-linked-entries=\"echei,echis,echô,cheô_(1)\">ἔχει</span> <span data-linked-self>λόγον</span></span>, <span class=\"aut\">Soph.</span>\n<span class=\"oeuv\">El.</span> <span class=\"refch\">466, etc.</span>\ncela n’a pas de raison ; <span class=\"grec\"><span data-linked-entries=\"ho_(1),to\">τὸ</span> <span data-linked-entries=\"para_(1),pêros_(1)\">παρὰ</span> <span data-linked-self>λόγον</span></span>\n(<span class=\"ital\">c.</span> <span class=\"grec\"><a href=\"/paralogos\">παράλογος</a></span>),\n<span class=\"aut\">Att.</span> ce qui est contraire à la raison ;\n<span class=\"grec\"><span data-linked-self>λόγος</span> <a href=\"/aiteô-ô\">αἰτεῖ</a></span>, <span class=\"ital\">avec une\nprop. inf.</span> <span class=\"aut\">Att.</span> la raison exige\nque, <span class=\"ital\">etc.</span> ||</div>\n<div class=\"rub\"><span class=\"ruba\">III</span> raison intime d’une\nchose, fondement, motif : <span class=\"grec\"><a href=\"/kata_(1)\">κατὰ</a> <span data-linked-entries=\"tis_(1),tis_(2)\">τίνα</span>\n<span data-linked-self>λόγον</span>;</span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">366</span><span class=\"refpb\">b</span>, sur quel fondement ? <span class=\"grec\"><span data-linked-entries=\"ek,ex\">ἐξ</span>\n<a href=\"/oudeis\">οὐδενὸς</a> <span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span></span>, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">Ph.</span> <span class=\"refch\">730,</span> sans aucune\nraison ; <span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a> <span data-linked-self>λόγος</span> <a href=\"/haireô-ô\">αἱρέει</a> <a href=\"/egô\">με</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 132, etc.</span> la raison\nde la chose me convainc ; <span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a> <span data-linked-self>λόγος</span> <a href=\"/houtôs\">οὕτως</a>\n<a href=\"/haireô-ô\">αἱρέει</a></span>, <span class=\"ital\">avec une prop. inf.</span>\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 45,</span> la\nraison des choses veut ainsi que, <span class=\"ital\">etc.</span> ||</div>\n<div class=\"rub\"><span class=\"ruba\">IV</span> exercice de la\nraison, jugement, <span class=\"ital\">d’où :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> opinion :\n<span class=\"grec\"><a href=\"/hapas\">ἅπαντα</a> <span data-linked-entries=\"nikaô-ô,nikê\">νικᾶν</span> <span data-linked-self>λόγον</span></span>, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">O.C.</span> <span class=\"refch\">1225,</span> surpasser tout ce qu’on peut dire <span class=\"ital\">ou</span> penser : <span class=\"grec\"><a href=\"/kata_(1)\">κατὰ</a> <span data-linked-entries=\"ho_(1),ton\">τὸν</span> <a href=\"/emos\">ἐμόν</a> <a href=\"/ge\">γε</a>\n<span data-linked-self>λόγον</span></span>, <span class=\"aut\">Naz.</span> d’après mon sentiment ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> <span class=\"ital\">en b.\npart :</span> bonne opinion, estime : <span class=\"grec\"><span data-linked-self>λόγῳ</span> <span data-linked-entries=\"eis_(1),en\">ἐν</span> <span data-linked-entries=\"mikros,smikros\">σμικρῷ</span> <span data-linked-entries=\"eimi_(1),einai\">εἶναι</span></span>, <span class=\"aut\">Plat.</span>\n<span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">550</span><span class=\"refpb\">a</span>, être en médiocre\nestime ; <span class=\"grec\"><a href=\"/pleistos\">πλείστου</a> <span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <span data-linked-entries=\"eimi_(1),einai\">εἶναι</span></span>,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 143 ;</span>\n<span class=\"grec\"><a href=\"/elachistos\">ἐλαχίστου</a> <span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <span data-linked-entries=\"eimi_(1),einai\">εἶναι</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 146,</span> être en très\ngrande, en très petite estime ; <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <span data-linked-entries=\"eimi_(1),einai\">εἶναι</span> <a href=\"/pros\">πρός</a>\n<a href=\"/tis_(2)\">τινος</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">4,\n138,</span> être estimé par qqn ; <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/oudeis\">οὐδενὸς</a>\n<span data-linked-entries=\"genesthai,gignomai\">γενέσθαι</span> <a href=\"/pros\">πρός</a> <a href=\"/tis_(2)\">τινος</a></span>, <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">1, 120,</span> ne jouir d’aucune considération\nde la part de qqn ; <span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/echô\">ἔχειν</a> <a href=\"/tis_(2)\">τινός</a></span>,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 62, 115,\netc. ;</span> <span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/ischô\">ἴσχειν</a> <a href=\"/peri_(1)\">περί</a> <a href=\"/tis_(2)\">τινος</a></span>,\n<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Tim.</span>\n<span class=\"refpa\">87</span><span class=\"refpb\">c</span>,\n<span class=\"ital\">ou</span> <span class=\"grec\"><a href=\"/peri_(1)\">περί</a> <a href=\"/tis_(2)\">τινα</a></span>,\n<span class=\"aut\">Lycurg.</span> <span class=\"refch\">162,\n27,</span> faire cas de qqn <span class=\"ital\">ou</span> de qqe\nch. ; <span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/tis_(2)\">τινὸς</a> <span data-linked-entries=\"ou_(2),ouk\">οὐκ</span> <a href=\"/echô\">ἔχειν</a> <a href=\"/oudeis\">οὐδένα</a></span>,\n<span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Pr.</span>\n<span class=\"refch\">231 ;</span> <span class=\"grec\"><a href=\"/oudeis\">οὐδένα</a> <span data-linked-self>λόγον</span>\n<a href=\"/poieô-ô\">ποιεῖσθαί</a> <a href=\"/tis_(2)\">τινος</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 4, etc. ;</span> <span class=\"grec\"><span data-linked-entries=\"eis_(1),en\">ἐν</span> <a href=\"/oudeis\">οὐδενὶ</a> <span data-linked-self>λόγῳ</span>\n<a href=\"/poieô-ô\">ποιεῖσθαί</a> <a href=\"/tis_(2)\">τινα</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 30,</span> ne faire aucun cas de qqn ||</div>\n<div class=\"pp\"><span class=\"ppa\">3</span> <span class=\"ital\">p.\nsuite :</span> compte qu’on fait de qqn <span class=\"ital\">ou</span> de qqe ch., valeur qu’on leur attribue,\n<span class=\"ital\">avec un gén. déterminatif :</span>\n<span class=\"grec\"><span data-linked-entries=\"eis_(1),en\">ἐν</span> <span data-linked-entries=\"andros,anêr\">ἀνδρὸς</span> <span data-linked-self>λόγῳ</span> <span data-linked-entries=\"eimi_(1),einai\">εἶναι</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 120,</span> être considéré\ncomme un homme de haut rang ; <span class=\"grec\"><span data-linked-entries=\"eis_(1),en\">ἐν</span> <a href=\"/andrapodon\">ἀνδραπόδων</a> <span data-linked-self>λόγῳ</span>\n<span data-linked-entries=\"poieô-ô,poioô-ô\">ποιεύμενος</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 125,</span> considéré <span class=\"ital\">ou</span>\ntraité à l’égal d’esclaves ; <span class=\"ital\">p. ext.</span>\névaluation, <span class=\"ital\">en gén.:</span> <span class=\"grec\"><a href=\"/hupo\">ὑπὸ</a> <span data-linked-entries=\"ho_(1),ton\">τὸν</span> <span data-linked-self>λόγον</span> <a href=\"/agô_(1)\">ἄγειν</a> <a href=\"/tis_(2)\">τι</a></span>, <span class=\"aut\">Pol.</span>\n<span class=\"refch\">15, 34, 2,</span> soumettre qqe ch. à\nl’évaluation, en faire le calcul ||</div>\n<div class=\"pp\"><span class=\"ppa\">4</span> relation, proportion,\nanalogie : <span class=\"grec\"><a href=\"/ana_(1)\">ἀνὰ</a> <span data-linked-entries=\"ho_(1),ton\">τὸν</span> <a href=\"/autos\">αὐτὸν</a> <span data-linked-self>λόγον</span></span>,\n<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phæd.</span>\n<span class=\"refpa\">110</span><span class=\"refpb\">d</span> ;\n<span class=\"grec\"><a href=\"/eis_(1)\">εἰς</a> <span data-linked-entries=\"ho_(1),ton\">τὸν</span> <a href=\"/autos\">αὐτὸν</a> <span data-linked-self>λόγον</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">353</span><span class=\"refpb\">d</span> ; <span class=\"grec\"><a href=\"/kata_(1)\">κατὰ</a> <span data-linked-entries=\"ho_(1),ton\">τὸν</span> <a href=\"/autos\">αὐτὸν</a> <span data-linked-self>λόγον</span></span>, <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">1, 186,</span> selon la même évaluation, dans\nla même proportion ; <span class=\"grec\"><a href=\"/pros\">πρὸς</a> <span data-linked-self>λόγον</span> <a href=\"/tis_(2)\">τινός</a></span>,\n<span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Sept.</span>\n<span class=\"refch\">519 ;</span> <span class=\"grec\"><a href=\"/ana_(1)\">ἀνὰ</a> <span data-linked-self>λόγον</span>\n<a href=\"/tis_(2)\">τινός</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Tim.</span> <span class=\"refpa\">29</span><span class=\"refpb\">c</span>, <span class=\"ital\">ou</span> <span class=\"grec\"><a href=\"/tis_(2)\">τινί</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">2 Alc.</span> <span class=\"refpa\">145</span><span class=\"refpb\">d</span> (<span class=\"ital\">cf.</span> <span class=\"grec\"><a href=\"/analogos\">ἀνάλογος</a></span>) ; <span class=\"grec\"><a href=\"/kata_(1)\">κατὰ</a> <span data-linked-self>λόγον</span>\n<a href=\"/tis_(2)\">τινός</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1,\n134, etc.</span> eu égard à, relativement à, proportionnellement à\nqqe ch. ; <span class=\"grec\"><a href=\"/kata_(1)\">κατὰ</a> <span data-linked-self>λόγον</span> <a href=\"/ho_(1)\">τῆς</a> <a href=\"/dunamis\">δυνάμεως</a></span>,\n<span class=\"aut\">Xén.</span> <span class=\"oeuv\">Cyr.</span>\n<span class=\"refch\">8, 6, 11,</span> en raison de leur puissance ;\n<span class=\"ital\">t. de gr.</span> <span class=\"grec\"><span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tô_(3)\">τῷ</span> <span data-linked-self>λόγῳ</span> <span data-linked-entries=\"ho_(1),tôn\">τῶν</span>\n<a href=\"/metochikos\">μετοχικῶν</a></span>, <span class=\"aut\">Gramm.</span> <span class=\"refch\">p. 1393 Bekker, Anecdota græca,</span> par analogie\navec les participes ||</div>\n</div>\n<div class=\"rub\"><span class=\"ruba\">V</span> compte-rendu,\njustification, explication : <span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/heautou\">ἑαυτῷ</a>\n<a href=\"/didômi\">διδόναι</a> <a href=\"/peri_(1)\">περί</a> <a href=\"/tis_(2)\">τινος</a></span>, <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">1, 97,</span> se rendre compte de qqe ch. ;\n<span class=\"ital\">avec</span> <span class=\"grec\"><span data-linked-entries=\"hostis,hoti\">ὅτι</span></span>,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">6, 86 ;</span>\n<span class=\"ital\">ou</span> <span class=\"grec\"><a href=\"/hôs_(2)\">ὡς</a></span>,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">4, 102 ;</span>\n<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phæd.</span>\n<span class=\"refpa\">95</span><span class=\"refpb\">d</span>,\n<span class=\"ital\">etc.</span> se rendre compte que ; <span class=\"grec\"><a href=\"/aiteô-ô\">αἰτεῖν</a></span>, <span class=\"aut\">Att.</span> (<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Pol.</span> <span class=\"refpa\">285</span><span class=\"refpb\">e</span>, <span class=\"ital\">etc.</span>), <span class=\"ital\">ou</span> <span class=\"grec\"><a href=\"/apaiteô-ô\">ἀπαιτεῖν</a> <a href=\"/peri_(1)\">περί</a> <a href=\"/tis_(2)\">τινος</a></span>, <span class=\"aut\">Att.</span>\n(<span class=\"aut\">Dém.</span> <span class=\"refch\">868, 5,\netc.</span>) demander compte à qqn, se faire rendre compte par\nqqn ; <span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/didômi\">διδόναι</a> <a href=\"/tis_(2)\">τινός</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 143 ;</span> <span class=\"aut\">Att.</span> ; <span class=\"ital\">ou</span> <span class=\"grec\"><a href=\"/parechô\">παρέχειν</a></span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">344</span><span class=\"refpb\">d</span>, rendre raison, rendre compte de qqe ch. ;\n<span class=\"grec\"><span data-linked-self>λόγον</span> <span data-linked-entries=\"didômi,dounai\">δοῦναι</span> <a href=\"/kai\">καὶ</a> <span data-linked-entries=\"deiknumi,dechomai\">δέξασθαι</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Prot.</span> <span class=\"refpa\">336</span><span class=\"refpb\">c</span>, rendre compte et\nrecevoir le compte-rendu de qqe ch. ; <span class=\"grec\"><span data-linked-self>λόγον</span>\n<a href=\"/lambanô\">λαμϐάνειν</a> <span data-linked-entries=\"para_(1),pêros_(1)\">παρά</span> <a href=\"/tis_(2)\">τινος</a></span>, <span class=\"aut\">Dém.</span>\n<span class=\"refch\">101, 17,</span> recevoir de qqn le compte-rendu\n(de qqe ch.) ||</div>\n<div class=\"rub\"><span class=\"ruba\">VI</span> opinion au sujet\nd’une chose à venir, présomption, attente, <span class=\"aut\">Hdt.</span> <span class=\"refch\">8, 6, etc. ;</span>\n<span class=\"grec\"><a href=\"/epi_(1)\">ἐπὶ</a> <span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tô_(3)\">τῷ</span> <span data-linked-self>λόγῳ</span> <a href=\"/hôste\">ὥστε</a>,</span> <span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 36,</span> dans l’attente\nque, <span class=\"ital\">etc.</span> ||</div>\n<div class=\"rub\"><span class=\"ruba\">VII</span> <span class=\"ital\">postér. au sens philosophique et religieux :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> <span class=\"ital\">au\nsens philosoph.</span> le <span class=\"grec\"><span data-linked-self>λόγος</span></span> divin, la\nraison divine, <span class=\"aut\">Herm. tr.</span> <span class=\"oeuv\">Poem.</span> <span class=\"refch\">3, 2, 15, etc. ;</span>\n<span class=\"aut\">Plut.</span> <span class=\"oeuv\">M.</span>\n<span class=\"refpa\">376</span><span class=\"refpb\">c</span>,\n<span class=\"refpa\">381</span><span class=\"refpb\">b</span>,\n<span class=\"refpa\">568</span><span class=\"refpb\">d</span>,\n<span class=\"ital\">etc. ;</span> <span class=\"aut\">Phil.</span>\n<span class=\"refch\">1, 4, 5, 6, etc.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> <span class=\"ital\">au\nsens religieux,</span> le Verbe divin, <span class=\"aut\">NT.</span>\n<span class=\"oeuv\">Joh.</span> <span class=\"refch\">1, 1,\n14 ;</span> <span class=\"oeuv\">1 Joh.</span> <span class=\"refch\">1,\n1 ;</span> <span class=\"oeuv\">Apoc.</span> <span class=\"refch\">19,\n13 ;</span> <span class=\"aut\">Cels.</span> (<span class=\"aut\">Orig.</span> <span class=\"refpa\">1, 852</span><span class=\"refpb\">a <span class=\"ital\">Migne</span></span>) ; <span class=\"aut\">Naz.</span> <span class=\"refpa\">2, 424</span><span class=\"refpb\">b <span class=\"ital\">Migne</span></span>.</div>\n</div>\n</div>\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/legô\">λέγω</a></span>.</div>\n"
+   },
+   "siblings": {
+    "previous": {
+     "word": "λογοπώλης",
+     "uri": "logopôlês",
+     "excerpt": "λογο·πώλης, ου (ὁ) marchand de paroles, Philstr. p. 526 ; Phil. 1, 526. Étym. λ. πωλέω. ",
+     "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">λογο·πώλης,</span></span> <span class=\"gens\">ου</span>\n<span class=\"art\">(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)</span> marchand de\nparoles, <span class=\"aut\">Philstr.</span> <span class=\"refch\">p. 526 ;</span> <span class=\"aut\">Phil.</span>\n<span class=\"refch\">1, 526</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">λ. <a href=\"/pôleô-ô\">πωλέω</a></span>.</div>\n"
+    },
+    "next": {
+     "word": "λογοτέχνης",
+     "uri": "logotechnês",
+     "excerpt": "λογο·τέχνης, ου (ὁ) habile artisan de paroles, Rhét. (W. 2, 90). Étym. λ. τέχνη. ",
+     "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">λογο·τέχνης,</span></span> <span class=\"gens\">ου</span>\n<span class=\"art\">(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)</span> habile\nartisan de paroles, <span class=\"aut\">Rhét.</span> (<span class=\"refch\">W. 2, 90</span>).\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">λ. <a href=\"/technê\">τέχνη</a></span>.</div>\n"
+    }
+   }
+  }
+ },
+ "/entry/logotechnês?fields=word,uri,excerpt,htmlDefinition&siblings=true": {
+  "data": {
+   "$query": {
+    "fields": [
+     "word",
+     "uri",
+     "excerpt",
+     "htmlDefinition"
+    ],
+    "siblings": true,
+    "q": "logotechnês"
+   },
+   "version": "2023-02-28",
+   "entry": {
+    "word": "λογοτέχνης",
+    "uri": "logotechnês",
+    "excerpt": "λογο·τέχνης, ου (ὁ) habile artisan de paroles, Rhét. (W. 2, 90). Étym. λ. τέχνη. ",
+    "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">λογο·τέχνης,</span></span> <span class=\"gens\">ου</span>\n<span class=\"art\">(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)</span> habile\nartisan de paroles, <span class=\"aut\">Rhét.</span> (<span class=\"refch\">W. 2, 90</span>).\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">λ. <a href=\"/technê\">τέχνη</a></span>.</div>\n"
+   },
+   "siblings": {
+    "previous": {
+     "word": "λόγος",
+     "uri": "logos",
+     "excerpt": "λόγος, ου (ὁ) A parole : I la parole, en gén. : ἔργα λόγου μέζω, Hdt. 2, 35, actions au-dessus de ce qu’on en pourrait dire ; λόγου κρεῖσσον, Thc. 2,…",
+     "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">λόγος,</span></span> <span class=\"gens\">ου</span>\n<span class=\"art\">(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)</span>\n<div class=\"Rub\"><span class=\"Ruba\">A</span> parole :\n<div class=\"rub\"><span class=\"ruba\">I</span> la parole,\n<span class=\"ital\">en gén. :</span> <span class=\"grec\"><a href=\"/ergon\">ἔργα</a>\n<span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/megas\">μέζω</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">2, 35,</span> actions au-dessus de ce qu’on en pourrait\ndire ; <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/kreissôn\">κρεῖσσον</a></span>, <span class=\"aut\">Thc.</span> <span class=\"refch\">2, 50,</span> au-dessus de\ntoute expression ; <span class=\"ital\">p. opp. à</span> <span class=\"grec\"><span data-linked-entries=\"ergnumi,ergon,ergô\">ἔργον</span></span> (l’action) <span class=\"grec\"><span data-linked-self>λόγῳ</span> <a href=\"/men\">μὲν</a>..., <a href=\"/ergon\">ἔργῳ</a>\n<a href=\"/de\">δέ</a>,</span> <span class=\"aut\">Hdt.</span> <span class=\"refch\">4,\n8 ;</span> <span class=\"aut\">Thc.</span> <span class=\"refch\">1, 22,\netc.</span> en parole, mais en fait, <span class=\"ital\">etc. ;</span> <span class=\"grec\"><a href=\"/ergon\">ἔργῳ</a> <span data-linked-entries=\"kou_(1),ou_(2)\">κοὐ</span> <span data-linked-self>λόγῳ</span>,</span>\n<span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Pr.</span>\n<span class=\"refch\">336,</span> en réalité et non en parole ;\n<span class=\"ital\">de même</span> <span class=\"ital\">p. opp.\nà</span> <span class=\"grec\"><span data-linked-entries=\"naô,noos-nous\">νόῳ</span></span> (intelligence, esprit,\npensée) <span class=\"aut\">Hdt.</span> <span class=\"refch\">2,\n100 ;</span> <span class=\"ital\">à</span> <span class=\"grec\"><a href=\"/alêtheia\">ἀλήθεια</a></span> (réalité), <span class=\"aut\">Lycurg.</span>\n<span class=\"refch\">150, 44</span> ||</div>\n<div class=\"rub\"><span class=\"ruba\">II</span> <span class=\"ital\">particul.</span> une parole, un mot : <span class=\"grec\"><a href=\"/hôs_(2)\">ὡς</a> <a href=\"/eipon\">εἰπεῖν</a> <span data-linked-self>λόγῳ</span></span>, <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">2, 37 ;</span> <span class=\"grec\"><a href=\"/legô\">λέγειν</a> <span data-linked-entries=\"heis,heni\">ἑνὶ</span>\n<span data-linked-self>λόγῳ</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phædr.</span> <span class=\"refpa\">241</span><span class=\"refpb\">e</span>, <span class=\"ital\">etc. ;</span> <span class=\"grec\"><a href=\"/hôs_(2)\">ὡς</a> <span data-linked-entries=\"haploos-ous,haplos\">ἁπλῷ</span> <span data-linked-self>λόγῳ</span></span>, <span class=\"aut\">Att.</span>\n<span class=\"ital\">ou</span> <span class=\"grec\"><span data-linked-entries=\"haploos-ous,haplos\">ἁπλῷ</span> <span data-linked-self>λόγῳ</span></span>,\n<span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Pr.</span>\n<span class=\"refch\">975,</span> pour le dire en un mot, en un seul\nmot, d’un simple mot ; <span class=\"ital\">au plur.</span> mots,\nparoles, <span class=\"ital\">d’où</span> langage, <span class=\"ital\">us. seul. en ce sens dans Hom. et Hés.</span> <span class=\"aut\">Il.</span> <span class=\"refch\">15, 393 ;</span> <span class=\"grec\"><span data-linked-entries=\"haimulios,haimulos\">αἱμύλιοι</span> <span data-linked-self>λόγοι</span></span>, <span class=\"aut\">Od.</span>\n<span class=\"refch\">1, 56,</span> paroles de flatterie,\nflatteries ; <span class=\"ital\">cf.</span> <span class=\"aut\">Hh.</span> <span class=\"oeuv\">Merc.</span> <span class=\"refch\">317 ;</span> <span class=\"grec\"><a href=\"/pseudês\">ψευδεῖς</a> <span data-linked-self>λόγοι</span></span>,\n<span class=\"aut\">Hés.</span> <span class=\"oeuv\">Th.</span>\n<span class=\"refch\">229,</span> mensonges (<span class=\"ital\">ttef.</span> <span class=\"grec\"><span data-linked-self>λόγος</span></span> <span class=\"ital\">ne signifie jamais</span> « mot » <span class=\"ital\">au sens\ngrammatical comme</span> <span class=\"grec\"><a href=\"/onoma\">ὄνομα</a></span>\n<span class=\"ital\">ou</span> <span class=\"grec\"><a href=\"/rhêma\">ῥῆμα</a></span> ;\n<span class=\"ital\">il suppose toujours l’usage réel de la\nparole</span>) ||</div>\n<div class=\"rub\"><span class=\"ruba\">III</span> <span class=\"ital\">p. suite,</span> une parole, <span class=\"ital\">pour marquer\ndiverses applications particulières :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> <span class=\"ital\">t. de\nlog.</span> proposition, <span class=\"aut\">Plat.</span>\n<span class=\"oeuv\">Theæt.</span> <span class=\"refpa\">201</span><span class=\"refpb\">e</span>, <span class=\"ital\">etc. ;</span> <span class=\"grec\">λ. <a href=\"/horistikos\">ὁριστικός</a></span>,\n<span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Metaph.</span>\n<span class=\"refch\">7, 3, 8,</span> proposition servant à définir,\ndéfinition ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> ce qu’on dit, un dire,\n<span class=\"aut\">Thc.</span> <span class=\"refch\">1, 2</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">3</span> révélation divine,\n<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phæd.</span>\n<span class=\"refpa\">78</span><span class=\"refpb\">d</span> ;\n<span class=\"ital\">d’où</span> réponse d’oracle, <span class=\"aut\">Pd.</span> <span class=\"oeuv\">P.</span> <span class=\"refch\">4, 105</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">4</span> sentence, maxime,\nproverbe, <span class=\"aut\">Pd.</span> <span class=\"oeuv\">N.</span>\n<span class=\"refch\">9, 6 ;</span> <span class=\"aut\">Eschl.</span>\n<span class=\"oeuv\">Sept.</span> <span class=\"refch\">218,\netc.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">5</span> exemple :\n<span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/heneka\">ἕνεκα</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Crit.</span> <span class=\"refpa\">46</span><span class=\"refpb\">d</span> ; <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/charis\">χάριν</a></span>, <span class=\"aut\">Arstt.</span>\n<span class=\"oeuv\">Nic.</span> <span class=\"refch\">6, 13,</span>\npar exemple, <span class=\"ital\">c. à d.</span> pour la forme, en\napparence ||</div>\n<div class=\"pp\"><span class=\"ppa\">6</span> décision, résolution,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 141, 166,\netc.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">7</span> condition, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 60 ;</span> <span class=\"grec\"><a href=\"/epi_(1)\">ἐπὶ</a> <span data-linked-self>λόγῳ</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">7, 158,</span> à une condition ||</div>\n<div class=\"pp\"><span class=\"ppa\">8</span> promesse, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">O.C.</span> <span class=\"refch\">651</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">9</span> prétexte, <span class=\"aut\">Xén.</span> <span class=\"oeuv\">An.</span> <span class=\"refch\">6, 2, 6 ;</span> <span class=\"grec\"><a href=\"/ek\">ἐκ</a> <span data-linked-entries=\"mikros,smikros\">σμικροῦ</span>\n<span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span></span>, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">O.C.</span> <span class=\"refch\">620,</span> sous un prétexte\nfrivole ||</div>\n<div class=\"pp\"><span class=\"ppa\">10</span> argument, <span class=\"aut\">Xén.</span> <span class=\"oeuv\">Cyr.</span> <span class=\"refch\">1, 5, 3, etc. ;</span> <span class=\"oeuv\">An.</span>\n<span class=\"refch\">2, 6, 3, etc.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">11</span> ordre, <span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Pr.</span> <span class=\"refch\">17, 40 ;</span> <span class=\"oeuv\">Pers.</span>\n<span class=\"refch\">363</span> ||</div>\n</div>\n<div class=\"rub\"><span class=\"ruba\">IV</span> mention :\n<span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/axios\">ἄξιον</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">4, 28</span> (pour que cela)\nvaille la peine qu’on en parle ; <span class=\"ital\">particul. en b.\npart,</span> renommée, renom : <span class=\"grec\"><span data-linked-self>λόγος</span> <span data-linked-entries=\"echei,echis,echô,cheô_(1)\">ἔχει</span>\n<a href=\"/su\">σε</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">7, 5,\netc.</span> on parle de toi ; <span class=\"grec\"><a href=\"/peri_(1)\">περὶ</a> <span data-linked-entries=\"theô,seo,su\">σέο</span> <span data-linked-self>λόγος</span>\n<a href=\"/aphikneomai-oumai\">ἀπῖκται</a> <span data-linked-entries=\"pollos,polus\">πολλός</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 30,</span> ta renommée est venue jusqu’à moi ;\n<span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/akouô\">ἀκούειν</a></span>, <span class=\"aut\">Att.</span> entendre parler de soi (<span class=\"ital\">v.</span> <span class=\"grec\"><a href=\"/akouô\">ἀκούω</a></span>) ; <span class=\"ital\">en mauv. part :</span> mauvais bruit, mauvaise\nréputation, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">Aj.</span> <span class=\"refch\">138 ;</span> <span class=\"aut\">Eur.</span> <span class=\"oeuv\">Her.</span> <span class=\"refch\">165, etc.</span> ||</div>\n<div class=\"rub\"><span class=\"ruba\">V</span> bruit qui court, bruit\nrépandu : <span class=\"grec\"><span data-linked-self>λόγος</span> <span data-linked-entries=\"eimi_(1),esti\">ἐστί</span>, <span data-linked-self>λόγος</span> <span data-linked-entries=\"echei,echis,echô,cheô_(1)\">ἔχει</span>, <span data-linked-self>λόγος</span>\n<a href=\"/pherô\">φέρεται</a></span>, <span class=\"ital\">avec une prop. inf.</span>\n<span class=\"aut\">Att.</span> c’est un bruit répandu que,\n<span class=\"ital\">etc. ;</span> le bruit se répand que,\n<span class=\"ital\">etc. ;</span> <span class=\"ital\">rar.</span>\n<span class=\"ital\">avec un n. de pers. pour sujet :</span>\n<span class=\"grec\"><a href=\"/Kleisthenês\">Κλεισθένης</a> <span data-linked-self>λόγον</span> <span data-linked-entries=\"echei,echis,echô,cheô_(1)\">ἔχει</span> <span data-linked-entries=\"ho_(1),tên\">τὴν</span> <span data-linked-entries=\"Puthia_(1),Puthios\">Πυθίαν</span>\n<span data-linked-entries=\"ana_(1),anapeithô,anaptô\">ἀναπεῖσαι</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">5, 66,</span> Kleisthénès passe pour avoir inspiré la\nPythie ; <span class=\"ital\">particul.</span> nouvelle, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">O.C.</span> <span class=\"refch\">1150</span> ||</div>\n<div class=\"rub\"><span class=\"ruba\">VI</span> entretien,\n<span class=\"ital\">d’où :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> <span class=\"ital\">propr.</span> entretien, conversation : <span class=\"grec\"><a href=\"/eis_(1)\">εἰς</a> <span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγους</span> <span data-linked-entries=\"elthein,erchomai\">ἐλθεῖν</span>, <a href=\"/sunerchomai\">συνελθεῖν</a>, <span data-linked-entries=\"eimi_(2),ienai\">ἰέναι</span>, <span data-linked-entries=\"aphikesthai,aphikneomai-oumai\">ἀφικέσθαι</span> <a href=\"/tis_(2)\">τινί</a></span>,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 82 ;</span>\n<span class=\"refch\">2, 32, etc. ;</span> <span class=\"aut\">Att.</span> ; <span class=\"grec\"><a href=\"/dia\">διὰ</a> <span data-linked-self data-linked-alternatives=\"logaô-ô,logoô-ô\">λόγων</span> <span data-linked-entries=\"eimi_(2),ienai\">ἰέναι</span></span>,\n<span class=\"aut\">Eur.</span> <span class=\"oeuv\">Tr.</span>\n<span class=\"refch\">916 ;</span> <span class=\"grec\"><a href=\"/dia\">διὰ</a> <span data-linked-self data-linked-alternatives=\"logaô-ô,logoô-ô\">λόγων</span>\n<a href=\"/gignomai\">γίγνεσθαί</a> <a href=\"/tis_(2)\">τινι</a></span>, <span class=\"aut\">Pol.</span> <span class=\"refch\">22, 21, 12,</span> s’entretenir <span class=\"ital\">ou</span> conférer avec qqn ; <span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/peri_(1)\">περί</a>\n<a href=\"/tis_(2)\">τινος</a> <a href=\"/legô\">λέγειν</a></span>, <span class=\"aut\">Ant.</span> <span class=\"refch\">135, 22,</span> <span class=\"ital\">ou</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγους</span> <a href=\"/poieô-ô\">ποιεῖσθαι</a> <a href=\"/pros\">πρός</a> <a href=\"/tis_(2)\">τινα</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Prot.</span> <span class=\"refpa\">348</span><span class=\"refpb\">a</span>, <span class=\"ital\">etc.</span> s’entretenir de qqn <span class=\"ital\">ou</span>\nde qqe ch. ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> discussion, <span class=\"ital\">particul.</span> discussion philosophique, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Gorg.</span> <span class=\"refpa\">506</span><span class=\"refpb\">a</span>, <span class=\"oeuv\">Prot.</span> <span class=\"refpa\">329</span><span class=\"refpb\">c</span>, <span class=\"ital\">etc. ;</span> <span class=\"grec\"><span data-linked-entries=\"he,ho_(1),hoi_(1)\">οἱ</span> <span data-linked-entries=\"eis_(1),en\">ἐν</span> <a href=\"/ho_(1)\">τοῖς</a> <span data-linked-self>λόγοις</span></span>, <span class=\"aut\">Arstt.</span>\n<span class=\"oeuv\">Metaph.</span> <span class=\"refch\">8, 8,\n20,</span> les dialecticiens, <span class=\"ital\">c. à d.</span>\nPlaton et son école ||</div>\n</div>\n<div class=\"rub\"><span class=\"ruba\">VII</span> récit, <span class=\"ital\">d’où :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> fable, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 141 ;</span> <span class=\"aut\">Xén.</span> <span class=\"oeuv\">Mem.</span> <span class=\"refch\">2, 7, 13 ;</span> <span class=\"aut\">Plat.</span>\n<span class=\"oeuv\">Phæd.</span> <span class=\"refpa\">61</span><span class=\"refpb\">b</span>, <span class=\"ital\">etc. ;</span> <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Rhet.</span> <span class=\"refch\">2, 20 ;</span> <span class=\"grec\"><span data-linked-entries=\"he,ho_(1),hoi_(1)\">οἱ</span> <span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tou_(2)\">τοῦ</span> <a href=\"/Aisôpos\">Αἰσώπου</a> <span data-linked-self>λόγοι</span></span>, <span class=\"aut\">Plat.</span>\n<span class=\"oeuv\">Phæd.</span> <span class=\"refpa\">60</span><span class=\"refpb\">d</span>, les fables d’Ésope ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> récit d’histoire,\n<span class=\"ital\">p. opp. à la légende</span> (<span class=\"grec\"><a href=\"/muthos\">μῦθος</a></span>), <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Prot.</span> <span class=\"refpa\">320</span><span class=\"refpb\">c</span>, <span class=\"oeuv\">Gorg.</span> <span class=\"refpa\">523</span><span class=\"refpb\">a</span>, <span class=\"ital\">etc. ;</span> <span class=\"ital\">à l’histoire proprement\ndite</span> (<span class=\"grec\"><a href=\"/historia\">ἱστορία</a></span>), <span class=\"aut\">Hdt.</span> <span class=\"refch\">2, 99, etc. ;</span>\n<span class=\"ital\">d’où</span> <span class=\"ital\">au plur.</span>\ntraditions historiques, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 184, etc. ;</span> <span class=\"ital\">à la poésie\népique</span> (<span class=\"grec\"><a href=\"/epos\">ἔπος</a></span>) (<span class=\"ital\">sens conservé dans les composés</span> <span class=\"grec\"><a href=\"/logographos\">λογογράφος</a>, <a href=\"/logopoios\">λογοποιός</a></span>, <span class=\"ital\">etc.</span>) ||</div>\n</div>\n<div class=\"rub\"><span class=\"ruba\">VIII</span> <span class=\"ital\">par ext.</span> composition en prose (<span class=\"ital\">les\nouvrages d’histoire ayant été les premiers écrits grecs en\nprose</span>) <span class=\"ital\">p. opp. à</span> <span class=\"grec\"><a href=\"/poiêsis\">ποίησις</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">390</span><span class=\"refpb\">a</span> ; <span class=\"ital\">à</span> <span class=\"grec\"><a href=\"/poiêma\">ποίημα</a></span>, <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Poet.</span> <span class=\"refch\">2, 5, 6, etc. ;</span>\n<span class=\"ital\">à</span> <span class=\"grec\"><span data-linked-entries=\"aoidê,ôdê\">ᾠδαί</span></span>,\n<span class=\"aut\">Xén.</span> <span class=\"oeuv\">Cyr.</span>\n<span class=\"refch\">1, 4, 25 ;</span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Leg.</span> <span class=\"refpa\">835</span><span class=\"refpb\">a</span>, <span class=\"ital\">etc. ;</span> <span class=\"ital\">particul. :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> discours oratoire,\ndiscours, <span class=\"aut\">Orat.</span> ; <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Rhet.</span> <span class=\"refch\">1, 3, etc.</span> (<span class=\"ital\">cf.</span>\n<span class=\"grec\"><a href=\"/logographos\">λογογράφος</a>, <a href=\"/logopoios\">λογοποιός</a></span>, <span class=\"ital\">etc.</span>) ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> traité de philosophie,\nde morale, de médecine, <span class=\"ital\">etc.</span> <span class=\"aut\">Hpc.</span> <span class=\"aut\">Plut.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">3</span> ouvrage, <span class=\"ital\">en gén.</span> <span class=\"ital\">ou</span> partie d’un\nouvrage, <span class=\"aut\">Xén.</span> <span class=\"oeuv\">Cyr.</span> <span class=\"refch\">4, 5, 12, etc. ;</span>\n<span class=\"grec\"><span data-linked-entries=\"eis_(1),en\">ἐν</span> <span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tô_(3)\">τῷ</span> <a href=\"/emprosthen\">ἔμπροσθεν</a> <span data-linked-self>λόγῳ</span></span>, <span class=\"aut\">Xén.</span> <span class=\"oeuv\">An.</span> <span class=\"refch\">2, 1, 1 ;</span> <span class=\"grec\"><span data-linked-entries=\"eis_(1),en\">ἐν</span> <span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tô_(3)\">τῷ</span> <a href=\"/prosthen\">πρόσθεν</a>\n<span data-linked-self>λόγῳ</span></span>, <span class=\"aut\">Xén.</span> <span class=\"oeuv\">An.</span> <span class=\"refch\">3, 1, 1,</span> dans le livre\nprécédent ||</div>\n</div>\n<div class=\"rub\"><span class=\"ruba\">IX</span> <span class=\"ital\">p.\nsuite,</span> <span class=\"ital\">au pl.</span> belles-lettres,\nsciences, études, <span class=\"ital\">en gén. :</span>\n<span class=\"grec\"><span data-linked-entries=\"he,ho_(1),hoi_(1)\">οἱ</span> <a href=\"/epi_(1)\">ἐπὶ</a> <span data-linked-self>λόγοις</span> <a href=\"/eudokimos\">εὐδόκιμοι</a></span>, <span class=\"aut\">Hdn</span> <span class=\"refch\">6, 1,</span> les gens de\nlettres célèbres ; <span class=\"grec\"><span data-linked-entries=\"he,ho_(1),hoi_(1)\">οἱ</span> <span data-linked-self>λόγοι</span></span>, <span class=\"aut\">Anth.</span> <span class=\"refch\">9, 171,</span> lettres,\nlittérature, compositions littéraires ; <span class=\"grec\"><span data-linked-entries=\"he,ho_(1),hoi_(1)\">οἱ</span>\n<span data-linked-entries=\"exôthen,exôtheô-ô\">ἔξωθεν</span> <span data-linked-self>λόγοι</span></span>, <span class=\"aut\">Eccl.</span> les études du\ndehors, <span class=\"ital\">c. à d.</span> profanes ||</div>\n<div class=\"rub\"><span class=\"ruba\">X</span> <span class=\"ital\">p.\next.</span> sujet d’entretien, d’étude <span class=\"ital\">ou</span>\nde discussion (<span class=\"ital\">cf. la même relat. de sens pour\nle mot</span> <span class=\"grec\"><a href=\"/rhêma\">ῥῆμα</a></span>) <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 21, etc. ;</span>\n<span class=\"aut\">Att.</span> ; <span class=\"grec\"><a href=\"/peri_(1)\">περὶ</a> <span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/tis_(2)\">τινὸς</a>\n<a href=\"/dialegô\">διαλέγεσθαι</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Ap.</span> <span class=\"refpa\">34</span><span class=\"refpb\">e</span>, s’entretenir d’un sujet d’étude ; <span class=\"grec\"><span data-linked-entries=\"eis_(1),es\">ἐς</span> <span data-linked-self>λόγον</span> <a href=\"/tis_(2)\">τινός</a></span>, <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">3, 99 ;</span> <span class=\"grec\"><a href=\"/pros\">πρὸς</a> <span data-linked-self>λόγον</span>\n<a href=\"/tis_(2)\">τινός</a></span>, <span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Sept.</span> <span class=\"refch\">519,</span> ce dont il\ns’agit, l’objet en cause, en discussion, <span class=\"ital\">etc. ;</span> <span class=\"grec\"><a href=\"/ean_(2)\">ἐὰν</a> <a href=\"/pros\">πρὸς</a> <span data-linked-self>λόγον</span> <span data-linked-entries=\"eimi_(1),ê_(3)\">ᾖ</span></span>,\n<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phil.</span>\n<span class=\"refpa\">33</span><span class=\"refpb\">c</span>, si cela\nrentre dans le sujet ; <span class=\"grec\"><a href=\"/metechô\">μετέχειν</a> <span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tou_(2)\">τοῦ</span>\n<span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1,\n127,</span> participer à l’objet (de l’entretien) <span class=\"ital\">c. à d.</span> être dans le secret ; <span class=\"ital\">p.\nsuite :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> point de départ d’une\ndiscussion, proposition, principe, <span class=\"aut\">Plat.</span>\n<span class=\"oeuv\">Gorg.</span> <span class=\"refpa\">508</span><span class=\"refpb\">b</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> définition, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phædr.</span> <span class=\"refpa\">245</span><span class=\"refpb\">e</span>, <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">343</span><span class=\"refpb\">a</span>, <span class=\"ital\">etc. ;</span> <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Metaph.</span> <span class=\"refch\">3, 4, 3, etc. ;</span> <span class=\"aut\">DL.</span>\n<span class=\"refch\">7, 60</span> ||</div>\n</div>\n</div>\n<div class=\"Rub\"><span class=\"Ruba\">B</span> raison, <span class=\"ital\">d’où :</span>\n<div class=\"rub\"><span class=\"ruba\">I</span> faculté de raisonner,\nraison, intelligence, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phædr.</span> <span class=\"refpa\">270</span><span class=\"refpb\">c</span>, <span class=\"oeuv\">Tim.</span> <span class=\"refpa\">52</span><span class=\"refpb\">c</span>, <span class=\"ital\">etc. ;</span> <span class=\"grec\"><span data-linked-entries=\"ha_(2),ho_(1),hos\">ἃ</span> <a href=\"/malista\">μάλιστά</a> <a href=\"/tis_(2)\">τις</a> <span data-linked-entries=\"an_(1),ana_(1),ean_(2)\">ἂν</span> <span data-linked-self>λόγῳ</span>\n<a href=\"/lambanô\">λάϐοι</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Parm.</span> <span class=\"refpa\">135</span><span class=\"refpb\">e</span>, ce qu’on peut surtout saisir par la raison ;\n<span class=\"grec\"><span data-linked-entries=\"ho_(1),ta_(1),tis_(1)\">τὰ</span> <span data-linked-self>λόγῳ</span> <a href=\"/kai\">καὶ</a> <a href=\"/dianoia\">διανοίᾳ</a> <a href=\"/lêptos\">ληπτά</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">529</span><span class=\"refpb\">d</span>, ce que la raison et\nl’intelligence peuvent saisir ; <span class=\"grec\"><span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tô_(3)\">τῷ</span> <span data-linked-self>λόγῳ</span>\n<span data-linked-entries=\"hepomai,hepô\">ἕπεσθαι</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">582</span><span class=\"refpb\">e</span>, <span class=\"refpa\">586</span><span class=\"refpb\">d</span>, prendre la raison pour guide ||</div>\n<div class=\"rub\"><span class=\"ruba\">II</span> raison, bon\nsens : <span class=\"grec\"><a href=\"/orthos\">ὀρθὸς</a> <span data-linked-self>λόγος</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phæd.</span> <span class=\"refpa\">73</span><span class=\"refpb\">a</span> ; <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Nic.</span> <span class=\"refch\">6, 1, etc.</span> droite raison ; <span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a>\n<a href=\"/eoikôs\">ἐοικὼς</a> <span data-linked-self>λόγος</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Leg.</span> <span class=\"refpa\">647</span><span class=\"refpb\">d</span>, la juste raison ; <span class=\"grec\"><a href=\"/meta\">μετὰ</a>\n<span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Tim.</span> <span class=\"refpa\">28</span><span class=\"refpb\">a</span>, <span class=\"oeuv\">Theæt.</span> <span class=\"refpa\">206</span><span class=\"refpb\">e</span>, <span class=\"ital\">etc.</span> avec raison ; <span class=\"grec\"><a href=\"/kata_(1)\">κατὰ</a>\n<span data-linked-self>λόγον</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">500</span><span class=\"refpb\">c</span>, <span class=\"ital\">etc.</span> selon la raison ;\n<span class=\"grec\"><a href=\"/echô\">ἔχειν</a> <span data-linked-self>λόγον</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phæd.</span> <span class=\"refpa\">62</span><span class=\"refpb\">d</span>, <span class=\"ital\">etc.</span> être conforme à la raison, être juste\n<span class=\"ital\">ou</span> raisonnable ; <span class=\"grec\"><a href=\"/hôs_(2)\">ὡς</a>\n<span data-linked-entries=\"echei,echis,echô,cheô_(1)\">ἔχει</span> <span data-linked-self>λόγον</span></span>, <span class=\"aut\">Dém.</span> <span class=\"refch\">1090, 12,</span> comme cela est naturel ; <span class=\"grec\"><span data-linked-entries=\"ou_(2),ouk\">οὐκ</span> <span data-linked-entries=\"echei,echis,echô,cheô_(1)\">ἔχει</span> <span data-linked-self>λόγον</span></span>, <span class=\"aut\">Soph.</span>\n<span class=\"oeuv\">El.</span> <span class=\"refch\">466, etc.</span>\ncela n’a pas de raison ; <span class=\"grec\"><span data-linked-entries=\"ho_(1),to\">τὸ</span> <span data-linked-entries=\"para_(1),pêros_(1)\">παρὰ</span> <span data-linked-self>λόγον</span></span>\n(<span class=\"ital\">c.</span> <span class=\"grec\"><a href=\"/paralogos\">παράλογος</a></span>),\n<span class=\"aut\">Att.</span> ce qui est contraire à la raison ;\n<span class=\"grec\"><span data-linked-self>λόγος</span> <a href=\"/aiteô-ô\">αἰτεῖ</a></span>, <span class=\"ital\">avec une\nprop. inf.</span> <span class=\"aut\">Att.</span> la raison exige\nque, <span class=\"ital\">etc.</span> ||</div>\n<div class=\"rub\"><span class=\"ruba\">III</span> raison intime d’une\nchose, fondement, motif : <span class=\"grec\"><a href=\"/kata_(1)\">κατὰ</a> <span data-linked-entries=\"tis_(1),tis_(2)\">τίνα</span>\n<span data-linked-self>λόγον</span>;</span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">366</span><span class=\"refpb\">b</span>, sur quel fondement ? <span class=\"grec\"><span data-linked-entries=\"ek,ex\">ἐξ</span>\n<a href=\"/oudeis\">οὐδενὸς</a> <span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span></span>, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">Ph.</span> <span class=\"refch\">730,</span> sans aucune\nraison ; <span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a> <span data-linked-self>λόγος</span> <a href=\"/haireô-ô\">αἱρέει</a> <a href=\"/egô\">με</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 132, etc.</span> la raison\nde la chose me convainc ; <span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a> <span data-linked-self>λόγος</span> <a href=\"/houtôs\">οὕτως</a>\n<a href=\"/haireô-ô\">αἱρέει</a></span>, <span class=\"ital\">avec une prop. inf.</span>\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 45,</span> la\nraison des choses veut ainsi que, <span class=\"ital\">etc.</span> ||</div>\n<div class=\"rub\"><span class=\"ruba\">IV</span> exercice de la\nraison, jugement, <span class=\"ital\">d’où :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> opinion :\n<span class=\"grec\"><a href=\"/hapas\">ἅπαντα</a> <span data-linked-entries=\"nikaô-ô,nikê\">νικᾶν</span> <span data-linked-self>λόγον</span></span>, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">O.C.</span> <span class=\"refch\">1225,</span> surpasser tout ce qu’on peut dire <span class=\"ital\">ou</span> penser : <span class=\"grec\"><a href=\"/kata_(1)\">κατὰ</a> <span data-linked-entries=\"ho_(1),ton\">τὸν</span> <a href=\"/emos\">ἐμόν</a> <a href=\"/ge\">γε</a>\n<span data-linked-self>λόγον</span></span>, <span class=\"aut\">Naz.</span> d’après mon sentiment ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> <span class=\"ital\">en b.\npart :</span> bonne opinion, estime : <span class=\"grec\"><span data-linked-self>λόγῳ</span> <span data-linked-entries=\"eis_(1),en\">ἐν</span> <span data-linked-entries=\"mikros,smikros\">σμικρῷ</span> <span data-linked-entries=\"eimi_(1),einai\">εἶναι</span></span>, <span class=\"aut\">Plat.</span>\n<span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">550</span><span class=\"refpb\">a</span>, être en médiocre\nestime ; <span class=\"grec\"><a href=\"/pleistos\">πλείστου</a> <span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <span data-linked-entries=\"eimi_(1),einai\">εἶναι</span></span>,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 143 ;</span>\n<span class=\"grec\"><a href=\"/elachistos\">ἐλαχίστου</a> <span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <span data-linked-entries=\"eimi_(1),einai\">εἶναι</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 146,</span> être en très\ngrande, en très petite estime ; <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <span data-linked-entries=\"eimi_(1),einai\">εἶναι</span> <a href=\"/pros\">πρός</a>\n<a href=\"/tis_(2)\">τινος</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">4,\n138,</span> être estimé par qqn ; <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"logoô-ô\">λόγου</span> <a href=\"/oudeis\">οὐδενὸς</a>\n<span data-linked-entries=\"genesthai,gignomai\">γενέσθαι</span> <a href=\"/pros\">πρός</a> <a href=\"/tis_(2)\">τινος</a></span>, <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">1, 120,</span> ne jouir d’aucune considération\nde la part de qqn ; <span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/echô\">ἔχειν</a> <a href=\"/tis_(2)\">τινός</a></span>,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 62, 115,\netc. ;</span> <span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/ischô\">ἴσχειν</a> <a href=\"/peri_(1)\">περί</a> <a href=\"/tis_(2)\">τινος</a></span>,\n<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Tim.</span>\n<span class=\"refpa\">87</span><span class=\"refpb\">c</span>,\n<span class=\"ital\">ou</span> <span class=\"grec\"><a href=\"/peri_(1)\">περί</a> <a href=\"/tis_(2)\">τινα</a></span>,\n<span class=\"aut\">Lycurg.</span> <span class=\"refch\">162,\n27,</span> faire cas de qqn <span class=\"ital\">ou</span> de qqe\nch. ; <span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/tis_(2)\">τινὸς</a> <span data-linked-entries=\"ou_(2),ouk\">οὐκ</span> <a href=\"/echô\">ἔχειν</a> <a href=\"/oudeis\">οὐδένα</a></span>,\n<span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Pr.</span>\n<span class=\"refch\">231 ;</span> <span class=\"grec\"><a href=\"/oudeis\">οὐδένα</a> <span data-linked-self>λόγον</span>\n<a href=\"/poieô-ô\">ποιεῖσθαί</a> <a href=\"/tis_(2)\">τινος</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1, 4, etc. ;</span> <span class=\"grec\"><span data-linked-entries=\"eis_(1),en\">ἐν</span> <a href=\"/oudeis\">οὐδενὶ</a> <span data-linked-self>λόγῳ</span>\n<a href=\"/poieô-ô\">ποιεῖσθαί</a> <a href=\"/tis_(2)\">τινα</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 30,</span> ne faire aucun cas de qqn ||</div>\n<div class=\"pp\"><span class=\"ppa\">3</span> <span class=\"ital\">p.\nsuite :</span> compte qu’on fait de qqn <span class=\"ital\">ou</span> de qqe ch., valeur qu’on leur attribue,\n<span class=\"ital\">avec un gén. déterminatif :</span>\n<span class=\"grec\"><span data-linked-entries=\"eis_(1),en\">ἐν</span> <span data-linked-entries=\"andros,anêr\">ἀνδρὸς</span> <span data-linked-self>λόγῳ</span> <span data-linked-entries=\"eimi_(1),einai\">εἶναι</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 120,</span> être considéré\ncomme un homme de haut rang ; <span class=\"grec\"><span data-linked-entries=\"eis_(1),en\">ἐν</span> <a href=\"/andrapodon\">ἀνδραπόδων</a> <span data-linked-self>λόγῳ</span>\n<span data-linked-entries=\"poieô-ô,poioô-ô\">ποιεύμενος</span></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 125,</span> considéré <span class=\"ital\">ou</span>\ntraité à l’égal d’esclaves ; <span class=\"ital\">p. ext.</span>\névaluation, <span class=\"ital\">en gén.:</span> <span class=\"grec\"><a href=\"/hupo\">ὑπὸ</a> <span data-linked-entries=\"ho_(1),ton\">τὸν</span> <span data-linked-self>λόγον</span> <a href=\"/agô_(1)\">ἄγειν</a> <a href=\"/tis_(2)\">τι</a></span>, <span class=\"aut\">Pol.</span>\n<span class=\"refch\">15, 34, 2,</span> soumettre qqe ch. à\nl’évaluation, en faire le calcul ||</div>\n<div class=\"pp\"><span class=\"ppa\">4</span> relation, proportion,\nanalogie : <span class=\"grec\"><a href=\"/ana_(1)\">ἀνὰ</a> <span data-linked-entries=\"ho_(1),ton\">τὸν</span> <a href=\"/autos\">αὐτὸν</a> <span data-linked-self>λόγον</span></span>,\n<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phæd.</span>\n<span class=\"refpa\">110</span><span class=\"refpb\">d</span> ;\n<span class=\"grec\"><a href=\"/eis_(1)\">εἰς</a> <span data-linked-entries=\"ho_(1),ton\">τὸν</span> <a href=\"/autos\">αὐτὸν</a> <span data-linked-self>λόγον</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">353</span><span class=\"refpb\">d</span> ; <span class=\"grec\"><a href=\"/kata_(1)\">κατὰ</a> <span data-linked-entries=\"ho_(1),ton\">τὸν</span> <a href=\"/autos\">αὐτὸν</a> <span data-linked-self>λόγον</span></span>, <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">1, 186,</span> selon la même évaluation, dans\nla même proportion ; <span class=\"grec\"><a href=\"/pros\">πρὸς</a> <span data-linked-self>λόγον</span> <a href=\"/tis_(2)\">τινός</a></span>,\n<span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Sept.</span>\n<span class=\"refch\">519 ;</span> <span class=\"grec\"><a href=\"/ana_(1)\">ἀνὰ</a> <span data-linked-self>λόγον</span>\n<a href=\"/tis_(2)\">τινός</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Tim.</span> <span class=\"refpa\">29</span><span class=\"refpb\">c</span>, <span class=\"ital\">ou</span> <span class=\"grec\"><a href=\"/tis_(2)\">τινί</a></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">2 Alc.</span> <span class=\"refpa\">145</span><span class=\"refpb\">d</span> (<span class=\"ital\">cf.</span> <span class=\"grec\"><a href=\"/analogos\">ἀνάλογος</a></span>) ; <span class=\"grec\"><a href=\"/kata_(1)\">κατὰ</a> <span data-linked-self>λόγον</span>\n<a href=\"/tis_(2)\">τινός</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">1,\n134, etc.</span> eu égard à, relativement à, proportionnellement à\nqqe ch. ; <span class=\"grec\"><a href=\"/kata_(1)\">κατὰ</a> <span data-linked-self>λόγον</span> <a href=\"/ho_(1)\">τῆς</a> <a href=\"/dunamis\">δυνάμεως</a></span>,\n<span class=\"aut\">Xén.</span> <span class=\"oeuv\">Cyr.</span>\n<span class=\"refch\">8, 6, 11,</span> en raison de leur puissance ;\n<span class=\"ital\">t. de gr.</span> <span class=\"grec\"><span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tô_(3)\">τῷ</span> <span data-linked-self>λόγῳ</span> <span data-linked-entries=\"ho_(1),tôn\">τῶν</span>\n<a href=\"/metochikos\">μετοχικῶν</a></span>, <span class=\"aut\">Gramm.</span> <span class=\"refch\">p. 1393 Bekker, Anecdota græca,</span> par analogie\navec les participes ||</div>\n</div>\n<div class=\"rub\"><span class=\"ruba\">V</span> compte-rendu,\njustification, explication : <span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/heautou\">ἑαυτῷ</a>\n<a href=\"/didômi\">διδόναι</a> <a href=\"/peri_(1)\">περί</a> <a href=\"/tis_(2)\">τινος</a></span>, <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">1, 97,</span> se rendre compte de qqe ch. ;\n<span class=\"ital\">avec</span> <span class=\"grec\"><span data-linked-entries=\"hostis,hoti\">ὅτι</span></span>,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">6, 86 ;</span>\n<span class=\"ital\">ou</span> <span class=\"grec\"><a href=\"/hôs_(2)\">ὡς</a></span>,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">4, 102 ;</span>\n<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phæd.</span>\n<span class=\"refpa\">95</span><span class=\"refpb\">d</span>,\n<span class=\"ital\">etc.</span> se rendre compte que ; <span class=\"grec\"><a href=\"/aiteô-ô\">αἰτεῖν</a></span>, <span class=\"aut\">Att.</span> (<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Pol.</span> <span class=\"refpa\">285</span><span class=\"refpb\">e</span>, <span class=\"ital\">etc.</span>), <span class=\"ital\">ou</span> <span class=\"grec\"><a href=\"/apaiteô-ô\">ἀπαιτεῖν</a> <a href=\"/peri_(1)\">περί</a> <a href=\"/tis_(2)\">τινος</a></span>, <span class=\"aut\">Att.</span>\n(<span class=\"aut\">Dém.</span> <span class=\"refch\">868, 5,\netc.</span>) demander compte à qqn, se faire rendre compte par\nqqn ; <span class=\"grec\"><span data-linked-self>λόγον</span> <a href=\"/didômi\">διδόναι</a> <a href=\"/tis_(2)\">τινός</a></span>, <span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 143 ;</span> <span class=\"aut\">Att.</span> ; <span class=\"ital\">ou</span> <span class=\"grec\"><a href=\"/parechô\">παρέχειν</a></span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">344</span><span class=\"refpb\">d</span>, rendre raison, rendre compte de qqe ch. ;\n<span class=\"grec\"><span data-linked-self>λόγον</span> <span data-linked-entries=\"didômi,dounai\">δοῦναι</span> <a href=\"/kai\">καὶ</a> <span data-linked-entries=\"deiknumi,dechomai\">δέξασθαι</span></span>, <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Prot.</span> <span class=\"refpa\">336</span><span class=\"refpb\">c</span>, rendre compte et\nrecevoir le compte-rendu de qqe ch. ; <span class=\"grec\"><span data-linked-self>λόγον</span>\n<a href=\"/lambanô\">λαμϐάνειν</a> <span data-linked-entries=\"para_(1),pêros_(1)\">παρά</span> <a href=\"/tis_(2)\">τινος</a></span>, <span class=\"aut\">Dém.</span>\n<span class=\"refch\">101, 17,</span> recevoir de qqn le compte-rendu\n(de qqe ch.) ||</div>\n<div class=\"rub\"><span class=\"ruba\">VI</span> opinion au sujet\nd’une chose à venir, présomption, attente, <span class=\"aut\">Hdt.</span> <span class=\"refch\">8, 6, etc. ;</span>\n<span class=\"grec\"><a href=\"/epi_(1)\">ἐπὶ</a> <span data-linked-entries=\"ho_(1),tis_(1),tis_(2),tô_(3)\">τῷ</span> <span data-linked-self>λόγῳ</span> <a href=\"/hôste\">ὥστε</a>,</span> <span class=\"aut\">Hdt.</span> <span class=\"refch\">3, 36,</span> dans l’attente\nque, <span class=\"ital\">etc.</span> ||</div>\n<div class=\"rub\"><span class=\"ruba\">VII</span> <span class=\"ital\">postér. au sens philosophique et religieux :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> <span class=\"ital\">au\nsens philosoph.</span> le <span class=\"grec\"><span data-linked-self>λόγος</span></span> divin, la\nraison divine, <span class=\"aut\">Herm. tr.</span> <span class=\"oeuv\">Poem.</span> <span class=\"refch\">3, 2, 15, etc. ;</span>\n<span class=\"aut\">Plut.</span> <span class=\"oeuv\">M.</span>\n<span class=\"refpa\">376</span><span class=\"refpb\">c</span>,\n<span class=\"refpa\">381</span><span class=\"refpb\">b</span>,\n<span class=\"refpa\">568</span><span class=\"refpb\">d</span>,\n<span class=\"ital\">etc. ;</span> <span class=\"aut\">Phil.</span>\n<span class=\"refch\">1, 4, 5, 6, etc.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> <span class=\"ital\">au\nsens religieux,</span> le Verbe divin, <span class=\"aut\">NT.</span>\n<span class=\"oeuv\">Joh.</span> <span class=\"refch\">1, 1,\n14 ;</span> <span class=\"oeuv\">1 Joh.</span> <span class=\"refch\">1,\n1 ;</span> <span class=\"oeuv\">Apoc.</span> <span class=\"refch\">19,\n13 ;</span> <span class=\"aut\">Cels.</span> (<span class=\"aut\">Orig.</span> <span class=\"refpa\">1, 852</span><span class=\"refpb\">a <span class=\"ital\">Migne</span></span>) ; <span class=\"aut\">Naz.</span> <span class=\"refpa\">2, 424</span><span class=\"refpb\">b <span class=\"ital\">Migne</span></span>.</div>\n</div>\n</div>\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/legô\">λέγω</a></span>.</div>\n"
+    },
+    "next": {
+     "word": "λογότροπος",
+     "uri": "logotropos",
+     "excerpt": "λογό·τροπος, ου (ὁ) syllogisme par hypothèse dans la dialectique des stoïciens, DL. 7, 77. Étym. λ. τρέπω. ",
+     "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">λογό·τροπος,</span></span> <span class=\"gens\">ου</span>\n<span class=\"art\">(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)</span> syllogisme\npar hypothèse dans la dialectique des stoïciens, <span class=\"aut\">DL.</span> <span class=\"refch\">7, 77</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">λ. <a href=\"/trepô\">τρέπω</a></span>.</div>\n"
+    }
+   }
+  }
+ },
+ "/entry/random?fields=word,uri,excerpt,htmlDefinition&lengthRange=600,700": {
+  "data": {
+   "$query": {
+    "fields": [
+     "word",
+     "uri",
+     "excerpt",
+     "htmlDefinition"
+    ],
+    "lengthRange": [
+     600,
+     700
+    ]
+   },
+   "version": "2023-02-28",
+   "length": 624,
+   "entry": {
+    "word": "ἐπιστήμη",
+    "uri": "epistêmê",
+    "excerpt": "ἐπιστήμη, ης (ἡ) I science, d’où : 1 art, habileté (à tirer de l’arc, Soph. Ph. 1057 ; à la guerre, Thc. 1, 121 ; 6, 72 ; 7, 62) ; ἐπ. τινός, Plat. G…",
+    "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">ἐπιστήμη,</span></span> <span class=\"gens\">ης</span>\n(<span class=\"grec\"><span data-linked-entries=\"hê_(1),ho_(1)\">ἡ</span></span>)\n<div class=\"rub\"><span class=\"ruba\">I</span> science, <span class=\"ital\">d’où :</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> art, habileté (à tirer\nde l’arc, <span class=\"aut\">Soph.</span> <span class=\"oeuv\">Ph.</span> <span class=\"refch\">1057 ;</span> à la guerre,\n<span class=\"aut\">Thc.</span> <span class=\"refch\">1, 121 ;</span>\n<span class=\"refch\">6, 72 ;</span> <span class=\"refch\">7,\n62</span>) ; <span class=\"grec\">ἐπ. <a href=\"/tis_(2)\">τινός</a>,</span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Gorg.</span> <span class=\"refpa\">511</span><span class=\"refpb\">c</span> ; <span class=\"grec\"><a href=\"/pros\">πρός</a> <a href=\"/tis_(2)\">τι</a>,</span> <span class=\"aut\">Lys.</span> <span class=\"refch\">914, 15 ;</span> <span class=\"grec\"><a href=\"/peri_(1)\">περί</a> <a href=\"/tis_(2)\">τι</a>,</span>\n<span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phil.</span>\n<span class=\"refpa\">55</span><span class=\"refpb\">d</span>, habileté\npour qqe ch. ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> connaissance,\n<span class=\"ital\">en gén.</span> <span class=\"aut\">Soph.</span>\n<span class=\"oeuv\">O.R.</span> <span class=\"refch\">1115 ;</span>\n<span class=\"grec\"><a href=\"/pas\">πάντ’</a> <span data-linked-self>ἐπιστήμης</span> <span data-linked-entries=\"pleos,pleôs\">πλέως</span>,</span> <span class=\"aut\">Soph.</span> <span class=\"oeuv\">Ant.</span> <span class=\"refch\">721,</span> plein de savoir en toutes choses ||</div>\n<div class=\"pp\"><span class=\"ppa\">3</span> <span class=\"ital\">particul.</span> science, savoir acquis par l’étude,\nconnaissances scientifiques, <span class=\"ital\">p. opp. à</span>\n<span class=\"grec\"><a href=\"/technê\">τέχνη</a></span> <span class=\"ital\">et à</span>\n<span class=\"grec\"><a href=\"/empeiria\">ἐμπειρία</a>,</span> <span class=\"aut\">Plat.</span>\n<span class=\"oeuv\">Rsp.</span> <span class=\"refpa\">422</span><span class=\"refpb\">c</span>, <span class=\"oeuv\">Ion</span> <span class=\"refpa\">536</span><span class=\"refpb\">c</span> ; <span class=\"ital\">cf.</span> <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Metaph.</span> <span class=\"refch\">1, 1, 4 ;</span> <span class=\"ital\">ou</span> <span class=\"ital\">à</span> <span class=\"grec\"><span data-linked-entries=\"dokeô-ô,doxa\">δόξα</span>,</span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Pol.</span> <span class=\"refpa\">301</span><span class=\"refpb\">b</span> ||</div>\n</div>\n<div class=\"rub\"><span class=\"ruba\">II</span> application de\nl’esprit, étude, <span class=\"aut\">Isocr.</span> <span class=\"refch\">238 <span class=\"rom\">a</span> et <span class=\"rom\">d</span></span>.</div>\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"ital\">cf.</span> <span class=\"grec\"><span data-linked-entries=\"epistamai,ephistêmi\">ἐπίσταμαι</span></span>.</div>\n"
+   }
+  }
+ },
+ "/lookup/λ?γος?diacriticSensitive=false&fields=word,uri,excerpt&inputMode=greek&limit=30&skipMorpheus=true": {
+  "data": {
+   "$query": {
+    "limit": 30,
+    "fields": [
+     "word",
+     "uri",
+     "excerpt"
+    ],
+    "inputMode": "greek",
+    "diacriticSensitive": false,
+    "skipMorpheus": true,
+    "q": "λ?γος"
+   },
+   "version": "2023-02-28",
+   "count": 6,
+   "countAll": 6,
+   "entries": [
+    {
+     "word": "λαγός",
+     "uri": "lagos",
+     "excerpt": "λαγός, οῦ (ὁ) [ᾰ] ion. c. λαγώς, Hdt. 1, 123 ; Soph. fr. 113, etc.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Λᾶγος",
+     "uri": "Lagos",
+     "excerpt": "Λᾶγος, ου (ὁ) Lagos, père de Ptolémée, le général d’Alexandre qui devint roi d’Égypte, Plut. Pro Nobil. 19, etc. Étym. pour *Λάαγος, de λαός, ἄγω, li…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λαγοσφαγία",
+     "uri": "lagosphagia",
+     "excerpt": "λαγο·σφαγία, ας (ἡ) [ᾰγ] massacre de lièvres, Anth. 6, 167 (vulg. ; λαγωσφαγία conj.). Étym. λαγός, σφάζω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λόγος",
+     "uri": "logos",
+     "excerpt": "λόγος, ου (ὁ) A parole : I la parole, en gén. : ἔργα λόγου μέζω, Hdt. 2, 35, actions au-dessus de ce qu’on en pourrait dire ; λόγου κρεῖσσον, Thc. 2,…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λύγος",
+     "uri": "lugos",
+     "excerpt": "λύγος, ου (ἡ) [ῠ] 1 toute tige ou baguette flexible, particul. osier ou gatilier (Vitex agnus castus L.) Od. 9, 427 ; Hh. 6, 13 || 2 couronne d’osier…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Λύγος",
+     "uri": "Lugos",
+     "excerpt": "Λύγος, ου (ὁ) [ῠ] Lygos, h. Nonn. D. 30, 316.",
+     "isExact": false,
+     "isMorpheus": false
+    }
+   ]
+  }
+ },
+ "/lookup/λογ?diacriticSensitive=false&fields=word,uri,excerpt&inputMode=greek&limit=30&skipMorpheus=false": {
+  "data": {
+   "$query": {
+    "limit": 30,
+    "fields": [
+     "word",
+     "uri",
+     "excerpt"
+    ],
+    "inputMode": "greek",
+    "diacriticSensitive": false,
+    "skipMorpheus": false,
+    "q": "λογ"
+   },
+   "version": "2023-02-28",
+   "count": 30,
+   "countAll": 88,
+   "entries": [
+    {
+     "word": "λογάδες",
+     "uri": "logades",
+     "excerpt": "",
+     "children": [
+      {
+       "word": "λογάδες",
+       "uri": "logades#1",
+       "excerpt": "λογάδες, ων (αἱ) 1 blanc de l’œil, Nic. Th. 292 || 2 d’où œil, Anth. 5, 270. "
+      },
+      {
+       "word": "λογάδες",
+       "uri": "logades#2",
+       "excerpt": "λογάδες, v. λογάς."
+      }
+     ],
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογάδην",
+     "uri": "logadên",
+     "excerpt": "λογάδην [ᾰ] adv. 1 en tas, en monceau, Thc. 4, 31 ; 6, 66 || 2 avec choix, Thc. 4, 4 ; Plut. Oth. 6. Étym. λογάς, -δην. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογαῖος",
+     "uri": "logaios",
+     "excerpt": "λογαῖος, α, ον, choisi, Ibyc. (Str. 58). Étym. λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογαοιδικός",
+     "uri": "logaoidikos",
+     "excerpt": "λογ·αοιδικός, ή, όν [ᾰ] logaœdique, n. d’un vers dactylique (de quatre dactyles et deux trochées) qui tient de la prose et des vers, DL. 4, 65 ; Héph…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογάριον",
+     "uri": "logarion",
+     "excerpt": "λογάριον, ου (τὸ) [ᾰ] petit mot, courte sentence, Plut. M. 1119c ; Thgnt. (Ath. 104b) ; en mauv. part, méchant discours, Dém. 421, 20. Étym. λόγος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογάς",
+     "uri": "logas",
+     "excerpt": "λογάς, άδος (ὁ, ἡ) [ᾰδ] (λέγω, choisir) 1 recueilli : λογάδες λίθοι, Paus. 7, 22, 5, litt. pierres recueillies, c. à d. employées pour une constructi…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογάω-ῶ",
+     "uri": "logaô-ô",
+     "excerpt": "λογάω-ῶ (seul. prés.) avoir envie de parler, Luc. Lex. 15. Étym. λόγος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογγάζω",
+     "uri": "longazô",
+     "excerpt": "λογγάζω, c. λαγγάζω, Eschl. (Poll. 9, 136) ; Ar. (Bkk. p. 50, 33).",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Λογγᾶτις",
+     "uri": "Longatis",
+     "excerpt": "Λογγᾶτις (ἡ) [ᾱ] Longâtis, ép. d’Athèna, Lyc. 520, 1032.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Λογγῖνος",
+     "uri": "Longinos",
+     "excerpt": "Λογγῖνος, ου (ὁ) Longin, rhéteur et philosophe.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Λόγγος",
+     "uri": "Longos",
+     "excerpt": "Λόγγος, ου (ὁ) 1 Longos (Longus) écrivain grec || 2 autre, Anth. 6, 191. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Λόγγουρος",
+     "uri": "Longouros",
+     "excerpt": "Λόγγουρος, ου (ὁ) Longouros, lieu de Sicile, Lyc. 868.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογεῖον",
+     "uri": "logeion",
+     "excerpt": "λογεῖον, ου (τὸ) 1 partie de la scène où se tenaient les acteurs pour parler, Plut. Thes. 16 || 2 tribunal, Syn. p. 78 || 3 pectoral du grand-prêtre …",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογέμπορος",
+     "uri": "logemporos",
+     "excerpt": "λογ·έμπορος, ος, ον, marchand de paroles, en parl. des sophistes, Artém. 2, 75. Étym. λόγος, ἔμπορος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογεύς",
+     "uri": "logeus",
+     "excerpt": "λογεύς, έως (ὁ) orateur, Plut. M. 813a. Étym. λόγος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογία",
+     "uri": "logia",
+     "excerpt": "λογία, ας (ἡ) collecte pour les pauvres, NT. 1 Cor. 16, 1 et 2. Étym. λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογίατρος",
+     "uri": "logiatros",
+     "excerpt": "λογ·ίατρος, ου (ὁ) [ᾱ] médecin consultant, Gal. 3, 145 ; 8, 670, etc. Étym. λόγος, ἰατρός. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογίδιον",
+     "uri": "logidion",
+     "excerpt": "λογίδιον, ου (τὸ) [ῐδ] 1 petit discours, petit entretien, Isocr. 295b ; Plat. Eryx. 401e || 2 petit récit, Ar. Vesp. 64. Étym. dim. de λόγος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογιεύς",
+     "uri": "logieus",
+     "excerpt": "λογιεύς, έως (ὁ) orateur, Critias (Poll. 2, 122). Étym. cf. λογεύς. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογίζομαι",
+     "uri": "logizomai",
+     "excerpt": "λογίζομαι (f. ίσομαι, att. ιοῦμαι, ao. ἐλογισάμην, pf. λελόγισμαι ; au sens pass. ao. ἐλογίσθην, pf. λελόγισμαι) A dép. I calculer, d’où : 1 calculer…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογικεύομαι",
+     "uri": "logikeuomai",
+     "excerpt": "λογικεύομαι [ῐ] tirer une conclusion, Cratès (Notit. mss. v. 11, pars 2, p. 25). Étym. λογικός. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογικός",
+     "uri": "logikos",
+     "excerpt": "λογικός, ή, όν : I qui concerne la parole, c. à d. 1 qui sert à la parole : λογικὰ μέρη, Plut. Cor. 38, les organes de la parole || 2 habile à parler…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογικῶς",
+     "uri": "logikôs",
+     "excerpt": "λογικῶς, adv. 1 par la parole, Jambl. (Stob. Fl. 3, 147) || 2 logiquement, selon les règles du raisonnement, Arstt. Metaph. 6, 4, 13, etc. || Cp. -ώτ…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λόγιμος",
+     "uri": "logimos",
+     "excerpt": "λόγιμος, η, ον [ῐ] digne de mention, notable, remarquable, Hdt. 1, 143, etc. || Sup. -ώτατος, Hdt. 9, 37. Étym. λόγος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λόγιον",
+     "uri": "logion",
+     "excerpt": "λόγιον, ου (τὸ) réponse d’oracle, prédiction, Hdt. 1, 64 ; 4, 178 ; 8, 60 ; Eur. Her. 406 ; Thc. 1, 8, etc. ; Ar. Vesp. 799, etc. ; dans l’Écriture, …",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λόγιος",
+     "uri": "logios",
+     "excerpt": "λόγιος, α, ον : I (au sens de parole) 1 habile à parler, disert, éloquent (p. opp. à ἄφωνος, qui ne sait rien dire) Plut. Pomp. 51, etc. ; ὁ λ. Ἑρμῆς…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογιότης",
+     "uri": "logiotês",
+     "excerpt": "λογιότης, ητος (ἡ) éloquence, Plut. M. 205a, 348d, 486f, etc. ; Phil. V. Mos. p. 615a. Étym. λόγιος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λόγισμα",
+     "uri": "logisma",
+     "excerpt": "λόγισμα, ατος (τὸ) ce que l’on porte en compte, Antiph. (Ath. 8d). Étym. λογίζομαι. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογισμός",
+     "uri": "logismos",
+     "excerpt": "λογισμός, οῦ (ὁ) I compte, calcul (avec idée de nombre) : λ. τῶν ἡμερῶν, Thc. 4, 122, compte du nombre de jours ; τυγχάνειν τοῦ ἀληθοῦς λ. Thc. 3, 20…",
+     "isExact": false,
+     "isMorpheus": false
+    }
+   ]
+  }
+ },
+ "/lookup/λογος?diacriticSensitive=false&fields=word,uri,excerpt&inputMode=greek&limit=30&skipMorpheus=false": {
+  "data": {
+   "$query": {
+    "limit": 30,
+    "fields": [
+     "word",
+     "uri",
+     "excerpt"
+    ],
+    "inputMode": "greek",
+    "diacriticSensitive": false,
+    "skipMorpheus": false,
+    "q": "λογος"
+   },
+   "version": "2023-02-28",
+   "count": 1,
+   "countAll": 1,
+   "entries": [
+    {
+     "word": "λόγος",
+     "uri": "logos",
+     "excerpt": "λόγος, ου (ὁ) A parole : I la parole, en gén. : ἔργα λόγου μέζω, Hdt. 2, 35, actions au-dessus de ce qu’on en pourrait dire ; λόγου κρεῖσσον, Thc. 2,…",
+     "isExact": true,
+     "isMorpheus": false
+    }
+   ]
+  }
+ },
+ "/lookup/λογος$?diacriticSensitive=false&fields=word,uri,excerpt&inputMode=greek&limit=30&skipMorpheus=true": {
+  "data": {
+   "$query": {
+    "limit": 30,
+    "fields": [
+     "word",
+     "uri",
+     "excerpt"
+    ],
+    "inputMode": "greek",
+    "diacriticSensitive": false,
+    "skipMorpheus": true,
+    "q": "λογος$"
+   },
+   "version": "2023-02-28",
+   "count": 30,
+   "countAll": 174,
+   "entries": [
+    {
+     "word": "αἰθερολόγος",
+     "uri": "aitherologos",
+     "excerpt": "αἰθερο·λόγος, ου (ὁ) qui parle ou s’occupe des régions célestes, DL. 2, 4. Étym. αἰθ. λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀκαιρολόγος",
+     "uri": "akairologos",
+     "excerpt": "ἀκαιρο·λόγος, ος, ον, qui parle à contre-temps, Phil. 2, 268. Étym. ἄκ. λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀκανθολόγος",
+     "uri": "akanthologos",
+     "excerpt": "ἀκανθο·λόγος, ος, ον [ᾰκ] qui recherche des arguties, litt. des épines, Anth. 11, 20, 347. Étym. ἄκανθα, λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀκριϐολόγος",
+     "uri": "akribologos",
+     "excerpt": "ἀκριϐο·λόγος, ου (ὁ) [ῑ] qui parle avec précision, Timon 50, 2 (DL. 2, 19). Étym. ἀκριϐής, λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀκρολόγος",
+     "uri": "akrologos",
+     "excerpt": "ἀκρο·λόγος, ος, ον, qui cueille (le suc) à la surface (des fleurs) Epinic. (Ath. 432c). Étym. ἄ. λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀλεξίλογος",
+     "uri": "alexilogos",
+     "excerpt": "ἀλεξί·λογος, ος, ον [ᾰῐ] qui aide la parole, Crit. (Ath. 28c). Étym. ἀ. λόγος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἄλογος",
+     "uri": "alogos",
+     "excerpt": "ἄ·λογος, ος, ον : I (λόγος, parole) 1 qui ne parle pas, Plat. Leg. 696e || 2 qu’on ne peut exprimer par la parole, Plat. Theæt. 203a || 3 ἄ. ἡμέρα, L…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἁμαρτολόγος",
+     "uri": "hamartologos",
+     "excerpt": "ἁμαρτο·λόγος, ος, ον [ᾰμ] qui parle d’une manière fautive, incorrectement, Ath. 165b. Étym. ἁ. λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀμφίλογος",
+     "uri": "amphilogos",
+     "excerpt": "ἀμφί·λογος, ος, ον : I act. qui dispute, Soph. Ant. 111 ; Eur. Med. 637 || II pass. 1 disputé, contesté, qui est en question : τὰ ἀ. Thc. 4, 118 ; 5,…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνάλογος",
+     "uri": "analogos",
+     "excerpt": "ἀνάλογος, ος, ον : 1 proportionnel, qui est en rapport avec, analogue, T. Locr. 103d ; Plat. Tim. 69b ; τινι, Arstt. Mund. 4 ; Rhet. 3, 6 ; DS. 1, 41…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀναμφίλογος",
+     "uri": "anamphilogos",
+     "excerpt": "ἀν·αμφίλογος, ος, ον, non contesté, non douteux, Xén. Mem. 4, 2, 34 ; Conv. 3, 4 ; DH. Amm. 1, 11 || Sup. -ώτατος, Xén. ll. cc. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀναξιόλογος",
+     "uri": "anaxiologos",
+     "excerpt": "ἀν·αξιόλογος, ος, ον, qui ne mérite pas qu’on en parle, sans importance, DS. Étym. ἀν-, ἀ. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνθολόγος",
+     "uri": "anthologos",
+     "excerpt": "ἀνθο·λόγος, ος, ον, qui recueille la fleur de, Anth. 12, 249. Étym. ἄνθος, λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνθρωπολόγος",
+     "uri": "anthrôpologos",
+     "excerpt": "ἀνθρωπο·λόγος, ος, ον, qui parle sur l’homme, Arstt. Nic. 4, 8, 31. Étym. ἄ. λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνομόλογος",
+     "uri": "anomologos",
+     "excerpt": "ἀν·ομόλογος, ος, ον, non d’accord, contradictoire, Sext. M. 8, 331. Étym. ἀν-, ὁ. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀντίλογος",
+     "uri": "antilogos",
+     "excerpt": "ἀντίλογος, ος, ον, contradictoire, contraire, Eur. Hel. 1142. Étym. ἀντιλέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀξιόλογος",
+     "uri": "axiologos",
+     "excerpt": "ἀξιό·λογος, ος, ον : 1 digne d’être rapporté, mémorable, Hdt. 2, 148 ; Thc. 1, 1 ; Xén. Hell. 2, 3, 56, etc. || 2 digne de considération, considérabl…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀπαράλογος",
+     "uri": "aparalogos",
+     "excerpt": "ἀ·παράλογος, ος, ον, non sans raison, non absurde, Jambl. Pythag. 182, p. 380.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀπεραντολόγος",
+     "uri": "aperantologos",
+     "excerpt": "ἀπεραντο·λόγος, ος, ον, qui bavarde sans fin, Thalès (DL. 1, 35) ; Phil. 1, 216, etc. Étym. ἀπέραντος, λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀπόλογος",
+     "uri": "apologos",
+     "excerpt": "ἀπό·λογος, ου (ὁ) 1 récit détaillé, narration, Plat. Rsp. 614a ; Arstt. Rhet. 3, 16, 7, etc. || 2 fable, apologue, Cic. de Orat. 2, 66 ; Quint. 5, 11…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀποτελεσματολόγος",
+     "uri": "apotelesmatologos",
+     "excerpt": "ἀποτελεσματο·λόγος, ου (ὁ) tireur d’horoscopes, Theol. p. 54a. Étym. ἀποτέλεσμα, λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀργυρολόγος",
+     "uri": "argurologos",
+     "excerpt": "ἀργυρο·λόγος, ος, ον [ῠ] qui ramasse de l’argent, qui impose des contributions, Ar. Eq. 1071 ; Thc. 3, 19. Étym. ἄ. λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀρεταλόγος",
+     "uri": "aretalogos",
+     "excerpt": "ἀρετα·λόγος, ου (ὁ) [ᾰτᾱ] interprète de choses surnaturelles, d’où, postér. conteur de choses merveilleuses (et non, sel. l’interprétation commune, b…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀστειολόγος",
+     "uri": "asteiologos",
+     "excerpt": "ἀστειο·λόγος, ος, ον, qui parle finement, avec esprit, Str. Étym. ἀστεῖος, λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀστρολόγος",
+     "uri": "astrologos",
+     "excerpt": "ἀστρο·λόγος, ου (ὁ) 1 astronome, Xén. Mem. 4, 2, 10 || 2 postér. astrologue, Epic. (DL. 10, 93) ; Spt. Étym. ἄστρον, λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "αὐτολόγος",
+     "uri": "autologos",
+     "excerpt": "αὐτο·λόγος, ου (ὁ) le verbe même, c. à d. Dieu, Orig.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀφιλόλογος",
+     "uri": "aphilologos",
+     "excerpt": "ἀ·φιλόλογος, ος, ον [ῐ] qui n’aime pas les lettres, Plut. M. 673a.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἄφλογος",
+     "uri": "aphlogos",
+     "excerpt": "ἄ·φλογος, ος, ον, sans flamme ou sans feu, Lyc. 36. Étym. ἀ, φλόξ. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀφρηλόγος",
+     "uri": "aphrêlogos",
+     "excerpt": "ἀφρη·λόγος, ος, ον, qui amasse de l’écume, Anth. 6, 101. Étym. ἀφρός, λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "βαρύλογος",
+     "uri": "barulogos",
+     "excerpt": "βαρύ·λογος, ος, ον [ᾰῠ] médisant, Pd. P. 2, 56. Étym. β. λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    }
+   ]
+  }
+ }
+}
