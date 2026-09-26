@@ -61,7 +61,7 @@
       >
         <UIcon
           name="i-lucide-list-filter"
-          class="size-4"
+          class="size-5"
         />
       </UChip>
     </UButton>
