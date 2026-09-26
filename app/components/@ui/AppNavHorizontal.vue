@@ -63,19 +63,21 @@
     >
       <!--
         The title is a menu link as well: same padding and hover effect as the
-        menu, so that it lines up with the search bar as the menu does (and as
-        high as the menu links, whatever its font size: `py-1.5`).
+        menu, so that it lines up with the search bar as the menu does, and as
+        high as the menu links whatever its font size (`py-1.5`, `md:py-0.5`).
+        From `md`, the menus' items lose their vertical padding (`py-2`), which
+        would make the row higher than the floating header and push it down.
       -->
       <UNavigationMenu
         aria-label="Accueil"
         :items="[{ label: 'Bailly.app', to: '/', active: false }]"
-        :ui="{ link: 'py-1.5 font-serif text-xl font-normal tracking-wider text-black hover:text-black' }"
+        :ui="{ item: 'md:py-0', link: 'py-1.5 md:py-0.5 font-serif text-xl font-normal tracking-wider text-black hover:text-black' }"
       />
       <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1" />
       <UNavigationMenu
         class="md:col-start-3 md:row-start-1 md:justify-self-end"
         :items="menuItems"
-        :ui="{ link: 'max-md:p-2.5', linkLabel: 'max-xl:sr-only' }"
+        :ui="{ item: 'md:py-0', link: 'max-md:p-2.5', linkLabel: 'max-xl:sr-only' }"
       />
     </nav>
   </header>
