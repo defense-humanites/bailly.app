@@ -5,11 +5,21 @@ export default defineAppConfig({
       secondary: "domino",
       neutral: "gray",
     },
+    /*
+     * Rounded buttons (pills), except the ghost ones, used in lists and
+     * toolbars. Only the solid buttons (main actions) have a drop shadow and a
+     * semibold text; the outline ones a slight shadow; the others none.
+     */
     button: {
       slots: {
-        base: "rounded-full shadow-lg shadow-black/10 font-semibold",
+        base: "rounded-full",
       },
       variants: {
+        variant: {
+          solid: { base: "shadow-lg shadow-black/10 font-semibold" },
+          outline: { base: "shadow-xs" },
+          ghost: { base: "rounded-md" },
+        },
         size: {
           "2xl": {
             base: "px-3.5 py-2.5 text-base",
@@ -73,11 +83,6 @@ export default defineAppConfig({
       slots: {
         item: "grow justify-center",
         wrapper: "w-auto",
-      },
-    },
-    toast: {
-      slots: {
-        close: "shadow-none",
       },
     },
   },

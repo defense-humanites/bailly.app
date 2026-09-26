@@ -51,7 +51,7 @@
       color="neutral"
       variant="outline"
       size="lg"
-      class="relative w-12 shrink-0 justify-center shadow-xs before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-(--ui-border-accented) data-[state=open]:bg-elevated group-has-[input:focus-visible]/search:ring-primary"
+      class="relative w-12 shrink-0 justify-center before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-(--ui-border-accented) data-[state=open]:bg-elevated group-has-[input:focus-visible]/search:ring-primary"
       aria-label="Options de recherche"
     >
       <UChip
@@ -85,7 +85,7 @@
             color="neutral"
             variant="link"
             size="xs"
-            class="p-0 shadow-none"
+            class="p-0"
             @click="reset"
           />
         </div>

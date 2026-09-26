@@ -64,7 +64,7 @@
 <template>
   <UFieldGroup
     orientation="horizontal"
-    class="border border-neutral-200 rounded-lg [&>button]:rounded-lg shadow-xs [&>button]:shadow-none"
+    class="border border-neutral-200 rounded-lg [&>button]:rounded-lg shadow-xs"
   >
     <!--
       The other tags: a toggle button for each, whose icon, in the tag's
@@ -107,7 +107,7 @@
                 :data-tag-color="tag.color"
                 color="neutral"
                 variant="ghost"
-                class="w-full font-normal"
+                class="w-full"
                 :ui="{ leadingIcon: 'text-tag-600' }"
                 @click="setTagged(tag.key, !entryTagKeys.has(tag.key))"
               />

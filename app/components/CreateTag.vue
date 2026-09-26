@@ -70,7 +70,7 @@
           variant="soft"
           color="secondary"
           icon="i-lucide-plus"
-          :ui="{ base: 'shadow-none max-xl:px-1.5', label: 'max-xl:sr-only' }"
+          :ui="{ base: 'max-xl:px-1.5', label: 'max-xl:sr-only' }"
           @click="createTag"
         />
       </UTooltip>

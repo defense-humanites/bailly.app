@@ -399,7 +399,7 @@
           color="neutral"
           variant="link"
           size="sm"
-          class="p-0 shadow-none"
+          class="p-0"
           :ui="{ leadingIcon: 'size-5' }"
           aria-label="Effacer la recherche"
           @click.stop="clear"
