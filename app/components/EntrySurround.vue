@@ -14,6 +14,9 @@
    * The previous and next entries, with their full headword and the rest of
    * their excerpt (empty for homonyms, whose excerpt is the headword).
    */
+  // Greek may be transliterated (a preference).
+  const greek = useGreek();
+
   const links = computed(() => ([
     ["previous", props.siblings.previous],
     ["next", props.siblings.next],
@@ -59,12 +62,12 @@
       </span>
       <span
         class="mt-1 block truncate font-serif text-lg font-bold text-highlighted"
-        lang="grc"
-      >{{ link.word }}</span>
+        :lang="greek.lang.value"
+      >{{ greek.text(link.word) }}</span>
       <span
         v-if="link.rest"
         class="line-clamp-2 font-serif text-sm text-muted"
-      >{{ link.rest }}</span>
+      >{{ greek.text(link.rest) }}</span>
     </ULink>
   </nav>
 </template>

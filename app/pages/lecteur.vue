@@ -46,6 +46,9 @@
     await navigateTo(entryRoute(entries.value[0]!.uri), { redirectCode: 302, replace: true });
   }
 
+  // Greek may be transliterated (a preference).
+  const greek = useGreek();
+
   const sections = computed(() => entries.value.map((entry, index) => ({ id: `entree-${index + 1}`, entry })));
 
   const countLabel = computed(() => `${entries.value.length} ${entries.value.length > 1 ? "entrées" : "entrée"}`);
@@ -91,7 +94,7 @@
     <header class="mb-6">
       <template v-if="form">
         <h1 class="font-serif text-3xl font-bold">
-          {{ form }}
+          {{ greek.text(form) }}
         </h1>
         <p class="mt-1 text-muted">
           Graphie ambiguë<template v-if="entries.length > 1">
@@ -142,7 +145,7 @@
         v-for="{ id, entry } in sections"
         :key="id"
         :to="{ query: route.query, hash: `#${id}` }"
-        :label="entry.word"
+        :label="greek.text(entry.word)"
         :aria-current="currentId === id ? 'true' : undefined"
         :color="currentId === id ? 'primary' : 'neutral'"
         :variant="currentId === id ? 'subtle' : 'outline'"
@@ -163,7 +166,7 @@
             :id="`${id}-titre`"
             class="font-serif text-2xl font-bold"
           >
-            {{ entry.word }}
+            {{ greek.text(entry.word) }}
           </h2>
           <UButton
             :to="entryRoute(entry.uri)"
@@ -171,7 +174,7 @@
             color="neutral"
             variant="ghost"
             class="ms-auto"
-            :aria-label="`Ouvrir l'entrée ${entry.word}`"
+            :aria-label="`Ouvrir l'entrée ${greek.text(entry.word)}`"
           />
         </header>
         <EntryCard

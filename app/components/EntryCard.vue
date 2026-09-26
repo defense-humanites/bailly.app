@@ -39,10 +39,15 @@
 
   /**
    * The definition's HTML, with its links (cf. `linkDefinition`), none if the
-   * card is itself a link; the excerpt if there is no definition.
+   * card is itself a link; the excerpt if there is no definition. Greek may
+   * be transliterated (cf. `useGreek`).
    */
+  const greek = useGreek();
+
   const content = (shown: DisplayedEntry): string =>
-    shown.htmlDefinition ? linkDefinition(shown.htmlDefinition, { links: !props.link }) : shown.excerpt;
+    shown.htmlDefinition
+      ? greek.html(linkDefinition(shown.htmlDefinition, { links: !props.link }))
+      : greek.text(shown.excerpt);
 
   /**
    * Follows the definition's internal links within the application, rather

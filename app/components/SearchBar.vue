@@ -167,6 +167,9 @@
     (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
   };
 
+  // The results' Greek may be transliterated (a preference).
+  const greek = useGreek();
+
   const toItem = (
     entry: Pick<LookupEntry<SearchField>, SearchField> & { isMorpheus?: boolean },
     className?: string,
@@ -470,9 +473,9 @@
         <span
           v-if="item.parts"
           class="font-serif text-base"
-        ><span class="font-semibold">{{ item.parts.word }}</span>{{ item.parts.rest }}</span>
+        ><span class="font-semibold">{{ greek.text(item.parts.word) }}</span>{{ greek.text(item.parts.rest) }}</span>
         <template v-else>
-          {{ item.label }}
+          {{ greek.text(item.label) }}
         </template>
       </template>
 

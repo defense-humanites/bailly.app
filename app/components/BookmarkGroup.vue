@@ -183,6 +183,9 @@
       exitEditMode();
     }
   });
+
+  // Greek may be transliterated (a preference).
+  const greek = useGreek();
 </script>
 
 <template>
@@ -340,7 +343,7 @@
             size="xs"
             color="error"
             variant="subtle"
-            :aria-label="`Retirer « ${entry.word} » ${favorites ? 'des favoris' : `de l'étiquette « ${tag.name} »`}`"
+            :aria-label="`Retirer « ${greek.text(entry.word)} » ${favorites ? 'des favoris' : `de l'étiquette « ${tag.name} »`}`"
             @click="onDeleteEntry(entry)"
           />
 

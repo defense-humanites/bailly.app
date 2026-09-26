@@ -36,6 +36,9 @@
 
   const siblings = data.value?.siblings ?? {};
 
+  // Greek may be transliterated (a preference).
+  const greek = useGreek();
+
   // The entry is added to the history of the viewed entries (in the browser).
   const historyStore = useHistoryStore();
   onMounted(() => {
@@ -50,27 +53,27 @@
   const items: NavigationMenuItem[] = [
     siblings.previous
       ? {
-        "label": siblings.previous.word,
+        "label": greek.text(siblings.previous.word),
         "icon": "i-lucide-arrow-left",
         "to": `/${siblings.previous.uri}`,
-        "aria-label": `Entrée précédente : ${siblings.previous.word}`,
+        "aria-label": `Entrée précédente : ${greek.text(siblings.previous.word)}`,
         "ui": { linkLabel: "max-sm:sr-only" },
       }
       : placeholder,
     // The title: active (no hover effect), without the active background.
     {
       as: "h1",
-      label: entry.word,
+      label: greek.text(entry.word),
       trailingIcon: entry.children?.length ? "i-lucide-layers" : undefined,
       active: true,
       class: "text-2xl text-center before:bg-transparent",
     },
     siblings.next
       ? {
-        "label": siblings.next.word,
+        "label": greek.text(siblings.next.word),
         "trailingIcon": "i-lucide-arrow-right",
         "to": `/${siblings.next.uri}`,
-        "aria-label": `Entrée suivante : ${siblings.next.word}`,
+        "aria-label": `Entrée suivante : ${greek.text(siblings.next.word)}`,
         "class": "justify-end text-right",
         "ui": { linkLabel: "max-sm:sr-only" },
       }

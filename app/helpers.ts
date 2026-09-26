@@ -1,5 +1,3 @@
-import { convert } from "@humanities/greek-conversion";
-
 /**
  * Picks a random item from a list.
  * @param items The candidate items.
@@ -37,13 +35,4 @@ export function splitExcerpt(word: string, excerpt: string): { word: string; res
   if (!match) return { word: "", rest: excerpt };
 
   return { word, rest: excerpt.slice(match[0].length) };
-}
-
-/**
- * Transliterates Greek text (ALA-LC), keeping the ano teleia (·).
- * @remarks Meant for the "transliterated Greek" preference (to come).
- */
-export function transliterateGreek(text: string): string {
-  return convert(text.replace(/\u0387/g, "§"), "greek", "transliteration", { preset: "ala-lc-ancient" })
-    .replace(/§/g, "\u0387");
 }

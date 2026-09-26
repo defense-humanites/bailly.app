@@ -20,6 +20,8 @@
   // The search preferences are shared with the options of the search bar.
   const { inputMode, inflectedForms } = useSearchOptions();
   const readingSize = preference("readingSize");
+  const transliterateGreek = preference("transliterateGreek");
+  const greek = useGreek();
   const readingWeight = preference("readingWeight");
 
   const themeItems: RadioGroupItem[] = [
@@ -115,12 +117,10 @@
         </SettingsRow>
         <SettingsRow
           label="Grec translittéré"
-          description="Le grec en caractères latins, pour les non-hellénistes (bientôt)."
-          disabled
+          description="Le grec en caractères latins, pour les non-hellénistes."
         >
           <USwitch
-            :model-value="false"
-            disabled
+            v-model="transliterateGreek"
             aria-label="Grec translittéré"
           />
         </SettingsRow>
@@ -141,7 +141,7 @@
           class="definition py-3 font-serif"
           aria-label="Aperçu"
           role="figure"
-          v-html="preview"
+          v-html="greek.html(preview)"
         />
         <!-- eslint-enable vue/no-v-html -->
         <SettingsRow label="Taille du texte">
