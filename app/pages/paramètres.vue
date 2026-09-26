@@ -11,7 +11,6 @@
   });
 
   const { preference, reset: resetPreferences } = usePreferences();
-  const showButtonLabels = useButtonLabels();
   const colorMode = useColorMode();
 
   // The search preferences are shared with the options of the search bar.
@@ -71,6 +70,8 @@
   /**
    * Segmented controls, as in the search options.
    */
+  const cardUi = { header: "py-3 sm:py-3", body: "@container divide-y divide-default py-1 sm:py-1" };
+
   const radioUi = { legend: "sr-only", fieldset: "w-full", item: "flex-1 justify-center whitespace-nowrap" };
 </script>
 
@@ -83,160 +84,172 @@
 -->
 <template>
   <div class="px-4 py-6 md:px-6 lg:py-12">
-    <div class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 lg:max-w-(--header-max-width) lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr]">
-      <header class="flex items-center justify-between gap-3 lg:col-span-2">
-        <h1 class="text-3xl leading-normal font-bold">
-          Paramètres
-        </h1>
-        <UTooltip
-          text="Réinitialiser les paramètres"
-          :disabled="showButtonLabels"
-        >
-          <UButton
-            label="Réinitialiser"
-            icon="i-lucide-rotate-ccw"
-            color="neutral"
-            variant="ghost"
-            aria-label="Réinitialiser les paramètres"
-            :ui="{ label: 'max-xl:sr-only' }"
-            @click="reset"
-          />
-        </UTooltip>
-      </header>
+    <div class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 lg:max-w-(--header-max-width) lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr_auto]">
+      <h1 class="text-3xl leading-normal font-bold lg:col-span-2">
+        Paramètres
+      </h1>
 
-      <section
+      <UCard
+        as="section"
         aria-labelledby="settings-general"
         class="lg:col-start-1 lg:row-start-2"
+        :ui="cardUi"
       >
-        <h2
-          id="settings-general"
-          class="mb-1.5 text-lg font-semibold"
-        >
-          Général
-        </h2>
-        <UCard :ui="{ body: '@container divide-y divide-default py-1 sm:py-1' }">
-          <SettingsRow label="Thème">
-            <URadioGroup
-              v-model="colorMode.preference"
-              :items="themeItems"
-              legend="Thème"
-              variant="table"
-              orientation="horizontal"
-              indicator="hidden"
-              :ui="radioUi"
-            />
-          </SettingsRow>
-          <SettingsRow
-            label="Grec translittéré"
-            description="Le grec en caractères latins, pour les non-hellénistes."
+        <template #header>
+          <h2
+            id="settings-general"
+            class="flex items-center gap-2 text-lg font-semibold"
           >
-            <USwitch
-              v-model="transliterateGreek"
-              aria-label="Grec translittéré"
+            <UIcon
+              name="i-lucide-settings-2"
+              class="size-5 shrink-0 text-muted"
             />
-          </SettingsRow>
-        </UCard>
-      </section>
+            Général
+          </h2>
+        </template>
+        <SettingsRow label="Thème">
+          <URadioGroup
+            v-model="colorMode.preference"
+            :items="themeItems"
+            legend="Thème"
+            variant="table"
+            orientation="horizontal"
+            indicator="hidden"
+            :ui="radioUi"
+          />
+        </SettingsRow>
+        <SettingsRow
+          label="Grec translittéré"
+          description="Le grec en caractères latins, pour les non-hellénistes."
+        >
+          <USwitch
+            v-model="transliterateGreek"
+            aria-label="Grec translittéré"
+          />
+        </SettingsRow>
+      </UCard>
 
-      <section
+      <UCard
+        as="section"
         aria-labelledby="settings-reading"
         class="lg:col-start-2 lg:row-span-2 lg:row-start-2"
+        :ui="cardUi"
       >
-        <h2
-          id="settings-reading"
-          class="mb-1.5 text-lg font-semibold"
-        >
-          Lecture
-        </h2>
-        <UCard :ui="{ body: '@container divide-y divide-default py-1 sm:py-1' }">
-          <!-- The preview follows the settings below. -->
-          <!-- eslint-disable vue/no-v-html -->
-          <div
-            class="definition py-3 font-serif"
-            aria-label="Aperçu"
-            role="figure"
-            v-html="greek.html(preview)"
+        <template #header>
+          <h2
+            id="settings-reading"
+            class="flex items-center gap-2 text-lg font-semibold"
+          >
+            <UIcon
+              name="i-lucide-book-open"
+              class="size-5 shrink-0 text-muted"
+            />
+            Lecture
+          </h2>
+        </template>
+        <!-- The preview follows the settings below. -->
+        <!-- eslint-disable vue/no-v-html -->
+        <div
+          class="definition py-3 font-serif"
+          aria-label="Aperçu"
+          role="figure"
+          v-html="greek.html(preview)"
+        />
+        <!-- eslint-enable vue/no-v-html -->
+        <SettingsRow label="Police">
+          <USelect
+            v-model="readingFont"
+            :items="readingFontItems"
+            aria-label="Police"
+            class="w-48"
           />
-          <!-- eslint-enable vue/no-v-html -->
-          <SettingsRow label="Police">
-            <USelect
-              v-model="readingFont"
-              :items="readingFontItems"
-              aria-label="Police"
-              class="w-48"
-            />
-          </SettingsRow>
-          <SettingsRow label="Taille du texte">
-            <!-- A letter at each size, rather than words (too wide on mobile). -->
-            <URadioGroup
-              v-model="readingSize"
-              :items="readingSizeItems"
-              legend="Taille du texte"
-              variant="table"
-              orientation="horizontal"
-              indicator="hidden"
-              :ui="{ ...radioUi, item: 'flex-1 justify-center items-center px-4' }"
-            >
-              <template #label="{ item }">
-                <span
-                  class="font-serif leading-none"
-                  :class="letterSizes[item.value as ReadingSize]"
-                  aria-hidden="true"
-                >A</span>
-                <span class="sr-only">{{ item.label }}</span>
-              </template>
-            </URadioGroup>
-          </SettingsRow>
-          <SettingsRow label="Graisse du texte">
-            <URadioGroup
-              v-model="readingWeight"
-              :items="readingWeightItems"
-              legend="Graisse du texte"
-              variant="table"
-              orientation="horizontal"
-              indicator="hidden"
-              :ui="radioUi"
-            />
-          </SettingsRow>
-        </UCard>
-      </section>
+        </SettingsRow>
+        <SettingsRow label="Taille du texte">
+          <!-- A letter at each size, rather than words (too wide on mobile). -->
+          <URadioGroup
+            v-model="readingSize"
+            :items="readingSizeItems"
+            legend="Taille du texte"
+            variant="table"
+            orientation="horizontal"
+            indicator="hidden"
+            :ui="{ ...radioUi, item: 'flex-1 justify-center items-center px-4' }"
+          >
+            <template #label="{ item }">
+              <span
+                class="font-serif leading-none"
+                :class="letterSizes[item.value as ReadingSize]"
+                aria-hidden="true"
+              >A</span>
+              <span class="sr-only">{{ item.label }}</span>
+            </template>
+          </URadioGroup>
+        </SettingsRow>
+        <SettingsRow label="Graisse du texte">
+          <URadioGroup
+            v-model="readingWeight"
+            :items="readingWeightItems"
+            legend="Graisse du texte"
+            variant="table"
+            orientation="horizontal"
+            indicator="hidden"
+            :ui="radioUi"
+          />
+        </SettingsRow>
+      </UCard>
 
-      <section
+      <UCard
+        as="section"
         aria-labelledby="settings-search"
         class="lg:col-start-1 lg:row-start-3"
+        :ui="cardUi"
       >
-        <h2
-          id="settings-search"
-          class="mb-1.5 text-lg font-semibold"
+        <template #header>
+          <h2
+            id="settings-search"
+            class="flex items-center gap-2 text-lg font-semibold"
+          >
+            <UIcon
+              name="i-lucide-search"
+              class="size-5 shrink-0 text-muted"
+            />
+            Recherche
+          </h2>
+        </template>
+        <SettingsRow
+          label="Formes fléchies"
+          description="Chercher aussi les formes déclinées ou conjuguées (analyse morphologique)."
         >
-          Recherche
-        </h2>
-        <UCard :ui="{ body: '@container divide-y divide-default py-1 sm:py-1' }">
-          <SettingsRow
-            label="Formes fléchies"
-            description="Chercher aussi les formes déclinées ou conjuguées (analyse morphologique)."
-          >
-            <USwitch
-              v-model="inflectedForms"
-              aria-label="Formes fléchies"
-            />
-          </SettingsRow>
-          <SettingsRow
-            label="Saisie"
-            description="Le grec est toujours accepté."
-          >
-            <URadioGroup
-              v-model="inputMode"
-              :items="inputModeItems"
-              legend="Mode de saisie"
-              variant="table"
-              orientation="horizontal"
-              indicator="hidden"
-              :ui="radioUi"
-            />
-          </SettingsRow>
-        </UCard>
-      </section>
+          <USwitch
+            v-model="inflectedForms"
+            aria-label="Formes fléchies"
+          />
+        </SettingsRow>
+        <SettingsRow
+          label="Saisie"
+          description="Le grec est toujours accepté."
+        >
+          <URadioGroup
+            v-model="inputMode"
+            :items="inputModeItems"
+            legend="Mode de saisie"
+            variant="table"
+            orientation="horizontal"
+            indicator="hidden"
+            :ui="radioUi"
+          />
+        </SettingsRow>
+      </UCard>
+
+      <!-- A dangerous action: at the end, apart from the settings. -->
+      <UButton
+        label="Réinitialiser les paramètres"
+        icon="i-lucide-rotate-ccw"
+        color="error"
+        variant="ghost"
+        class="justify-self-end lg:col-span-2"
+        @click="reset"
+      />
     </div>
   </div>
 </template>
