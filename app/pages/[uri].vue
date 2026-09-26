@@ -36,6 +36,12 @@
 
   const siblings = data.value?.siblings ?? {};
 
+  // The entry is added to the history of the viewed entries (in the browser).
+  const historyStore = useHistoryStore();
+  onMounted(() => {
+    void historyStore.add(entry);
+  });
+
   /**
    * Keeps the title centered when there is no previous/next entry.
    */

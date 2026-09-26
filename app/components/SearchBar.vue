@@ -501,6 +501,7 @@
         </p>
       </template>
     </UInputMenu>
+    <SearchHistory :reference="groupElement" />
     <SearchOptions :wildcards="wildcards" />
   </UFieldGroup>
 </template>
