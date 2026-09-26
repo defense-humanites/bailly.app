@@ -41,8 +41,16 @@
   --header-menu-width: 7.5rem; /* Icons only. */
   --header-gap: 2rem;
 
+  /*
+   * Below `lg`, where the entries are centered (cf. the single-column
+   * layout), the title's track is as wide as the menu's one: the search bar,
+   * centered in its track, is then centered above the entry.
+   */
+  --header-title-track: var(--header-menu-width);
+
   @variant lg {
     --header-gap: var(--header-gap-wide);
+    --header-title-track: var(--header-title-width);
   }
 
   @variant xl {

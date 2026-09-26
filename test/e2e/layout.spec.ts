@@ -27,7 +27,7 @@ const header = (page: Page) => page.evaluate(() => {
   };
 });
 
-for (const width of [320, 390, 768, 1000, 1024, 1279, 1280, 1440, 1920]) {
+for (const width of [320, 390, 768, 900, 1000, 1024, 1279, 1280, 1440, 1920]) {
   test.describe(`at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
@@ -56,6 +56,12 @@ for (const width of [320, 390, 768, 1000, 1024, 1279, 1280, 1440, 1920]) {
       expect(column[1] - column[0]).toBeLessThanOrEqual(592.5);
       if (width < 1024) {
         expect(Math.abs((column[0] + column[1]) / 2 - width / 2)).toBeLessThan(1);
+        // From md, the bar is centered above the column (as wide as it once
+        // there is room for it).
+        if (width >= 768) {
+          expect(Math.abs((bar[0] + bar[1]) / 2 - width / 2)).toBeLessThan(1);
+          if (bar[1] - bar[0] > 591.5) expect(Math.abs(column[0] - bar[0])).toBeLessThan(1);
+        }
       } else {
         expect(Math.abs(column[0] - bar[0])).toBeLessThan(1);
         expect(Math.abs(column[1] - bar[1])).toBeLessThan(1);
