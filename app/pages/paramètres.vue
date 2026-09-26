@@ -2,6 +2,7 @@
   import type { RadioGroupItem } from "@nuxt/ui";
   import { InputMode } from "~/enums";
   import { linkDefinition } from "~/utils/linkedEntries";
+  import type { ReadingSize } from "~/utils/preferences";
 
   definePageMeta({
     layout: "single-column",
@@ -34,6 +35,13 @@
     { label: "Très grande", value: "larger" },
   ];
 
+  const letterSizes: Record<ReadingSize, string> = {
+    small: "text-sm",
+    normal: "text-base",
+    large: "text-lg",
+    larger: "text-xl",
+  };
+
   const readingWeightItems: RadioGroupItem[] = [
     { label: "Normale", value: "normal" },
     { label: "Appuyée", value: "bold" },
@@ -57,7 +65,7 @@
   /**
    * Segmented controls, as in the search options.
    */
-  const radioUi = { legend: "sr-only", fieldset: "w-full", item: "flex-1 justify-center py-1 px-2.5" };
+  const radioUi = { legend: "sr-only", fieldset: "w-full", item: "flex-1 justify-center whitespace-nowrap" };
 </script>
 
 <!--
@@ -102,7 +110,6 @@
             variant="table"
             orientation="horizontal"
             indicator="hidden"
-            size="xs"
             :ui="radioUi"
           />
         </SettingsRow>
@@ -138,6 +145,7 @@
         />
         <!-- eslint-enable vue/no-v-html -->
         <SettingsRow label="Taille du texte">
+          <!-- A letter at each size, rather than words (too wide on mobile). -->
           <URadioGroup
             v-model="readingSize"
             :items="readingSizeItems"
@@ -145,9 +153,17 @@
             variant="table"
             orientation="horizontal"
             indicator="hidden"
-            size="xs"
-            :ui="radioUi"
-          />
+            :ui="{ ...radioUi, item: 'flex-1 justify-center items-center px-4' }"
+          >
+            <template #label="{ item }">
+              <span
+                class="font-serif leading-none"
+                :class="letterSizes[item.value as ReadingSize]"
+                aria-hidden="true"
+              >A</span>
+              <span class="sr-only">{{ item.label }}</span>
+            </template>
+          </URadioGroup>
         </SettingsRow>
         <SettingsRow label="Graisse du texte">
           <URadioGroup
@@ -157,7 +173,6 @@
             variant="table"
             orientation="horizontal"
             indicator="hidden"
-            size="xs"
             :ui="radioUi"
           />
         </SettingsRow>
@@ -192,7 +207,6 @@
             variant="table"
             orientation="horizontal"
             indicator="hidden"
-            size="xs"
             :ui="radioUi"
           />
         </SettingsRow>

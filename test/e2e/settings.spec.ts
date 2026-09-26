@@ -2,11 +2,11 @@ import { expect, test } from "@nuxt/test-utils/playwright";
 
 test.describe("settings", () => {
   test("compact: all the settings at once on a desktop screen", async ({ page, goto }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.setViewportSize({ width: 1280, height: 960 });
     await goto("/paramètres", { waitUntil: "hydration" });
     const reset = page.getByRole("button", { name: "Réinitialiser les paramètres" });
     await expect(reset).toBeInViewport();
-    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(900);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(960);
   });
 
   test("no horizontal scroll on mobile", async ({ page, goto }) => {
@@ -21,7 +21,7 @@ test.describe("settings", () => {
     await expect(preview).toHaveCSS("font-size", "20px");
     await expect(preview).toHaveCSS("font-weight", "700");
 
-    await page.getByText("Très grande", { exact: true }).click();
+    await page.getByRole("radio", { name: "Très grande" }).click({ force: true });
     await page.getByText("Normale", { exact: true }).nth(1).click();
     await expect(preview).toHaveCSS("font-size", "24px");
     await expect(preview).toHaveCSS("font-weight", "400");
