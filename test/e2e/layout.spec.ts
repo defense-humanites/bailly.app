@@ -27,7 +27,7 @@ const header = (page: Page) => page.evaluate(() => {
   };
 });
 
-for (const width of [320, 390, 768, 1024, 1279, 1280, 1440, 1920]) {
+for (const width of [320, 390, 768, 1000, 1024, 1279, 1280, 1440, 1920]) {
   test.describe(`at ${width}px`, () => {
     test.use({ viewport: { width, height: 800 } });
 
@@ -48,18 +48,17 @@ for (const width of [320, 390, 768, 1024, 1279, 1280, 1440, 1920]) {
       }
     });
 
-    test("entry column: centered, then under the search bar", async ({ page, goto }) => {
+    test("entry column: centered below lg, then exactly under the search bar", async ({ page, goto }) => {
       await goto("/logos", { waitUntil: "hydration" });
       const bar = await xExtent(page, "header .group\\/search");
       const column = await xExtent(page, "main > div > div");
-      if (width < 768) {
+      // At most the reading width (37rem).
+      expect(column[1] - column[0]).toBeLessThanOrEqual(592.5);
+      if (width < 1024) {
         expect(Math.abs((column[0] + column[1]) / 2 - width / 2)).toBeLessThan(1);
       } else {
-        // The column is at most as wide as the reading width (37rem), which
-        // the bar has once there's room for it.
         expect(Math.abs(column[0] - bar[0])).toBeLessThan(1);
-        expect(column[1] - column[0]).toBeLessThanOrEqual(592.5);
-        if (bar[1] - bar[0] > 591.5) expect(Math.abs(column[1] - bar[1])).toBeLessThan(1);
+        expect(Math.abs(column[1] - bar[1])).toBeLessThan(1);
       }
     });
   });
@@ -125,7 +124,7 @@ test("the results list stays as wide as the bar on mobile", async ({ page, goto 
 test.describe("safe areas", () => {
   test.skip(({ browserName }) => browserName !== "chromium", "The safe area insets are emulated through Chromium (CDP).");
 
-  test("a landscape notch: the header and the column clear it, still aligned", async ({ page, goto, context }) => {
+  test("a landscape notch: the header and the column clear it, the column centered", async ({ page, goto, context }) => {
     await page.setViewportSize({ width: 844, height: 390 });
     const cdp = await context.newCDPSession(page);
     await cdp.send("Emulation.setSafeAreaInsetsOverride", { insets: { top: 0, bottom: 21, left: 47, right: 47 } });
@@ -134,9 +133,9 @@ test.describe("safe areas", () => {
     expect(h.scroll).toBe(0);
     expect(h.title.left).toBeGreaterThanOrEqual(47 + 24);
     expect(h.lastMenuLink.right).toBeLessThanOrEqual(844 - 47 - 24);
-    const bar = await xExtent(page, "header .group\\/search");
     const column = await xExtent(page, "main > div > div");
-    expect(Math.abs(column[0] - bar[0])).toBeLessThan(1);
+    expect(column[0]).toBeGreaterThanOrEqual(47 + 24);
+    expect(Math.abs((column[0] + column[1]) / 2 - 844 / 2)).toBeLessThan(1);
     const paddingBottom = await page.locator("main").evaluate(element => getComputedStyle(element).paddingBottom);
     expect(paddingBottom).toBe(`${24 + 21}px`);
   });
