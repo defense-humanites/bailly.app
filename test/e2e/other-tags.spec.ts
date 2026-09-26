@@ -7,7 +7,7 @@ const logos = { word: "λόγος", uri: "logos", excerpt: "λόγος, ου (�
 const otherTags = (page: Page) => page.getByRole("dialog", { name: "Autres étiquettes" });
 
 test.describe("other tags of an entry", () => {
-  test("any tag but the current one, in the user's order, checked if the entry has it", async ({ page, goto }) => {
+  test("any tag but the current one, in the user's order, pressed if the entry has it", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     // In the user's order: Rouge, Ciel, Vert; the current tag is Ciel.
     await seedBookmarks(page, {
@@ -20,16 +20,15 @@ test.describe("other tags of an entry", () => {
     });
 
     await page.getByRole("button", { name: "Autres étiquettes" }).click();
-    const checkboxes = otherTags(page).getByRole("checkbox");
-    await expect(checkboxes).toHaveCount(2);
-    await expect(otherTags(page).getByRole("listitem")).toHaveText(["Rouge", "Vert"]);
-    await expect(checkboxes.nth(0)).not.toBeChecked();
-    await expect(checkboxes.nth(1)).toBeChecked();
+    const buttons = otherTags(page).getByRole("listitem").getByRole("button");
+    await expect(buttons).toHaveText(["Rouge", "Vert"]);
+    await expect(buttons.nth(0)).toHaveAttribute("aria-pressed", "false");
+    await expect(buttons.nth(1)).toHaveAttribute("aria-pressed", "true");
 
-    await checkboxes.nth(0).click();
-    await expect(checkboxes.nth(0)).toBeChecked();
-    await checkboxes.nth(1).click();
-    await expect(checkboxes.nth(1)).not.toBeChecked();
+    await buttons.nth(0).click();
+    await expect(buttons.nth(0)).toHaveAttribute("aria-pressed", "true");
+    await buttons.nth(1).click();
+    await expect(buttons.nth(1)).toHaveAttribute("aria-pressed", "false");
     await expect.poll(() => tagNamesOf(page, "logos")).toEqual(["Rouge"]);
   });
 

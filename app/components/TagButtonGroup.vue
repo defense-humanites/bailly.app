@@ -67,8 +67,9 @@
     class="border border-neutral-200 rounded-lg [&>button]:rounded-lg shadow-xs [&>button]:shadow-none"
   >
     <!--
-      The other tags: a checkbox for each, with the tag's icon in its color,
-      and a link to the bookmarks page, where the tags are managed.
+      The other tags: a toggle button for each, whose icon, in the tag's
+      color, is filled when the entry has the tag (as the current tag's
+      button), and a link to the bookmarks page, where the tags are managed.
     -->
     <UPopover :content="{ align: 'start', collisionPadding: 12 }">
       <UButton
@@ -99,22 +100,17 @@
               v-for="tag in otherTags"
               :key="tag.key"
             >
-              <UCheckbox
-                :model-value="entryTagKeys.has(tag.key)"
+              <UButton
+                :label="tag.name"
+                :icon="entryTagKeys.has(tag.key) ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
+                :aria-pressed="entryTagKeys.has(tag.key)"
+                :data-tag-color="tag.color"
                 color="neutral"
-                class="rounded-md px-2 py-1.5 hover:bg-elevated/50"
-                :ui="{ container: 'h-6', wrapper: 'min-w-0', label: 'flex items-center gap-2 font-normal' }"
-                @update:model-value="setTagged(tag.key, $event === true)"
-              >
-                <template #label>
-                  <UIcon
-                    name="i-bailly-tag-filled"
-                    class="size-4 shrink-0 text-tag-600"
-                    :data-tag-color="tag.color"
-                  />
-                  <span class="truncate">{{ tag.name }}</span>
-                </template>
-              </UCheckbox>
+                variant="ghost"
+                class="w-full font-normal"
+                :ui="{ leadingIcon: 'text-tag-600' }"
+                @click="setTagged(tag.key, !entryTagKeys.has(tag.key))"
+              />
             </li>
           </ul>
           <p
