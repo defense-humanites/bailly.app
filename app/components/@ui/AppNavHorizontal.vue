@@ -28,6 +28,11 @@
    */
   const titleRowShown = ref(false);
 
+  // Exposed to what sticks under the header (cf. `--header-bottom`).
+  useHead({
+    htmlAttrs: { "data-header-title-row": computed(() => (titleRowShown.value ? "" : undefined)) },
+  });
+
   /**
    * Whether the content scrolls under the header (its border then appears).
    */

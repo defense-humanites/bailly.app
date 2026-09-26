@@ -56,5 +56,22 @@
     --header-menu-width: var(--header-menu-width-labels);
   }
 
+  /*
+   * The bottom of the header, once the page is scrolled (cf.
+   * `AppNavHorizontal`): below `md`, the search bar row (and its border),
+   * and the title row too while it is shown; for what sticks under it.
+   */
+  --header-bottom: calc(3.5rem + 1px);
+
+  @variant md {
+    --header-bottom: 3.5rem;
+  }
+
   @apply overscroll-none;
+}
+
+:root[data-header-title-row] {
+  @variant max-md {
+    --header-bottom: calc(6.5rem + 1px);
+  }
 }

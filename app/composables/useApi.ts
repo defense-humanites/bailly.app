@@ -49,6 +49,36 @@ export function useApiEntry<F extends EntryField>(
 }
 
 /**
+ * Fetches several entries (reactive to `uris`), e.g. for the reader.
+ * @param uris The entries' URIs.
+ * @param params The requested fields.
+ * @returns The found entries, in the requested order, and the URIs of the
+ * missing ones.
+ */
+export function useApiEntries<F extends EntryField>(
+  uris: MaybeRefOrGetter<string[]>,
+  params: Omit<EntryParams<F>, "siblings">,
+) {
+  const { $api } = useNuxtApp();
+
+  return useAsyncData(
+    () => `entries:${toValue(uris).join(",")}`,
+    async (): Promise<{ entries: Entry<F>[]; missing: string[] }> => {
+      const requested = toValue(uris);
+      const responses = await Promise.all(requested.map(uri =>
+        $api<ApiResponse<ApiEntryData<F>>>(`entry/${encodeURIComponent(uri)}`, { query: toApiQuery(params) }),
+      ));
+      // The API answers unknown entries with an empty object.
+      const entries = responses.map(({ data }) => Object.keys(data.entry).length ? data.entry as Entry<F> : null);
+      return {
+        entries: entries.filter((entry): entry is Entry<F> => entry !== null),
+        missing: requested.filter((_, index) => entries[index] === null),
+      };
+    },
+  );
+}
+
+/**
  * Fetches a random entry.
  * @param params The requested fields and options.
  */

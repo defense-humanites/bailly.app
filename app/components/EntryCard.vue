@@ -3,10 +3,11 @@
   import type { CardProps } from "@nuxt/ui";
   import type { Entry, EntryData } from "#shared/types/api";
   import { entryRoute, homonymAnchor } from "~/utils/entryUri";
+  import { linkDefinition } from "~/utils/linkedEntries";
 
   type DisplayedEntry = Entry<"word" | "uri" | "excerpt"> & Partial<Pick<EntryData, "htmlDefinition">>;
 
-  defineProps<{
+  const props = defineProps<{
     /**
      * The displayed entry (usually fetched from the API or IndexedDB).
      * @remarks If the `htmlDefinition` is omitted, the `excerpt` will be displayed instead.
@@ -16,6 +17,11 @@
      * If enabled, display the tag toolbar.
      */
     toolbar?: boolean;
+    /**
+     * If enabled, the homonyms get no anchor (e.g. when several entries are
+     * shown on the same page, where their numbers would repeat).
+     */
+    noAnchors?: boolean;
     /**
      * If enabled, make the card a link pointing to the entry page.
      */
@@ -31,6 +37,26 @@
     ui?: CardProps["ui"] & { entry?: string };
   }>();
 
+  /**
+   * The definition's HTML, with its links (cf. `linkDefinition`), none if the
+   * card is itself a link; the excerpt if there is no definition.
+   */
+  const content = (shown: DisplayedEntry): string =>
+    shown.htmlDefinition ? linkDefinition(shown.htmlDefinition, { links: !props.link }) : shown.excerpt;
+
+  /**
+   * Follows the definition's internal links within the application, rather
+   * than reloading the page (unless the user opens them elsewhere).
+   */
+  const onDefinitionClick = (event: MouseEvent): void => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const anchor = (event.target as Element | null)?.closest("a[href]");
+    const href = anchor?.getAttribute("href");
+    if (!href?.startsWith("/") || anchor?.getAttribute("target")) return;
+    event.preventDefault();
+    void navigateTo(href);
+  };
+
   const [DefineEntry, ReuseEntry] = createReusableTemplate<{
     entry: DisplayedEntry;
   }>();
@@ -45,9 +71,10 @@
     <!-- The dictionary HTML comes from our own API. -->
     <!-- eslint-disable vue/no-v-html -->
     <div
-      class="font-serif font-semibold text-xl"
+      class="definition font-serif font-semibold text-xl"
       :class="ui?.entry"
-      v-html="shown.htmlDefinition ?? shown.excerpt"
+      @click="onDefinitionClick"
+      v-html="content(shown)"
     />
     <!-- eslint-enable vue/no-v-html -->
   </DefineEntry>
@@ -96,6 +123,7 @@
       class="relative"
     >
       <span
+        v-if="!noAnchors"
         :id="homonymAnchor(childEntry.uri) ?? String(index + 1)"
         class="absolute -top-24"
         aria-hidden="true"
