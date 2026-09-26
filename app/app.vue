@@ -9,6 +9,14 @@
     progress: false,
   };
 
+  /**
+   * The reading preferences, as attributes of the root element (cf.
+   * `--reading-font-size`), rendered by the server too.
+   */
+  const { preference } = usePreferences();
+  const readingSize = preference("readingSize");
+  const readingWeight = preference("readingWeight");
+
   useHead({
     titleTemplate: (title) => {
       return title ? title : "Bailly.app — Dictionnaire grec-français en ligne";
@@ -21,7 +29,9 @@
       },
     ],
     htmlAttrs: {
-      lang: "fr",
+      "lang": "fr",
+      "data-reading-size": readingSize,
+      "data-reading-weight": readingWeight,
     },
     link: [
       { rel: "icon", type: "image/png", href: "/favicon/favicon-96x96.png" },

@@ -71,7 +71,7 @@
     <!-- The dictionary HTML comes from our own API. -->
     <!-- eslint-disable vue/no-v-html -->
     <div
-      class="definition font-serif font-semibold text-xl"
+      class="definition font-serif"
       :class="ui?.entry"
       @click="onDefinitionClick"
       v-html="content(shown)"

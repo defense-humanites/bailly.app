@@ -10,14 +10,26 @@ import { InputMode } from "~/enums";
 export type Preferences = {
   /** Whether Greek is shown in Latin characters (transliterated) across the application. */
   transliterateGreek: boolean;
+  /** The size of the entries' text (cf. `--reading-font-size`). */
+  readingSize: ReadingSize;
+  /** The weight of the entries' text (cf. `--reading-font-weight`). */
+  readingWeight: ReadingWeight;
   /** How Greek is typed in the search bar (Greek itself is always accepted). */
   inputMode: InputMode;
   /** Whether inflected forms are looked up too, when possible. */
   inflectedForms: boolean;
 };
 
+export const READING_SIZES = ["small", "normal", "large", "larger"] as const;
+export type ReadingSize = typeof READING_SIZES[number];
+
+export const READING_WEIGHTS = ["normal", "bold"] as const;
+export type ReadingWeight = typeof READING_WEIGHTS[number];
+
 export const DEFAULT_PREFERENCES: Readonly<Preferences> = {
   transliterateGreek: false,
+  readingSize: "normal",
+  readingWeight: "bold",
   inputMode: InputMode.BetaCode,
   inflectedForms: true,
 };
@@ -39,6 +51,8 @@ export function parsePreferences(value: unknown): Partial<Preferences> {
   const preferences: Partial<Preferences> = {};
 
   if (typeof record.transliterateGreek === "boolean") preferences.transliterateGreek = record.transliterateGreek;
+  if (READING_SIZES.includes(record.readingSize as ReadingSize)) preferences.readingSize = record.readingSize as ReadingSize;
+  if (READING_WEIGHTS.includes(record.readingWeight as ReadingWeight)) preferences.readingWeight = record.readingWeight as ReadingWeight;
   if (Object.values(InputMode).includes(record.inputMode as InputMode)) preferences.inputMode = record.inputMode as InputMode;
   if (typeof record.inflectedForms === "boolean") preferences.inflectedForms = record.inflectedForms;
 

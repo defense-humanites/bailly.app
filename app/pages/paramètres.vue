@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import type { RadioGroupItem } from "@nuxt/ui";
   import { InputMode } from "~/enums";
+  import { linkDefinition } from "~/utils/linkedEntries";
 
   definePageMeta({
     layout: "single-column",
@@ -8,188 +9,194 @@
 
   useSeoMeta({
     title: "Paramètres",
-    description: "Réglez les paramètres d'affichage et de recherche en fonction de vos préférences.",
+    description: "Réglez l'affichage des entrées et la recherche selon vos préférences.",
   });
 
-  const displayLayoutOptions: RadioGroupItem[] = [
-    {
-      label: "Horizontal",
-      value: "horizontal",
-    },
-    {
-      label: "Vertical",
-      value: "vertical",
-    },
-  ];
-
-  const displayThemeOptions: RadioGroupItem[] = [
-    {
-      label: "Système",
-      value: "system",
-    },
-    {
-      label: "Clair",
-      value: "light",
-    },
-    {
-      label: "Foncé",
-      value: "dark",
-    },
-  ];
+  const { preference, reset: resetPreferences } = usePreferences();
+  const showButtonLabels = useButtonLabels();
+  const colorMode = useColorMode();
 
   // The search preferences are shared with the options of the search bar.
   const { inputMode, inflectedForms } = useSearchOptions();
+  const readingSize = preference("readingSize");
+  const readingWeight = preference("readingWeight");
 
-  const searchInputModeOptions = ref<RadioGroupItem[]>([
-    {
-      label: "Beta code",
-      value: InputMode.BetaCode,
-    },
-    {
-      label: "Translittération",
-      value: InputMode.Transliteration,
-    },
-  ]);
+  const themeItems: RadioGroupItem[] = [
+    { label: "Système", value: "system" },
+    { label: "Clair", value: "light" },
+    { label: "Sombre", value: "dark" },
+  ];
 
-  const inflectedFormsSetting = computed({
-    get: (): string => (inflectedForms.value ? "enabled" : "disabled"),
-    set: (value: string) => {
-      inflectedForms.value = value === "enabled";
-    },
-  });
+  const readingSizeItems: RadioGroupItem[] = [
+    { label: "Petite", value: "small" },
+    { label: "Normale", value: "normal" },
+    { label: "Grande", value: "large" },
+    { label: "Très grande", value: "larger" },
+  ];
 
-  const searchInflectedFormsOptions = ref<RadioGroupItem[]>([
-    {
-      label: "Désactivé",
-      value: "disabled",
-    },
-    {
-      label: "Activé",
-      value: "enabled",
-    },
-  ]);
+  const readingWeightItems: RadioGroupItem[] = [
+    { label: "Normale", value: "normal" },
+    { label: "Appuyée", value: "bold" },
+  ];
+
+  const inputModeItems: RadioGroupItem[] = [
+    { label: "Beta code", value: InputMode.BetaCode },
+    { label: "Translittération", value: InputMode.Transliteration },
+  ];
+
+  /**
+   * A short real entry (λογοτέχνης), to preview the reading settings.
+   */
+  const preview = linkDefinition("<span class=\"entreea\"><span class=\"grec\">λογο·τέχνης,</span></span> <span class=\"gens\">ου</span>\n<span class=\"art\">(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)</span> habile\nartisan de paroles, <span class=\"aut\">Rhét.</span> (<span class=\"refch\">W. 2, 90</span>).\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">λ. <a href=\"/technê\">τέχνη</a></span>.</div>\n", { links: false });
+
+  const reset = (): void => {
+    resetPreferences();
+    colorMode.preference = "system";
+  };
+
+  /**
+   * Segmented controls, as in the search options.
+   */
+  const radioUi = { legend: "sr-only", fieldset: "w-full", item: "flex-1 justify-center py-1 px-2.5" };
 </script>
 
+<!--
+  Compact settings: a card per section, a row per setting (name and short
+  help on the left, control on the right), so that they all show at once.
+-->
 <template>
-  <form class="space-y-6 lg:space-y-12">
-    <h1 class="text-3xl leading-normal font-bold">
-      Paramètres
-    </h1>
+  <div class="space-y-6">
+    <header class="flex items-center justify-between gap-3">
+      <h1 class="text-3xl leading-normal font-bold">
+        Paramètres
+      </h1>
+      <UTooltip
+        text="Réinitialiser les paramètres"
+        :disabled="showButtonLabels"
+      >
+        <UButton
+          label="Réinitialiser"
+          icon="i-lucide-rotate-ccw"
+          color="neutral"
+          variant="ghost"
+          aria-label="Réinitialiser les paramètres"
+          :ui="{ label: 'max-xl:sr-only' }"
+          @click="reset"
+        />
+      </UTooltip>
+    </header>
 
-    <section>
-      <h2>Affichage</h2>
-      <fieldset>
-        <fieldset>
-          <legend>Disposition</legend>
-          <p>
-            ...
-          </p>
+    <section aria-labelledby="settings-general">
+      <h2
+        id="settings-general"
+        class="mb-1.5 text-lg font-semibold"
+      >
+        Général
+      </h2>
+      <UCard :ui="{ body: '@container divide-y divide-default py-1 sm:py-1' }">
+        <SettingsRow label="Thème">
           <URadioGroup
+            v-model="colorMode.preference"
+            :items="themeItems"
+            legend="Thème"
             variant="table"
             orientation="horizontal"
-            default-value="horizontal"
-            :items="displayLayoutOptions"
+            indicator="hidden"
+            size="xs"
+            :ui="radioUi"
           />
-        </fieldset>
-      </fieldset>
-
-      <fieldset>
-        <fieldset>
-          <legend>Thème</legend>
-          <p>
-            Lorsque l'option <em>système</em> est active, le thème sélectionné suit
-            auto&shy;mati&shy;que&shy;ment les préférences d'affichage de votre appareil.
-          </p>
-          <URadioGroup
-            variant="table"
-            orientation="horizontal"
-            default-value="system"
-            :items="displayThemeOptions"
+        </SettingsRow>
+        <SettingsRow
+          label="Grec translittéré"
+          description="Le grec en caractères latins, pour les non-hellénistes (bientôt)."
+          disabled
+        >
+          <USwitch
+            :model-value="false"
+            disabled
+            aria-label="Grec translittéré"
           />
-        </fieldset>
-      </fieldset>
+        </SettingsRow>
+      </UCard>
     </section>
 
-    <section>
-      <h2>Recherche</h2>
-      <fieldset>
-        <fieldset>
-          <legend>Mode de saisie</legend>
-          <p>
-            Le « beta code » non accentué instaure une équivalence arbitraire
-            entre les caractères latins et grecs, tandis que la saisie
-            translittérée correspond à la manière usuelle de présenter du grec à
-            l'usage d'un public non helléniste.
-          </p>
+    <section aria-labelledby="settings-reading">
+      <h2
+        id="settings-reading"
+        class="mb-1.5 text-lg font-semibold"
+      >
+        Lecture
+      </h2>
+      <UCard :ui="{ body: '@container divide-y divide-default py-1 sm:py-1' }">
+        <!-- The preview follows the settings below. -->
+        <!-- eslint-disable vue/no-v-html -->
+        <div
+          class="definition py-3 font-serif"
+          aria-label="Aperçu"
+          role="figure"
+          v-html="preview"
+        />
+        <!-- eslint-enable vue/no-v-html -->
+        <SettingsRow label="Taille du texte">
+          <URadioGroup
+            v-model="readingSize"
+            :items="readingSizeItems"
+            legend="Taille du texte"
+            variant="table"
+            orientation="horizontal"
+            indicator="hidden"
+            size="xs"
+            :ui="radioUi"
+          />
+        </SettingsRow>
+        <SettingsRow label="Graisse du texte">
+          <URadioGroup
+            v-model="readingWeight"
+            :items="readingWeightItems"
+            legend="Graisse du texte"
+            variant="table"
+            orientation="horizontal"
+            indicator="hidden"
+            size="xs"
+            :ui="radioUi"
+          />
+        </SettingsRow>
+      </UCard>
+    </section>
+
+    <section aria-labelledby="settings-search">
+      <h2
+        id="settings-search"
+        class="mb-1.5 text-lg font-semibold"
+      >
+        Recherche
+      </h2>
+      <UCard :ui="{ body: '@container divide-y divide-default py-1 sm:py-1' }">
+        <SettingsRow
+          label="Formes fléchies"
+          description="Chercher aussi les formes déclinées ou conjuguées (analyse morphologique)."
+        >
+          <USwitch
+            v-model="inflectedForms"
+            aria-label="Formes fléchies"
+          />
+        </SettingsRow>
+        <SettingsRow
+          label="Saisie"
+          description="Le grec est toujours accepté."
+        >
           <URadioGroup
             v-model="inputMode"
+            :items="inputModeItems"
+            legend="Mode de saisie"
             variant="table"
             orientation="horizontal"
-            :items="searchInputModeOptions"
+            indicator="hidden"
+            size="xs"
+            :ui="radioUi"
           />
-        </fieldset>
-      </fieldset>
-      <fieldset>
-        <fieldset>
-          <legend>Formes fléchies</legend>
-          <p>
-            Lorsque la lemmatisation est active, les formes fléchies peuvent
-            produire des résultats de recherche.
-          </p>
-          <URadioGroup
-            v-model="inflectedFormsSetting"
-            variant="table"
-            orientation="horizontal"
-            :items="searchInflectedFormsOptions"
-          />
-        </fieldset>
-      </fieldset>
+        </SettingsRow>
+      </UCard>
     </section>
-
-    <!-- <section>
-      <h2>Accessibiltié</h2>
-      <fieldset>
-        <fieldset>
-          <legend>Romanisation du grec</legend>
-          <RadioGroup
-            groupName="settings-display-greek-transliteration"
-            options={greekRomanizationOptions}
-            storageKey="enableGreekRomanization"
-          />
-        </fieldset>
-      </fieldset>
-    </section> -->
-  </form>
+  </div>
 </template>
-
-<style scoped>
-  @reference "~/assets/css/main.css";
-
-  section {
-    @apply space-y-6;
-  }
-
-  section h2 {
-    @apply text-2xl;
-    @apply font-semibold;
-  }
-
-  section>fieldset {
-    @apply p-3 lg:p-6;
-    @apply bg-white dark:bg-neutral-800;
-    @apply rounded-lg;
-    @apply shadow-xl;
-  }
-
-  fieldset p {
-    @apply mb-1.5;
-    @apply text-sm sm:text-base;
-  }
-
-  legend {
-    @apply h-auto;
-    @apply mb-1.5 lg:mb-3;
-    @apply text-xl;
-    @apply font-semibold;
-  }
-</style>
