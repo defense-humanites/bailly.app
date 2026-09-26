@@ -73,7 +73,7 @@
         :items="[{ label: 'Bailly.app', to: '/', active: false }]"
         :ui="{ item: 'md:py-0', link: 'py-1.5 md:py-0.5 font-serif text-xl font-normal tracking-wider text-black hover:text-black' }"
       />
-      <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1" />
+      <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:max-w-(--reading-width)" />
       <UNavigationMenu
         class="md:col-start-3 md:row-start-1 md:justify-self-end"
         :items="menuItems"

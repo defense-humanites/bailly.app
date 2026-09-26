@@ -16,24 +16,37 @@
   --app-width: max(100dvw, var(--app-min-width));
 
   /*
+   * The ideal width of a text block (an entry's definition: about 65
+   * characters per line), which the search bar shares from `md`.
+   */
+  --reading-width: 37rem;
+
+  /*
    * The header's row from `md` (cf. `AppNavHorizontal` and the
    * `grid-cols-header` utility), shared with the single-column layout, whose
    * column thus lies under the search bar: fixed tracks for the title and the
    * menu (a little wider than their content; to adjust if it changes), the
-   * search bar taking the space left.
+   * search bar taking the space left, up to `--reading-width`. The header's
+   * maximum width is the one that leaves exactly this width to the bar once
+   * the menu shows its labels (`xl`).
    */
-  --header-max-width: var(--container-6xl);
   --header-inset: calc(var(--spacing) * 3 + 1px); /* Padding and border. */
   --header-title-width: 6.75rem; /* A menu link (padding included). */
+  --header-menu-width-labels: 20.5rem; /* Icons and labels. */
+  --header-gap-wide: 3rem;
+  --header-max-width: calc(
+    var(--header-title-width) + var(--reading-width) + var(--header-menu-width-labels)
+    + 2 * var(--header-gap-wide) + 2 * var(--header-inset)
+  );
   --header-menu-width: 7.5rem; /* Icons only. */
   --header-gap: 2rem;
 
   @variant lg {
-    --header-gap: 3rem;
+    --header-gap: var(--header-gap-wide);
   }
 
   @variant xl {
-    --header-menu-width: 20.5rem; /* Icons and labels. */
+    --header-menu-width: var(--header-menu-width-labels);
   }
 
   @apply overscroll-none;

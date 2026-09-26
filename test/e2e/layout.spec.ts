@@ -55,13 +55,29 @@ for (const width of [320, 390, 768, 1024, 1279, 1280, 1440, 1920]) {
       if (width < 768) {
         expect(Math.abs((column[0] + column[1]) / 2 - width / 2)).toBeLessThan(1);
       } else {
+        // The column is at most as wide as the reading width (37rem), which
+        // the bar has once there's room for it.
         expect(Math.abs(column[0] - bar[0])).toBeLessThan(1);
-        if (width >= 1280) expect(Math.abs(column[1] - bar[1])).toBeLessThan(1);
-        else expect(column[1] - column[0]).toBeLessThanOrEqual(640.5);
+        expect(column[1] - column[0]).toBeLessThanOrEqual(592.5);
+        if (bar[1] - bar[0] > 591.5) expect(Math.abs(column[1] - bar[1])).toBeLessThan(1);
       }
     });
   });
 }
+
+test("from md, the search bar widens up to the reading width, and never narrows", async ({ page, goto }) => {
+  await page.setViewportSize({ width: 768, height: 800 });
+  await goto("/logos", { waitUntil: "hydration" });
+  let previous = 0;
+  for (let width = 768; width <= 1920; width += 16) {
+    await page.setViewportSize({ width, height: 800 });
+    const [left, right] = await xExtent(page, "header .group\\/search");
+    expect(right - left).toBeGreaterThanOrEqual(previous - 0.5);
+    expect(right - left).toBeLessThanOrEqual(592.5);
+    previous = right - left;
+  }
+  expect(previous).toBeCloseTo(592, 0);
+});
 
 test.describe("header menu", () => {
   test("icons only below xl, with tooltips", async ({ page, goto }) => {
