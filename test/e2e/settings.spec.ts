@@ -55,7 +55,13 @@ test.describe("settings", () => {
 
     // Reset: the defaults, and no cookie anymore.
     await goto("/paramètres", { waitUntil: "hydration" });
+    // Confirmed first: cancelling keeps the settings.
     await page.getByRole("button", { name: "Réinitialiser les paramètres" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Annuler" }).click();
+    await expect(preview).toHaveCSS("font-size", "24px");
+    await page.getByRole("button", { name: "Réinitialiser les paramètres" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Réinitialiser", exact: true }).click();
+    await expect(page.getByRole("dialog")).toBeHidden();
     await expect(preview).toHaveCSS("font-size", "20px");
     expect((await context.cookies()).find(cookie => cookie.name === "bailly-preferences")).toBeUndefined();
   });

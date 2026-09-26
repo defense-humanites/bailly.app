@@ -62,9 +62,15 @@
    */
   const preview = linkDefinition("<span class=\"entreea\"><span class=\"grec\">λογο·τέχνης,</span></span> <span class=\"gens\">ου</span>\n<span class=\"art\">(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)</span> habile\nartisan de paroles, <span class=\"aut\">Rhét.</span> (<span class=\"refch\">W. 2, 90</span>).\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">λ. <a href=\"/technê\">τέχνη</a></span>.</div>\n", { links: false });
 
+  /**
+   * Resetting the settings is confirmed first (it can't be undone).
+   */
+  const isResetConfirmationOpen = ref(false);
+
   const reset = (): void => {
     resetPreferences();
     colorMode.preference = "system";
+    isResetConfirmationOpen.value = false;
   };
 
   /**
@@ -241,15 +247,35 @@
         </SettingsRow>
       </UCard>
 
-      <!-- A dangerous action: at the end, apart from the settings. -->
-      <UButton
-        label="Réinitialiser les paramètres"
-        icon="i-lucide-rotate-ccw"
-        color="error"
-        variant="ghost"
-        class="justify-self-end lg:col-span-2"
-        @click="reset"
-      />
+      <!-- A dangerous action: at the end, apart from the settings, confirmed. -->
+      <UModal
+        v-model:open="isResetConfirmationOpen"
+        title="Réinitialiser les paramètres ?"
+        description="Le thème, la lecture et les préférences de recherche retrouveront leurs valeurs par défaut."
+        :ui="{ footer: 'justify-end' }"
+      >
+        <UButton
+          label="Réinitialiser les paramètres"
+          icon="i-lucide-rotate-ccw"
+          color="error"
+          variant="ghost"
+          class="justify-self-end lg:col-span-2"
+        />
+
+        <template #footer>
+          <UButton
+            label="Annuler"
+            color="neutral"
+            variant="outline"
+            @click="isResetConfirmationOpen = false"
+          />
+          <UButton
+            label="Réinitialiser"
+            color="error"
+            @click="reset"
+          />
+        </template>
+      </UModal>
     </div>
   </div>
 </template>
