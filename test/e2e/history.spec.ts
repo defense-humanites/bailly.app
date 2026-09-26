@@ -16,6 +16,14 @@ async function openHistory(page: Page): Promise<void> {
 }
 
 test.describe("history of the viewed entries", () => {
+  test("its button as wide as the options' one (3rem)", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await goto("/", { waitUntil: "hydration" });
+    const width = async (name: string) => (await page.getByRole("button", { name }).boundingBox())?.width;
+    expect(await width("Entrées consultées récemment")).toBe(48);
+    expect(await width("Options de recherche")).toBe(48);
+  });
+
   test("empty at first", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
     await openHistory(page);
