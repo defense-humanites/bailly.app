@@ -22,6 +22,8 @@
      */
     text?: string;
     isMorpheus?: boolean;
+    /** The entry's URI (for its tags). */
+    uri?: string;
   };
 
   const { query, result, resultQuery, status, pending } = useEntrySearch();
@@ -174,6 +176,7 @@
     parts: splitExcerpt(entry.word, entry.excerpt),
     text: query.value,
     isMorpheus: entry.isMorpheus,
+    uri: entry.uri,
     // A homonym leads to its anchor in the entry page (e.g. `oudos#2`).
     onSelect: () => void navigateTo(entryRoute(entry.uri)),
   });
@@ -190,6 +193,7 @@
           parts: { word: entry.word, rest: "" },
           text: query.value,
           isMorpheus: entry.isMorpheus,
+          uri: entry.uri,
           onSelect: () => void navigateTo(entryRoute(entry.uri)),
         },
         // The homonyms are indented under their headword.
@@ -476,13 +480,20 @@
         </template>
       </template>
 
+      <!-- The entry's tags, and whether it was found by the morphological analysis. -->
       <template #item-trailing="{ item }">
-        <UIcon
-          v-if="item.isMorpheus"
-          name="i-lucide-sparkles"
-          class="size-4 shrink-0 text-primary"
-          aria-label="Trouvé par l'analyse morphologique"
-        />
+        <span class="flex items-center gap-2">
+          <EntryTagIndicator
+            v-if="item.uri"
+            :uri="item.uri"
+          />
+          <UIcon
+            v-if="item.isMorpheus"
+            name="i-lucide-sparkles"
+            class="size-4 shrink-0 text-primary"
+            aria-label="Trouvé par l'analyse morphologique"
+          />
+        </span>
       </template>
 
       <template #empty="{ searchTerm }">

@@ -38,7 +38,7 @@ export async function xExtent(page: Page, selector: string): Promise<[number, nu
   });
 }
 
-type Bookmark = { word: string; uri: string; excerpt: string };
+type Bookmark = { word: string; uri: string; excerpt: string; children?: Omit<Bookmark, "children">[] };
 
 /**
  * The part of the bookmarks store the tests use.
@@ -48,7 +48,8 @@ interface BookmarksStore {
   starEntry: (entry: Bookmark) => Promise<unknown>;
   createTag: (tag: { name: string; color: string }) => Promise<{ data: { key: number } }>;
   tagEntry: (entry: Bookmark, tagKey: number) => Promise<unknown>;
-  tags: { name: string }[];
+  setCurrentTag: (key: number) => void;
+  tags: { name: string; key: number }[];
   taggedEntries: unknown[];
   starredEntries: unknown[];
 }
@@ -61,14 +62,17 @@ export type AppRoot = Element & {
 };
 
 /**
- * Adds bookmarks through the app's store (IndexedDB), then reloads the page.
- * @param tags Tags to create, in this order (a new tag goes first), with their entries.
+ * Adds bookmarks through the app's store (IndexedDB), then reloads the page
+ * (and waits for its hydration).
+ * @param tags Tags to create, in this order (a new tag goes first, and becomes
+ * the current one), with their entries.
+ * @param current The name of the tag to make current afterwards.
  */
 export async function seedBookmarks(
   page: Page,
-  { starred = [], tags = [] }: { starred?: Bookmark[]; tags?: { name: string; color: string; entries?: Bookmark[] }[] },
+  { starred = [], tags = [], current }: { starred?: Bookmark[]; tags?: { name: string; color: string; entries?: Bookmark[] }[]; current?: string },
 ): Promise<void> {
-  await page.evaluate(async ({ starred, tags }) => {
+  await page.evaluate(async ({ starred, tags, current }) => {
     const root = document.querySelector("#__nuxt") as AppRoot;
     const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks")!;
     await store.initialize();
@@ -77,8 +81,13 @@ export async function seedBookmarks(
       const { data } = await store.createTag({ name, color });
       for (const entry of entries) await store.tagEntry(entry, data.key);
     }
-  }, { starred, tags });
+    const currentKey = store.tags.find(tag => tag.name === current)?.key;
+    if (currentKey !== undefined) store.setCurrentTag(currentKey);
+    // Let the current tag reach `localStorage` before the reload.
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }, { starred, tags, current });
   await page.reload();
+  await page.waitForFunction(() => (window as unknown as { useNuxtApp?: () => { isHydrating: boolean } }).useNuxtApp?.().isHydrating === false);
 }
 
 /**
