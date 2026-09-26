@@ -30,13 +30,12 @@
    * maximum width is the one that leaves exactly this width to the bar once
    * the menu shows its labels (`xl`).
    */
-  --header-inset: calc(var(--spacing) * 3 + 1px); /* Padding and border. */
   --header-title-width: 6.75rem; /* A menu link (padding included). */
   --header-menu-width-labels: 20.5rem; /* Icons and labels. */
   --header-gap-wide: 3rem;
   --header-max-width: calc(
     var(--header-title-width) + var(--reading-width) + var(--header-menu-width-labels)
-    + 2 * var(--header-gap-wide) + 2 * var(--header-inset)
+    + 2 * var(--header-gap-wide)
   );
   --header-menu-width: 7.5rem; /* Icons only. */
   --header-gap: 2rem;

@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test";
 import { resultsExtent, searchInput, searchResults, xExtent } from "./helpers";
 
 /**
- * The header's inner box (from `md`: inside the floating header's border and
+ * The header's inner box (inside its border and
  * padding) and the centers of its items.
  */
 const header = (page: Page) => page.evaluate(() => {
@@ -69,6 +69,22 @@ for (const width of [320, 390, 768, 900, 1000, 1024, 1279, 1280, 1440, 1920]) {
     });
   });
 }
+
+test("the header is anchored, its border shown once the page is scrolled", async ({ page, goto }) => {
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await goto("/logos", { waitUntil: "hydration" });
+  const state = () => page.locator("body > div header").first().evaluate((element) => {
+    const { top, left, right } = element.getBoundingClientRect();
+    return { top, left, right, border: getComputedStyle(element).borderBottomColor };
+  });
+  const atTop = await state();
+  expect(atTop).toMatchObject({ top: 0, left: 0, right: 1280 });
+  expect(atTop.border).toBe("rgba(0, 0, 0, 0)");
+
+  await page.mouse.wheel(0, 400);
+  await expect.poll(async () => (await state()).border).not.toBe("rgba(0, 0, 0, 0)");
+  expect(await state()).toMatchObject({ top: 0, left: 0, right: 1280 });
+});
 
 test("from md, the search bar widens up to the reading width, and never narrows", async ({ page, goto }) => {
   await page.setViewportSize({ width: 768, height: 800 });

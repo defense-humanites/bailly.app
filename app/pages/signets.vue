@@ -20,7 +20,7 @@
       goes, in order, into the shortest column), otherwise on a grid.
     -->
     <section
-      class="mx-auto grid max-w-(--header-max-width) grid-cols-1 items-start gap-6 supports-[display:grid-lanes]:[display:grid-lanes] md:px-(--header-inset) lg:grid-cols-2"
+      class="mx-auto grid max-w-(--header-max-width) grid-cols-1 items-start gap-6 supports-[display:grid-lanes]:[display:grid-lanes] lg:grid-cols-2"
       :aria-busy="!initialized"
     >
       <header class="col-span-full flex gap-6 max-md:flex-col md:items-center xl:mb-6">

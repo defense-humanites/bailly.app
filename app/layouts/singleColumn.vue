@@ -8,8 +8,8 @@
 <template>
   <div>
     <AppHeader />
-    <main class="px-safe-4 pt-6 pb-safe-6 md:mt-20 md:px-safe-6 lg:pt-12 lg:pb-safe-12">
-      <div class="mx-auto max-w-(--reading-width) lg:grid lg:max-w-(--header-max-width) lg:grid-cols-header lg:px-(--header-inset)">
+    <main class="px-safe-4 pt-6 pb-safe-6 md:px-safe-6 lg:pt-12 lg:pb-safe-12">
+      <div class="mx-auto max-w-(--reading-width) lg:grid lg:max-w-(--header-max-width) lg:grid-cols-header">
         <div class="min-w-0 lg:col-start-2 lg:col-end-3 lg:max-w-(--reading-width)">
           <slot />
         </div>

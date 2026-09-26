@@ -29,6 +29,11 @@
   const titleRowShown = ref(false);
 
   /**
+   * Whether the content scrolls under the header (its border then appears).
+   */
+  const scrolled = computed((): boolean => y.value > 0);
+
+  /**
    * Scrolls shorter than this (in px) are ignored, e.g. iOS rubber-banding.
    */
   const SCROLL_THRESHOLD = 8;
@@ -48,25 +53,29 @@
     header is sticky with an offset of the first row's height (`h-12`): that
     row scrolls away with the page, and the search bar stays at the top. The
     first row slides back (offset `0`) when the user scrolls up, over the
-    content: the layout doesn't change. From `md`, a single floating row, at
-    most `6xl` wide, on a grid shared with the single-column layout (whose
-    column thus lies under the search bar): fixed tracks for the title and the
-    menu, the search bar taking the space left (cf. `grid-cols-header`).
+    content: the layout doesn't change. From `md`, a single row, sticky at the
+    top, whose content is at most `--header-max-width` wide, on a grid shared
+    with the single-column layout (whose column thus lies under the search
+    bar): fixed tracks for the title and the menu, the search bar taking the
+    space left up to the reading width (cf. `grid-cols-header`).
+    The header is anchored (top and sides), on an almost opaque background:
+    the content doesn't show around it. Its bottom border only appears once
+    the content scrolls under it.
   -->
   <header
     ref="header"
-    class="sticky z-[99] border-b border-black/10 bg-white/90 backdrop-blur-sm transition-[top] duration-300 ease-out motion-reduce:transition-none md:fixed md:inset-x-0 md:top-3 md:h-14 md:border-0 md:bg-transparent md:px-safe-6 md:backdrop-blur-none md:transition-none"
-    :class="titleRowShown ? 'top-0' : '-top-12'"
+    class="sticky z-[99] border-b bg-white/95 bg-radial-[at_50%_0%] from-white/50 from-75% to-primary-50/75 to-100% backdrop-blur-sm transition-[top,border-color] duration-300 ease-out motion-reduce:transition-none md:top-0 md:h-14 md:px-safe-6 md:transition-[border-color]"
+    :class="[titleRowShown ? 'top-0' : '-top-12', scrolled ? 'border-black/10' : 'border-transparent']"
   >
     <nav
-      class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 max-md:px-safe-4 md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:px-3 md:py-1 md:bg-radial-[at_50%_0%] md:from-75% md:from-white/50 md:to-100% md:to-primary-50/75 md:bg-white/65 md:backdrop-blur-sm md:border md:border-black/10 md:shadow-xl md:shadow-black/10 md:rounded-xl"
+      class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 max-md:px-safe-4 md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:pb-0"
     >
       <!--
         The title is a menu link as well: same padding and hover effect as the
         menu, so that it lines up with the search bar as the menu does, and as
         high as the menu links whatever its font size (`py-1.5`, `md:py-0.5`).
         From `md`, the menus' items lose their vertical padding (`py-2`), which
-        would make the row higher than the floating header and push it down.
+        would make the row higher than the header and push it down.
       -->
       <UNavigationMenu
         aria-label="Accueil"
