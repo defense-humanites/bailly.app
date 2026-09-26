@@ -115,7 +115,7 @@
               class="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm outline-none hover:bg-elevated/50 focus-visible:bg-elevated"
             >
               <span class="line-clamp-2 grow font-serif text-base"><span class="font-semibold">{{ link.word }}</span>{{ link.rest }}</span>
-              <EntryTagIndicator
+              <EntryBookmarkIndicator
                 :uri="link.uri"
                 class="mt-1"
               />

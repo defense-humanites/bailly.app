@@ -483,7 +483,7 @@
       <!-- The entry's tags, and whether it was found by the morphological analysis. -->
       <template #item-trailing="{ item }">
         <span class="flex items-center gap-2">
-          <EntryTagIndicator
+          <EntryBookmarkIndicator
             v-if="item.uri"
             :uri="item.uri"
           />

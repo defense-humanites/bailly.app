@@ -17,10 +17,11 @@ const logades = {
 
 /**
  * Tags created in this order, thus in the user's order: Rouge, Ciel, Vert.
- * The current tag is Ciel.
+ * The current tag is Ciel. λόγος and λογοτέχνης are favorites.
  */
 async function seed(page: Page): Promise<void> {
   await seedBookmarks(page, {
+    starred: [logos, logotechnes],
     tags: [
       { name: "Vert", color: "Green", entries: [logos, logades, logotechnes] },
       { name: "Ciel", color: "Sky", entries: [logos] },
@@ -31,19 +32,21 @@ async function seed(page: Page): Promise<void> {
 }
 
 /**
- * The tag shown for an entry (its color) and the number of the others.
+ * Whether an entry is shown as a favorite, the tag shown (its color) and the
+ * number of the others.
  */
-async function indicator(container: Locator): Promise<{ color: string | null; others: string | null }> {
+async function indicator(container: Locator): Promise<{ starred: boolean; color: string | null; others: string | null }> {
   const icon = container.locator("[data-tag-color]");
   await expect(icon).toBeVisible();
   const chip = container.locator("[data-slot=base]");
   return {
+    starred: (await container.textContent())?.includes("(favori)") ?? false,
     color: await icon.getAttribute("data-tag-color"),
     others: await chip.count() ? await chip.textContent() : null,
   };
 }
 
-test.describe("tags of the entries, in the history and the results", () => {
+test.describe("favorites and tags of the entries, in the history and the results", () => {
   test("the current tag first, then the first one in the user's order, and a count of the others", async ({ page, goto }) => {
     await goto("/logotechnês", { waitUntil: "hydration" });
     await goto("/logades", { waitUntil: "hydration" });
@@ -54,12 +57,13 @@ test.describe("tags of the entries, in the history and the results", () => {
     const links = page.getByRole("dialog").getByRole("listitem");
     await expect(links).toHaveCount(3);
     // λόγος: in the current tag (Ciel), and two others.
-    expect(await indicator(links.nth(0))).toEqual({ color: "Sky", others: "+2" });
+    expect(await indicator(links.nth(0))).toEqual({ starred: true, color: "Sky", others: "+2" });
     // λογάδες: not in the current tag; Rouge comes before Vert.
-    expect(await indicator(links.nth(1))).toEqual({ color: "Red", others: "+1" });
+    expect(await indicator(links.nth(1))).toEqual({ starred: false, color: "Red", others: "+1" });
     // λογοτέχνης: a single tag.
-    expect(await indicator(links.nth(2))).toEqual({ color: "Green", others: null });
-    await expect(links.nth(0)).toContainText("(étiquettes : Rouge, Ciel, Vert)");
+    expect(await indicator(links.nth(2))).toEqual({ starred: true, color: "Green", others: null });
+    // For screen readers, the star comes before the tags' names (the chip is hidden).
+    await expect(links.nth(0).getByRole("link")).toHaveAccessibleName(/\(favori\)\s*\(étiquettes : Rouge, Ciel, Vert\)$/);
   });
 
   test("in the results", async ({ page, goto }) => {
@@ -67,6 +71,6 @@ test.describe("tags of the entries, in the history and the results", () => {
     await seed(page);
     await searchInput(page).fill("logos");
     const option = searchResults(page).getByRole("option", { name: /^λόγος, ου/ });
-    expect(await indicator(option)).toEqual({ color: "Sky", others: "+2" });
+    expect(await indicator(option)).toEqual({ starred: true, color: "Sky", others: "+2" });
   });
 });
