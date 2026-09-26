@@ -4,7 +4,7 @@ import type { ConfigOptions } from "@nuxt/test-utils/playwright";
 
 /**
  * End-to-end tests (`test/e2e`), with the Nuxt integration of Playwright
- * (`goto(url, { waitUntil: "hydration" })`).
+ * (`goto(url, { waitUntil: "hydration" })`), on Chromium.
  *
  * The app talks to a stand-in API replaying real responses
  * (`test/e2e/api/server.mjs`). By default, the app is built and served for
@@ -30,9 +30,10 @@ export default defineConfig<ConfigOptions>({
     locale: "fr-FR",
     trace: "retain-on-failure",
   },
+  // Chromium only: the fine visual checks, on the other browsers and on
+  // mobile devices, are done by hand.
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "webkit", use: { ...devices["Desktop Safari"] } },
   ],
   webServer: [
     {

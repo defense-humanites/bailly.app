@@ -96,6 +96,7 @@ test.describe("bookmarks page", () => {
     expect(Math.abs(content.right - inner.right)).toBeLessThan(1);
   });
 
+  // Where supported (e.g. Safari), the cards are laid out in lanes.
   test("cards in lanes where supported, on a grid otherwise", async ({ page }) => {
     const display = await page.locator("main section").evaluate(element => getComputedStyle(element).display);
     const lanes = await page.evaluate(() => CSS.supports("display", "grid-lanes"));

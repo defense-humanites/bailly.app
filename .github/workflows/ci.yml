@@ -48,7 +48,7 @@ jobs:
       - run: npm ci
 
       - name: Install the browsers
-        run: npx playwright install --with-deps chromium webkit
+        run: npx playwright install --with-deps chromium
 
       # Builds the app and serves it with the stand-in API (cf. `playwright.config.ts`).
       - name: End-to-end tests
