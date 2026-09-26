@@ -49,6 +49,7 @@ interface BookmarksStore {
   createTag: (tag: { name: string; color: string }) => Promise<{ data: { key: number } }>;
   tagEntry: (entry: Bookmark, tagKey: number) => Promise<unknown>;
   setCurrentTag: (key: number) => void;
+  tagKeysOf: (uri: string) => number[];
   tags: { name: string; key: number }[];
   taggedEntries: unknown[];
   starredEntries: unknown[];
@@ -100,4 +101,16 @@ export function bookmarksState(page: Page): Promise<{ tags: string[]; tagged: nu
     const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks")!;
     return { tags: store.tags.map(tag => tag.name), tagged: store.taggedEntries.length, starred: store.starredEntries.length };
   });
+}
+
+/**
+ * The names of the tags to which an entry belongs, in the user's order.
+ */
+export function tagNamesOf(page: Page, uri: string): Promise<string[]> {
+  return page.evaluate((uri) => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks")!;
+    const keys = new Set(store.tagKeysOf(uri));
+    return store.tags.filter(tag => keys.has(tag.key)).map(tag => tag.name);
+  }, uri);
 }
