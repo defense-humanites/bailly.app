@@ -1,5 +1,4 @@
 import { convert } from "@humanities/greek-conversion";
-import { LocalStorageKey } from "~/enums";
 
 /**
  * Picks a random item from a list.
@@ -40,21 +39,11 @@ export function splitExcerpt(word: string, excerpt: string): { word: string; res
   return { word, rest: excerpt.slice(match[0].length) };
 }
 
-export function romanizeGreekStrings(): void {
-  const lsKey = localStorage.getItem(LocalStorageKey.EnableGreekRomanization);
-  const romanizationRequested = lsKey === "true";
-
-  if (!romanizationRequested) return;
-
-  const greekElements = document.querySelectorAll(".grec, .gens, .es, .des");
-  greekElements.forEach((item) => {
-    if (item.textContent) {
-      // Don't transliterate Greek Ano Teleia ('\u0387').
-      item.textContent = convert(
-        item.textContent.replace(/\u0387/g, "§"),
-        "greek", "transliteration",
-        { preset: "ala-lc-ancient" },
-      ).replace(/§/g, "\u0387");
-    }
-  });
+/**
+ * Transliterates Greek text (ALA-LC), keeping the ano teleia (·).
+ * @remarks Meant for the "transliterated Greek" preference (to come).
+ */
+export function transliterateGreek(text: string): string {
+  return convert(text.replace(/\u0387/g, "§"), "greek", "transliteration", { preset: "ala-lc-ancient" })
+    .replace(/§/g, "\u0387");
 }

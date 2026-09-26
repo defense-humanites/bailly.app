@@ -20,6 +20,13 @@ export default defineNuxtConfig({
     },
   },
   css: ["~/assets/css/main.css"],
+  /**
+   * The theme is kept in the local storage (cf. `StorageKey.Theme`): the
+   * module applies it before the page is shown, with an inline script.
+   */
+  colorMode: {
+    storageKey: "bailly:theme",
+  },
   ui: {
     // Fonts are self-hosted (cf. `app/assets/css/fonts.css`).
     fonts: false,

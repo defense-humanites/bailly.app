@@ -16,7 +16,7 @@ export type SearchField = "word" | "uri" | "excerpt";
 export function useEntrySearch() {
   const { searchDebounceTime } = useRuntimeConfig().public;
   const lookup = useApiLookup();
-  const { position, diacriticSensitive, inputMode, lemmatization } = useSearchOptions();
+  const { position, diacriticSensitive, inputMode, inflectedForms } = useSearchOptions();
 
   /**
    * The search bar input: converted into Greek while typing Beta Code (cf.
@@ -47,7 +47,7 @@ export function useEntrySearch() {
         fields: ["word", "uri", "excerpt"],
         inputMode: "greek",
         diacriticSensitive: diacriticSensitive.value,
-        skipMorpheus: !(lemmatization.value && isLemmatizable(position.value, hasWildcards(greek))),
+        skipMorpheus: !(inflectedForms.value && isLemmatizable(position.value, hasWildcards(greek))),
       });
       resultQuery.value = input;
       return found;
@@ -55,7 +55,7 @@ export function useEntrySearch() {
     {
       server: false,
       immediate: false,
-      watch: [debouncedQuery, position, diacriticSensitive, inputMode, lemmatization],
+      watch: [debouncedQuery, position, diacriticSensitive, inputMode, inflectedForms],
       default: () => null,
     },
   );

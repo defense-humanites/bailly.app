@@ -1,11 +1,10 @@
-import { InputMode } from "~/enums";
 import type { SearchPosition } from "~/utils/searchInput";
 
 /**
  * The search options of the search bar, and the search preferences.
  * @remarks The options last for the visit only (shared state, not stored): an
  * option forgotten from one day to the next would silently distort the
- * results. The preferences are stored (cf. `plugins/searchPreferences.client.ts`).
+ * results. The preferences are stored (cf. `usePreferences`).
  */
 export function useSearchOptions() {
   /**
@@ -22,13 +21,14 @@ export function useSearchOptions() {
    * Preference: how Greek is typed in the search bar (Greek itself is always
    * accepted).
    */
-  const inputMode = useState<InputMode>("search-input-mode", () => InputMode.BetaCode);
+  const { preference } = usePreferences();
+  const inputMode = preference("inputMode");
 
   /**
    * Preference: whether inflected forms are looked up too, when possible (cf.
    * `isLemmatizable`).
    */
-  const lemmatization = useState<boolean>("search-lemmatization", () => true);
+  const inflectedForms = preference("inflectedForms");
 
   /**
    * Whether all the options (not the preferences) have their default value.
@@ -40,5 +40,5 @@ export function useSearchOptions() {
     diacriticSensitive.value = false;
   };
 
-  return { position, diacriticSensitive, inputMode, lemmatization, isDefault, reset };
+  return { position, diacriticSensitive, inputMode, inflectedForms, isDefault, reset };
 }

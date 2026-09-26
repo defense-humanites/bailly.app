@@ -1,0 +1,61 @@
+import { expect, test } from "@nuxt/test-utils/playwright";
+import type { BrowserContext } from "@playwright/test";
+import { searchInput } from "./helpers";
+
+const COOKIE = "bailly-preferences";
+
+/**
+ * The application's keys in the local storage (not the dev tools' ones).
+ */
+const storage = (page: import("@playwright/test").Page) => page.evaluate(() =>
+  Object.fromEntries(Object.entries(localStorage).filter(([key]) => !key.startsWith("__VUE_DEVTOOLS"))));
+
+const preferencesCookie = async (context: BrowserContext) =>
+  (await context.cookies()).find(cookie => cookie.name === COOKIE);
+
+test.describe("preferences", () => {
+  test("a first visit stores nothing but the color mode", async ({ page, goto, context }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    await searchInput(page).fill("log");
+    expect(await preferencesCookie(context)).toBeUndefined();
+    expect(Object.keys(await storage(page))).toEqual(["bailly:theme"]);
+  });
+
+  test("stored in a cookie, which the server renders the pages with", async ({ page, goto, context }) => {
+    await goto("/", { waitUntil: "hydration" });
+    await page.getByRole("button", { name: "Options de recherche" }).click();
+    await page.getByText("Translittération", { exact: true }).click();
+    const cookie = await preferencesCookie(context);
+    expect(JSON.parse(decodeURIComponent(cookie!.value))).toEqual({ inputMode: "transliteration" });
+    expect(cookie!.sameSite).toBe("Lax");
+
+    // The server's HTML already has the transliteration placeholder.
+    // (Fetched by the browser: the cookie is secure outside development.)
+    const html = await page.evaluate(async () => (await fetch("/")).text());
+    expect(html).toContain("placeholder=\"anazētéō…\"");
+  });
+
+  test("the previous application's storage is migrated once", async ({ page, goto, context }) => {
+    await goto("/", { waitUntil: "hydration" });
+    await page.evaluate(() => {
+      localStorage.clear();
+      localStorage.setItem("searchInputMode", "transliteration");
+      localStorage.setItem("searchSkipLemmatization", "true");
+      localStorage.setItem("theme", "dark");
+      localStorage.setItem("currentTagKey", "3");
+      localStorage.setItem("dismissSearchBarMorphologicalResultsWarning", "true");
+      localStorage.setItem("historyLength", "20");
+    });
+    await goto("/", { waitUntil: "hydration" });
+
+    await expect(searchInput(page)).toHaveAttribute("placeholder", "anazētéō…");
+    const cookie = await preferencesCookie(context);
+    expect(JSON.parse(decodeURIComponent(cookie!.value))).toEqual({ inputMode: "transliteration", inflectedForms: false });
+    // (No tag 3 here: the current tag key is then removed by the store.)
+    expect(await storage(page)).toEqual({
+      "bailly:dismissed": "[\"morpheusWarning\"]",
+      "bailly:theme": "dark",
+    });
+    await expect(page.locator("html")).toHaveClass(/\bdark\b/);
+  });
+});

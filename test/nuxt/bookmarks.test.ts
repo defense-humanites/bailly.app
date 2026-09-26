@@ -1,6 +1,6 @@
 import { createPinia } from "pinia";
 import { expect, test } from "vitest";
-import { LocalStorageKey } from "~/enums";
+import { StorageKey } from "~/enums";
 import { IdbTaggedEntry, IdbTags } from "~/idb";
 import { useBookmarksStore } from "~/stores/bookmarks";
 import { entries, tags, unwrap } from "../idbHelpers";
@@ -25,11 +25,10 @@ test("initialize loads the stored data", async () => {
   expect(store.newTagColor).toBeTypeOf("string");
 });
 
-test("the current tag key is compatible with the Astro app", async () => {
+test("the current tag key is read from the local storage", async () => {
   unwrap(await IdbTags.add(tags.banquet));
   const theetete = unwrap(await IdbTags.add(tags.theetete));
-  // The Astro app stored the key as a string.
-  localStorage.setItem(LocalStorageKey.CurrentTagKey, String(theetete.key));
+  localStorage.setItem(StorageKey.CurrentTag, String(theetete.key));
 
   const store = newStore();
   await store.initialize();
@@ -39,7 +38,7 @@ test("the current tag key is compatible with the Astro app", async () => {
 test("the first tag becomes current when the current one is missing", async () => {
   unwrap(await IdbTags.add(tags.banquet));
   const theetete = unwrap(await IdbTags.add(tags.theetete)); // First position.
-  localStorage.setItem(LocalStorageKey.CurrentTagKey, "999");
+  localStorage.setItem(StorageKey.CurrentTag, "999");
 
   const store = newStore();
   await store.initialize();
@@ -53,7 +52,7 @@ test("createTag makes the new tag current and persists its key", async () => {
   const banquet = unwrap(await store.createTag(tags.banquet));
   expect(store.currentTag?.key).toBe(banquet.key);
   await nextTick();
-  expect(localStorage.getItem(LocalStorageKey.CurrentTagKey)).toBe(String(banquet.key));
+  expect(localStorage.getItem(StorageKey.CurrentTag)).toBe(String(banquet.key));
 });
 
 test("tagEntry / untagEntry", async () => {

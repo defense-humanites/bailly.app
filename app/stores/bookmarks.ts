@@ -1,5 +1,5 @@
 import { defineStore, skipHydrate } from "pinia";
-import { LocalStorageKey } from "~/enums";
+import { StorageKey } from "~/enums";
 import {
   IdbStarred,
   IdbTaggedEntry,
@@ -53,13 +53,15 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   /**
    * The key of the current tag, on which to perform actions if no other tag is
    * explicitly chosen.
-   * @remarks Stored under the same key as in the previous (Astro) application.
-   * Not hydrated from the server, which cannot read `localStorage`.
+   * @remarks Stored in the local storage (the key of the previous application
+   * is migrated, cf. `utils/legacyStorage.ts`). Not hydrated from the server,
+   * which cannot read it.
    */
   const currentTagKey = skipHydrate(useLocalStorage<number | null>(
-    LocalStorageKey.CurrentTagKey,
+    StorageKey.CurrentTag,
     null,
     {
+      writeDefaults: false,
       serializer: {
         read: (value: string) => (value ? Number(value) : null),
         write: (value: number | null) => String(value),

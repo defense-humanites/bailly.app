@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import type { InputMenuItem } from "@nuxt/ui";
   import type { LookupEntry } from "#shared/types/api";
-  import { InputMode, LocalStorageKey } from "~/enums";
+  import { InputMode } from "~/enums";
   import { splitExcerpt } from "~/helpers";
   import type { SearchField } from "~/composables/useEntrySearch";
   import { entryRoute } from "~/utils/entryUri";
@@ -231,12 +231,8 @@
 
   /**
    * Whether the user dismissed the warning about morphological results.
-   * @remarks Same key as in the previous (Astro) application.
    */
-  const morpheusWarningDismissed = useLocalStorage<boolean>(
-    LocalStorageKey.DismissSearchBarMorphologicalResultsWarning,
-    false,
-  );
+  const morpheusWarningDismissed = useDismissed("morpheusWarning");
 
   const hasMoreResults = computed(
     (): boolean => (result.value?.countAll ?? 0) > (result.value?.count ?? 0),

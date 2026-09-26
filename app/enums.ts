@@ -44,39 +44,39 @@ export enum InputMode {
 }
 
 /**
- * Local storage keys that are used accross the application.
+ * The keys of the interface's state in the local storage (the preferences
+ * are in a cookie, cf. `utils/preferences.ts`; the bookmarks and the history
+ * in IndexedDB).
  */
-export enum LocalStorageKey {
+export enum StorageKey {
   /**
-   * The current (usually the latest inserted) tag key from IndexedDB `bailly.tags` table.
+   * The key of the current tag (IndexedDB `tags` table).
    */
+  CurrentTag = "bailly:currentTag",
+  /**
+   * The notices the user dismissed (a list of ids, e.g. `morpheusWarning`).
+   */
+  Dismissed = "bailly:dismissed",
+  /**
+   * The theme (`system`, `light` or `dark`), managed by the color mode
+   * module (cf. `colorMode.storageKey` in `nuxt.config.ts`).
+   */
+  Theme = "bailly:theme",
+}
+
+/**
+ * The local storage keys of the previous (Astro) application, migrated once
+ * (cf. `utils/legacyStorage.ts`), then removed.
+ */
+export enum LegacyStorageKey {
   CurrentTagKey = "currentTagKey",
-  /**
-   * If it exists, no more bookmarks info should be displayed (cf. 'app/pages/signets.vue').
-   */
   DismissBookmarksInfoCard = "dismissBookmarksInfoCard",
-  /**
-   * If it exists, no more morphological results should should be displayed (cf. 'app/components/Searchbar.vue').
-   */
+  DismissBookmarksSyncInfobox = "dismissBookmarksSyncInfobox",
   DismissSearchBarMorphologicalResultsWarning = "dismissSearchBarMorphologicalResultsWarning",
-  /**
-   * If it exists, greek strings (for instance those that carry the `.grec` CSS class) across the application should be romanized.
-   */
   EnableGreekRomanization = "enableGreekRomanization",
-  /**
-   * The current history length settings.
-   */
   HistoryLength = "historyLength",
-  /**
-   * The current input mode settings.
-   */
   SearchInputMode = "searchInputMode",
-  /**
-   * If this setting exists, search queries should not be lemmatized.
-   */
+  SearchResultsDisplay = "searchResultsDisplay",
   SearchSkipLemmatization = "searchSkipLemmatization",
-  /**
-   * The current theme settings.
-   */
   Theme = "theme",
 }

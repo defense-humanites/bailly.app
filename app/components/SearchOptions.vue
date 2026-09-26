@@ -8,7 +8,7 @@
     wildcards?: boolean;
   }>();
 
-  const { position, diacriticSensitive, inputMode, lemmatization, isDefault, reset } = useSearchOptions();
+  const { position, diacriticSensitive, inputMode, inflectedForms, isDefault, reset } = useSearchOptions();
 
   const lemmatizable = computed((): boolean => isLemmatizable(position.value, props.wildcards));
 
@@ -23,7 +23,7 @@
    * Inflected forms can't be looked up for a part of a word, nor with
    * wildcards: the switch is then disabled.
    */
-  const lemmatizationLabel = computed((): string =>
+  const inflectedFormsLabel = computed((): string =>
     lemmatizable.value ? "Formes fléchies" : "Formes fléchies (sans objet)",
   );
 
@@ -123,8 +123,8 @@
         <USeparator />
 
         <USwitch
-          v-model="lemmatization"
-          :label="lemmatizationLabel"
+          v-model="inflectedForms"
+          :label="inflectedFormsLabel"
           :disabled="!lemmatizable"
           size="sm"
           :ui="switchUi"

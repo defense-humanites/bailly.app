@@ -38,7 +38,7 @@
   ];
 
   // The search preferences are shared with the options of the search bar.
-  const { inputMode, lemmatization } = useSearchOptions();
+  const { inputMode, inflectedForms } = useSearchOptions();
 
   const searchInputModeOptions = ref<RadioGroupItem[]>([
     {
@@ -51,14 +51,14 @@
     },
   ]);
 
-  const lemmatizationSetting = computed({
-    get: (): string => (lemmatization.value ? "enabled" : "disabled"),
+  const inflectedFormsSetting = computed({
+    get: (): string => (inflectedForms.value ? "enabled" : "disabled"),
     set: (value: string) => {
-      lemmatization.value = value === "enabled";
+      inflectedForms.value = value === "enabled";
     },
   });
 
-  const searchLemmatizationOptions = ref<RadioGroupItem[]>([
+  const searchInflectedFormsOptions = ref<RadioGroupItem[]>([
     {
       label: "Désactivé",
       value: "disabled",
@@ -131,16 +131,16 @@
       </fieldset>
       <fieldset>
         <fieldset>
-          <legend>Lemmatisation</legend>
+          <legend>Formes fléchies</legend>
           <p>
             Lorsque la lemmatisation est active, les formes fléchies peuvent
             produire des résultats de recherche.
           </p>
           <URadioGroup
-            v-model="lemmatizationSetting"
+            v-model="inflectedFormsSetting"
             variant="table"
             orientation="horizontal"
-            :items="searchLemmatizationOptions"
+            :items="searchInflectedFormsOptions"
           />
         </fieldset>
       </fieldset>
@@ -154,7 +154,7 @@
           <RadioGroup
             groupName="settings-display-greek-transliteration"
             options={greekRomanizationOptions}
-            storageKey={LocalStorageKey.EnableGreekRomanization}
+            storageKey="enableGreekRomanization"
           />
         </fieldset>
       </fieldset>
