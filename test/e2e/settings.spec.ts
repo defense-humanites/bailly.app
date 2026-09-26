@@ -2,11 +2,32 @@ import { expect, test } from "@nuxt/test-utils/playwright";
 
 test.describe("settings", () => {
   test("compact: all the settings at once on a desktop screen", async ({ page, goto }) => {
-    await page.setViewportSize({ width: 1280, height: 1000 });
+    await page.setViewportSize({ width: 1280, height: 800 });
     await goto("/paramètres", { waitUntil: "hydration" });
     const reset = page.getByRole("button", { name: "Réinitialiser les paramètres" });
     await expect(reset).toBeInViewport();
-    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(1000);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(800);
+  });
+
+  test("two columns from lg, aligned with the header; one below", async ({ page, goto }) => {
+    const extent = (selector: string) => page.locator(selector).first().evaluate((element) => {
+      const { left, right, top } = element.getBoundingClientRect();
+      return { left: Math.round(left), right: Math.round(right), top: Math.round(top) };
+    });
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await goto("/paramètres", { waitUntil: "hydration" });
+    const nav = await extent("header > nav");
+    const general = await extent("[aria-labelledby=settings-general]");
+    const reading = await extent("[aria-labelledby=settings-reading]");
+    const search = await extent("[aria-labelledby=settings-search]");
+    expect(general.left).toBe(nav.left);
+    expect(reading.right).toBe(nav.right);
+    expect(reading.top).toBe(general.top);
+    expect(search.left).toBe(general.left);
+
+    await page.setViewportSize({ width: 900, height: 900 });
+    const narrow = await extent("[aria-labelledby=settings-reading]");
+    expect(Math.abs((narrow.left + narrow.right) / 2 - 450)).toBeLessThanOrEqual(1);
   });
 
   test("no horizontal scroll on mobile", async ({ page, goto }) => {
