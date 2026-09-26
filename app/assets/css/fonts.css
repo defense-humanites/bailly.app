@@ -67,6 +67,108 @@
 }*/
 
 /*
+ * Reading fonts being tried (cf. `utils/fonts.ts`), as delivered (TTF, OTF):
+ * the ones kept will be converted to WOFF2 (and subset). A face is only
+ * downloaded when some text uses it.
+ */
+
+@font-face {
+  font-family: "Gentium Plus";
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  src: url("/fonts/Gentium_Plus/GentiumPlus-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Gentium Plus";
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+  src: url("/fonts/Gentium_Plus/GentiumPlus-Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Gentium Plus";
+  font-weight: normal;
+  font-style: italic;
+  font-display: block;
+  src: url("/fonts/Gentium_Plus/GentiumPlus-Italic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Gentium Plus";
+  font-weight: bold;
+  font-style: italic;
+  font-display: block;
+  src: url("/fonts/Gentium_Plus/GentiumPlus-BoldItalic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "GFS Didot";
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  src: url("/fonts/GFS_Didot/GFSDidot.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "GFS Didot";
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+  src: url("/fonts/GFS_Didot/GFSDidotBold.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "GFS Didot";
+  font-weight: normal;
+  font-style: italic;
+  font-display: block;
+  src: url("/fonts/GFS_Didot/GFSDidotItalic.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "GFS Didot";
+  font-weight: bold;
+  font-style: italic;
+  font-display: block;
+  src: url("/fonts/GFS_Didot/GFSDidotBoldItalic.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "GFS Neohellenic";
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  src: url("/fonts/GFS_NeoHellenic/GFSNeohellenic.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "GFS Neohellenic";
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+  src: url("/fonts/GFS_NeoHellenic/GFSNeohellenicBold.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "GFS Neohellenic";
+  font-weight: normal;
+  font-style: italic;
+  font-display: block;
+  src: url("/fonts/GFS_NeoHellenic/GFSNeohellenicIt.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "GFS Neohellenic";
+  font-weight: bold;
+  font-style: italic;
+  font-display: block;
+  src: url("/fonts/GFS_NeoHellenic/GFSNeohellenicBoldIt.otf") format("opentype");
+}
+
+/*
  * IFAOGrec font.
  *   Needed for uncommon characters (serves as a fallback to the Brill font).
  *   Useful Unicode ranges: Greek, diacritics, private use area.

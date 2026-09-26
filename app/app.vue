@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import type { ToasterProps } from "@nuxt/ui";
+  import { fontType, READING_FONTS } from "~/utils/fonts";
 
   /**
    * Nuxt UI toaster component configuration.
@@ -14,6 +15,7 @@
    * `--reading-font-size`), rendered by the server too.
    */
   const { preference } = usePreferences();
+  const readingFont = preference("readingFont");
   const readingSize = preference("readingSize");
   const readingWeight = preference("readingWeight");
 
@@ -30,10 +32,17 @@
     ],
     htmlAttrs: {
       "lang": "fr",
+      "data-reading-font": readingFont,
       "data-reading-size": readingSize,
       "data-reading-weight": readingWeight,
     },
     link: [
+      // The face of the entries' text (the chosen font and weight), known
+      // by the server: fetched as soon as possible.
+      computed(() => {
+        const href = READING_FONTS[readingFont.value].files[readingWeight.value];
+        return { rel: "preload", as: "font", type: fontType(href), href, crossorigin: "anonymous" };
+      }),
       { rel: "icon", type: "image/png", href: "/favicon/favicon-96x96.png" },
       { rel: "icon", type: "image/svg+xml", href: "/favicon/favicon.svg" },
       { rel: "icon", type: "image/x-icon", href: "/favicon/favicon.ico" },

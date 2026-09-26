@@ -2,6 +2,7 @@
   import type { RadioGroupItem } from "@nuxt/ui";
   import { InputMode } from "~/enums";
   import { linkDefinition } from "~/utils/linkedEntries";
+  import { READING_FONTS } from "~/utils/fonts";
   import type { ReadingSize } from "~/utils/preferences";
 
   definePageMeta({
@@ -19,6 +20,7 @@
 
   // The search preferences are shared with the options of the search bar.
   const { inputMode, inflectedForms } = useSearchOptions();
+  const readingFont = preference("readingFont");
   const readingSize = preference("readingSize");
   const transliterateGreek = preference("transliterateGreek");
   const greek = useGreek();
@@ -29,6 +31,12 @@
     { label: "Clair", value: "light" },
     { label: "Sombre", value: "dark" },
   ];
+
+  /**
+   * The fonts (their names aren't shown in them: that would download them
+   * all; the preview shows the chosen one).
+   */
+  const readingFontItems = Object.entries(READING_FONTS).map(([value, { label }]) => ({ label, value }));
 
   const readingSizeItems: RadioGroupItem[] = [
     { label: "Petite", value: "small" },
@@ -144,6 +152,14 @@
           v-html="greek.html(preview)"
         />
         <!-- eslint-enable vue/no-v-html -->
+        <SettingsRow label="Police">
+          <USelect
+            v-model="readingFont"
+            :items="readingFontItems"
+            aria-label="Police"
+            class="w-48"
+          />
+        </SettingsRow>
         <SettingsRow label="Taille du texte">
           <!-- A letter at each size, rather than words (too wide on mobile). -->
           <URadioGroup

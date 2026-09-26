@@ -71,6 +71,22 @@
 }
 
 /*
+ * The serif font (entries, headwords…), chosen in the settings (cf.
+ * `utils/fonts.ts`); Brill by default (cf. `theme.css`).
+ */
+:root[data-reading-font="gentium"] {
+  --font-serif: "Gentium Plus", IFAOGrec, ui-serif, Georgia, serif;
+}
+
+:root[data-reading-font="didot"] {
+  --font-serif: "GFS Didot", IFAOGrec, ui-serif, Georgia, serif;
+}
+
+:root[data-reading-font="neohellenic"] {
+  --font-serif: "GFS Neohellenic", IFAOGrec, ui-serif, Georgia, serif;
+}
+
+/*
  * The entries' text (cf. `.definition`), set in the settings (cf.
  * `utils/preferences.ts`). Brill has a normal and a bold face only.
  */
