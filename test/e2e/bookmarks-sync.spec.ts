@@ -3,7 +3,7 @@ import type { Browser, Page } from "@playwright/test";
 import { bookmarksState, seedBookmarks, type AppRoot } from "./helpers";
 
 const logos = { word: "λόγος", uri: "logos", excerpt: "λόγος, ου (ὁ) A parole" };
-const psukhe = { word: "ψυχή", uri: "psukhê", excerpt: "ψυχή, ῆς (ἡ) souffle, âme" };
+const psuche = { word: "ψυχή", uri: "psuchê", excerpt: "ψυχή, ῆς (ἡ) souffle, âme" };
 
 const waitForHydration = (page: Page) =>
   page.waitForFunction(() => (window as unknown as { useNuxtApp?: () => { isHydrating: boolean } }).useNuxtApp?.().isHydrating === false);
@@ -56,7 +56,7 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   // Phone: has a favorite of its own, and joins with the 12 words (typed
   // without accents, in capitals).
   const phone = await newDevice(browser, baseURL);
-  await seedBookmarks(phone, { starred: [psukhe] });
+  await seedBookmarks(phone, { starred: [psuche] });
   await openSync(phone);
   await phone.getByRole("button", { name: "J'ai déjà une clé" }).click();
   await phone.getByRole("textbox").fill(words.map(word => word.normalize("NFD").replace(/\p{M}/gu, "").toUpperCase()).join(" "));
@@ -160,7 +160,7 @@ test("a device keeps the key once the online bookmarks are merged, even if sendi
 
   // The phone reads the online bookmarks, but cannot send its own.
   const phone = await newDevice(browser, baseURL, "/");
-  await seedBookmarks(phone, { starred: [psukhe] });
+  await seedBookmarks(phone, { starred: [psuche] });
   const failPut = (route: Parameters<Parameters<Page["route"]>[1]>[0]) =>
     route.request().method() === "PUT" ? route.abort() : route.continue();
   await phone.route("**/api/sync/**", failPut);
@@ -193,7 +193,7 @@ test("joining beyond the limits is refused until the device makes room", async (
 
   // The phone has a favorite of its own: 101 once brought together.
   const phone = await newDevice(browser, baseURL, "/");
-  await seedBookmarks(phone, { starred: [psukhe] });
+  await seedBookmarks(phone, { starred: [psuche] });
   await phone.goto(link!);
   await phone.getByRole("button", { name: "Activer", exact: true }).click();
   await expect(phone.getByText(/les favoris compteraient 101 entrées \(100 au plus\) : retirez-en au moins 1\. Réessayez ensuite\./)).toBeVisible();
@@ -204,7 +204,7 @@ test("joining beyond the limits is refused until the device makes room", async (
   await phone.evaluate(async () => {
     const root = document.querySelector("#__nuxt") as AppRoot;
     const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { unstarEntry: (uri: string) => Promise<unknown> };
-    await store.unstarEntry("psukhê");
+    await store.unstarEntry("psuchê");
   });
   await phone.goto(link!);
   await phone.getByRole("button", { name: "Activer", exact: true }).click();
@@ -243,7 +243,7 @@ test("a synchronization beyond the limits waits until the device makes room", as
   // Each device adds its 100th favorite, the phone offline.
   await phone.route("**/api/sync/**", route => route.abort());
   await star(phone, logos);
-  await star(page, psukhe);
+  await star(page, psuche);
   expect(await syncNow(page)).toBe(true);
 
   // Back online, the phone does not merge (101 favorites), and says why.
@@ -271,7 +271,7 @@ test("a synchronization beyond the limits waits until the device makes room", as
 test("enabling a key again brings back the online bookmarks deleted meanwhile", async ({ page, goto, browser, baseURL }) => {
   test.setTimeout(60_000);
   await goto("/signets", { waitUntil: "hydration" });
-  await seedBookmarks(page, { starred: [logos, psukhe] });
+  await seedBookmarks(page, { starred: [logos, psuche] });
   await openSync(page);
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
   const keyWords = page.getByRole("list", { name: "Les 12 mots de la clé" }).locator("li > span:last-child");

@@ -154,7 +154,7 @@ test("an import beyond the limits asks first, then leaves out what does not fit"
     state: {
       tags: [{ key: "4b8c3c1e-5a4e-4f0e-9d7a-1c2b3d4e5f60", name: "Homère", description: "", color: "Blue", createdAt: stamp, updatedAt: stamp }],
       tagged: [{ tagKey: "4b8c3c1e-5a4e-4f0e-9d7a-1c2b3d4e5f60", ...logos, updatedAt: stamp }],
-      starred: [{ ...logos, updatedAt: stamp }, { word: "ψυχή", uri: "psukhê", excerpt: "ψυχή, ῆς (ἡ) souffle", updatedAt: stamp }],
+      starred: [{ ...logos, updatedAt: stamp }, { word: "ψυχή", uri: "psuchê", excerpt: "ψυχή, ῆς (ἡ) souffle", updatedAt: stamp }],
       tagOrder: null,
     },
   };
