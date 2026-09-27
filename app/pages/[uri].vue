@@ -13,6 +13,8 @@
   const { data, error } = await useApiEntry(uri, {
     fields: ["word", "uri", "excerpt", "htmlDefinition"],
     siblings: true,
+    // Only what the links to the neighbouring entries show (not their definitions).
+    siblingsFields: ["word", "uri", "excerpt"],
   });
 
   if (error.value) {
