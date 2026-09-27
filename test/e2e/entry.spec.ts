@@ -37,6 +37,19 @@ test.describe("entry page", () => {
     });
   });
 
+  test("links after the entry: on desktop, only after a long definition", async ({ page, goto }) => {
+    const surround = page.getByRole("navigation", { name: "Entrées voisines" });
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await goto("/logotechnês", { waitUntil: "hydration" });
+    await expect(surround).toBeHidden();
+    await goto("/logos", { waitUntil: "hydration" });
+    await expect(surround).toBeVisible();
+
+    await page.setViewportSize({ width: 390, height: 800 });
+    await goto("/logotechnês", { waitUntil: "hydration" });
+    await expect(surround).toBeVisible();
+  });
+
   test("homonyms: each has its anchor", async ({ page, goto }) => {
     await goto("/logades#2", { waitUntil: "hydration" });
     await expect(page.locator("[id='1']")).toHaveCount(1);
