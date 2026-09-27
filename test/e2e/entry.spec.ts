@@ -56,6 +56,20 @@ test.describe("entry page", () => {
     await expect(page.locator("[id='2']")).toHaveCount(1);
   });
 
+  test("the title and the neighbours' links stick under the header", async ({ page, goto }) => {
+    const bottom = (selector: string) => page.locator(selector).first().evaluate(element => Math.round(element.getBoundingClientRect().bottom));
+    const top = (selector: string) => page.locator(selector).first().evaluate(element => Math.round(element.getBoundingClientRect().top));
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: 700 });
+      await goto("/logos", { waitUntil: "hydration" });
+      await page.mouse.wheel(0, 1500);
+      await expect.poll(() => top("main article > header")).toBe(await bottom("body > div header"));
+      await expect(page.locator("main h1")).toBeInViewport();
+      // A line under it once stuck (scroll-state queries, supported by Chromium).
+      await expect(page.locator("main article > header > nav")).not.toHaveCSS("border-bottom-color", "rgba(0, 0, 0, 0)");
+    }
+  });
+
   test("the arrow of a definition sits in the line of its text", async ({ page, goto }) => {
     await goto("/chliainô", { waitUntil: "hydration" });
     const [arrow, text] = await page.locator("main .fleche").first().evaluate((element) => {

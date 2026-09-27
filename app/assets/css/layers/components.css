@@ -119,6 +119,25 @@
   }
 
   /*
+   * The sticky title of an entry page: a line under it once it is stuck, in
+   * the browsers that support scroll-state queries (progressive enhancement).
+   */
+  .entry-header {
+    container-type: scroll-state;
+
+    & > * {
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s;
+    }
+
+    @container scroll-state(stuck: top) {
+      & > * {
+        border-bottom-color: var(--ui-border);
+      }
+    }
+  }
+
+  /*
    * The entries' text, whose size and weight are set in the settings.
    */
   .definition {

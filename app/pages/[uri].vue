@@ -98,7 +98,13 @@
 
 <template>
   <article>
-    <header>
+    <!--
+      The title and the links to the neighbouring entries stick under the
+      header (cf. `--header-bottom`, which follows the mobile title row), on
+      an almost opaque background; a line under them once they are stuck,
+      where supported (cf. `.entry-header`).
+    -->
+    <header class="entry-header sticky top-(--header-bottom) z-20 -mx-2 bg-white/95 px-2 backdrop-blur-sm transition-[top] duration-300 ease-out motion-reduce:transition-none">
       <UNavigationMenu
         :ui="{
           root: '[&>div]:w-full',
