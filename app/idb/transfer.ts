@@ -111,22 +111,28 @@ function validateTag(value: unknown): TagRecord | null {
   };
 }
 
-function validateEntry(value: Record<string, unknown>): { uri: string; word: string; excerpt: string } | null {
-  if (!isText(value.uri, { required: true }) || !isText(value.word) || !isText(value.excerpt)) return null;
+/**
+ * The entry fields of a record: a word and an excerpt are required, as when
+ * a bookmark is created on the device (a deletion may have neither).
+ * @remarks They are text, and shown as such (never as HTML).
+ */
+function validateEntry(value: Record<string, unknown>, deleted: boolean): { uri: string; word: string; excerpt: string } | null {
+  if (!isText(value.uri, { required: true })) return null;
+  if (!isText(value.word, { required: !deleted }) || !isText(value.excerpt, { required: !deleted })) return null;
   return { uri: value.uri, word: value.word, excerpt: value.excerpt };
 }
 
 function validateTagged(value: unknown): TaggedRecord | null {
   if (!isObject(value) || !isText(value.tagKey, { required: true })) return null;
   const common = versioned(value);
-  const entry = validateEntry(value);
+  const entry = common && validateEntry(value, Boolean(common.deleted));
   return common && entry ? { tagKey: value.tagKey, ...entry, ...common } : null;
 }
 
 function validateStarred(value: unknown): StarredRecord | null {
   if (!isObject(value)) return null;
   const common = versioned(value);
-  const entry = validateEntry(value);
+  const entry = common && validateEntry(value, Boolean(common.deleted));
   return common && entry ? { ...entry, ...common } : null;
 }
 

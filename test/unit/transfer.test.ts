@@ -57,7 +57,8 @@ test("invalid records are left out, unknown colors replaced", () => {
       { key: "", name: "Sans clé", color: "Blue", createdAt: stamp(), updatedAt: stamp() },
     ],
     tagged: [
-      { tagKey: "ok", uri: "logos", word: "λόγος", excerpt: "", updatedAt: stamp() },
+      { tagKey: "ok", uri: "logos", word: "λόγος", excerpt: "λόγος parole", updatedAt: stamp() },
+      { tagKey: "ok", uri: "psukhe", word: "ψυχή", excerpt: "", updatedAt: stamp() }, // No excerpt.
       { tagKey: "ok", uri: "", word: "", excerpt: "", updatedAt: stamp() },
     ],
     starred: [{ uri: "logos", word: "λόγος", excerpt: "", updatedAt: stamp(), deleted: "yes" }, "junk"],
@@ -74,4 +75,10 @@ test("invalid records are left out, unknown colors replaced", () => {
 
 test("file name", () => {
   expect(bookmarksFileName(new Date(2026, 8, 7))).toBe("bailly-signets-2026-09-07.json");
+});
+
+test("entries are kept as text (the excerpt is never rendered as HTML)", () => {
+  const excerpt = "<img src=x onerror=alert(1)> λόγος";
+  const validated = validateState({ tags: [], tagged: [], starred: [{ uri: "logos", word: "λόγος", excerpt, updatedAt: stamp() }] });
+  expect(validated.starred[0]?.excerpt).toBe(excerpt);
 });

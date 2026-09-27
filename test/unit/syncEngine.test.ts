@@ -69,7 +69,7 @@ function device(server: typeof fetch, initial: BookmarksState = emptyState()) {
 // Recent stamps: older tombstones are not uploaded (cf. `compact`).
 let time = Date.now();
 const stamp = () => formatStamp({ time: time++, counter: 0, node: "t" });
-const star = (uri: string, deleted?: true) => ({ uri, word: uri, excerpt: "", updatedAt: stamp(), ...(deleted ? { deleted } : {}) });
+const star = (uri: string, deleted?: true) => ({ uri, word: uri, excerpt: `${uri} …`, updatedAt: stamp(), ...(deleted ? { deleted } : {}) });
 const addStar = (uri: string, deleted?: true) => (state: BookmarksState) => mergeStates(state, { ...emptyState(), starred: [star(uri, deleted)] });
 const liveStars = (state: BookmarksState) => state.starred.filter(record => !record.deleted).map(record => record.uri);
 
