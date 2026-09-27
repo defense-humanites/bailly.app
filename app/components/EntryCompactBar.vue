@@ -17,7 +17,8 @@
 <!--
   A compact bar (the headword, and arrows to the neighbouring entries) that
   appears under the header once the entry's title has scrolled out of sight
-  (as the large titles of iOS). It sticks in a zero-height wrapper, so that
+  (as the large titles of iOS), exactly as wide as the definition's card.
+  It sticks in a zero-height wrapper, so that
   it takes no room in the page; hidden, it is out of the tab order and of
   the accessibility tree (`invisible`).
 -->
@@ -25,7 +26,7 @@
   <div class="pointer-events-none sticky top-(--header-bottom) z-20 h-0 transition-[top] duration-300 ease-out motion-reduce:transition-none">
     <nav
       aria-label="Navigation de l'entrée"
-      class="pointer-events-auto -mx-2 flex h-10 items-center gap-2 border-b border-default bg-white/95 px-2 backdrop-blur-sm transition-[opacity,translate,visibility] duration-200 ease-out motion-reduce:transition-none"
+      class="pointer-events-auto flex h-10 items-center gap-2 border-b border-default bg-white/95 px-2 backdrop-blur-sm transition-[opacity,translate,visibility] duration-200 ease-out motion-reduce:transition-none"
       :class="shown ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0'"
     >
       <UButton

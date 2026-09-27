@@ -72,6 +72,12 @@ test.describe("entry page", () => {
         return [nav.getBoundingClientRect().top, document.querySelector("body > div header")!.getBoundingClientRect().bottom];
       });
       expect(Math.abs(barTop - headerBottom)).toBeLessThan(1);
+      // Exactly as wide as the definition's card.
+      const [barX, cardX] = await page.evaluate(() => [
+        document.querySelector("nav[aria-label='Navigation de l\\'entrée']")!,
+        document.querySelector("main article section [data-slot=root]")!,
+      ].map(element => [Math.round(element.getBoundingClientRect().left), Math.round(element.getBoundingClientRect().right)]));
+      expect(barX).toEqual(cardX);
       await page.mouse.wheel(0, -3000);
       await expect(bar).toBeHidden();
     }
@@ -82,6 +88,10 @@ test.describe("entry page", () => {
     const nextWord = (await page.locator("article > header").getByRole("link", { name: /^Entrée suivante : / }).getAttribute("aria-label"))!.replace("Entrée suivante : ", "");
     // Not while typing in the search bar.
     await page.locator("header input[role=combobox]").focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator("main h1")).toHaveText("λόγος");
+    // Nor on a link (e.g. of the definition).
+    await page.locator("main .definition a").first().focus();
     await page.keyboard.press("ArrowRight");
     await expect(page.locator("main h1")).toHaveText("λόγος");
     await page.locator("main h1").click();
