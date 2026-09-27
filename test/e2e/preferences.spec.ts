@@ -51,11 +51,14 @@ test.describe("preferences", () => {
     await expect(searchInput(page)).toHaveAttribute("placeholder", "anazētéō…");
     const cookie = await preferencesCookie(context);
     expect(JSON.parse(decodeURIComponent(cookie!.value))).toEqual({ inputMode: "transliteration", inflectedForms: false });
-    // (No tag 3 here: the current tag key is then removed by the store.)
-    expect(await storage(page)).toEqual({
+    // (The current tag key is migrated too, then removed by the store once
+    // it has loaded the bookmarks, as there is no tag 3 here: not checked.)
+    const stored = await storage(page);
+    expect(stored).toMatchObject({
       "bailly:dismissed": "[\"morpheusWarning\"]",
       "bailly:theme": "dark",
     });
+    expect(Object.keys(stored).filter(key => !key.startsWith("bailly:"))).toEqual([]);
     await expect(page.locator("html")).toHaveClass(/\bdark\b/);
   });
 });
