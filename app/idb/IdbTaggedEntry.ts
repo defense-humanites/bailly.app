@@ -7,7 +7,7 @@ import {
   type IdbResult,
   type IdbTagged,
 } from "./Idb";
-import type { TaggedRecord, TagKey } from "./merge";
+import { entryTombstone, type TaggedRecord, type TagKey } from "./merge";
 
 const toTagged = ({ tagKey, word, uri, excerpt }: TaggedRecord): IdbTagged => ({ tagKey, word, uri, excerpt });
 
@@ -74,7 +74,7 @@ export class IdbTaggedEntry {
         throw new IdbError("L'étiquette ne référence pas l'entrée à supprimer.");
       }
 
-      await store.put({ ...record, deleted: true, updatedAt: await Idb.stamp(tx.objectStore(IdbStore.Meta)) });
+      await store.put(entryTombstone(record, await Idb.stamp(tx.objectStore(IdbStore.Meta))));
       await tx.done;
 
       return undefined;

@@ -1,4 +1,4 @@
-import { Idb } from "~/idb";
+import { Idb, IdbBookmarks } from "~/idb";
 import { requestPersistentStorage } from "~/utils/persistentStorage";
 
 /**
@@ -48,7 +48,11 @@ export default defineNuxtPlugin({
     });
 
     const bookmarksStore = useBookmarksStore();
-    onNuxtReady(() => bookmarksStore.initialize());
+    onNuxtReady(async () => {
+      await bookmarksStore.initialize();
+      // At each visit, the tombstones old enough are forgotten.
+      void IdbBookmarks.compact();
+    });
 
     const channel = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel("bailly:bookmarks");
     if (channel) channel.onmessage = () => void bookmarksStore.refresh();

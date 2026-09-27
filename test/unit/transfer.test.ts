@@ -99,3 +99,18 @@ test("records stamped too far in the future are left out", () => {
   expect(validated.starred.map(record => record.uri)).toEqual(["soon"]);
   expect(validated.tagOrder).toBeNull();
 });
+
+test("a tombstone may have neither name nor entry", () => {
+  const validated = validateState({
+    tags: [
+      { key: "deleted", name: "", color: "Blue", createdAt: stamp(), updatedAt: stamp(), deleted: true },
+      { key: "live", name: "", color: "Blue", createdAt: stamp(), updatedAt: stamp() },
+    ],
+    tagged: [{ tagKey: "deleted", uri: "logos", word: "", excerpt: "", updatedAt: stamp(), deleted: true }],
+    starred: [{ uri: "logos", word: "", excerpt: "", updatedAt: stamp(), deleted: true }],
+  });
+
+  expect(validated.tags.map(tag => tag.key)).toEqual(["deleted"]);
+  expect(validated.tagged).toHaveLength(1);
+  expect(validated.starred).toHaveLength(1);
+});

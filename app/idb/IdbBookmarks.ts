@@ -2,6 +2,7 @@ import { maxStamp } from "./clock";
 import { attempt, Idb, IdbMetaKey, IdbStore, type IdbMetaStore, type IdbResult } from "./Idb";
 import {
   canonical,
+  compact,
   emptyState,
   latestStamp,
   mergeStates,
@@ -74,9 +75,19 @@ export class IdbBookmarks {
   }
 
   /**
+   * Forgets the tombstones old enough (cf. `compact`): they are not sent
+   * anymore, and need not be kept.
+   * @returns The state, and whether the stored one changed.
+   */
+  static async compact(): Promise<IdbResult<MergeOutcome>> {
+    return IdbBookmarks.#mergeInto(() => Promise.resolve(emptyState()));
+  }
+
+  /**
    * Merges a state into the stored one, in a single transaction: only the
-   * records that change are written, and the clock moves past the merged
-   * stamps, so that later changes on this device supersede them.
+   * records that change are written (and the tombstones old enough are
+   * forgotten, cf. `compact`), and the clock moves past the merged stamps, so
+   * that later changes on this device supersede them.
    * @param incoming The state to merge, from the stored one.
    */
   static async #mergeInto(
@@ -98,7 +109,7 @@ export class IdbBookmarks {
         starred: await stores.starred.getAll(),
         tagOrder: (await Idb.getMeta(stores.meta, IdbMetaKey.TagOrder)) ?? null,
       };
-      const merged = normalize(mergeStates(local, await incoming(local, stores.meta)));
+      const merged = compact(normalize(mergeStates(local, await incoming(local, stores.meta))));
 
       /**
        * The records of a kind that differ from the stored ones.
@@ -106,6 +117,14 @@ export class IdbBookmarks {
       const changed = <T>(id: (record: T) => string, before: T[], after: T[]): T[] => {
         const stored = new Map(before.map(record => [id(record), canonical(record)]));
         return after.filter(record => stored.get(id(record)) !== canonical(record));
+      };
+
+      /**
+       * The stored records of a kind that are forgotten (old tombstones).
+       */
+      const forgotten = <T>(id: (record: T) => string, before: T[], after: T[]): T[] => {
+        const kept = new Set(after.map(id));
+        return before.filter(record => !kept.has(id(record)));
       };
 
       const changes = {
@@ -118,6 +137,14 @@ export class IdbBookmarks {
       for (const record of changes.tagged) await stores.tagged.put(record);
       for (const record of changes.starred) await stores.starred.put(record);
       if (changes.tagOrder) await stores.meta.put(changes.tagOrder, IdbMetaKey.TagOrder);
+
+      // Forgetting a tombstone changes nothing that shows (`changed` stays
+      // false): no need to tell the other tabs.
+      for (const record of forgotten(recordId.tag, local.tags, merged.tags)) await stores.tags.delete(record.key);
+      for (const record of forgotten(recordId.tagged, local.tagged, merged.tagged)) {
+        await stores.tagged.delete([record.tagKey, record.uri]);
+      }
+      for (const record of forgotten(recordId.starred, local.starred, merged.starred)) await stores.starred.delete(record.uri);
 
       const clock = maxStamp(await Idb.getMeta(stores.meta, IdbMetaKey.Clock), latestStamp(merged));
       if (clock) await stores.meta.put(clock, IdbMetaKey.Clock);

@@ -72,6 +72,32 @@ export type BookmarksState = {
 export const emptyState = (): BookmarksState => ({ tags: [], tagged: [], starred: [], tagOrder: null });
 
 /**
+ * The tombstone of a tag: only what identifies it and makes it valid is kept
+ * (not its name nor its description), with the stamp of its deletion.
+ */
+export const tagTombstone = (tag: TagRecord, updatedAt: Stamp): TagRecord => ({
+  key: tag.key,
+  name: "",
+  description: "",
+  color: tag.color,
+  createdAt: tag.createdAt,
+  updatedAt,
+  deleted: true,
+});
+
+/**
+ * The tombstone of a favorite or of a tagged entry: only its identity is kept
+ * (not its word nor its excerpt), with the stamp of its deletion.
+ */
+export const entryTombstone = <T extends TaggedRecord | StarredRecord>(record: T, updatedAt: Stamp): T => ({
+  ...record,
+  word: "",
+  excerpt: "",
+  updatedAt,
+  deleted: true,
+});
+
+/**
  * The identity of the records of each kind.
  */
 export const recordId = {
@@ -178,14 +204,14 @@ export function normalize(state: BookmarksState): BookmarksState {
   }
   if (!fusedInto.size) return state;
 
-  const tags = state.tags.map(tag => (fusedInto.has(tag.key) ? { ...tag, deleted: true as const } : tag));
+  const tags = state.tags.map(tag => (fusedInto.has(tag.key) ? tagTombstone(tag, tag.updatedAt) : tag));
 
   const moved: TaggedRecord[] = [];
   const tagged = state.tagged.map((record) => {
     const target = fusedInto.get(record.tagKey);
     if (target === undefined || record.deleted) return record;
     moved.push({ ...record, tagKey: target });
-    return { ...record, deleted: true as const };
+    return entryTombstone(record, record.updatedAt);
   });
 
   return {

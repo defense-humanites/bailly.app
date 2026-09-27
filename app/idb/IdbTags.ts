@@ -10,7 +10,7 @@ import {
   type IdbTagCreation,
   type IdbTagWithKey,
 } from "./Idb";
-import { comparableTagName, orderTags, type TagKey, type TagOrder, type TagRecord } from "./merge";
+import { comparableTagName, entryTombstone, orderTags, tagTombstone, type TagKey, type TagOrder, type TagRecord } from "./merge";
 import { randomUuid } from "./random";
 import { Color, type ColorKey } from "~/enums";
 import { pickRandom } from "~/helpers";
@@ -262,11 +262,11 @@ export class IdbTags {
       }
 
       const updatedAt = await Idb.stamp(tx.objectStore(IdbStore.Meta));
-      await tags.put({ ...tag, deleted: true, updatedAt });
+      await tags.put(tagTombstone(tag, updatedAt));
 
       const tagged = tx.objectStore(IdbStore.Tagged);
       for (const record of await tagged.index("tagKey").getAll(tagKey)) {
-        if (!record.deleted) await tagged.put({ ...record, deleted: true, updatedAt });
+        if (!record.deleted) await tagged.put(entryTombstone(record, updatedAt));
       }
 
       await tx.done;

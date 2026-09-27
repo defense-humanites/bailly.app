@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { entries, tags, unwrap } from "../idbHelpers";
-import { IdbBookmarks, IdbStarred, IdbTaggedEntry, IdbTags, type BookmarksState } from "../../app/idb";
+import { Idb, IdbBookmarks, IdbStarred, IdbStore, IdbTaggedEntry, IdbTags, type BookmarksState } from "../../app/idb";
 import { formatStamp, parseStamp } from "../../app/idb/clock";
 
 const remoteStamp = (time: number) => formatStamp({ time, counter: 0, node: "remote" });
@@ -16,6 +16,11 @@ test("deletions leave tombstones in the state", async () => {
   expect(state.starred).toEqual([expect.objectContaining({ uri: entries.alopex.uri, deleted: true })]);
   expect(state.tags).toEqual([expect.objectContaining({ key: banquet.key, deleted: true })]);
   expect(state.tagged).toEqual([expect.objectContaining({ uri: entries.rhinokeros.uri, deleted: true })]);
+
+  // A tombstone keeps only the identity of the record.
+  expect(state.starred[0]).toMatchObject({ word: "", excerpt: "" });
+  expect(state.tags[0]).toMatchObject({ name: "", description: "" });
+  expect(state.tagged[0]).toMatchObject({ word: "", excerpt: "" });
 
   // Each change has a later stamp.
   const [star] = state.starred;
@@ -135,4 +140,24 @@ test("join: online bookmarks deleted here come back", async () => {
 
   expect(unwrap(await IdbBookmarks.join(online)).changed).toBe(true);
   expect(await IdbStarred.get(entries.alopex.uri)).not.toBeNull();
+});
+
+test("the tombstones old enough are forgotten", async () => {
+  const day = 24 * 60 * 60 * 1000;
+  const db = await Idb.getIndexedDB();
+  await db.put(IdbStore.Starred, { uri: "old", word: "", excerpt: "", updatedAt: remoteStamp(Date.now() - 100 * day), deleted: true });
+  await db.put(IdbStore.Starred, { uri: "recent", word: "", excerpt: "", updatedAt: remoteStamp(Date.now() - 10 * day), deleted: true });
+  unwrap(await IdbStarred.add(entries.alopex));
+
+  expect(unwrap(await IdbBookmarks.compact()).changed).toBe(false);
+  expect((await IdbBookmarks.getState()).starred.map(record => record.uri)).toEqual([entries.alopex.uri, "recent"].sort());
+
+  // Nor are they brought back by a merge.
+  unwrap(await IdbBookmarks.merge({
+    tags: [],
+    tagged: [],
+    starred: [{ uri: "older", word: "", excerpt: "", updatedAt: remoteStamp(Date.now() - 200 * day), deleted: true }],
+    tagOrder: null,
+  }));
+  expect((await IdbBookmarks.getState()).starred.map(record => record.uri)).toEqual([entries.alopex.uri, "recent"].sort());
 });

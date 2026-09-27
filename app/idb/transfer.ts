@@ -103,13 +103,17 @@ function versioned(value: Record<string, unknown>, now: number): { updatedAt: st
   return { updatedAt: value.updatedAt, ...(value.deleted ? { deleted: true as const } : {}) };
 }
 
+/**
+ * A tag, if valid: a name is required, as when a tag is created on the device
+ * (a deletion may have none).
+ */
 function validateTag(value: unknown, now: number): TagRecord | null {
-  if (!isObject(value) || !isText(value.key, { required: true }) || !isText(value.name, { required: true })) return null;
+  if (!isObject(value) || !isText(value.key, { required: true })) return null;
   const common = versioned(value, now);
-  if (!common || !isValidStamp(value.createdAt, now)) return null;
+  if (!common || !isText(value.name, { required: !common.deleted }) || !isValidStamp(value.createdAt, now)) return null;
 
   const name = value.name.trim();
-  if (comparableTagName(name) === "favoris") return null;
+  if (!common.deleted && comparableTagName(name) === "favoris") return null;
 
   return {
     key: value.key,

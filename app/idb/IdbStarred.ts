@@ -7,7 +7,7 @@ import {
   type IdbEntryCreation,
   type IdbResult,
 } from "./Idb";
-import type { StarredRecord } from "./merge";
+import { entryTombstone, type StarredRecord } from "./merge";
 
 const toEntry = ({ word, uri, excerpt }: StarredRecord): IdbEntry => ({ word, uri, excerpt });
 
@@ -83,7 +83,7 @@ export class IdbStarred {
         throw new IdbError("L'entrée à supprimer n'a pas été ajoutée aux favoris.");
       }
 
-      await store.put({ ...record, deleted: true, updatedAt: await Idb.stamp(tx.objectStore(IdbStore.Meta)) });
+      await store.put(entryTombstone(record, await Idb.stamp(tx.objectStore(IdbStore.Meta))));
       await tx.done;
 
       return undefined;
