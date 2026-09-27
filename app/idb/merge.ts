@@ -196,10 +196,16 @@ export function normalize(state: BookmarksState): BookmarksState {
 }
 
 /**
+ * How long tombstones are kept (90 days): long enough for the devices of a
+ * user to meet in the meantime.
+ */
+export const TOMBSTONE_MAX_AGE = 90 * 24 * 60 * 60 * 1000;
+
+/**
  * Removes the tombstones older than `maxAge`: a device that has not merged
  * for longer could bring back what they deleted.
  */
-export function compact(state: BookmarksState, maxAge: number, now: number = Date.now()): BookmarksState {
+export function compact(state: BookmarksState, maxAge: number = TOMBSTONE_MAX_AGE, now: number = Date.now()): BookmarksState {
   const keep = (record: Versioned): boolean => !record.deleted || now - stampTime(record.updatedAt) <= maxAge;
   return {
     ...state,

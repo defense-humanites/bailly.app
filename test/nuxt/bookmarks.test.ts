@@ -4,7 +4,7 @@ import { StorageKey } from "~/enums";
 import { IdbBookmarks, IdbTaggedEntry, IdbTags } from "~/idb";
 import { formatStamp } from "~/idb/clock";
 import { useBookmarksStore } from "~/stores/bookmarks";
-import { entries, tags, unwrap } from "../idbHelpers";
+import { clearIdb, entries, tags, unwrap } from "../idbHelpers";
 
 /**
  * Returns a fresh store.
@@ -144,4 +144,36 @@ test("mergeState merges a state and reloads the store", async () => {
   expect(store.tags.map(tag => tag.name)).toEqual(["Lysis"]);
   expect(store.entriesOf("remote")).toHaveLength(1);
   expect(store.isStarred(entries.alopex.uri)).toBe(true);
+});
+
+test("exportBookmarks / importBookmarks: a file brings the bookmarks to another device", async () => {
+  const store = newStore();
+  await store.initialize();
+  const banquet = unwrap(await store.createTag(tags.banquet));
+  await store.tagEntry(entries.rhinokeros, banquet.key);
+  await store.starEntry(entries.alopex);
+  const file = JSON.stringify(await store.exportBookmarks());
+
+  // Another device (an empty database), which has a favorite of its own.
+  await clearIdb();
+  const other = newStore();
+  await other.initialize();
+  await other.refresh();
+  await other.starEntry(entries.rhinokeros);
+
+  expect((await other.importBookmarks(file)).state).toBe("success");
+  expect(other.tags.map(tag => tag.name)).toEqual([tags.banquet.name]);
+  expect(other.entriesOf(banquet.key)).toHaveLength(1);
+  expect(other.starredEntries.map(entry => entry.uri).sort()).toEqual([entries.alopex.uri, entries.rhinokeros.uri].sort());
+});
+
+test("importBookmarks reports an invalid file", async () => {
+  const store = newStore();
+  await store.initialize();
+  const toasts = useToast().toasts;
+  const toastCount = toasts.value.length;
+
+  const result = await store.importBookmarks("{}");
+  expect(result).toEqual({ state: "error", message: "Ce fichier n'est pas un export de signets de Bailly." });
+  expect(toasts.value.length).toBe(toastCount + 1);
 });

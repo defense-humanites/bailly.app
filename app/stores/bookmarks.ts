@@ -1,6 +1,7 @@
 import { defineStore, skipHydrate } from "pinia";
 import { StorageKey } from "~/enums";
 import {
+  attempt,
   IdbBookmarks,
   IdbStarred,
   IdbTaggedEntry,
@@ -15,6 +16,7 @@ import {
   type TagColorKey,
   type TagKey,
 } from "~/idb";
+import { parseBookmarksFile, toBookmarksFile, type BookmarksFile } from "~/idb/transfer";
 
 const collator = new Intl.Collator("grc");
 
@@ -267,6 +269,24 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     return result;
   }
 
+  /**
+   * The bookmarks as an exported file (cf. `idb/transfer.ts`).
+   */
+  async function exportBookmarks(): Promise<BookmarksFile> {
+    return toBookmarksFile(await IdbBookmarks.getState());
+  }
+
+  /**
+   * Imports an exported file: its bookmarks are merged into the stored ones
+   * (the latest version of each wins, as in a synchronization).
+   * @param text The content of the file.
+   */
+  async function importBookmarks(text: string): Promise<IdbResult<BookmarksState>> {
+    const parsed = report(await attempt(() => Promise.resolve().then(() => parseBookmarksFile(text))));
+    if (parsed.state === "error") return parsed;
+    return mergeState(parsed.data);
+  }
+
   return {
     initialized,
     tags,
@@ -290,5 +310,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     untagEntry,
     refresh,
     mergeState,
+    exportBookmarks,
+    importBookmarks,
   };
 });
