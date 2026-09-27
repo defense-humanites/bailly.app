@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import type { PopoverProps } from "@nuxt/ui";
   import { splitExcerpt } from "~/helpers";
   import { entryRoute } from "~/utils/entryUri";
 
@@ -9,6 +10,19 @@
 
   const historyStore = useHistoryStore();
   const route = useRoute();
+
+  /**
+   * The panel (a dialog) is named after its trigger by Reka
+   * (`aria-labelledby`); the `aria-label` is a fallback, for the trigger's
+   * id may differ between the server and the client (then the reference is
+   * broken, and the dialog would have no name).
+   */
+  const popoverContent = computed(() => ({
+    "align": "start",
+    "collisionPadding": 12,
+    "reference": props.reference,
+    "aria-label": "Entrées consultées récemment",
+  }) as PopoverProps["content"]);
 
   const open = ref(false);
   const confirmingClear = ref(false);
@@ -73,7 +87,7 @@
 <template>
   <UPopover
     v-model:open="open"
-    :content="{ align: 'start', collisionPadding: 12, reference: props.reference }"
+    :content="popoverContent"
     :ui="{ content: 'w-(--reka-popover-trigger-width) max-h-[min(32rem,var(--reka-popover-content-available-height))] overflow-y-auto p-1' }"
   >
     <!-- The same button as the options' one (cf. SearchOptions). -->
@@ -87,10 +101,7 @@
     />
 
     <template #content>
-      <section
-        aria-labelledby="search-history-title"
-        @keydown="onKeydown"
-      >
+      <div @keydown="onKeydown">
         <h2
           id="search-history-title"
           class="px-2 pt-1.5 pb-1 text-xs uppercase tracking-wide text-muted"
@@ -158,7 +169,7 @@
             @click="confirmingClear = true"
           />
         </footer>
-      </section>
+      </div>
     </template>
   </UPopover>
 </template>

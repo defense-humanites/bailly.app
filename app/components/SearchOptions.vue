@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { RadioGroupItem } from "@nuxt/ui";
+  import type { PopoverProps, RadioGroupItem } from "@nuxt/ui";
   import { InputMode } from "~/enums";
   import { isLemmatizable } from "~/utils/searchInput";
 
@@ -9,6 +9,14 @@
   }>();
 
   const { position, diacriticSensitive, inputMode, inflectedForms, isDefault, reset } = useSearchOptions();
+
+  /**
+   * The panel (a dialog) is named after its trigger by Reka
+   * (`aria-labelledby`); the `aria-label` is a fallback, for the trigger's
+   * id may differ between the server and the client (then the reference is
+   * broken, and the dialog would have no name).
+   */
+  const popoverContent = { "align": "end", "collisionPadding": 12, "aria-label": "Options de recherche" } as PopoverProps["content"];
 
   const lemmatizable = computed((): boolean => isLemmatizable(position.value, props.wildcards));
 
@@ -40,7 +48,7 @@
 </script>
 
 <template>
-  <UPopover :content="{ align: 'end', collisionPadding: 12 }">
+  <UPopover :content="popoverContent">
     <!--
       A dot on the button when an option isn't the default one; a background
       while the panel is open. When the input

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import type { PopoverProps } from "@nuxt/ui";
   import type { IdbEntry } from "~/idb";
 
   const bookmarksStore = useBookmarksStore();
@@ -29,6 +30,14 @@
    * The tags other than the current one, in the user's order: the entry can
    * be added to (or removed from) them in a popover.
    */
+  /**
+   * The panel (a dialog) is named after its trigger by Reka
+   * (`aria-labelledby`); the `aria-label` is a fallback, for the trigger's
+   * id may differ between the server and the client (then the reference is
+   * broken, and the dialog would have no name).
+   */
+  const popoverContent = { "align": "start", "collisionPadding": 12, "aria-label": "Autres étiquettes" } as PopoverProps["content"];
+
   const otherTags = computed(() => tags.value.filter(tag => tag.key !== currentTag.value?.key));
 
   const entryTagKeys = computed(() => new Set(bookmarksStore.tagKeysOf(props.entry.uri)));
@@ -71,7 +80,7 @@
       color, is filled when the entry has the tag (as the current tag's
       button), and a link to the bookmarks page, where the tags are managed.
     -->
-    <UPopover :content="{ align: 'start', collisionPadding: 12 }">
+    <UPopover :content="popoverContent">
       <UButton
         icon="i-lucide-circle-ellipsis"
         color="neutral"
@@ -81,12 +90,8 @@
       />
 
       <template #content>
-        <section
-          class="w-64 max-w-[calc(var(--app-width)-2rem)] p-1"
-          aria-labelledby="other-tags-title"
-        >
+        <div class="w-64 max-w-[calc(var(--app-width)-2rem)] p-1">
           <h2
-            id="other-tags-title"
             class="px-2 pt-1.5 pb-1 text-xs uppercase tracking-wide text-muted"
           >
             Autres étiquettes
@@ -131,7 +136,7 @@
               class="w-full"
             />
           </footer>
-        </section>
+        </div>
       </template>
     </UPopover>
 
