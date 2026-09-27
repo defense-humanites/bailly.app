@@ -14,11 +14,6 @@ const LOCAL_CHANGES = new Set([
 ]);
 
 /**
- * The store actions that change the synchronization settings.
- */
-const SETTINGS_CHANGES = new Set(["enable", "join", "disable", "deleteRemote"]);
-
-/**
  * How long after a synchronization the return to the page triggers another.
  */
 const REVISIT_DELAY = 10_000;
@@ -60,15 +55,13 @@ export default defineNuxtPlugin({
       syncStore.schedule(0);
     });
 
-    // The tabs tell each other when the settings change.
+    // The tabs tell each other when the settings change (key enabled,
+    // disabled or deleted, latest synchronization).
     if (typeof BroadcastChannel === "undefined") return;
     const channel = new BroadcastChannel("bailly:bookmarks-sync");
     channel.onmessage = () => void syncStore.load();
-    syncStore.$onAction(({ name, after }) => {
-      if (!SETTINGS_CHANGES.has(name)) return;
-      after(() => {
-        channel.postMessage("settings");
-      });
+    watch(() => syncStore.settingsVersion, () => {
+      channel.postMessage("settings");
     });
   },
 });

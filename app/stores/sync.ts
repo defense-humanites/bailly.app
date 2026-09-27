@@ -1,10 +1,17 @@
 import { defineStore } from "pinia";
-import { IdbBookmarks, Idb, IdbMetaKey, type IdbResult, type IdbSyncConfig } from "~/idb";
+import { IdbBookmarks, Idb, IdbError, IdbMetaKey, type IdbResult, type IdbSyncConfig } from "~/idb";
 import type { BookmarksState } from "~/idb/merge";
 import { fromBase64url, toBase64url } from "~/sync/base64url";
 import { deriveCredentials, type SyncCredentials } from "~/sync/crypto";
 import { synchronize, type SyncOptions } from "~/sync/engine";
-import { fetchLocker, LockerDeletedError, removeLocker, SyncBusyError, SyncNetworkError } from "~/sync/lockerClient";
+import {
+  fetchLocker,
+  LockerDeletedError,
+  removeLocker,
+  SyncBusyError,
+  SyncNetworkError,
+  SyncTimeoutError,
+} from "~/sync/lockerClient";
 
 export type SyncStatus = "idle" | "syncing" | "error";
 
@@ -22,6 +29,10 @@ const BUSY_DELAY = 15_000;
  * The longest a synchronization may take before it is reported as failed.
  */
 const ATTEMPT_TIMEOUT = 30_000;
+/**
+ * How long a cancelled synchronization may take to stop.
+ */
+const ABORT_GRACE = 1_000;
 /**
  * The longest the last synchronization before disabling may delay it.
  */
@@ -52,10 +63,14 @@ export const useSyncStore = defineStore("sync", () => {
   const error = ref<string | null>(null);
   const lastSyncedAt = ref<number | null>(null);
   /**
-   * Set while remote bookmarks are merged (the changes they bring must not
-   * trigger another synchronization).
+   * Incremented when this tab changes the settings (key, latest
+   * synchronization), so that the other tabs are told (cf.
+   * `plugins/sync.client.ts`).
    */
-  const applyingRemote = ref(false);
+  const settingsVersion = ref(0);
+  const settingsChanged = (): void => {
+    settingsVersion.value++;
+  };
   /**
    * Whether the browser can synchronize: the cryptography of the browsers
    * (Web Crypto) is only available in secure contexts (HTTPS).
@@ -87,14 +102,9 @@ export const useSyncStore = defineStore("sync", () => {
    * first time (cf. `joinRecords`).
    */
   async function mergeRemote(state: BookmarksState, first = false): Promise<BookmarksState> {
-    applyingRemote.value = true;
-    try {
-      const result = first ? await bookmarksStore.joinState(state) : await bookmarksStore.mergeState(state);
-      if (result.state === "error") throw new Error(result.message);
-      return result.data.state;
-    } finally {
-      applyingRemote.value = false;
-    }
+    const result = first ? await bookmarksStore.joinState(state) : await bookmarksStore.mergeState(state);
+    if (result.state === "error") throw new IdbError(result.message);
+    return result.data.state;
   }
 
   /**
@@ -104,38 +114,48 @@ export const useSyncStore = defineStore("sync", () => {
     await Idb.writeMeta(IdbMetaKey.Sync, undefined);
     await setConfig(null);
     status.value = "idle";
+    settingsChanged();
   }
 
   /**
    * Runs the engine once with credentials, the tabs taking turns (Web Locks).
    * @returns The error, if it failed.
    */
-  async function attempt(creds: SyncCredentials, options: SyncOptions = {}): Promise<unknown> {
+  async function attempt(creds: SyncCredentials, options: Omit<SyncOptions, "signal"> = {}): Promise<unknown> {
+    // A synchronization that takes too long is cancelled: its requests (and
+    // its wait for the lock) are aborted, and nothing is merged or written
+    // afterwards.
+    const controller = new AbortController();
     const run = async (): Promise<unknown> => {
       try {
         await synchronize(creds, {
           readState: () => IdbBookmarks.getState(),
           mergeState: state => mergeRemote(state),
           joinState: state => mergeRemote(state, true),
-        }, options);
+        }, { ...options, signal: controller.signal });
         return null;
       } catch (e: unknown) {
         return e;
       }
     };
 
-    // A synchronization that never ends (e.g. a request left pending) must
-    // not leave the user waiting.
+    const locked = (typeof navigator !== "undefined" && "locks" in navigator
+      ? navigator.locks.request("bailly:bookmarks-sync", { signal: controller.signal }, run)
+      : run()
+    ).catch(() => new SyncTimeoutError()); // The wait for the lock, aborted.
+
+    // In case a step cannot be aborted (e.g. IndexedDB blocked by another
+    // tab), the user is not left waiting either.
     let timeout: ReturnType<typeof setTimeout> | undefined;
     const expired = new Promise<unknown>((resolve) => {
       timeout = setTimeout(() => {
-        resolve(new Error("La synchronisation n'a pas abouti dans le délai prévu."));
+        controller.abort();
+        setTimeout(() => {
+          resolve(new SyncTimeoutError());
+        }, ABORT_GRACE);
       }, ATTEMPT_TIMEOUT);
     });
 
-    const locked = typeof navigator !== "undefined" && "locks" in navigator
-      ? navigator.locks.request("bailly:bookmarks-sync", run)
-      : run();
     try {
       return await Promise.race([locked, expired]);
     } finally {
@@ -148,7 +168,7 @@ export const useSyncStore = defineStore("sync", () => {
    */
   function describe(e: unknown): string {
     if (e instanceof LockerDeletedError) return `${e.message} Vos signets restent sur cet appareil.`;
-    if (e instanceof SyncNetworkError) return e.message;
+    if (e instanceof SyncNetworkError || e instanceof IdbError) return e.message;
     console.error(e);
     return "La synchronisation a échoué. Vos signets restent sur cet appareil.";
   }
@@ -167,6 +187,7 @@ export const useSyncStore = defineStore("sync", () => {
       await Idb.writeMeta(IdbMetaKey.Sync, config);
       lastSyncedAt.value = config.lastSyncedAt;
       status.value = "idle";
+      settingsChanged();
       return;
     }
 
@@ -256,17 +277,33 @@ export const useSyncStore = defineStore("sync", () => {
     const previousStatus = status.value;
     status.value = "syncing";
 
-    const failure = await attempt(await deriveCredentials(secret), { first: true });
-    if (failure) {
+    // Once the online bookmarks have been merged here, the device has joined,
+    // even if sending its own ones fails: the key is kept, and the sending
+    // retried.
+    const progress = { merged: false };
+    const failure = await attempt(await deriveCredentials(secret), {
+      first: true,
+      onMerged: () => {
+        progress.merged = true;
+      },
+    });
+    if (failure && !progress.merged) {
       status.value = previousStatus;
       return { state: "error", message: describe(failure) };
     }
 
-    const value: IdbSyncConfig = { secret: toBase64url(secret), lastSyncedAt: Date.now() };
+    const value: IdbSyncConfig = { secret: toBase64url(secret), lastSyncedAt: failure ? null : Date.now() };
     await Idb.writeMeta(IdbMetaKey.Sync, value);
     await setConfig(value);
-    status.value = "idle";
-    error.value = null;
+    settingsChanged();
+    if (failure) {
+      status.value = "error";
+      error.value = `Vos signets en ligne ont été ajoutés à cet appareil, mais l'envoi des siens n'a pas abouti : nouvel essai dans quelques secondes. (${describe(failure)})`;
+      schedule(BUSY_DELAY);
+    } else {
+      status.value = "idle";
+      error.value = null;
+    }
     return { state: "success", data: undefined };
   }
 
@@ -313,7 +350,7 @@ export const useSyncStore = defineStore("sync", () => {
     // A key that no device uses is most likely mistyped (a new locker is only
     // created by `enable`).
     try {
-      if (!(await fetchLocker(await deriveCredentials(secret)))) {
+      if (!(await fetchLocker(await deriveCredentials(secret), { signal: AbortSignal.timeout(ATTEMPT_TIMEOUT) }))) {
         return { state: "error", message: "Aucun signet n'est synchronisé avec cette clé : vérifiez-la." };
       }
     } catch (e: unknown) {
@@ -351,7 +388,7 @@ export const useSyncStore = defineStore("sync", () => {
   async function deleteRemote(): Promise<IdbResult> {
     if (!credentials) return { state: "success", data: undefined };
     try {
-      await removeLocker(credentials);
+      await removeLocker(credentials, { signal: AbortSignal.timeout(ATTEMPT_TIMEOUT) });
     } catch (e: unknown) {
       if (!(e instanceof LockerDeletedError)) {
         return { state: "error", message: e instanceof Error ? e.message : String(e) };
@@ -387,7 +424,7 @@ export const useSyncStore = defineStore("sync", () => {
     status,
     error,
     lastSyncedAt,
-    applyingRemote,
+    settingsVersion,
     supported,
     load,
     sync,

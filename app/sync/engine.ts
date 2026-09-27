@@ -1,7 +1,7 @@
 import { canonical, type BookmarksState } from "~/idb/merge";
 import { exportState, parseBookmarksFile, toBookmarksFile } from "~/idb/transfer";
 import { decryptText, encryptText, type SyncCredentials } from "./crypto";
-import { fetchLocker, storeLocker } from "./lockerClient";
+import { fetchLocker, storeLocker, SyncTimeoutError } from "./lockerClient";
 
 export type SyncDependencies = {
   /**
@@ -29,6 +29,15 @@ export type SyncOptions = {
    * bookmarks that exist online.
    */
   first?: boolean;
+  /**
+   * Cancels the synchronization: the pending requests are aborted, and
+   * nothing is merged or written afterwards.
+   */
+  signal?: AbortSignal;
+  /**
+   * Called once the locker has been merged into the stored bookmarks.
+   */
+  onMerged?: () => void;
 };
 
 const MAX_ATTEMPTS = 5;
@@ -48,17 +57,27 @@ const sameBookmarks = (a: BookmarksState, b: BookmarksState): boolean =>
  * @throws {LockerDeletedError} If a device deleted the locker.
  * @throws {SyncNetworkError} If the server cannot be reached.
  */
-export async function synchronize(credentials: SyncCredentials, deps: SyncDependencies, { first = false }: SyncOptions = {}): Promise<number> {
+export async function synchronize(
+  credentials: SyncCredentials,
+  deps: SyncDependencies,
+  { first = false, signal, onMerged }: SyncOptions = {},
+): Promise<number> {
   const merge = first && deps.joinState ? deps.joinState : deps.mergeState;
+  const requestOptions = { fetch: deps.fetch, signal };
+  const checkCancelled = (): void => {
+    if (signal?.aborted) throw new SyncTimeoutError();
+  };
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    const locker = await fetchLocker(credentials, deps.fetch);
+    const locker = await fetchLocker(credentials, requestOptions);
 
     let state: BookmarksState;
     let version: number;
     if (locker) {
       const remote = parseBookmarksFile(await decryptText(locker.blob, credentials));
+      checkCancelled();
       state = await merge(remote);
+      onMerged?.();
       if (sameBookmarks(state, remote)) return locker.version;
       version = locker.version;
     } else {
@@ -69,7 +88,8 @@ export async function synchronize(credentials: SyncCredentials, deps: SyncDepend
     }
 
     const blob = await encryptText(JSON.stringify(toBookmarksFile(state, { tombstones: true })), credentials);
-    const result = await storeLocker(credentials, version, blob, deps.fetch);
+    checkCancelled();
+    const result = await storeLocker(credentials, version, blob, requestOptions);
     if (result.state === "written") return result.version;
   }
 

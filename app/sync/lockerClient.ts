@@ -35,18 +35,38 @@ export class SyncBusyError extends SyncNetworkError {
   }
 }
 
+/**
+ * The attempt took too long, and was cancelled.
+ */
+export class SyncTimeoutError extends SyncNetworkError {
+  constructor() {
+    super("La synchronisation n'a pas abouti dans le délai prévu.");
+    this.name = "SyncTimeoutError";
+  }
+}
+
 export type LockerContent = { version: number; blob: string };
 export type StoreResult = { state: "written"; version: number } | { state: "conflict"; version: number };
 
-type Fetch = typeof fetch;
+export type LockerRequestOptions = {
+  fetch?: typeof fetch;
+  /**
+   * Cancels the request (e.g. when the attempt takes too long).
+   */
+  signal?: AbortSignal;
+};
 
-async function request(fetcher: Fetch, { lockerId, token }: SyncCredentials, init: RequestInit = {}): Promise<Response> {
+async function request(
+  { lockerId, token }: SyncCredentials,
+  init: RequestInit,
+  { fetch: fetcher = fetch, signal }: LockerRequestOptions,
+): Promise<Response> {
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${token}`);
   try {
-    return await fetcher(`/api/sync/${lockerId}`, { ...init, headers, cache: "no-store" });
+    return await fetcher(`/api/sync/${lockerId}`, { ...init, headers, cache: "no-store", signal });
   } catch {
-    throw new SyncNetworkError();
+    throw signal?.aborted ? new SyncTimeoutError() : new SyncNetworkError();
   }
 }
 
@@ -61,8 +81,8 @@ function unexpected(response: Response): never {
  * @returns Its content, or `null` if it does not exist (yet, or anymore:
  * idle lockers are purged).
  */
-export async function fetchLocker(credentials: SyncCredentials, fetcher: Fetch = fetch): Promise<LockerContent | null> {
-  const response = await request(fetcher, credentials);
+export async function fetchLocker(credentials: SyncCredentials, options: LockerRequestOptions = {}): Promise<LockerContent | null> {
+  const response = await request(credentials, {}, options);
   if (response.status === 404) return null;
   if (!response.ok) return unexpected(response);
   return (await response.json()) as LockerContent;
@@ -75,13 +95,13 @@ export async function storeLocker(
   credentials: SyncCredentials,
   version: number,
   blob: string,
-  fetcher: Fetch = fetch,
+  options: LockerRequestOptions = {},
 ): Promise<StoreResult> {
-  const response = await request(fetcher, credentials, {
+  const response = await request(credentials, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ version, blob }),
-  });
+  }, options);
 
   if (response.ok) return { state: "written", version: ((await response.json()) as { version: number }).version };
   if (response.status === 412) {
@@ -97,7 +117,7 @@ export async function storeLocker(
 /**
  * Deletes the content of the locker (the other devices stop synchronizing).
  */
-export async function removeLocker(credentials: SyncCredentials, fetcher: Fetch = fetch): Promise<void> {
-  const response = await request(fetcher, credentials, { method: "DELETE" });
+export async function removeLocker(credentials: SyncCredentials, options: LockerRequestOptions = {}): Promise<void> {
+  const response = await request(credentials, { method: "DELETE" }, options);
   if (!response.ok && response.status !== 404) unexpected(response);
 }

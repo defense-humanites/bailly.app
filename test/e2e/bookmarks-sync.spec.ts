@@ -139,6 +139,38 @@ test("a failed first synchronization is reported, and leaves the device as it wa
   await expect(phone.getByRole("button", { name: "Activer la synchronisation" })).toBeVisible();
 });
 
+test("a device keeps the key once the online bookmarks are merged, even if sending its own fails", async ({ page, goto, browser, baseURL }) => {
+  test.setTimeout(60_000);
+
+  await goto("/signets", { waitUntil: "hydration" });
+  await seedBookmarks(page, { starred: [logos] });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
+  await expect(page.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  const link = await syncLink(page);
+
+  // The phone reads the online bookmarks, but cannot send its own.
+  const phone = await newDevice(browser, baseURL, "/");
+  await seedBookmarks(phone, { starred: [psukhe] });
+  const failPut = (route: Parameters<Parameters<Page["route"]>[1]>[0]) =>
+    route.request().method() === "PUT" ? route.abort() : route.continue();
+  await phone.route("**/api/sync/**", failPut);
+  await phone.goto(link!);
+  await phone.getByRole("button", { name: "Activer", exact: true }).click();
+  await expect(phone.getByText(/^Vos signets en ligne ont été ajoutés à cet appareil/)).toBeVisible();
+  expect(await bookmarksState(phone)).toEqual({ tags: [], tagged: 0, starred: 2 });
+
+  // The key is kept, and the sending retried: the laptop gets the phone's
+  // favorite.
+  await phone.unroute("**/api/sync/**", failPut);
+  await expect(phone.getByText(/^Vos signets en ligne ont été ajoutés à cet appareil/)).toHaveCount(0, { timeout: 25_000 });
+  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await page.reload();
+  await waitForHydration(page);
+  await expect.poll(() => bookmarksState(page)).toEqual({ tags: [], tagged: 0, starred: 2 });
+});
+
 test("enabling a key again brings back the online bookmarks deleted meanwhile", async ({ page, goto, browser, baseURL }) => {
   test.setTimeout(60_000);
   await goto("/signets", { waitUntil: "hydration" });

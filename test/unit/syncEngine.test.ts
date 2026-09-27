@@ -7,7 +7,7 @@ import { emptyState, joinRecords, mergeStates, normalize, type BookmarksState } 
 import { deriveCredentials, type SyncCredentials } from "../../app/sync/crypto";
 import { synchronize, type SyncDependencies } from "../../app/sync/engine";
 import { deleteLocker, hashToken, readLocker, resetSchemaCache, writeLocker } from "../../server/lib/lockers";
-import { LockerDeletedError, SyncBusyError } from "../../app/sync/lockerClient";
+import { LockerDeletedError, SyncBusyError, SyncTimeoutError } from "../../app/sync/lockerClient";
 
 /**
  * A stand-in for the server routes (`server/api/sync/[id]`), on an in-memory
@@ -185,4 +185,42 @@ test("a device joining (again) does not delete online what it deleted meanwhile"
   await synchronize(credentials, phone.deps);
   await synchronize(credentials, laptop.deps);
   expect(liveStars(laptop.state)).toEqual(["logos"]);
+});
+
+test("a cancelled synchronization aborts its requests, and merges nothing afterwards", async () => {
+  const laptop = device(fakeServer(db));
+  laptop.change(addStar("logos"));
+  await synchronize(credentials, laptop.deps);
+
+  // A server that answers only when the request is aborted.
+  const hanging: typeof fetch = (_input, init) => new Promise((_resolve, reject) => {
+    init?.signal?.addEventListener("abort", () => {
+      reject(new DOMException("Aborted", "AbortError"));
+    });
+  });
+  const phone = device(hanging);
+  const controller = new AbortController();
+  setTimeout(() => {
+    controller.abort();
+  }, 20);
+  await expect(synchronize(credentials, phone.deps, { signal: controller.signal })).rejects.toBeInstanceOf(SyncTimeoutError);
+
+  // Aborted after the locker was read: nothing is merged.
+  const merged: string[] = [];
+  const phone2 = device(fakeServer(db));
+  const aborted = new AbortController();
+  const deps = {
+    ...phone2.deps,
+    mergeState: (state: BookmarksState) => {
+      merged.push("merged");
+      return phone2.deps.mergeState(state);
+    },
+    fetch: (async (input, init) => {
+      const response = await fakeServer(db)(input, init);
+      aborted.abort();
+      return response;
+    }) as typeof fetch,
+  };
+  await expect(synchronize(credentials, deps, { signal: aborted.signal })).rejects.toBeInstanceOf(SyncTimeoutError);
+  expect(merged).toEqual([]);
 });
