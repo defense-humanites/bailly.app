@@ -5,9 +5,9 @@
 
   /**
    * The largest file accepted for an import (an export of the maximum number
-   * of bookmarks weighs about 3 MB).
+   * of bookmarks weighs about 3 MB): it is read at once, on the main thread.
    */
-  const MAX_IMPORT_SIZE = 10 * 1024 * 1024;
+  const MAX_IMPORT_SIZE = 5 * 1024 * 1024;
 
   const bookmarksStore = useBookmarksStore();
   const toast = useToast();

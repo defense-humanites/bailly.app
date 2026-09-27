@@ -291,22 +291,23 @@
           <p v-if="sameKey">
             Cet appareil est déjà synchronisé avec la clé de ce lien.
           </p>
-          <template v-else-if="linkKey">
-            <p>
-              Activer la synchronisation sur cet appareil avec la clé de ce lien ? Vos signets de cet appareil
-              et ceux de vos autres appareils seront réunis.
-            </p>
-            <UAlert
-              v-if="enabled"
-              color="warning"
-              variant="subtle"
-              icon="i-lucide-triangle-alert"
-              title="Cet appareil est déjà synchronisé avec une autre clé."
-              description="Ses signets seront désormais synchronisés avec la nouvelle clé."
-            />
-          </template>
+          <p v-else-if="linkKey">
+            Activer la synchronisation sur cet appareil avec la clé de ce lien ? Vos signets de cet appareil
+            et ceux de vos autres appareils seront réunis.
+          </p>
+          <p v-else>
+            Vos signets de cet appareil et ceux de vos autres appareils seront réunis.
+          </p>
+          <UAlert
+            v-if="enabled && !sameKey"
+            color="warning"
+            variant="subtle"
+            icon="i-lucide-triangle-alert"
+            title="Cet appareil est déjà synchronisé avec une autre clé."
+            description="Ses signets seront désormais synchronisés avec la nouvelle clé."
+          />
           <form
-            v-else
+            v-if="!linkKey"
             id="sync-join"
             class="space-y-2"
             @submit.prevent="join"
@@ -527,7 +528,7 @@
           v-else
           type="submit"
           form="sync-join"
-          label="Rejoindre"
+          :label="enabled ? 'Remplacer la clé' : 'Rejoindre'"
           :loading="busy"
           :disabled="typedWords.length !== SYNC_KEY_WORD_COUNT"
         />
