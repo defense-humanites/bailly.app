@@ -3,7 +3,7 @@ import { IdbBookmarks, Idb, IdbMetaKey, type IdbResult, type IdbSyncConfig } fro
 import type { BookmarksState } from "~/idb/merge";
 import { fromBase64url, toBase64url } from "~/sync/base64url";
 import { deriveCredentials, type SyncCredentials } from "~/sync/crypto";
-import { synchronize } from "~/sync/engine";
+import { synchronize, type SyncOptions } from "~/sync/engine";
 import { fetchLocker, LockerDeletedError, removeLocker, SyncBusyError, SyncNetworkError } from "~/sync/lockerClient";
 
 export type SyncStatus = "idle" | "syncing" | "error";
@@ -22,6 +22,10 @@ const BUSY_DELAY = 15_000;
  * The longest a synchronization may take before it is reported as failed.
  */
 const ATTEMPT_TIMEOUT = 30_000;
+/**
+ * The longest the last synchronization before disabling may delay it.
+ */
+const DISABLE_DELAY = 5_000;
 
 /**
  * A store for the online synchronization of the bookmarks (cf. `app/sync/`):
@@ -77,10 +81,15 @@ export const useSyncStore = defineStore("sync", () => {
     loaded.value = true;
   }
 
-  async function mergeRemote(state: BookmarksState): Promise<BookmarksState> {
+  /**
+   * Merges the state of the locker into the stored bookmarks.
+   * @param first Whether this device synchronizes with this key for the
+   * first time (cf. `joinRecords`).
+   */
+  async function mergeRemote(state: BookmarksState, first = false): Promise<BookmarksState> {
     applyingRemote.value = true;
     try {
-      const result = await bookmarksStore.mergeState(state);
+      const result = first ? await bookmarksStore.joinState(state) : await bookmarksStore.mergeState(state);
       if (result.state === "error") throw new Error(result.message);
       return result.data.state;
     } finally {
@@ -101,10 +110,14 @@ export const useSyncStore = defineStore("sync", () => {
    * Runs the engine once with credentials, the tabs taking turns (Web Locks).
    * @returns The error, if it failed.
    */
-  async function attempt(creds: SyncCredentials): Promise<unknown> {
+  async function attempt(creds: SyncCredentials, options: SyncOptions = {}): Promise<unknown> {
     const run = async (): Promise<unknown> => {
       try {
-        await synchronize(creds, { readState: () => IdbBookmarks.getState(), mergeState: mergeRemote });
+        await synchronize(creds, {
+          readState: () => IdbBookmarks.getState(),
+          mergeState: state => mergeRemote(state),
+          joinState: state => mergeRemote(state, true),
+        }, options);
         return null;
       } catch (e: unknown) {
         return e;
@@ -142,10 +155,13 @@ export const useSyncStore = defineStore("sync", () => {
 
   async function runOnce(): Promise<void> {
     if (!config || !credentials) return;
+    const current = config;
     status.value = "syncing";
     error.value = null;
 
     const failure = await attempt(credentials);
+    // Disabled (or replaced) meanwhile: the outcome no longer concerns it.
+    if (config !== current) return;
     if (!failure) {
       config = { ...config, lastSyncedAt: Date.now() };
       await Idb.writeMeta(IdbMetaKey.Sync, config);
@@ -240,7 +256,7 @@ export const useSyncStore = defineStore("sync", () => {
     const previousStatus = status.value;
     status.value = "syncing";
 
-    const failure = await attempt(await deriveCredentials(secret));
+    const failure = await attempt(await deriveCredentials(secret), { first: true });
     if (failure) {
       status.value = previousStatus;
       return { state: "error", message: describe(failure) };
@@ -312,10 +328,18 @@ export const useSyncStore = defineStore("sync", () => {
 
   /**
    * Disables the synchronization on this device (the bookmarks stay, here
-   * and online for the other devices).
+   * and online for the other devices), after a last synchronization, so that
+   * the latest changes are not lost (not waiting more than a few seconds,
+   * e.g. offline).
    */
   async function disable(): Promise<void> {
     clearTimeout(timer);
+    timer = undefined;
+    if (enabled.value) {
+      await Promise.race([sync(), new Promise((resolve) => {
+        setTimeout(resolve, DISABLE_DELAY);
+      })]);
+    }
     error.value = null;
     await forget();
   }
@@ -333,7 +357,10 @@ export const useSyncStore = defineStore("sync", () => {
         return { state: "error", message: e instanceof Error ? e.message : String(e) };
       }
     }
-    await disable();
+    clearTimeout(timer);
+    timer = undefined;
+    error.value = null;
+    await forget();
     return { state: "success", data: undefined };
   }
 

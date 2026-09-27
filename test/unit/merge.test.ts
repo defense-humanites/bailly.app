@@ -7,6 +7,7 @@ import {
   emptyState,
   mergeStates,
   normalize,
+  joinRecords,
   orderTags,
   restoreRecords,
   type BookmarksState,
@@ -212,4 +213,21 @@ test("restoreRecords: what is missing or deleted comes back, later changes stay,
   const merged = mergeStates(local, restored);
   expect(merged.starred.filter(record => !record.deleted).map(record => record.uri)).toEqual(["changed", "deleted", "kept", "missing"]);
   expect(merged.starred.find(record => record.uri === "changed")?.updatedAt).toBe(stamp(9));
+});
+
+test("joinRecords: what exists online is not deleted by the joining device, online deletions apply", () => {
+  const entry = (uri: string, time: number, deleted?: true): StarredRecord =>
+    withoutUndefined({ uri, word: uri, excerpt: "", updatedAt: stamp(time), deleted });
+  const local: BookmarksState = {
+    ...emptyState(),
+    starred: [entry("deletedHere", 8, true), entry("deletedOnline", 2), entry("addedHere", 9)],
+  };
+  const remote: BookmarksState = {
+    ...emptyState(),
+    starred: [entry("deletedHere", 3), entry("deletedOnline", 7, true), entry("online", 4)],
+  };
+
+  const merged = mergeStates(local, joinRecords(local, remote, stamp(20)));
+  expect(merged.starred.filter(record => !record.deleted).map(record => record.uri)).toEqual(["addedHere", "deletedHere", "online"]);
+  expect(merged.starred.find(record => record.uri === "deletedHere")?.updatedAt).toBe(stamp(20));
 });

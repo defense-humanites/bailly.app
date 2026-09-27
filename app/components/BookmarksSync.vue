@@ -101,7 +101,18 @@
   /**
    * Whether the key of the link is already this device's.
    */
-  const sameKey = computed(() => Boolean(props.linkSecret && enabled.value && syncStore.hasKey(props.linkSecret)));
+  /**
+   * The key of the link, while it has not been used: once joined (or once
+   * the user goes elsewhere in the window), "J'ai déjà une clé" asks for the
+   * words.
+   */
+  const linkKey = shallowRef<Uint8Array<ArrayBuffer> | null>(null);
+
+  watch(view, (value) => {
+    if (value !== "join") linkKey.value = null;
+  });
+
+  const sameKey = computed(() => Boolean(linkKey.value && enabled.value && syncStore.hasKey(linkKey.value)));
 
   /**
    * Joins with the words typed or the key of the link (which replaces this
@@ -109,11 +120,12 @@
    */
   const join = () => run(async () => {
     joinError.value = null;
-    const result = await syncStore.join(props.linkSecret ?? typedWords.value);
+    const result = await syncStore.join(linkKey.value ?? typedWords.value);
     if (result.state === "error") {
       joinError.value = result.message;
       return;
     }
+    linkKey.value = null;
     toast.add({ title: "Synchronisation activée", icon: "i-lucide-circle-check", color: "success" });
     view.value = "status";
   });
@@ -207,11 +219,11 @@
     ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short" }).format(lastSyncedAt.value)
     : null));
 
-  const disable = async (): Promise<void> => {
+  const disable = () => run(async () => {
     await syncStore.disable();
     toast.add({ title: "Synchronisation désactivée sur cet appareil", icon: "i-lucide-circle-check", color: "success" });
     view.value = "intro";
-  };
+  });
 
   // Each opening starts from the state of the synchronization (declared last:
   // it runs at once when the window is created open, e.g. from a link).
@@ -220,7 +232,8 @@
     joinText.value = "";
     joinError.value = null;
     actionError.value = null;
-    view.value = props.linkSecret ? "join" : enabled.value ? "status" : "intro";
+    linkKey.value = props.linkSecret ?? null;
+    view.value = linkKey.value ? "join" : enabled.value ? "status" : "intro";
   }, { immediate: true });
 
   const deleteRemote = async (): Promise<void> => {
@@ -278,7 +291,7 @@
           <p v-if="sameKey">
             Cet appareil est déjà synchronisé avec la clé de ce lien.
           </p>
-          <template v-else-if="linkSecret">
+          <template v-else-if="linkKey">
             <p>
               Activer la synchronisation sur cet appareil avec la clé de ce lien ? Vos signets de cet appareil
               et ceux de vos autres appareils seront réunis.
@@ -319,7 +332,7 @@
             </p>
           </form>
           <UAlert
-            v-if="linkSecret && (joinError ?? actionError)"
+            v-if="linkKey && (joinError ?? actionError)"
             color="error"
             variant="subtle"
             icon="i-lucide-circle-alert"
@@ -454,7 +467,8 @@
         <template v-else-if="view === 'disable'">
           <p>
             Vos signets restent sur cet appareil, et en ligne pour vos autres appareils. Pour réactiver la
-            synchronisation, il faudra la clé.
+            synchronisation, il faudra la clé : les signets en ligne seront alors rétablis sur cet appareil,
+            même ceux que vous y auriez supprimés entre-temps.
           </p>
         </template>
 
@@ -487,10 +501,10 @@
 
       <template v-else-if="view === 'join'">
         <UButton
-          :label="linkSecret ? 'Annuler' : 'Retour'"
+          :label="linkKey ? 'Annuler' : 'Retour'"
           color="neutral"
           variant="outline"
-          @click="linkSecret ? (open = false) : (view = enabled ? 'status' : 'intro')"
+          @click="linkKey ? (open = false) : (view = enabled ? 'status' : 'intro')"
         />
         <UButton
           v-if="sameKey"
@@ -498,13 +512,13 @@
           @click="view = 'status'"
         />
         <UButton
-          v-else-if="linkSecret && enabled"
+          v-else-if="linkKey && enabled"
           label="Remplacer la clé"
           :loading="busy"
           @click="join"
         />
         <UButton
-          v-else-if="linkSecret"
+          v-else-if="linkKey"
           label="Activer"
           :loading="busy"
           @click="join"
@@ -562,6 +576,7 @@
         />
         <UButton
           label="Désactiver"
+          :loading="busy"
           @click="disable"
         />
       </template>

@@ -127,3 +127,12 @@ test("restore does not undo later changes, nor delete anything", async () => {
   expect((await IdbTags.getAll()).map(tag => tag.name)).toEqual(["Le Banquet"]);
   expect(await IdbStarred.get(entries.alopex.uri)).not.toBeNull();
 });
+
+test("join: online bookmarks deleted here come back", async () => {
+  unwrap(await IdbStarred.add(entries.alopex));
+  const online = await IdbBookmarks.getState();
+  unwrap(await IdbStarred.remove(entries.alopex.uri));
+
+  expect(unwrap(await IdbBookmarks.join(online)).changed).toBe(true);
+  expect(await IdbStarred.get(entries.alopex.uri)).not.toBeNull();
+});

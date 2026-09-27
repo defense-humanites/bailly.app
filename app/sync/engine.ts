@@ -13,7 +13,22 @@ export type SyncDependencies = {
    * @returns The merged state.
    */
   mergeState: (state: BookmarksState) => Promise<BookmarksState>;
+  /**
+   * Merges a state into the stored bookmarks the first time this device
+   * synchronizes with a key (cf. `joinRecords`).
+   * @returns The merged state.
+   */
+  joinState?: (state: BookmarksState) => Promise<BookmarksState>;
   fetch?: typeof fetch;
+};
+
+export type SyncOptions = {
+  /**
+   * Whether this device synchronizes with this key for the first time
+   * (joined, or enabled again): its earlier deletions do not apply to the
+   * bookmarks that exist online.
+   */
+  first?: boolean;
 };
 
 const MAX_ATTEMPTS = 5;
@@ -33,7 +48,9 @@ const sameBookmarks = (a: BookmarksState, b: BookmarksState): boolean =>
  * @throws {LockerDeletedError} If a device deleted the locker.
  * @throws {SyncNetworkError} If the server cannot be reached.
  */
-export async function synchronize(credentials: SyncCredentials, deps: SyncDependencies): Promise<number> {
+export async function synchronize(credentials: SyncCredentials, deps: SyncDependencies, { first = false }: SyncOptions = {}): Promise<number> {
+  const merge = first && deps.joinState ? deps.joinState : deps.mergeState;
+
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const locker = await fetchLocker(credentials, deps.fetch);
 
@@ -41,7 +58,7 @@ export async function synchronize(credentials: SyncCredentials, deps: SyncDepend
     let version: number;
     if (locker) {
       const remote = parseBookmarksFile(await decryptText(locker.blob, credentials));
-      state = await deps.mergeState(remote);
+      state = await merge(remote);
       if (sameBookmarks(state, remote)) return locker.version;
       version = locker.version;
     } else {

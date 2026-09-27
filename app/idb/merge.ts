@@ -255,6 +255,30 @@ export function restoreRecords(local: BookmarksState, imported: BookmarksState, 
 }
 
 /**
+ * Prepares the state of the locker to be merged into the local one, the first
+ * time this device synchronizes with a key (joined, or enabled again): what
+ * exists online and was deleted on this device comes back, as a change made
+ * now (`stamp`), so that the device does not delete it on the others (e.g.
+ * deleted while it was not synchronized). The deletions made online by the
+ * other devices apply, and the device's additions and later changes stay.
+ */
+export function joinRecords(local: BookmarksState, remote: BookmarksState, stamp: Stamp): BookmarksState {
+  const rejoin = <T extends Versioned>(id: (record: T) => string, localRecords: T[], remoteRecords: T[]): T[] => {
+    const here = new Map(localRecords.map(record => [id(record), record]));
+    return remoteRecords.map(record =>
+      !record.deleted && here.get(id(record))?.deleted ? { ...record, updatedAt: stamp } : record,
+    );
+  };
+
+  return {
+    tags: rejoin(recordId.tag, local.tags, remote.tags),
+    tagged: rejoin(recordId.tagged, local.tagged, remote.tagged),
+    starred: rejoin(recordId.starred, local.starred, remote.starred),
+    tagOrder: remote.tagOrder,
+  };
+}
+
+/**
  * The latest stamp of a state.
  */
 export function latestStamp(state: BookmarksState): Stamp | undefined {

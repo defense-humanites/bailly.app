@@ -3,7 +3,7 @@ import { createDatabase, type Database } from "db0";
 import sqlite from "db0/connectors/node-sqlite";
 import { beforeEach, expect, test } from "vitest";
 import { formatStamp } from "../../app/idb/clock";
-import { emptyState, mergeStates, normalize, type BookmarksState } from "../../app/idb/merge";
+import { emptyState, joinRecords, mergeStates, normalize, type BookmarksState } from "../../app/idb/merge";
 import { deriveCredentials, type SyncCredentials } from "../../app/sync/crypto";
 import { synchronize, type SyncDependencies } from "../../app/sync/engine";
 import { deleteLocker, hashToken, readLocker, resetSchemaCache, writeLocker } from "../../server/lib/lockers";
@@ -47,6 +47,10 @@ function device(server: typeof fetch, initial: BookmarksState = emptyState()) {
     readState: () => Promise.resolve(state),
     mergeState: (remote) => {
       state = normalize(mergeStates(state, remote));
+      return Promise.resolve(state);
+    },
+    joinState: (remote) => {
+      state = normalize(mergeStates(state, joinRecords(state, remote, stamp())));
       return Promise.resolve(state);
     },
     fetch: server,
@@ -151,4 +155,34 @@ test("a locker that cannot be decrypted makes the synchronization fail", async (
 test("too many requests (rate limiting): an error to retry later", async () => {
   const limited: typeof fetch = () => Promise.resolve(new Response("", { status: 429 }));
   await expect(synchronize(credentials, device(limited).deps)).rejects.toBeInstanceOf(SyncBusyError);
+});
+
+test("a device joining (again) does not delete online what it deleted meanwhile", async () => {
+  const server = fakeServer(db);
+  const laptop = device(server);
+  const phone = device(server);
+
+  laptop.change(addStar("logos"));
+  laptop.change(addStar("psukhe"));
+  await synchronize(credentials, laptop.deps);
+  await synchronize(credentials, phone.deps, { first: true });
+
+  // The phone disables the synchronization, then deletes a favorite and adds
+  // another; meanwhile, the laptop deletes one.
+  phone.change(addStar("logos", true));
+  phone.change(addStar("anthropos"));
+  laptop.change(addStar("psukhe", true));
+  await synchronize(credentials, laptop.deps);
+
+  // Joining again: logos comes back, psukhe stays deleted, anthropos is sent.
+  await synchronize(credentials, phone.deps, { first: true });
+  await synchronize(credentials, laptop.deps);
+  expect(liveStars(phone.state).sort()).toEqual(["anthropos", "logos"]);
+  expect(laptop.state).toEqual(phone.state);
+
+  // Afterwards, a deletion on the phone reaches the laptop again.
+  phone.change(addStar("anthropos", true));
+  await synchronize(credentials, phone.deps);
+  await synchronize(credentials, laptop.deps);
+  expect(liveStars(laptop.state)).toEqual(["logos"]);
 });

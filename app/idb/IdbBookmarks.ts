@@ -6,6 +6,7 @@ import {
   latestStamp,
   mergeStates,
   normalize,
+  joinRecords,
   recordId,
   restoreRecords,
   type BookmarksState,
@@ -50,6 +51,16 @@ export class IdbBookmarks {
    */
   static async merge(remote: BookmarksState): Promise<IdbResult<MergeOutcome>> {
     return IdbBookmarks.#mergeInto(() => Promise.resolve(remote));
+  }
+
+  /**
+   * Merges the state of the locker the first time this device synchronizes
+   * with a key: what exists online is not deleted by this device's earlier
+   * deletions (cf. `joinRecords`).
+   * @returns The merged state, and whether the stored one changed.
+   */
+  static async join(remote: BookmarksState): Promise<IdbResult<MergeOutcome>> {
+    return IdbBookmarks.#mergeInto(async (local, meta) => joinRecords(local, remote, await Idb.stamp(meta)));
   }
 
   /**

@@ -138,3 +138,43 @@ test("a failed first synchronization is reported, and leaves the device as it wa
   await openSync(phone);
   await expect(phone.getByRole("button", { name: "Activer la synchronisation" })).toBeVisible();
 });
+
+test("enabling a key again brings back the online bookmarks deleted meanwhile", async ({ page, goto, browser, baseURL }) => {
+  test.setTimeout(60_000);
+  await goto("/signets", { waitUntil: "hydration" });
+  await seedBookmarks(page, { starred: [logos, psukhe] });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  const keyWords = page.getByRole("list", { name: "Les 12 mots de la clé" }).locator("li > span:last-child");
+  await expect(keyWords).toHaveCount(12);
+  const words = await keyWords.allInnerTexts();
+  const link = await syncLink(page);
+
+  const phone = await newDevice(browser, baseURL, "/");
+  await phone.goto(link!);
+  await phone.getByRole("button", { name: "Activer", exact: true }).click();
+  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+
+  // The phone disables the synchronization, then deletes a favorite.
+  await phone.getByRole("button", { name: "Désactiver" }).click();
+  await expect(phone.getByText("même ceux que vous y auriez supprimés entre-temps")).toBeVisible();
+  await phone.getByRole("button", { name: "Désactiver" }).click();
+  await expect(phone.getByText("Synchronisation désactivée sur cet appareil", { exact: true })).toBeVisible();
+  await phone.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { unstarEntry: (uri: string) => Promise<unknown> };
+    await store.unstarEntry("logos");
+  });
+  expect((await bookmarksState(phone)).starred).toBe(1);
+
+  // Enabled again with the words: the favorite comes back, and stays on the laptop.
+  await phone.getByRole("button", { name: "J'ai déjà une clé" }).click();
+  await phone.getByRole("textbox").fill(words.join(" "));
+  await phone.getByRole("button", { name: "Rejoindre" }).click();
+  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  expect((await bookmarksState(phone)).starred).toBe(2);
+
+  await page.reload();
+  await waitForHydration(page);
+  await expect.poll(async () => (await bookmarksState(page)).starred).toBe(2);
+});

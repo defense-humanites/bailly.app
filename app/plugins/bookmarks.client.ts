@@ -14,6 +14,7 @@ const MUTATIONS = new Set([
   "tagEntry",
   "untagEntry",
   "mergeState",
+  "joinState",
   "importBookmarks",
 ]);
 
@@ -21,7 +22,7 @@ const MUTATIONS = new Set([
  * The store actions that add bookmarks: after the first one, the persistent
  * storage is requested (cf. `utils/persistentStorage.ts`).
  */
-const ADDITIONS = new Set(["starEntry", "createTag", "tagEntry", "mergeState", "importBookmarks"]);
+const ADDITIONS = new Set(["starEntry", "createTag", "tagEntry", "mergeState", "joinState", "importBookmarks"]);
 
 /**
  * Configures IndexedDB and loads the bookmarks once the app is hydrated

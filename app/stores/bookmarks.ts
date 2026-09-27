@@ -271,6 +271,17 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   }
 
   /**
+   * Merges the state of the locker the first time this device synchronizes
+   * with a key (cf. `IdbBookmarks.join`).
+   */
+  async function joinState(state: BookmarksState): Promise<IdbResult<MergeOutcome>> {
+    await initialize();
+    const result = report(await IdbBookmarks.join(state));
+    if (result.state === "success" && result.data.changed) await refresh();
+    return result;
+  }
+
+  /**
    * The bookmarks as an exported file (cf. `idb/transfer.ts`).
    */
   async function exportBookmarks(): Promise<BookmarksFile> {
@@ -316,6 +327,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     untagEntry,
     refresh,
     mergeState,
+    joinState,
     exportBookmarks,
     importBookmarks,
   };
