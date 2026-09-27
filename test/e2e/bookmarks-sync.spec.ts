@@ -196,7 +196,7 @@ test("joining beyond the limits is refused until the device makes room", async (
   await seedBookmarks(phone, { starred: [psuche] });
   await phone.goto(link!);
   await phone.getByRole("button", { name: "Activer", exact: true }).click();
-  await expect(phone.getByText(/les favoris compteraient 101 entrées \(100 au plus\) : retirez-en au moins 1\. Réessayez ensuite\./)).toBeVisible();
+  await expect(phone.getByText(/les favoris compteraient 101 entrées \(100 au plus\) : retirez-en au moins 1 parmi celles qui ne sont que sur cet appareil \(« ψυχή »\)\. Réessayez ensuite\./)).toBeVisible();
   expect(await bookmarksState(phone)).toEqual({ tags: [], tagged: 0, starred: 1 });
 
   // Nothing changed online either; once the phone makes room, it joins.
@@ -251,7 +251,7 @@ test("a synchronization beyond the limits waits until the device makes room", as
   expect(await syncNow(phone)).toBe(false);
   await expect(phone.getByRole("button", { name: /la synchronisation demande votre attention/ })).toBeVisible();
   await openSync(phone);
-  await expect(phone.getByText(/les favoris compteraient 101 entrées \(100 au plus\) : retirez-en au moins 1\.$/)).toBeVisible();
+  await expect(phone.getByText(/les favoris compteraient 101 entrées \(100 au plus\) : retirez-en au moins 1 parmi celles qui ne sont que sur cet appareil \(« λόγος »\)\. La synchronisation reprendra ensuite\.$/)).toBeVisible();
   expect((await bookmarksState(phone)).starred).toBe(100);
   await phone.keyboard.press("Escape");
 
@@ -259,13 +259,13 @@ test("a synchronization beyond the limits waits until the device makes room", as
   await phone.evaluate(async () => {
     const root = document.querySelector("#__nuxt") as AppRoot;
     const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { unstarEntry: (uri: string) => Promise<unknown> };
-    await store.unstarEntry("mot-0");
+    await store.unstarEntry("logos");
   });
   await expect(phone.getByRole("button", { name: /la synchronisation demande votre attention/ })).toHaveCount(0, { timeout: 15_000 });
   await expect.poll(async () => (await bookmarksState(phone)).starred).toBe(100);
   await page.reload();
   await waitForHydration(page);
-  await expect.poll(async () => (await bookmarksState(page)).starred).toBe(100); // With the phone's, without mot-0.
+  await expect.poll(async () => (await bookmarksState(page)).starred).toBe(100); // Unchanged: the phone's favorite was left out.
 });
 
 test("the synchronization waits while the tags are being arranged", async ({ page, goto, browser, baseURL }) => {
@@ -305,6 +305,21 @@ test("the synchronization waits while the tags are being arranged", async ({ pag
   await page.keyboard.press("Escape");
   await expect(page.getByText(/ψυχή, ῆς/).first()).toBeVisible({ timeout: 15_000 });
   expect((await bookmarksState(page)).starred).toBe(2);
+});
+
+test("a wrong clock on the device is reported", async ({ page, goto }) => {
+  const day = 24 * 60 * 60 * 1000;
+  // The server's time, three days after this device's.
+  await page.route("**/api/sync/**", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, headers: { ...response.headers(), date: new Date(Date.now() + 3 * day).toUTCString() } });
+  });
+
+  await goto("/signets", { waitUntil: "hydration" });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
+  await expect(page.getByText("L'horloge de cet appareil semble en retard de 3 jours.")).toBeVisible();
 });
 
 test("enabling a key again brings back the online bookmarks deleted meanwhile", async ({ page, goto, browser, baseURL }) => {

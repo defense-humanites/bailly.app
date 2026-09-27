@@ -1,4 +1,4 @@
-import { maxStamp } from "./clock";
+import { maxStamp, stampTime } from "./clock";
 import { attempt, Idb, IdbMetaKey, IdbStore, type IdbMetaStore, type IdbResult } from "./Idb";
 import {
   canonical,
@@ -95,6 +95,18 @@ export class IdbBookmarks {
    */
   static async previewRestore(imported: BookmarksState): Promise<SkippedRecords> {
     return fitImport(await IdbBookmarks.getState(), imported, Idb.config).skipped;
+  }
+
+  /**
+   * The reference time for the stamps received (cf. `MAX_FUTURE_DRIFT`): the
+   * later of this device's time and of its logical clock, which has followed
+   * the stamps it observed. A device whose clock is late (but which has
+   * already merged recent changes) does not reject the others' changes.
+   */
+  static async referenceTime(): Promise<number> {
+    const db = await Idb.getIndexedDB();
+    const clock = await Idb.getMeta(db.transaction(IdbStore.Meta).objectStore(IdbStore.Meta), IdbMetaKey.Clock);
+    return Math.max(Date.now(), clock ? stampTime(clock) : 0);
   }
 
   /**
@@ -213,10 +225,11 @@ export class IdbBookmarks {
         starred: await stores.starred.getAll(),
         tagOrder: (await Idb.getMeta(stores.meta, IdbMetaKey.TagOrder)) ?? null,
       };
-      const merged = compact(normalize(mergeStates(local, await incoming(local, stores.meta))));
+      const received = await incoming(local, stores.meta);
+      const merged = compact(normalize(mergeStates(local, received)));
 
       // Beyond the limits: nothing is merged (the user makes room first).
-      const excesses = limitExcesses(merged, Idb.config);
+      const excesses = limitExcesses(merged, Idb.config, received);
       if (excesses.length) {
         await tx.done;
         return { state: local, changed: false, excesses };

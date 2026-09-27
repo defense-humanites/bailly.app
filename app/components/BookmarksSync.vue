@@ -19,7 +19,15 @@
   const SYNC_KEY_WORD_COUNT = 12;
 
   const syncStore = useSyncStore();
-  const { enabled, status, error, lastSyncedAt, supported } = storeToRefs(syncStore);
+  const { enabled, status, error, errorNeedsAction, clockWrong, clockSkew, lastSyncedAt, supported } = storeToRefs(syncStore);
+
+  /**
+   * How wrong this device's clock seems, e.g. « 3 jours » (cf. `clockWrong`).
+   */
+  const clockGap = computed(() => {
+    const hours = Math.round(Math.abs(clockSkew.value) / 3_600_000);
+    return hours >= 48 ? `${Math.round(hours / 24)} jours` : `${hours} heures`;
+  });
   const toast = useToast();
 
   const view = ref<View>("intro");
@@ -419,7 +427,15 @@
             variant="subtle"
             icon="i-lucide-cloud-off"
             :title="error"
-            description="Vos modifications seront envoyées dès que possible."
+            :description="errorNeedsAction ? undefined : 'Vos modifications seront envoyées dès que possible.'"
+          />
+          <UAlert
+            v-if="clockWrong"
+            color="warning"
+            variant="subtle"
+            icon="i-lucide-clock-alert"
+            :title="`L'horloge de cet appareil semble ${clockSkew > 0 ? 'en retard' : 'en avance'} de ${clockGap}.`"
+            description="Réglez sa date et son heure : sinon, ses changements ou ceux de vos autres appareils pourraient être ignorés."
           />
         </template>
 
@@ -429,6 +445,14 @@
             synchronisation, il faudra la clé : les signets en ligne seront alors rétablis sur cet appareil,
             même ceux que vous y auriez supprimés entre-temps.
           </p>
+          <UAlert
+            v-if="status === 'error'"
+            color="warning"
+            variant="subtle"
+            icon="i-lucide-cloud-off"
+            title="La dernière synchronisation n'a pas abouti."
+            description="Les changements faits sur cet appareil depuis ne seront pas envoyés à vos autres appareils."
+          />
         </template>
 
         <template v-else-if="view === 'delete'">

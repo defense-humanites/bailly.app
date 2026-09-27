@@ -20,6 +20,11 @@ export type SyncDependencies = {
    * @returns The merged state.
    */
   joinState?: (state: BookmarksState) => Promise<BookmarksState>;
+  /**
+   * The reference time for the stamps received (cf.
+   * `IdbBookmarks.referenceTime`); by default, this device's time.
+   */
+  referenceTime?: () => Promise<number>;
   fetch?: typeof fetch;
 };
 
@@ -39,6 +44,10 @@ export type SyncOptions = {
    * Called once the locker has been merged into the stored bookmarks.
    */
   onMerged?: () => void;
+  /**
+   * Receives the time of the server (cf. `LockerRequestOptions`).
+   */
+  onServerTime?: (time: number) => void;
 };
 
 const MAX_ATTEMPTS = 5;
@@ -111,10 +120,10 @@ const sameBookmarks = (a: BookmarksState, b: BookmarksState): boolean =>
 export async function synchronize(
   credentials: SyncCredentials,
   deps: SyncDependencies,
-  { first = false, signal, onMerged }: SyncOptions = {},
+  { first = false, signal, onMerged, onServerTime }: SyncOptions = {},
 ): Promise<number> {
   const merge = first && deps.joinState ? deps.joinState : deps.mergeState;
-  const requestOptions = { fetch: deps.fetch, signal };
+  const requestOptions = { fetch: deps.fetch, signal, onServerTime };
   const checkCancelled = (): void => {
     if (signal?.aborted) throw new SyncTimeoutError();
   };
@@ -125,7 +134,8 @@ export async function synchronize(
     let state: BookmarksState;
     let version: number;
     if (locker) {
-      const remote = parseBookmarksFile(await decryptText(locker.blob, credentials));
+      const text = await decryptText(locker.blob, credentials);
+      const remote = parseBookmarksFile(text, deps.referenceTime ? await deps.referenceTime() : Date.now());
       checkCancelled();
       state = await merge(remote);
       onMerged?.();

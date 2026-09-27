@@ -54,20 +54,29 @@ export type LockerRequestOptions = {
    * Cancels the request (e.g. when the attempt takes too long).
    */
   signal?: AbortSignal;
+  /**
+   * Receives the time of the server (its `Date` header), to detect a wrong
+   * clock on this device.
+   */
+  onServerTime?: (time: number) => void;
 };
 
 async function request(
   { lockerId, token }: SyncCredentials,
   init: RequestInit,
-  { fetch: fetcher = fetch, signal }: LockerRequestOptions,
+  { fetch: fetcher = fetch, signal, onServerTime }: LockerRequestOptions,
 ): Promise<Response> {
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${token}`);
+  let response: Response;
   try {
-    return await fetcher(`/api/sync/${lockerId}`, { ...init, headers, cache: "no-store", signal });
+    response = await fetcher(`/api/sync/${lockerId}`, { ...init, headers, cache: "no-store", signal });
   } catch {
     throw signal?.aborted ? new SyncTimeoutError() : new SyncNetworkError();
   }
+  const time = Date.parse(response.headers.get("Date") ?? "");
+  if (onServerTime && !Number.isNaN(time)) onServerTime(time);
+  return response;
 }
 
 function unexpected(response: Response): never {

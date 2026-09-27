@@ -44,19 +44,26 @@ export default defineNuxtPlugin({
   setup() {
     const { searchHistoryLength, tagMaxItems, maxTags } = useRuntimeConfig().public;
     Idb.configure({ searchHistoryLength, tagMaxItems, maxTags });
+    const toast = useToast();
+    /**
+     * The toast asking to close the other tabs, removed once the database
+     * is open.
+     */
+    let blockedToast: string | number | undefined;
     Idb.onBlocked(() => {
-      useToast().add({
+      blockedToast = toast.add({
         title: "Fermez les autres onglets de Bailly.app",
         description: "Vos signets passent à une nouvelle version : ils s'afficheront une fois les autres onglets fermés.",
         icon: "i-lucide-circle-alert",
         color: "warning",
         duration: 0,
-      });
+      }).id;
     });
 
     const bookmarksStore = useBookmarksStore();
     onNuxtReady(async () => {
       await bookmarksStore.initialize();
+      if (blockedToast !== undefined) toast.remove(blockedToast);
       // At each visit, the tombstones old enough are forgotten, and the
       // missing excerpts fetched.
       void IdbBookmarks.compact();

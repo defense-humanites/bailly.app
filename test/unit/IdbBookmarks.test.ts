@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { entries, tags, unwrap } from "../idbHelpers";
-import { Idb, IdbBookmarks, IdbStarred, IdbStore, IdbTaggedEntry, IdbTags, type BookmarksState } from "../../app/idb";
+import { Idb, IdbBookmarks, IdbMetaKey, IdbStarred, IdbStore, IdbTaggedEntry, IdbTags, type BookmarksState } from "../../app/idb";
 import { formatStamp, parseStamp } from "../../app/idb/clock";
 
 const remoteStamp = (time: number) => formatStamp({ time, counter: 0, node: "remote" });
@@ -178,7 +178,8 @@ test("a merge beyond the limits is not applied", async () => {
     tagOrder: null,
   }));
 
-  expect(outcome).toMatchObject({ changed: false, excesses: [{ kind: "entries", tag: null, count: 3 }] });
+  // To remove: this device's own favorites (the other device's is not here).
+  expect(outcome).toMatchObject({ changed: false, excesses: [{ kind: "entries", tag: null, count: 3, local: [entries.alopex.word, entries.rhinokeros.word] }] });
   expect(await IdbBookmarks.getState()).toEqual(before);
 });
 
@@ -226,4 +227,15 @@ test("the excerpts are kept apart: those known here stay, the missing ones are f
   unwrap(await IdbStarred.remove(entries.alopex.uri));
   unwrap(await IdbBookmarks.compact());
   expect([...(await IdbBookmarks.getExcerpts()).keys()]).toEqual(["philia"]);
+});
+
+test("the reference time for the received stamps follows the logical clock", async () => {
+  expect(Math.abs(await IdbBookmarks.referenceTime() - Date.now())).toBeLessThan(1_000);
+
+  // Changes observed from a device two days ahead: this device's clock is
+  // late, but it no longer rejects them.
+  const ahead = Date.now() + 2 * 24 * 60 * 60 * 1000;
+  const db = await Idb.getIndexedDB();
+  await db.put(IdbStore.Meta, remoteStamp(ahead), IdbMetaKey.Clock);
+  expect(await IdbBookmarks.referenceTime()).toBe(ahead);
 });

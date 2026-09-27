@@ -273,10 +273,25 @@ test("limitExcesses: the tags, the entries of each tag, and the favorites", () =
     tagged: [...within.tagged, entry("a", "w")],
     starred: [...within.starred, star("z")],
   };
+  // Without the incoming state: everything is this device's own.
   expect(limitExcesses(beyond, limits)).toEqual([
-    { kind: "tags", count: 3 },
-    { kind: "entries", tag: "Homère", count: 3 },
-    { kind: "entries", tag: null, count: 3 },
+    { kind: "tags", count: 3, local: ["Homère", "Platon", "Sophocle"] },
+    { kind: "entries", tag: "Homère", count: 3, local: ["x", "y", "w"] },
+    { kind: "entries", tag: null, count: 3, local: ["x", "y", "z"] },
+  ]);
+
+  // With it (the locker): only what this device brings, the homonyms of the
+  // locker's tags counting as the same tag.
+  const incoming: BookmarksState = {
+    tags: [tag("h", "homere"), tag("b", "Platon")],
+    tagged: [entry("h", "x"), entry("b", "p")],
+    starred: [star("x"), star("y")],
+    tagOrder: null,
+  };
+  expect(limitExcesses(beyond, limits, incoming)).toEqual([
+    { kind: "tags", count: 3, local: ["Sophocle"] },
+    { kind: "entries", tag: "Homère", count: 3, local: ["y", "w"] },
+    { kind: "entries", tag: null, count: 3, local: ["z"] },
   ]);
 });
 

@@ -351,9 +351,13 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   const unknownUris = new Set<string>();
 
   /**
-   * The pending fetch of excerpts, shared by concurrent calls.
+   * The pending fetch of excerpts, shared by concurrent calls; asked again
+   * meanwhile (e.g. after a merge), it makes another pass.
    */
   let filling: Promise<IdbResult<{ changed: boolean }>> | null = null;
+  let fillAgain = false;
+  // (A function: the flag is set by concurrent calls.)
+  const askedAgain = (): boolean => fillAgain;
 
   /**
    * Fetches from the API the excerpts of the bookmarks that have none on this
@@ -363,34 +367,52 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    * meanwhile.
    */
   async function fillExcerpts(): Promise<IdbResult<{ changed: boolean }>> {
-    filling ??= (async (): Promise<IdbResult<{ changed: boolean }>> => {
-      await initialize();
-      const uris = (await IdbBookmarks.missingExcerpts()).filter(uri => !unknownUris.has(uri));
-      const found = new Map<string, string>();
-      for (let i = 0; i < uris.length; i += MAX_EXCERPTS_URIS) {
-        try {
-          const { data } = await $api<ApiResponse<ApiExcerptsData>>("entries/excerpts", {
-            query: toApiQuery({ uris: uris.slice(i, i + MAX_EXCERPTS_URIS) }),
-          });
-          for (const { uri, word, excerpt, homonyms } of data.entries) {
-            // As for a group of homonyms added on this device (cf. `Idb.buildIdbEntry`).
-            const text = homonyms ? `${word} (v. les ${homonyms} entrées)` : excerpt;
-            if (text) found.set(uri, text);
-          }
-          for (const uri of data.missing) unknownUris.add(uri);
-        } catch {
-          break;
-        }
-      }
-      if (!found.size) return { state: "success", data: { changed: false } };
-
-      const result = await IdbBookmarks.fillExcerpts(found);
-      if (result.state === "success" && result.data.changed) await refresh();
-      return result;
+    if (filling) {
+      fillAgain = true;
+      return filling;
+    }
+    filling = (async (): Promise<IdbResult<{ changed: boolean }>> => {
+      let changed = false;
+      do {
+        fillAgain = false;
+        const result = await fillExcerptsOnce();
+        if (result.state === "error") return result;
+        changed ||= result.data.changed;
+      } while (askedAgain());
+      return { state: "success", data: { changed } };
     })().finally(() => {
       filling = null;
     });
     return filling;
+  }
+
+  /**
+   * A pass of `fillExcerpts`.
+   */
+  async function fillExcerptsOnce(): Promise<IdbResult<{ changed: boolean }>> {
+    await initialize();
+    const uris = (await IdbBookmarks.missingExcerpts()).filter(uri => !unknownUris.has(uri));
+    const found = new Map<string, string>();
+    for (let i = 0; i < uris.length; i += MAX_EXCERPTS_URIS) {
+      try {
+        const { data } = await $api<ApiResponse<ApiExcerptsData>>("entries/excerpts", {
+          query: toApiQuery({ uris: uris.slice(i, i + MAX_EXCERPTS_URIS) }),
+        });
+        for (const { uri, word, excerpt, homonyms } of data.entries) {
+          // As for a group of homonyms added on this device (cf. `Idb.buildIdbEntry`).
+          const text = homonyms ? `${word} (v. les ${homonyms} entrées)` : excerpt;
+          if (text) found.set(uri, text);
+        }
+        for (const uri of data.missing) unknownUris.add(uri);
+      } catch {
+        break;
+      }
+    }
+    if (!found.size) return { state: "success", data: { changed: false } };
+
+    const result = await IdbBookmarks.fillExcerpts(found);
+    if (result.state === "success" && result.data.changed) await refresh();
+    return result;
   }
 
   /**
@@ -400,7 +422,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    */
   async function previewImport(text: string): Promise<IdbResult<SkippedRecords>> {
     await initialize();
-    return report(await attempt(async () => IdbBookmarks.previewRestore(parseBookmarksFile(text))));
+    return report(await attempt(async () => IdbBookmarks.previewRestore(parseBookmarksFile(text, await IdbBookmarks.referenceTime()))));
   }
 
   /**
@@ -412,7 +434,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    */
   async function importBookmarks(text: string): Promise<IdbResult<MergeOutcome & { skipped: SkippedRecords }>> {
     await initialize();
-    const parsed = report(await attempt(() => Promise.resolve().then(() => parseBookmarksFile(text))));
+    const parsed = report(await attempt(async () => parseBookmarksFile(text, await IdbBookmarks.referenceTime())));
     if (parsed.state === "error") return parsed;
 
     const before = tags.value.map(tag => tag.key);

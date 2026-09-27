@@ -1,4 +1,4 @@
-import type { H3Event } from "h3";
+import { createError, getRequestHeader, readRawBody, type H3Event } from "h3";
 import { hashToken, LOCKER_ID_PATTERN, TOKEN_PATTERN } from "../lib/lockers";
 
 /**

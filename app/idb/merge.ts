@@ -234,34 +234,64 @@ export type BookmarksLimits = {
 /**
  * A limit that a state exceeds: the number of tags, or the number of entries
  * of a tag (its name) or of the favorites (`null`).
+ * @remarks `local` names what only this device brings (compared with the
+ * state it merges), among which the user has to make room: removing
+ * something that the other devices also have would not change the count.
  */
 export type LimitExcess
-  = | { kind: "tags"; count: number }
-    | { kind: "entries"; tag: string | null; count: number };
+  = | { kind: "tags"; count: number; local: string[] }
+    | { kind: "entries"; tag: string | null; count: number; local: string[] };
 
 /**
  * The limits a state exceeds, e.g. once merged with another device's (none
  * if it keeps within them).
+ * @param incoming The state merged into this device's (the locker's), to
+ * tell what only this device brings (cf. `LimitExcess.local`).
  * @remarks A merge that would exceed them is not applied: the user makes room
  * first (the bookmarks online always keep within them, each device checking
  * before writing).
  */
-export function limitExcesses(state: BookmarksState, { maxTags, tagMaxItems }: BookmarksLimits): LimitExcess[] {
+export function limitExcesses(
+  state: BookmarksState,
+  { maxTags, tagMaxItems }: BookmarksLimits,
+  incoming: BookmarksState = emptyState(),
+): LimitExcess[] {
+  // What the incoming state has, by name for the tags (the homonyms are
+  // fused) and by URI for the entries.
+  const incomingTags = new Map(incoming.tags.filter(tag => !tag.deleted).map(tag => [tag.key, comparableTagName(tag.name)]));
+  const incomingNames = new Set(incomingTags.values());
+  const incomingEntries = new Map<string, Set<string>>();
+  for (const record of incoming.tagged) {
+    const name = incomingTags.get(record.tagKey);
+    if (record.deleted || name === undefined) continue;
+    incomingEntries.set(name, (incomingEntries.get(name) ?? new Set()).add(record.uri));
+  }
+  const incomingStarred = new Set(incoming.starred.filter(record => !record.deleted).map(record => record.uri));
+
   const excesses: LimitExcess[] = [];
   const liveTags = state.tags.filter(tag => !tag.deleted);
-  if (liveTags.length > maxTags) excesses.push({ kind: "tags", count: liveTags.length });
+  if (liveTags.length > maxTags) {
+    const local = liveTags.filter(tag => !incomingNames.has(comparableTagName(tag.name))).map(tag => tag.name);
+    excesses.push({ kind: "tags", count: liveTags.length, local });
+  }
 
-  const counts = new Map<TagKey, number>();
+  const byTag = new Map<TagKey, TaggedRecord[]>();
   for (const record of state.tagged) {
-    if (!record.deleted) counts.set(record.tagKey, (counts.get(record.tagKey) ?? 0) + 1);
+    if (!record.deleted) byTag.set(record.tagKey, [...(byTag.get(record.tagKey) ?? []), record]);
   }
   for (const tag of liveTags) {
-    const count = counts.get(tag.key) ?? 0;
-    if (count > tagMaxItems) excesses.push({ kind: "entries", tag: tag.name, count });
+    const records = byTag.get(tag.key) ?? [];
+    if (records.length <= tagMaxItems) continue;
+    const there = incomingEntries.get(comparableTagName(tag.name)) ?? new Set();
+    const local = records.filter(record => !there.has(record.uri)).map(record => record.word);
+    excesses.push({ kind: "entries", tag: tag.name, count: records.length, local });
   }
 
-  const starred = state.starred.filter(record => !record.deleted).length;
-  if (starred > tagMaxItems) excesses.push({ kind: "entries", tag: null, count: starred });
+  const starred = state.starred.filter(record => !record.deleted);
+  if (starred.length > tagMaxItems) {
+    const local = starred.filter(record => !incomingStarred.has(record.uri)).map(record => record.word);
+    excesses.push({ kind: "entries", tag: null, count: starred.length, local });
+  }
 
   return excesses;
 }

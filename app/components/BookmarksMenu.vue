@@ -120,6 +120,21 @@
     // Errors are reported by the store.
     if (result.state === "error") return;
 
+    // Beyond the limits even so (the stored bookmarks already exceed them):
+    // nothing was imported.
+    if (result.data.excesses.length) {
+      toast.add({
+        title: "Aucun signet importé",
+        description: describeLimitExcesses(result.data.excesses, { maxTags, tagMaxItems }, {
+          lead: "Avec ce fichier, vos signets dépasseraient les limites.",
+          ending: "Importez-le ensuite.",
+        }),
+        icon: "i-lucide-circle-alert",
+        color: "error",
+      });
+      return;
+    }
+
     const after = counts();
     const added = [
       after.tags > before.tags ? plural(after.tags - before.tags, "étiquette") : "",

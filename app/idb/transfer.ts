@@ -200,7 +200,12 @@ export function validateState(value: unknown, now: number = Date.now()): Bookmar
  * @returns The state it contains.
  * @throws {IdbError} If the file is not a (supported) export of the bookmarks.
  */
-export function parseBookmarksFile(text: string): BookmarksState {
+/**
+ * Parses and validates a file of bookmarks (an export, or a locker).
+ * @param now The reference time for the stamps too far in the future (cf.
+ * `IdbBookmarks.referenceTime`).
+ */
+export function parseBookmarksFile(text: string, now: number = Date.now()): BookmarksState {
   let data: unknown;
   try {
     data = JSON.parse(text);
@@ -215,5 +220,5 @@ export function parseBookmarksFile(text: string): BookmarksState {
     throw new IdbError("Ce fichier provient d'une version plus récente de Bailly : mettez l'application à jour.");
   }
 
-  return validateState(data.state);
+  return validateState(data.state, now);
 }

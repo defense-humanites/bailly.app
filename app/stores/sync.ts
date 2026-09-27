@@ -37,6 +37,11 @@ const ABORT_GRACE = 1_000;
  * The longest the last synchronization before disabling may delay it.
  */
 const DISABLE_DELAY = 5_000;
+/**
+ * The gap between this device's clock and the server's beyond which the user
+ * is warned (half the drift that the devices tolerate in the stamps).
+ */
+const CLOCK_TOLERANCE = 12 * 60 * 60 * 1000;
 
 /**
  * A store for the online synchronization of the bookmarks (cf. `app/sync/`):
@@ -62,6 +67,21 @@ export const useSyncStore = defineStore("sync", () => {
    */
   const error = ref<string | null>(null);
   const lastSyncedAt = ref<number | null>(null);
+  /**
+   * Whether the latest error waits for the user (e.g. the limits would be
+   * exceeded), rather than resolving itself (e.g. the network).
+   */
+  const errorNeedsAction = ref(false);
+  /**
+   * How far the server's time is ahead of this device's (ms), as of the
+   * latest request.
+   */
+  const clockSkew = ref(0);
+  /**
+   * Whether this device's clock seems wrong: its changes (or those of the
+   * other devices) could then be ignored (cf. `MAX_FUTURE_DRIFT`).
+   */
+  const clockWrong = computed(() => Math.abs(clockSkew.value) > CLOCK_TOLERANCE);
   /**
    * Incremented when this tab changes the settings (key, latest
    * synchronization), so that the other tabs are told (cf.
@@ -110,24 +130,14 @@ export const useSyncStore = defineStore("sync", () => {
 
   /**
    * Explains the limits a merge would exceed, and what to remove on this
-   * device (which always suffices: the bookmarks online keep within them).
+   * device (cf. `describeLimitExcesses`).
    * @param first Whether the key is being enabled (then retried by the user).
    */
   function describeExcesses(excesses: LimitExcess[], first: boolean): string {
-    const { maxTags, tagMaxItems } = Idb.config;
-    const parts = excesses.slice(0, 3).map((excess) => {
-      if (excess.kind === "tags") {
-        return `vous auriez ${excess.count} étiquettes (${maxTags} au plus) : supprimez-en au moins ${excess.count - maxTags}`;
-      }
-      const over = excess.count - tagMaxItems;
-      return excess.tag === null
-        ? `les favoris compteraient ${excess.count} entrées (${tagMaxItems} au plus) : retirez-en au moins ${over}`
-        : `l'étiquette « ${excess.tag} » compterait ${excess.count} entrées (${tagMaxItems} au plus) : retirez-en au moins ${over}`;
+    return describeLimitExcesses(excesses, Idb.config, {
+      lead: "Réunis avec ceux de vos autres appareils, vos signets dépasseraient les limites.",
+      ending: first ? "Réessayez ensuite." : "La synchronisation reprendra ensuite.",
     });
-    if (excesses.length > parts.length) parts.push("d'autres limites sont aussi dépassées");
-    // Otherwise, the window adds that the changes will be sent.
-    return `Réunis avec ceux de vos autres appareils, vos signets dépasseraient les limites. Sur cet appareil, ${parts.join(" ; ")}.`
-      + (first ? " Réessayez ensuite." : "");
   }
 
   /**
@@ -155,7 +165,14 @@ export const useSyncStore = defineStore("sync", () => {
           readState: () => IdbBookmarks.getState(),
           mergeState: state => mergeRemote(state),
           joinState: state => mergeRemote(state, true),
-        }, { ...options, signal: controller.signal });
+          referenceTime: () => IdbBookmarks.referenceTime(),
+        }, {
+          ...options,
+          signal: controller.signal,
+          onServerTime: (time) => {
+            clockSkew.value = time - Date.now();
+          },
+        });
         return null;
       } catch (e: unknown) {
         return e;
@@ -189,6 +206,13 @@ export const useSyncStore = defineStore("sync", () => {
   /**
    * An error of the synchronization, explained to the user.
    */
+  /**
+   * Whether an error waits for the user (rather than resolving itself).
+   */
+  function needsAction(e: unknown): boolean {
+    return e instanceof SyncLimitError || e instanceof SyncTooLargeError;
+  }
+
   function describe(e: unknown): string {
     if (e instanceof LockerDeletedError) return `${e.message} Vos signets restent sur cet appareil.`;
     if (e instanceof SyncNetworkError || e instanceof SyncTooLargeError || e instanceof SyncLimitError || e instanceof IdbError) {
@@ -207,6 +231,7 @@ export const useSyncStore = defineStore("sync", () => {
     const failure = await attempt(credentials);
     // Disabled (or replaced) meanwhile: the outcome no longer concerns it.
     if (config !== current) return;
+    errorNeedsAction.value = needsAction(failure);
     if (!failure) {
       config = { ...config, lastSyncedAt: Date.now() };
       await Idb.writeMeta(IdbMetaKey.Sync, config);
@@ -340,7 +365,11 @@ export const useSyncStore = defineStore("sync", () => {
     await Idb.writeMeta(IdbMetaKey.Sync, value);
     await setConfig(value);
     settingsChanged();
-    if (failure) {
+    errorNeedsAction.value = needsAction(failure);
+    if (failure && errorNeedsAction.value) {
+      status.value = "error";
+      error.value = `Vos signets en ligne ont été ajoutés à cet appareil, mais l'envoi des siens n'a pas abouti. ${describe(failure)}`;
+    } else if (failure) {
       status.value = "error";
       error.value = `Vos signets en ligne ont été ajoutés à cet appareil, mais l'envoi des siens n'a pas abouti : nouvel essai dans quelques secondes. (${describe(failure)})`;
       schedule(BUSY_DELAY);
@@ -387,8 +416,8 @@ export const useSyncStore = defineStore("sync", () => {
 
     // Already this device's key: a synchronization is enough.
     if (hasKey(secret)) {
-      await sync({ force: true });
-      return { state: "success", data: undefined };
+      if (await sync({ force: true })) return { state: "success", data: undefined };
+      return { state: "error", message: error.value ?? "La synchronisation a échoué." };
     }
 
     // A key that no device uses is most likely mistyped (a new locker is only
@@ -467,6 +496,9 @@ export const useSyncStore = defineStore("sync", () => {
     enabled,
     status,
     error,
+    errorNeedsAction,
+    clockWrong,
+    clockSkew,
     lastSyncedAt,
     settingsVersion,
     supported,
