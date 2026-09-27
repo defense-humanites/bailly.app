@@ -2,6 +2,7 @@ import { defineStore, skipHydrate } from "pinia";
 import { StorageKey } from "~/enums";
 import {
   attempt,
+  Idb,
   IdbBookmarks,
   IdbStarred,
   IdbTaggedEntry,
@@ -112,6 +113,27 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
       });
     }
     return result;
+  };
+
+  /**
+   * Tells the user about the bookmarks a merge deleted to keep within the
+   * limits (cf. `enforceLimits`).
+   */
+  const reportDropped = (result: IdbResult<MergeOutcome>): void => {
+    if (result.state !== "success") return;
+    const { tags, entries } = result.data.dropped;
+    if (!tags && !entries) return;
+
+    const count = (n: number, noun: string) => `${n} ${noun}${n > 1 ? "s" : ""}`;
+    const what = [tags ? count(tags, "étiquette") : "", entries ? count(entries, "entrée") : ""].filter(Boolean).join(" et ");
+    const plural = tags + entries > 1;
+    const { maxTags, tagMaxItems } = Idb.config;
+    toast.add({
+      title: "Limite des signets atteinte",
+      description: `${what} ${plural ? "n'ont" : "n'a"} pas été conservée${plural ? "s" : ""} (au plus ${maxTags} étiquettes, ${tagMaxItems} entrées par étiquette et ${tagMaxItems} favoris).`,
+      icon: "i-lucide-triangle-alert",
+      color: "warning",
+    });
   };
 
   async function fetchStarredEntries(): Promise<void> {
@@ -268,6 +290,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     await initialize();
     const result = report(await IdbBookmarks.merge(state));
     if (result.state === "success" && result.data.changed) await refresh();
+    reportDropped(result);
     return result;
   }
 
@@ -279,6 +302,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     await initialize();
     const result = report(await IdbBookmarks.join(state));
     if (result.state === "success" && result.data.changed) await refresh();
+    reportDropped(result);
     return result;
   }
 
@@ -302,6 +326,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
 
     const result = report(await IdbBookmarks.restore(parsed.data));
     if (result.state === "success" && result.data.changed) await refresh();
+    reportDropped(result);
     return result;
   }
 

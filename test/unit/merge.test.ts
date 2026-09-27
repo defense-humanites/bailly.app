@@ -5,6 +5,7 @@ import {
   comparableTagName,
   compact,
   emptyState,
+  enforceLimits,
   mergeStates,
   normalize,
   joinRecords,
@@ -137,6 +138,36 @@ describe("normalize", () => {
     ));
   });
 
+  test("devices synchronizing through a server converge, within the limits", () => {
+    const limits = { maxTags: 2, tagMaxItems: 1 };
+    fc.assert(fc.property(
+      fc.array(stateArb, { minLength: 2, maxLength: 4 }),
+      fc.array(fc.nat(), { maxLength: 8 }),
+      (devices, schedule) => {
+        let server = emptyState();
+        const sync = (i: number) => {
+          devices[i] = enforceLimits(normalize(mergeStates(devices[i]!, server)), limits).state;
+          server = devices[i];
+        };
+
+        for (const n of schedule) sync(n % devices.length);
+        for (let round = 0; round < 2; round++) {
+          devices.forEach((_, i) => {
+            sync(i);
+          });
+        }
+
+        for (const device of devices) expect(device).toEqual(server);
+        const liveTags = new Set(server.tags.filter(tag => !tag.deleted).map(tag => tag.key));
+        expect(liveTags.size).toBeLessThanOrEqual(limits.maxTags);
+        for (const key of liveTags) {
+          expect(server.tagged.filter(record => !record.deleted && record.tagKey === key).length).toBeLessThanOrEqual(limits.tagMaxItems);
+        }
+        expect(server.starred.filter(record => !record.deleted).length).toBeLessThanOrEqual(limits.tagMaxItems);
+      },
+    ));
+  });
+
   test("fuses homonymous tags into the first created one", () => {
     const state: BookmarksState = {
       tags: [
@@ -230,4 +261,32 @@ test("joinRecords: what exists online is not deleted by the joining device, onli
   const merged = mergeStates(local, joinRecords(local, remote, stamp(20)));
   expect(merged.starred.filter(record => !record.deleted).map(record => record.uri)).toEqual(["addedHere", "deletedHere", "online"]);
   expect(merged.starred.find(record => record.uri === "deletedHere")?.updatedAt).toBe(stamp(20));
+});
+
+test("enforceLimits keeps the tags created first and the entries added first", () => {
+  const tag = (key: string, created: number): TagRecord =>
+    ({ key, name: key, description: "", color: "Blue", createdAt: stamp(created), updatedAt: stamp(created) });
+  const entry = (tagKey: string, uri: string, added: number): TaggedRecord =>
+    ({ tagKey, uri, word: uri, excerpt: uri, updatedAt: stamp(added) });
+  const state: BookmarksState = {
+    tags: [tag("b", 2), tag("a", 1), tag("c", 3)],
+    tagged: [entry("a", "y", 12), entry("a", "x", 11), entry("a", "z", 13), entry("c", "x", 14)],
+    starred: [
+      { uri: "later", word: "l", excerpt: "l", updatedAt: stamp(21) },
+      { uri: "first", word: "f", excerpt: "f", updatedAt: stamp(20) },
+      { uri: "latest", word: "t", excerpt: "t", updatedAt: stamp(22) },
+    ],
+    tagOrder: null,
+  };
+
+  const { state: limited, dropped } = enforceLimits(state, { maxTags: 2, tagMaxItems: 2 });
+  expect(dropped).toEqual({ tags: 1, entries: 3 });
+  expect(limited.tags.filter(t => t.deleted).map(t => t.key)).toEqual(["c"]);
+  expect(limited.tagged.filter(r => !r.deleted).map(r => r.uri)).toEqual(["y", "x"]);
+  // Deleted at their own stamp (every device deletes them alike).
+  expect(limited.tagged.find(r => r.uri === "z")).toMatchObject({ deleted: true, updatedAt: stamp(13), word: "" });
+  expect(limited.starred.filter(r => !r.deleted).map(r => r.uri)).toEqual(["later", "first"]);
+
+  // Within the limits: unchanged.
+  expect(enforceLimits(limited, { maxTags: 2, tagMaxItems: 2 })).toEqual({ state: limited, dropped: { tags: 0, entries: 0 } });
 });

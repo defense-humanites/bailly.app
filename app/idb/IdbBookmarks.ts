@@ -4,6 +4,7 @@ import {
   canonical,
   compact,
   emptyState,
+  enforceLimits,
   latestStamp,
   mergeStates,
   normalize,
@@ -11,6 +12,7 @@ import {
   recordId,
   restoreRecords,
   type BookmarksState,
+  type DroppedRecords,
 } from "./merge";
 
 export type MergeOutcome = {
@@ -19,6 +21,10 @@ export type MergeOutcome = {
    * Whether the stored bookmarks changed.
    */
   changed: boolean;
+  /**
+   * The bookmarks deleted to keep within the limits (cf. `enforceLimits`).
+   */
+  dropped: DroppedRecords;
 };
 
 /**
@@ -87,7 +93,8 @@ export class IdbBookmarks {
    * Merges a state into the stored one, in a single transaction: only the
    * records that change are written (and the tombstones old enough are
    * forgotten, cf. `compact`), and the clock moves past the merged stamps, so
-   * that later changes on this device supersede them.
+   * that later changes on this device supersede them. The bookmarks are kept
+   * within the limits (cf. `enforceLimits`).
    * @param incoming The state to merge, from the stored one.
    */
   static async #mergeInto(
@@ -109,7 +116,8 @@ export class IdbBookmarks {
         starred: await stores.starred.getAll(),
         tagOrder: (await Idb.getMeta(stores.meta, IdbMetaKey.TagOrder)) ?? null,
       };
-      const merged = compact(normalize(mergeStates(local, await incoming(local, stores.meta))));
+      const limited = enforceLimits(normalize(mergeStates(local, await incoming(local, stores.meta))), Idb.config);
+      const merged = compact(limited.state);
 
       /**
        * The records of a kind that differ from the stored ones.
@@ -154,6 +162,7 @@ export class IdbBookmarks {
       return {
         state: merged,
         changed: Boolean(changes.tags.length || changes.tagged.length || changes.starred.length || changes.tagOrder),
+        dropped: limited.dropped,
       };
     });
   }

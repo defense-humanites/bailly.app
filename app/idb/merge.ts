@@ -222,6 +222,84 @@ export function normalize(state: BookmarksState): BookmarksState {
 }
 
 /**
+ * The limits of the bookmarks (cf. `Idb.config`): tags, and entries per tag
+ * (the favorites included).
+ */
+export type BookmarksLimits = {
+  maxTags: number;
+  tagMaxItems: number;
+};
+
+/**
+ * What `enforceLimits` deleted.
+ */
+export type DroppedRecords = {
+  tags: number;
+  entries: number;
+};
+
+/**
+ * Keeps the bookmarks within the limits, which a merge may exceed (e.g.
+ * entries added to a tag on two devices, or two devices brought together):
+ * the earliest win (the tags created first, the entries added first), as on
+ * a device where the later additions are refused; the others are deleted,
+ * with their entries for a tag. Their tombstones keep the stamp of the
+ * record, so that every device deletes them alike.
+ */
+export function enforceLimits(
+  state: BookmarksState,
+  { maxTags, tagMaxItems }: BookmarksLimits,
+): { state: BookmarksState; dropped: DroppedRecords } {
+  function earliestAdded<T extends Versioned>(id: (record: T) => string): (a: T, b: T) => number {
+    return (a, b) => (a.updatedAt !== b.updatedAt ? (a.updatedAt < b.updatedAt ? -1 : 1) : (id(a) < id(b) ? -1 : 1));
+  }
+
+  const liveTags = state.tags
+    .filter(tag => !tag.deleted)
+    .sort((a, b) => (a.createdAt !== b.createdAt ? (a.createdAt < b.createdAt ? -1 : 1) : (a.key < b.key ? -1 : 1)));
+  const droppedTags = new Set(liveTags.slice(maxTags).map(recordId.tag));
+  const keptTags = new Set(liveTags.slice(0, maxTags).map(recordId.tag));
+
+  const droppedTagged = new Set<string>();
+  const byTag = new Map<TagKey, TaggedRecord[]>();
+  for (const record of state.tagged) {
+    if (record.deleted) continue;
+    if (droppedTags.has(record.tagKey)) droppedTagged.add(recordId.tagged(record));
+    else if (keptTags.has(record.tagKey)) byTag.set(record.tagKey, [...(byTag.get(record.tagKey) ?? []), record]);
+  }
+  for (const records of byTag.values()) {
+    for (const record of records.sort(earliestAdded<TaggedRecord>(recordId.tagged)).slice(tagMaxItems)) {
+      droppedTagged.add(recordId.tagged(record));
+    }
+  }
+
+  const droppedStarred = new Set(
+    state.starred
+      .filter(record => !record.deleted)
+      .sort(earliestAdded<StarredRecord>(recordId.starred))
+      .slice(tagMaxItems)
+      .map(recordId.starred),
+  );
+
+  const dropped = { tags: droppedTags.size, entries: droppedTagged.size + droppedStarred.size };
+  if (!dropped.tags && !dropped.entries) return { state, dropped };
+
+  return {
+    state: {
+      ...state,
+      tags: state.tags.map(tag => (droppedTags.has(recordId.tag(tag)) ? tagTombstone(tag, tag.updatedAt) : tag)),
+      tagged: state.tagged.map(record =>
+        droppedTagged.has(recordId.tagged(record)) ? entryTombstone(record, record.updatedAt) : record,
+      ),
+      starred: state.starred.map(record =>
+        droppedStarred.has(recordId.starred(record)) ? entryTombstone(record, record.updatedAt) : record,
+      ),
+    },
+    dropped,
+  };
+}
+
+/**
  * How long tombstones are kept (90 days): long enough for the devices of a
  * user to meet in the meantime.
  */
