@@ -56,14 +56,15 @@ let schemaReady: WeakMap<Database, Promise<void>> = new WeakMap();
 export async function ensureSchema(db: Database): Promise<void> {
   let ready = schemaReady.get(db);
   if (!ready) {
-    ready = db.exec(`CREATE TABLE IF NOT EXISTS sync_lockers (
+    // A prepared statement rather than `exec`, which D1 runs line by line.
+    ready = db.sql`CREATE TABLE IF NOT EXISTS sync_lockers (
       id TEXT PRIMARY KEY,
       token_hash TEXT NOT NULL,
       version INTEGER NOT NULL,
       blob TEXT NOT NULL,
       deleted INTEGER NOT NULL DEFAULT 0,
       updated_at INTEGER NOT NULL
-    )`).then(() => undefined);
+    )`.then(() => undefined);
     ready.catch(() => schemaReady.delete(db));
     schemaReady.set(db, ready);
   }
