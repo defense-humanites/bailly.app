@@ -293,10 +293,8 @@ export class IdbTags {
         || new Set(orderedKeys).size !== orderedKeys.length
         || !orderedKeys.every(key => storedKeys.has(key))
       ) {
-        throw new Error(
-          "The keys passed and those stored in IndexedDB do not match "
-          + "(no data has been modified).",
-        );
+        // E.g. a tag added or removed meanwhile, by a synchronization.
+        throw new IdbError("Les étiquettes ont changé entre-temps : réessayez.");
       }
 
       const order: TagOrder = { keys: [...orderedKeys], updatedAt: await Idb.stamp(meta) };

@@ -214,10 +214,11 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   ): Promise<IdbResult<IdbTagWithKey[]>> {
     await initialize();
     const result = report(await IdbTags.reorder(orderedKeys));
-    if (result.state === "success") {
-      if (setFirstAsCurrent && orderedKeys[0] !== undefined) currentTagKey.value = orderedKeys[0];
-      await fetchTags();
+    if (result.state === "success" && setFirstAsCurrent && orderedKeys[0] !== undefined) {
+      currentTagKey.value = orderedKeys[0];
     }
+    // After a failure too: the tags shown are those stored.
+    await fetchTags();
     return result;
   }
 

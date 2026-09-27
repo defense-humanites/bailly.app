@@ -59,6 +59,7 @@ test("Reorder tags", async () => {
   expect(await IdbTags.reorder([keys.b, keys.a, "unknown"])).toSatisfy(error); // Different keys.
   expect(await IdbTags.reorder([keys.b, keys.a])).toSatisfy(error); // Partial keys.
   expect(await IdbTags.reorder([])).toSatisfy(error);
+  expect(await IdbTags.reorder([keys.b, keys.a])).toEqual({ state: "error", message: "Les étiquettes ont changé entre-temps : réessayez." });
 });
 
 test("Delete tag", async () => {
