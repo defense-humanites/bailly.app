@@ -37,6 +37,15 @@ export default defineNuxtPlugin({
   setup() {
     const { searchHistoryLength, tagMaxItems, maxTags } = useRuntimeConfig().public;
     Idb.configure({ searchHistoryLength, tagMaxItems, maxTags });
+    Idb.onBlocked(() => {
+      useToast().add({
+        title: "Fermez les autres onglets de Bailly.app",
+        description: "Vos signets passent à une nouvelle version : ils s'afficheront une fois les autres onglets fermés.",
+        icon: "i-lucide-circle-alert",
+        color: "warning",
+        duration: 0,
+      });
+    });
 
     const bookmarksStore = useBookmarksStore();
     onNuxtReady(() => bookmarksStore.initialize());

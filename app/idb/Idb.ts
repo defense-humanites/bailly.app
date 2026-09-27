@@ -308,6 +308,15 @@ export class Idb {
    */
   static #db: Promise<IDBPDatabase<BaillyDB>> | undefined;
   static #config: IdbConfig | undefined;
+  static #blockedHandler: (() => void) | undefined;
+
+  /**
+   * Sets what to do when the upgrade of the database waits for another tab
+   * to close it (e.g. telling the user).
+   */
+  static onBlocked(handler: () => void): void {
+    Idb.#blockedHandler = handler;
+  }
 
   static get config(): IdbConfig {
     if (Idb.#config === undefined) {
@@ -381,6 +390,11 @@ export class Idb {
         }
 
         // Future versions: add `if (oldVersion < 5) { … }` blocks here.
+      },
+      blocked() {
+        // Another tab (e.g. of the previous version) keeps the database open
+        // in an older version: the upgrade waits until it is closed.
+        Idb.#blockedHandler?.();
       },
       blocking(_currentVersion, _blockedVersion, event) {
         // Another tab needs to upgrade the database: release it.
