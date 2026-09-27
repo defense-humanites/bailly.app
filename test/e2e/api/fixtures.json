@@ -1,4 +1,39 @@
 {
+ "/entry/chliainô?fields=word,uri,excerpt,htmlDefinition&siblings=true": {
+  "data": {
+   "$query": {
+    "fields": [
+     "word",
+     "uri",
+     "excerpt",
+     "htmlDefinition"
+    ],
+    "siblings": true,
+    "q": "chliainô"
+   },
+   "version": "2023-02-28",
+   "entry": {
+    "word": "χλιαίνω",
+    "uri": "chliainô",
+    "excerpt": "χλιαίνω (f. -ανῶ [ᾰ], ao. ἐχλίανα [ᾱν] et ἐχλίηνα, pf. inus.) [Ῡ] 1 rendre tiède, échauffer doucement, amollir par l’action d’une chaleur douce, Ar. …",
+    "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">χλιαίνω</span></span> (<span class=\"ital\">f.</span>\n<span class=\"grec\">-ανῶ</span> [<span class=\"grec\">ᾰ</span>],\n<span class=\"ital\">ao.</span> <span class=\"grec\"><span data-linked-self>ἐχλίανα</span></span>\n[<span class=\"grec\">ᾱν</span>] <span class=\"ital\">et</span>\n<span class=\"grec\"><span data-linked-self>ἐχλίηνα</span>,</span> <span class=\"ital\">pf.\ninus.</span>) [<span class=\"grec\">Ῡ</span>]\n<div class=\"pp\"><span class=\"ppa\">1</span> rendre tiède, échauffer\ndoucement, amollir par l’action d’une chaleur douce, <span class=\"aut\">Ar.</span> <span class=\"oeuv\">Lys.</span> <span class=\"refch\">386 ;</span> <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Probl.</span> <span class=\"refch\">8, 18 ;</span>\n<span class=\"refch\">21, 25 ;</span> <span class=\"aut\">Anth.</span>\n<span class=\"refch\">9, 244 ;</span> <span class=\"oeuv\">App.</span>\n<span class=\"refch\">90 ;</span> <span class=\"aut\">Plut.</span>\n<span class=\"oeuv\">M.</span> <span class=\"refpa\">658</span><span class=\"refpb\">b</span> ; <span class=\"ital\">au pass.</span> s’échauffer doucement, <span class=\"aut\">Ar.</span> <span class=\"oeuv\">Eccl.</span> <span class=\"refch\">64 ;</span> <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">H.A.</span> <span class=\"refch\">3, 7, 2 ;</span>\n<span class=\"ital\">en parl. de pers. malades de la fièvre,</span>\n<span class=\"aut\">Hpc.</span> <span class=\"oeuv\">Coac.</span>\n<span class=\"refch\">143</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> échauffer par la\npassion, <span class=\"aut\">Soph.</span> (<span class=\"aut\">Ath.</span> <span class=\"refpa\">604</span><span class=\"refpb\">f</span>) ; <span class=\"ital\">au pass.</span> être\néchauffé par la passion, <span class=\"aut\">Anth.</span>\n<span class=\"refch\">5, 151, 165, 172 ;</span> <span class=\"refch\">12, 63, 125</span> ||</div>\n<div class=\"fleche\"><span class=\"flechea\">E</span> <span class=\"ital\">Ao.</span> <span class=\"grec\"><span data-linked-self>ἐχλίηνα</span>,</span> <span class=\"aut\">Hermés.</span> (<span class=\"aut\">Ath.</span> <span class=\"refpa\">599</span><span class=\"refpb\">a</span>) ; <span class=\"ital\">inf.</span> <span class=\"grec\"><span data-linked-self>χλιῆναι</span>,</span> <span class=\"aut\">Anth.</span> <span class=\"refch\">9, 244</span>.</div>\n<div class=\"etymrev\"><span class=\"etiqetymrev\">Étym.</span> R.\n<span class=\"ital\">indo-europ.</span> <span class=\"indoeurop\">*ǵ<span class=\"upr\">h</span>lei(d)-,</span> luisant,\nclair ; <span class=\"ital\">cf.</span> <span class=\"grec\"><a href=\"/chliaô-ô\">χλιάω</a>,\n<a href=\"/chliaros\">χλιαρός</a>, <a href=\"/chliô\">χλίω</a>,</span> <span class=\"ital\">et avec insert.\nd’un</span> <span class=\"grec\"><a href=\"/d\">δ</a>,</span> <span class=\"grec\"><a href=\"/chlidê\">χλιδή</a>,\n<a href=\"/chlidaô-ô\">χλιδάω</a></span> ; <span class=\"ital\">all.</span> <span class=\"allemand\">glimmen</span>.</div>\n"
+   },
+   "siblings": {
+    "previous": {
+     "word": "χλῆδος",
+     "uri": "chlêdos",
+     "excerpt": "χλῆδος, ου (ὁ) décombres, débris, ordures, Eschl. fr. 14 ; Dém. 1278, 4 ; 1279, 12.",
+     "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">χλῆδος,</span></span> <span class=\"gens\">ου</span>\n(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>) décombres, débris, ordures,\n<span class=\"aut\">Eschl.</span> <span class=\"refch\">fr. 14 ;</span>\n<span class=\"aut\">Dém.</span> <span class=\"refch\">1278, 4 ;</span>\n<span class=\"refch\">1279, 12</span>."
+    },
+    "next": {
+     "word": "χλιαρός",
+     "uri": "chliaros",
+     "excerpt": "χλιαρός, ά, όν [ῑᾰ] 1 tiède, d’une chaleur douce, Hdt. 4, 181 ; Ar. Ach. 975 ; Arstt. Probl. 5, 36 || 2 mou, efféminé, NT. Apoc. 3, 16 ; Plut. M. 902…",
+     "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">χλιαρός,</span></span> <span class=\"des\">ά, όν</span>\n[<span class=\"grec\">ῑᾰ</span>]\n<div class=\"pp\"><span class=\"ppa\">1</span> tiède, d’une chaleur\ndouce, <span class=\"aut\">Hdt.</span> <span class=\"refch\">4,\n181 ;</span> <span class=\"aut\">Ar.</span> <span class=\"oeuv\">Ach.</span> <span class=\"refch\">975 ;</span> <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Probl.</span> <span class=\"refch\">5, 36</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> mou, efféminé,\n<span class=\"aut\">NT.</span> <span class=\"oeuv\">Apoc.</span>\n<span class=\"refch\">3, 16 ;</span> <span class=\"aut\">Plut.</span>\n<span class=\"oeuv\">M.</span> <span class=\"refpa\">902</span><span class=\"refpb\">a</span> ||</div>\n<div class=\"fleche\"><span class=\"flechea\">E</span> [<span class=\"grec\">ῐ</span>] <span class=\"aut\">DS.</span> <span class=\"refch\">17, 50 ;</span> <span class=\"aut\">Nic.</span> <span class=\"oeuv\">Al.</span> <span class=\"refch\">360 ;</span> <span class=\"aut\">Ath.</span> <span class=\"refpa\">126</span><span class=\"refpb\">c</span> ; <span class=\"ital\">fém.</span> <span class=\"grec\"><span data-linked-self>χλιαρός</span>,</span> <span class=\"aut\">Nic.</span> <span class=\"oeuv\">Al.</span> <span class=\"refch\">360</span>.</div>\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/chliainô\">χλιαίνω</a></span>.</div>\n"
+    }
+   }
+  }
+ },
  "/entry/hai_(1)?fields=word,uri,excerpt,htmlDefinition": {
   "data": {
    "$query": {
