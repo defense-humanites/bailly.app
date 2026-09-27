@@ -249,9 +249,12 @@
   const highlightChosen = ref(false);
 
   /**
-   * Whether the results are shown.
+   * Whether the results are shown: as requested by the input menu (typing,
+   * focus, Escape…), as long as there is something to look up (not for an
+   * empty input, nor a lone pending diacritic or capital mark).
    */
   const open = ref(false);
+  const searchable = computed((): boolean => toLookupQuery(query.value, inputMode.value) !== "");
 
   /**
    * Whether Enter was pressed before the results of the query came.
@@ -357,7 +360,7 @@
   >
     <UInputMenu
       ref="menu"
-      v-model:open="open"
+      :open="open && searchable"
       class="w-full"
       :model-value="query"
       mode="autocomplete"
@@ -386,6 +389,7 @@
         itemTrailingIcon: 'hidden',
         label: 'text-xs uppercase tracking-wide text-muted',
       }"
+      @update:open="open = $event"
       @update:model-value="onInput"
       @compositionstart="onCompositionStart"
       @compositionend="onCompositionEnd"
@@ -496,8 +500,7 @@
       </template>
 
       <template #empty="{ searchTerm }">
-        <span v-if="!toSearchQuery(searchTerm)">Saisissez un mot {{ transliterating ? "translittéré" : "en beta code" }} (p. ex. <em>{{ transliterating ? "lógos" : "logos" }}</em>) ou en grec.</span>
-        <span v-else-if="pending">Recherche…</span>
+        <span v-if="pending">Recherche…</span>
         <span v-else-if="status === 'error'">La recherche a échoué. Veuillez réessayer.</span>
         <span v-else>Aucun résultat pour « {{ searchTerm }} ».</span>
       </template>

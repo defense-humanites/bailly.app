@@ -146,3 +146,23 @@ test.describe("search options", () => {
     await expect(searchInput(page)).toHaveAttribute("placeholder", "anazētéō…");
   });
 });
+
+test("the pointer on the results, as on the history's links and the buttons", async ({ page, goto }) => {
+  await goto("/logos", { waitUntil: "hydration" });
+  await expect(page.getByRole("button", { name: "Entrées consultées récemment" })).toHaveCSS("cursor", "pointer");
+  await searchInput(page).fill("logos");
+  await expect(searchResults(page).getByRole("option").first()).toHaveCSS("cursor", "pointer");
+});
+
+test("no results panel while there is nothing to look up", async ({ page, goto }) => {
+  await goto("/", { waitUntil: "hydration" });
+  await searchInput(page).pressSequentially("log");
+  await expect(searchResults(page)).toBeVisible();
+  await searchInput(page).fill("");
+  await expect(searchResults(page)).toBeHidden();
+  // A lone capital mark (beta code) waits for its letter.
+  await searchInput(page).pressSequentially("*");
+  await expect(searchResults(page)).toBeHidden();
+  await searchInput(page).pressSequentially("l");
+  await expect(searchResults(page)).toBeVisible();
+});

@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import type { NavigationMenuItem } from "@nuxt/ui";
   import { convert } from "@humanities/greek-conversion";
+  import { definitionLength, isLongDefinition } from "~/utils/definitionLength";
 
   definePageMeta({
     layout: "single-column",
@@ -12,6 +13,8 @@
   const { data, error } = await useApiEntry(uri, {
     fields: ["word", "uri", "excerpt", "htmlDefinition"],
     siblings: true,
+    // Only what the links to the neighbouring entries show (not their definitions).
+    siblingsFields: ["word", "uri", "excerpt"],
   });
 
   if (error.value) {
@@ -36,6 +39,15 @@
 
   const siblings = data.value?.siblings ?? {};
 
+  /**
+   * Whether the definition (or those of the homonyms) is long, at the chosen
+   * reading size.
+   */
+  const readingSize = usePreferences().preference("readingSize");
+  const textLength = [entry, ...(entry.children ?? [])]
+    .reduce((length, { htmlDefinition }) => length + definitionLength(htmlDefinition), 0);
+  const longDefinition = computed((): boolean => isLongDefinition(textLength, readingSize.value));
+
   // Greek may be transliterated (a preference).
   const greek = useGreek();
 
@@ -58,6 +70,7 @@
         "to": `/${siblings.previous.uri}`,
         "aria-label": `Entrée précédente : ${greek.text(siblings.previous.word)}`,
         "ui": { linkLabel: "max-sm:sr-only" },
+        "tooltip": { text: "Entrée précédente", kbds: ["arrowleft"] },
       }
       : placeholder,
     // The title: active (no hover effect), without the active background.
@@ -76,9 +89,46 @@
         "aria-label": `Entrée suivante : ${greek.text(siblings.next.word)}`,
         "class": "justify-end text-right",
         "ui": { linkLabel: "max-sm:sr-only" },
+        "tooltip": { text: "Entrée suivante", kbds: ["arrowright"] },
       }
       : placeholder,
   ];
+
+  /**
+   * The compact bar is shown once the title has scrolled under it (its
+   * wrapper, of no height, is stuck under the header then).
+   */
+  const title = useTemplateRef<HTMLElement>("title");
+  const compactBar = useTemplateRef<ComponentPublicInstance>("compactBar");
+  const compactBarShown = ref(false);
+  const { y } = useWindowScroll();
+
+  const updateCompactBar = (): void => {
+    const barTop = (compactBar.value?.$el as HTMLElement | undefined)?.getBoundingClientRect().top;
+    const titleBottom = title.value?.getBoundingClientRect().bottom;
+    if (barTop === undefined || titleBottom === undefined) return;
+    compactBarShown.value = titleBottom <= barTop;
+  };
+
+  onMounted(updateCompactBar);
+  watch(y, () => requestAnimationFrame(updateCompactBar));
+
+  /**
+   * Keyboard: the left and right arrows lead to the previous and next
+   * entries, while the focus is on the page itself or its text: not on a
+   * link, a button or a control (e.g. the search input, a menu, a panel),
+   * which may use them, nor with a modifier (e.g. Alt+← goes back in the
+   * history of Windows and Linux browsers).
+   */
+  useEventListener("keydown", (event: KeyboardEvent) => {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    const sibling = { ArrowLeft: siblings.previous, ArrowRight: siblings.next }[event.key];
+    if (!sibling) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.closest("a, button, input, textarea, select, summary, [contenteditable], [tabindex], [role=dialog], [role=listbox], [role=menu], [role=radiogroup], [role=slider], [role=tablist]")) return;
+    event.preventDefault();
+    void navigateTo(`/${sibling.uri}`);
+  });
 
   useSeoMeta({
     title: `${entry.word.replace(/\u03D0/g, "β")} (${convert(entry.word, "greek", "transliteration", { preset: "ala-lc-ancient" })})`,
@@ -88,7 +138,13 @@
 
 <template>
   <article>
-    <header>
+    <EntryCompactBar
+      ref="compactBar"
+      :word="greek.text(entry.word)"
+      :siblings="siblings"
+      :shown="compactBarShown"
+    />
+    <header ref="title">
       <UNavigationMenu
         :ui="{
           root: '[&>div]:w-full',
@@ -106,7 +162,15 @@
         toolbar
       />
     </section>
-    <footer class="mt-8">
+    <!--
+      The links to the neighbouring entries, again after the entry: always
+      below lg (only arrows in the header on mobile), and on desktop only
+      after a long definition (the header's are then out of sight).
+    -->
+    <footer
+      class="mt-8"
+      :class="{ 'lg:hidden': !longDefinition }"
+    >
       <EntrySurround :siblings="siblings" />
     </footer>
   </article>

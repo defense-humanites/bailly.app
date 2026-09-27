@@ -71,10 +71,12 @@ export type LookupEntry<F extends EntryField = EntryField> = Entry<F> & {
  */
 export type InputMode = "greek" | "betacode" | "transliteration";
 
-export type EntryParams<F extends EntryField> = {
+export type EntryParams<F extends EntryField, S extends EntryField = F> = {
   fields: F[];
   /** Also return the previous and next entries. */
   siblings?: boolean;
+  /** The fields of the previous and next entries (by default, `fields`). */
+  siblingsFields?: S[];
 };
 
 export type RandomEntryParams<F extends EntryField> = {
@@ -103,9 +105,9 @@ export type ApiResponse<T> = { data: T & { version: string } };
 /**
  * `GET /entry/:uri`. An unknown entry is an empty object.
  */
-export type ApiEntryData<F extends EntryField> = {
+export type ApiEntryData<F extends EntryField, S extends EntryField = F> = {
   entry: Entry<F> | Record<string, never>;
-  siblings?: Siblings<F>;
+  siblings?: Siblings<S>;
 };
 
 /**

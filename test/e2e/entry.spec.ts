@@ -37,10 +37,68 @@ test.describe("entry page", () => {
     });
   });
 
+  test("links after the entry: on desktop, only after a long definition", async ({ page, goto }) => {
+    const surround = page.getByRole("navigation", { name: "Entrées voisines" });
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await goto("/logotechnês", { waitUntil: "hydration" });
+    await expect(surround).toBeHidden();
+    await goto("/logos", { waitUntil: "hydration" });
+    await expect(surround).toBeVisible();
+
+    await page.setViewportSize({ width: 390, height: 800 });
+    await goto("/logotechnês", { waitUntil: "hydration" });
+    await expect(surround).toBeVisible();
+  });
+
   test("homonyms: each has its anchor", async ({ page, goto }) => {
     await goto("/logades#2", { waitUntil: "hydration" });
     await expect(page.locator("[id='1']")).toHaveCount(1);
     await expect(page.locator("[id='2']")).toHaveCount(1);
+  });
+
+  test("a compact bar appears once the title is out of sight", async ({ page, goto }) => {
+    const bar = page.getByRole("navigation", { name: "Navigation de l'entrée" });
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: 700 });
+      await goto("/logos", { waitUntil: "hydration" });
+      await expect(bar).toBeHidden();
+      await page.mouse.wheel(0, 1500);
+      await expect(bar).toBeVisible();
+      await expect(bar).toContainText("λόγος");
+      // Right under the header.
+      const [barTop, headerBottom] = await page.evaluate(async () => {
+        const nav = document.querySelector("nav[aria-label='Navigation de l\\'entrée']")!;
+        await Promise.all(nav.getAnimations().map(animation => animation.finished));
+        return [nav.getBoundingClientRect().top, document.querySelector("body > div header")!.getBoundingClientRect().bottom];
+      });
+      expect(Math.abs(barTop - headerBottom)).toBeLessThan(1);
+      // Exactly as wide as the definition's card.
+      const [barX, cardX] = await page.evaluate(() => [
+        document.querySelector("nav[aria-label='Navigation de l\\'entrée']")!,
+        document.querySelector("main article section [data-slot=root]")!,
+      ].map(element => [Math.round(element.getBoundingClientRect().left), Math.round(element.getBoundingClientRect().right)]));
+      expect(barX).toEqual(cardX);
+      await page.mouse.wheel(0, -3000);
+      await expect(bar).toBeHidden();
+    }
+  });
+
+  test("keyboard: the arrows lead to the neighbouring entries", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    const nextWord = (await page.locator("article > header").getByRole("link", { name: /^Entrée suivante : / }).getAttribute("aria-label"))!.replace("Entrée suivante : ", "");
+    // Not while typing in the search bar.
+    await page.locator("header input[role=combobox]").focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator("main h1")).toHaveText("λόγος");
+    // Nor on a link (e.g. of the definition).
+    await page.locator("main .definition a").first().focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator("main h1")).toHaveText("λόγος");
+    await page.locator("main h1").click();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator("main h1")).toHaveText(nextWord);
+    await page.keyboard.press("ArrowLeft");
+    await expect(page.locator("main h1")).toHaveText("λόγος");
   });
 
   test("the arrow of a definition sits in the line of its text", async ({ page, goto }) => {

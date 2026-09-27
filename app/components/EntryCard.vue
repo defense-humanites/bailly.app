@@ -127,7 +127,8 @@
   >
     <!--
       Each homonym is anchored by its number (e.g. `oudos#2` → `#2`). The
-      anchor is offset to clear the fixed header: the router's scroll ignores
+      anchor is offset to clear the header and the sticky title of the entry
+      page (about 3.5rem): the router's scroll ignores
       `scroll-margin-top` for ids starting with a digit (`#2` isn't a valid
       CSS selector).
     -->
@@ -139,7 +140,7 @@
       <span
         v-if="!noAnchors"
         :id="homonymAnchor(childEntry.uri) ?? String(index + 1)"
-        class="absolute -top-24"
+        class="absolute top-[calc(-1*(var(--header-bottom)+3.5rem))]"
         aria-hidden="true"
       />
       <ReuseEntryCard :entry="childEntry" />

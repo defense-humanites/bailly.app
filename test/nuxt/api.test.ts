@@ -29,6 +29,21 @@ test("useApiEntry returns the entry and its siblings", async () => {
   expect(queries).toEqual([{ fields: "word,uri,excerpt", siblings: "true" }]);
 });
 
+test("useApiEntry asks for the siblings' own fields", async () => {
+  const queries = mockApi("/entry/logos", {
+    data: { version: "test", entry: logos, siblings: { next: { word: "λύω", uri: "lyô", excerpt: "λύω" } } },
+  });
+
+  const { data } = await useApiEntry("logos", {
+    fields: ["word", "uri", "excerpt", "htmlDefinition"],
+    siblings: true,
+    siblingsFields: ["word", "uri"],
+  });
+
+  expect(data.value?.siblings.next?.word).toBe("λύω");
+  expect(queries).toEqual([{ fields: "word,uri,excerpt,htmlDefinition", siblings: "true", siblingsFields: "word,uri" }]);
+});
+
 test("useApiEntry returns `null` for an unknown entry", async () => {
   mockApi("/entry/unknown", { data: { version: "test", entry: {}, siblings: {} } });
 

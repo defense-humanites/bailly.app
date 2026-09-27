@@ -14,10 +14,10 @@ import type {
 } from "#shared/types/api";
 import { sortLookupEntries, toApiQuery } from "#shared/utils/api";
 
-export type EntryResult<F extends EntryField> = {
+export type EntryResult<F extends EntryField, S extends EntryField = F> = {
   /** The entry, or `null` if it doesn't exist. */
   entry: Entry<F> | null;
-  siblings: Siblings<F>;
+  siblings: Siblings<S>;
 };
 
 export type LookupResult<F extends EntryField> = {
@@ -33,14 +33,14 @@ export type LookupResult<F extends EntryField> = {
  * @param uri The entry URI.
  * @param params The requested fields and options.
  */
-export function useApiEntry<F extends EntryField>(
+export function useApiEntry<F extends EntryField, S extends EntryField = F>(
   uri: MaybeRefOrGetter<string>,
-  params: EntryParams<F>,
+  params: EntryParams<F, S>,
 ) {
   return useFetch(() => `entry/${encodeURIComponent(toValue(uri))}`, {
     $fetch: useNuxtApp().$api,
     query: toApiQuery(params),
-    transform: ({ data }: ApiResponse<ApiEntryData<F>>): EntryResult<F> => ({
+    transform: ({ data }: ApiResponse<ApiEntryData<F, S>>): EntryResult<F, S> => ({
       // The API answers unknown entries with an empty object.
       entry: Object.keys(data.entry).length ? (data.entry as Entry<F>) : null,
       siblings: data.siblings ?? {},
@@ -57,7 +57,7 @@ export function useApiEntry<F extends EntryField>(
  */
 export function useApiEntries<F extends EntryField>(
   uris: MaybeRefOrGetter<string[]>,
-  params: Omit<EntryParams<F>, "siblings">,
+  params: Omit<EntryParams<F>, "siblings" | "siblingsFields">,
 ) {
   const { $api } = useNuxtApp();
 

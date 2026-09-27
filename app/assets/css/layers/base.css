@@ -1,4 +1,16 @@
 @layer base {
+  /*
+   * The pointer on everything clickable, as users expect on the web:
+   * Tailwind 4 leaves it to the links only (the buttons keep the default
+   * cursor, as native controls do). Buttons, the options of lists (search
+   * results, menus), the controls of forms and their labels; not when
+   * disabled (Nuxt UI sets `cursor-not-allowed` then, in the utilities).
+   */
+  :is(button, summary, select, [role="button"], [role="option"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"]):not(:disabled, [aria-disabled="true"], [data-disabled]),
+  label:has(:is(button, input):not(:disabled)) {
+    cursor: pointer;
+  }
+
   body {
     @apply bg-secondary-50 dark:bg-neutral-900 bg-fixed;
     /* Cf. `--app-min-width` (root.css). */
