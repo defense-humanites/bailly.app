@@ -9,10 +9,8 @@ import { isValidBlob, MAX_BLOB_LENGTH, purgeLockers, writeLocker } from "../../l
 export default defineEventHandler(async (event) => {
   const { id, tokenHash } = await lockerRequest(event);
 
-  if (Number(getRequestHeader(event, "content-length") ?? 0) > MAX_BLOB_LENGTH + 1_000) {
-    throw createError({ statusCode: 413 });
-  }
-  const body = await readBody<{ version?: unknown; blob?: unknown } | null>(event);
+  // Read with a limit, whatever the `Content-Length` says.
+  const body = await readBoundedJson(event, MAX_BLOB_LENGTH + 1_000) as { version?: unknown; blob?: unknown } | null;
   const version = body?.version;
   if (typeof version !== "number" || !Number.isInteger(version) || version < 0 || !isValidBlob(body?.blob)) {
     throw createError({ statusCode: 400 });

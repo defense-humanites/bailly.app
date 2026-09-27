@@ -23,3 +23,28 @@ export async function lockerRequest(event: H3Event): Promise<{ id: string; token
 
   return { id, tokenHash: await hashToken(token) };
 }
+
+/**
+ * Reads a JSON body of at most `maxBytes`: a `Content-Length` is required
+ * (browsers send it for a body of known size, as the Fetch standard says),
+ * and checked before the body is read; the connection's framing then keeps
+ * the body within it. A chunked body, whose size is unknown until read, is
+ * refused rather than read.
+ * @throws A 411 error without `Content-Length`, a 413 error if the body is
+ * too large, a 400 error if it is not JSON.
+ */
+export async function readBoundedJson(event: H3Event, maxBytes: number): Promise<unknown> {
+  const header = getRequestHeader(event, "content-length");
+  const length = header === undefined ? Number.NaN : Number(header);
+  if (!Number.isInteger(length) || length < 0) throw createError({ statusCode: 411 });
+  if (length > maxBytes) throw createError({ statusCode: 413 });
+
+  const raw = await readRawBody(event, false);
+  if (raw && raw.byteLength > maxBytes) throw createError({ statusCode: 413 });
+
+  try {
+    return JSON.parse(raw ? new TextDecoder().decode(raw) : "") as unknown;
+  } catch {
+    throw createError({ statusCode: 400 });
+  }
+}
