@@ -78,3 +78,9 @@ test("blobs", () => {
   expect(isValidBlob("a+b")).toBe(false);
   expect(isValidBlob("a".repeat(1_000_001))).toBe(false);
 });
+
+test("the purge of the idle lockers has an index", async () => {
+  await readLocker(db, id, hash);
+  const { rows } = await db.sql`SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'sync_lockers'`;
+  expect(rows?.map(row => row.name)).toContain("sync_lockers_updated_at");
+});

@@ -64,7 +64,10 @@ export async function ensureSchema(db: Database): Promise<void> {
       blob TEXT NOT NULL,
       deleted INTEGER NOT NULL DEFAULT 0,
       updated_at INTEGER NOT NULL
-    )`.then(() => undefined);
+    )`
+      // For the purge of the idle lockers (a statement of its own, as above).
+      .then(() => db.sql`CREATE INDEX IF NOT EXISTS sync_lockers_updated_at ON sync_lockers (updated_at)`)
+      .then(() => undefined);
     ready.catch(() => schemaReady.delete(db));
     schemaReady.set(db, ready);
   }
