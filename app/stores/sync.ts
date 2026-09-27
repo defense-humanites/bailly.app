@@ -3,7 +3,7 @@ import { IdbBookmarks, Idb, IdbError, IdbMetaKey, type IdbResult, type IdbSyncCo
 import type { BookmarksState } from "~/idb/merge";
 import { fromBase64url, toBase64url } from "~/sync/base64url";
 import { deriveCredentials, type SyncCredentials } from "~/sync/crypto";
-import { synchronize, type SyncOptions } from "~/sync/engine";
+import { synchronize, SyncTooLargeError, type SyncOptions } from "~/sync/engine";
 import {
   fetchLocker,
   LockerDeletedError,
@@ -168,7 +168,7 @@ export const useSyncStore = defineStore("sync", () => {
    */
   function describe(e: unknown): string {
     if (e instanceof LockerDeletedError) return `${e.message} Vos signets restent sur cet appareil.`;
-    if (e instanceof SyncNetworkError || e instanceof IdbError) return e.message;
+    if (e instanceof SyncNetworkError || e instanceof SyncTooLargeError || e instanceof IdbError) return e.message;
     console.error(e);
     return "La synchronisation a échoué. Vos signets restent sur cet appareil.";
   }

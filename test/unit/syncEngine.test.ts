@@ -2,10 +2,11 @@
 import { createDatabase, type Database } from "db0";
 import sqlite from "db0/connectors/node-sqlite";
 import { beforeEach, expect, test } from "vitest";
+import { parseBookmarksFile } from "../../app/idb/transfer";
 import { formatStamp } from "../../app/idb/clock";
 import { emptyState, joinRecords, mergeStates, normalize, type BookmarksState } from "../../app/idb/merge";
-import { deriveCredentials, type SyncCredentials } from "../../app/sync/crypto";
-import { synchronize, type SyncDependencies } from "../../app/sync/engine";
+import { decryptText, deriveCredentials, type SyncCredentials } from "../../app/sync/crypto";
+import { lockerBlob, synchronize, SyncTooLargeError, type SyncDependencies } from "../../app/sync/engine";
 import { deleteLocker, hashToken, readLocker, resetSchemaCache, writeLocker } from "../../server/lib/lockers";
 import { LockerDeletedError, SyncBusyError, SyncTimeoutError } from "../../app/sync/lockerClient";
 
@@ -223,4 +224,29 @@ test("a cancelled synchronization aborts its requests, and merges nothing afterw
   };
   await expect(synchronize(credentials, deps, { signal: aborted.signal })).rejects.toBeInstanceOf(SyncTimeoutError);
   expect(merged).toEqual([]);
+});
+
+test("a content too large leaves out the older tombstones first, then is refused", async () => {
+  const day = 24 * 60 * 60 * 1000;
+  const tombstone = (uri: string, age: number) =>
+    ({ uri, word: "", excerpt: "", updatedAt: formatStamp({ time: Date.now() - age, counter: 0, node: "t" }), deleted: true as const });
+  const state: BookmarksState = {
+    ...emptyState(),
+    starred: [
+      star("logos"),
+      tombstone("recent", day),
+      ...Array.from({ length: 300 }, (_, i) => tombstone(`older-${i}-${Math.random().toString(36).slice(2)}`, 40 * day)),
+    ],
+  };
+
+  const full = await lockerBlob(state, credentials);
+  const withoutOlder = await lockerBlob({ ...state, starred: state.starred.slice(0, 2) }, credentials);
+  expect(withoutOlder.length).toBeLessThan(full.length);
+
+  // Within a smaller limit: the tombstones older than 30 days are left out.
+  const blob = await lockerBlob(state, credentials, withoutOlder.length + 10);
+  expect(parseBookmarksFile(await decryptText(blob, credentials)).starred.map(record => record.uri)).toEqual(["logos", "recent"]);
+
+  // Too large even without tombstones.
+  await expect(lockerBlob(state, credentials, 100)).rejects.toThrow(SyncTooLargeError);
 });

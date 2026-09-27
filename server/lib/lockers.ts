@@ -1,4 +1,5 @@
 import type { Database } from "db0";
+import { MAX_LOCKER_BLOB_LENGTH } from "#shared/utils/sync";
 
 /**
  * The lockers of the bookmarks synchronization: one per synchronization key,
@@ -21,7 +22,7 @@ const BLOB_PATTERN = /^[\w-]+$/;
  * The largest locker content (the bookmarks, compressed then encrypted, in
  * base64url): about 750 KB, far beyond the application's limits.
  */
-export const MAX_BLOB_LENGTH = 1_000_000;
+export const MAX_BLOB_LENGTH = MAX_LOCKER_BLOB_LENGTH;
 /**
  * Lockers left unchanged for longer (about 18 months) are purged.
  */

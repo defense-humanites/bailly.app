@@ -1,4 +1,5 @@
-import { canonical, type BookmarksState } from "~/idb/merge";
+import { MAX_LOCKER_BLOB_LENGTH } from "#shared/utils/sync";
+import { canonical, compact, TOMBSTONE_MAX_AGE, type BookmarksState } from "~/idb/merge";
 import { exportState, parseBookmarksFile, toBookmarksFile } from "~/idb/transfer";
 import { decryptText, encryptText, type SyncCredentials } from "./crypto";
 import { fetchLocker, storeLocker, SyncTimeoutError } from "./lockerClient";
@@ -43,6 +44,44 @@ export type SyncOptions = {
 const MAX_ATTEMPTS = 5;
 
 /**
+ * The bookmarks are too large for a locker, even without their tombstones.
+ */
+export class SyncTooLargeError extends Error {
+  constructor() {
+    super("Vos signets sont trop volumineux pour être synchronisés : supprimez-en quelques-uns.");
+    this.name = "SyncTooLargeError";
+  }
+}
+
+const DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * How long the tombstones are kept in a locker, the longest first: if the
+ * content is too large, they are forgotten sooner (at worst, a device that
+ * has not synchronized since may bring back a deleted bookmark).
+ */
+const TOMBSTONE_AGES = [TOMBSTONE_MAX_AGE, 30 * DAY, 7 * DAY, 0];
+
+/**
+ * The content of the locker for a state, within the size a locker accepts.
+ * @param maxLength The largest content (cf. `MAX_LOCKER_BLOB_LENGTH`).
+ * @throws {SyncTooLargeError} If the bookmarks are too large, even without
+ * their tombstones.
+ */
+export async function lockerBlob(
+  state: BookmarksState,
+  credentials: SyncCredentials,
+  maxLength: number = MAX_LOCKER_BLOB_LENGTH,
+): Promise<string> {
+  for (const maxAge of TOMBSTONE_AGES) {
+    const file = toBookmarksFile(compact(state, maxAge), { tombstones: true });
+    const blob = await encryptText(JSON.stringify(file), credentials);
+    if (blob.length <= maxLength) return blob;
+  }
+  throw new SyncTooLargeError();
+}
+
+/**
  * Whether two states hold the same bookmarks, as synchronized.
  */
 const sameBookmarks = (a: BookmarksState, b: BookmarksState): boolean =>
@@ -56,6 +95,7 @@ const sameBookmarks = (a: BookmarksState, b: BookmarksState): boolean =>
  * @returns The version of the locker, once in sync.
  * @throws {LockerDeletedError} If a device deleted the locker.
  * @throws {SyncNetworkError} If the server cannot be reached.
+ * @throws {SyncTooLargeError} If the bookmarks are too large for a locker.
  */
 export async function synchronize(
   credentials: SyncCredentials,
@@ -87,7 +127,7 @@ export async function synchronize(
       version = 0;
     }
 
-    const blob = await encryptText(JSON.stringify(toBookmarksFile(state, { tombstones: true })), credentials);
+    const blob = await lockerBlob(state, credentials);
     checkCancelled();
     const result = await storeLocker(credentials, version, blob, requestOptions);
     if (result.state === "written") return result.version;
