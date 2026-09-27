@@ -4,7 +4,7 @@ import type { BookmarksState } from "~/idb/merge";
 import { fromBase64url, toBase64url } from "~/sync/base64url";
 import { deriveCredentials, type SyncCredentials } from "~/sync/crypto";
 import { synchronize } from "~/sync/engine";
-import { fetchLocker, LockerDeletedError, removeLocker, SyncNetworkError } from "~/sync/lockerClient";
+import { fetchLocker, LockerDeletedError, removeLocker, SyncBusyError, SyncNetworkError } from "~/sync/lockerClient";
 
 export type SyncStatus = "idle" | "syncing" | "error";
 
@@ -13,6 +13,11 @@ export type SyncStatus = "idle" | "syncing" | "error";
  * sent at once).
  */
 const CHANGE_DELAY = 3_000;
+/**
+ * The delay before retrying when the server refuses too many requests (the
+ * rate limiting rule blocks for 10 seconds).
+ */
+const BUSY_DELAY = 15_000;
 
 /**
  * A store for the online synchronization of the bookmarks (cf. `app/sync/`):
@@ -105,6 +110,7 @@ export const useSyncStore = defineStore("sync", () => {
         return;
       }
       if (!(e instanceof SyncNetworkError)) console.error(e);
+      if (e instanceof SyncBusyError) schedule(BUSY_DELAY);
       status.value = "error";
       error.value = e instanceof SyncNetworkError
         ? e.message

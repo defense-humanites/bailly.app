@@ -24,6 +24,17 @@ export class SyncNetworkError extends Error {
   }
 }
 
+/**
+ * Too many requests from this address (the rate limiting rule of Cloudflare,
+ * which blocks for 10 seconds): to retry a little later.
+ */
+export class SyncBusyError extends SyncNetworkError {
+  constructor() {
+    super("Le serveur de synchronisation est très sollicité : nouvel essai dans quelques secondes.");
+    this.name = "SyncBusyError";
+  }
+}
+
 export type LockerContent = { version: number; blob: string };
 export type StoreResult = { state: "written"; version: number } | { state: "conflict"; version: number };
 
@@ -41,6 +52,7 @@ async function request(fetcher: Fetch, { lockerId, token }: SyncCredentials, ini
 
 function unexpected(response: Response): never {
   if (response.status === 410) throw new LockerDeletedError();
+  if (response.status === 429) throw new SyncBusyError();
   throw new SyncNetworkError(`Le serveur de synchronisation a répondu par une erreur (${response.status}).`);
 }
 

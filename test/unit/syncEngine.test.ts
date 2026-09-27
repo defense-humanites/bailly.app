@@ -7,7 +7,7 @@ import { emptyState, mergeStates, normalize, type BookmarksState } from "../../a
 import { deriveCredentials, type SyncCredentials } from "../../app/sync/crypto";
 import { synchronize, type SyncDependencies } from "../../app/sync/engine";
 import { deleteLocker, hashToken, readLocker, resetSchemaCache, writeLocker } from "../../server/lib/lockers";
-import { LockerDeletedError } from "../../app/sync/lockerClient";
+import { LockerDeletedError, SyncBusyError } from "../../app/sync/lockerClient";
 
 /**
  * A stand-in for the server routes (`server/api/sync/[id]`), on an in-memory
@@ -146,4 +146,9 @@ test("a locker that cannot be decrypted makes the synchronization fail", async (
   // The same locker read with another encryption key.
   const other = await deriveCredentials(new Uint8Array(16).fill(4));
   await expect(synchronize({ ...credentials, key: other.key }, laptop.deps)).rejects.toThrow();
+});
+
+test("too many requests (rate limiting): an error to retry later", async () => {
+  const limited: typeof fetch = () => Promise.resolve(new Response("", { status: 429 }));
+  await expect(synchronize(credentials, device(limited).deps)).rejects.toBeInstanceOf(SyncBusyError);
 });
