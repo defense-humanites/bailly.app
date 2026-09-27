@@ -33,7 +33,15 @@ export default defineConfig<ConfigOptions>({
   // Chromium only: the fine visual checks, on the other browsers and on
   // mobile devices, are done by hand.
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        // Another Chromium than Playwright's own, if needed (e.g. the one
+        // preinstalled in Claude's cloud workspace).
+        launchOptions: { executablePath: process.env.E2E_CHROMIUM_PATH },
+      },
+    },
   ],
   webServer: [
     {
