@@ -527,6 +527,118 @@
    }
   }
  },
+ "/lookup/ἀνήρ?diacriticSensitive=false&fields=word,uri,excerpt&inputMode=greek&limit=30&skipMorpheus=false": {
+  "data": {
+   "$query": {
+    "fields": [
+     "word",
+     "uri",
+     "excerpt"
+    ],
+    "inputMode": "greek",
+    "diacriticSensitive": false,
+    "limit": 30,
+    "skipMorpheus": false,
+    "q": "ἀνήρ"
+   },
+   "version": "2023-02-28",
+   "count": 13,
+   "countAll": 13,
+   "entries": [
+    {
+     "word": "ἀνήρ",
+     "uri": "anêr",
+     "excerpt": "ἀνήρ (ὁ) [ᾰ, mais v. ci-dessous] (voc. ἄνερ, gén. etc. ἀνδρός, ἀνδρί, ἄνδρα ; pl. ἄνδρες, ἀνδρῶν, ἀνδράσι, ἄνδρας ; duel ἄνδρε, ἀνδροῖν) litt. celui …",
+     "isExact": true,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνήρεικτος",
+     "uri": "anêreiktos",
+     "excerpt": "ἀν·ήρεικτος, c. ἀνέρεικτος, Gal. Lex. Hipp. 19, 81.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνηρέμητος",
+     "uri": "anêremêtos",
+     "excerpt": "ἀν·ηρέμητος, ος, ον, qui n’a pas de repos, Sext. M. 3, 5. Étym. ἀν-, ἠρεμέω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνηρεμήτως",
+     "uri": "anêremêtôs",
+     "excerpt": "ἀνηρεμήτως, adv. sans repos, Sext. M. 10, 223.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνηρεφής",
+     "uri": "anêrephês",
+     "excerpt": "ἀν·ηρεφής, ής, ές, non couvert, A. Rh. 2, 1171. Étym. ἀν-, ἐρέφω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνήρης",
+     "uri": "anêrês",
+     "excerpt": "ἀν·ήρης, ης, ες, non uni, sans époux, Eschl. fr. 218. Étym. ἀν-, *ἄρω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνήριθμος",
+     "uri": "anêrithmos",
+     "excerpt": "ἀν·ήριθμος, v. ἀνάριθμος.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Ἀνήριστος",
+     "uri": "Anêristos",
+     "excerpt": "Ἀνήριστος, ου (ὁ) Anèristos, h. Hdt. 7, 134 et 137 ; Thc. 2, 67.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνηρόμην",
+     "uri": "anêromên",
+     "excerpt": "ἀνηρόμην, v. ἀνέρομαι.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνηροσία",
+     "uri": "anêrosia",
+     "excerpt": "*ἀνηροσία, ion. ἀνηροσίη, ης (ἡ) défaut de labour, Sib. 3, 542. Étym. ἀνήροτος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνήροτος",
+     "uri": "anêrotos",
+     "excerpt": "ἀν·ήροτος, ος, ον, non labouré, Od. 9, 109 et 123 ; Eschl. Pr. 709 ; Opp. C. 1, 462 ; fig. Luc. Lex. 19. Étym. ἀν-, ἀρόω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνήρρησε",
+     "uri": "anêrrhêse",
+     "excerpt": "ἀνήρρησε, v. ἀνέρρω.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἀνηρώτευν",
+     "uri": "anêrôteun",
+     "excerpt": "ἀνηρώτευν, v. ἀνερωτάω.",
+     "isExact": false,
+     "isMorpheus": false
+    }
+   ]
+  }
+ },
  "/lookup/λ?γος?diacriticSensitive=false&fields=word,uri,excerpt&inputMode=greek&limit=30&skipMorpheus=true": {
   "data": {
    "$query": {
