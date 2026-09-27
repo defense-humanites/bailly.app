@@ -19,14 +19,21 @@ const LOCAL_CHANGES = new Set([
 const REVISIT_DELAY = 10_000;
 
 /**
- * How often the bookmarks are synchronized while the page is shown, so that
- * the changes made on the other devices appear without reloading it.
+ * How often the bookmarks are synchronized while the bookmarks page is shown,
+ * so that the changes made on the other devices appear without reloading it.
  */
 const POLL_INTERVAL = 60_000;
 
 /**
+ * The bookmarks page: the only one polled (elsewhere, the other triggers are
+ * enough, and a long reading would make useless requests).
+ */
+const BOOKMARKS_PATH = "/signets";
+
+/**
  * Runs the synchronization of the bookmarks, if enabled on this device: once
- * the application is ready, every minute while the page is shown, when the
+ * the application is ready, every minute while the bookmarks page is shown
+ * (and when arriving there), when the
  * user comes back to the page or the network comes back, and shortly after
  * each change (or right away when the page is hidden, before the browser
  * suspends it). It waits for the end of the interactions that hold the
@@ -38,6 +45,9 @@ export default defineNuxtPlugin({
   setup() {
     const bookmarksStore = useBookmarksStore();
     const syncStore = useSyncStore();
+    const router = useRouter();
+    const onBookmarksPage = (): boolean => router.currentRoute.value.path === BOOKMARKS_PATH;
+    const isStale = (delay: number): boolean => Date.now() - (syncStore.lastSyncedAt ?? 0) >= delay;
 
     onNuxtReady(async () => {
       await bookmarksStore.initialize();
@@ -67,9 +77,13 @@ export default defineNuxtPlugin({
     useEventListener(window, "focus", () => {
       if (Date.now() - (syncStore.lastSyncedAt ?? 0) > REVISIT_DELAY) syncStore.schedule(0);
     });
+    // On the bookmarks page: when arriving there, then every minute.
+    router.afterEach((to) => {
+      if (to.path === BOOKMARKS_PATH && isStale(REVISIT_DELAY)) syncStore.schedule(0);
+    });
     useIntervalFn(() => {
-      if (document.visibilityState !== "visible" || !navigator.onLine) return;
-      if (Date.now() - (syncStore.lastSyncedAt ?? 0) >= POLL_INTERVAL - 1_000) syncStore.schedule(0);
+      if (!onBookmarksPage() || document.visibilityState !== "visible" || !navigator.onLine) return;
+      if (isStale(POLL_INTERVAL - 1_000)) syncStore.schedule(0);
     }, POLL_INTERVAL);
 
     // The tabs tell each other when the settings change (key enabled,
