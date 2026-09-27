@@ -67,6 +67,16 @@ export default defineNuxtConfig({
   devServer: { port: 4321 },
   compatibilityDate: "2025-07-15",
   nitro: {
+    /**
+     * Cloudflare builds: `.output/server/wrangler.json` is generated from
+     * `wrangler.jsonc` (Worker's name, D1 binding), with the entry point, the
+     * static files and the Node.js compatibility, so that `npx wrangler --cwd
+     * .output deploy` works however the build was started.
+     */
+    cloudflare: {
+      deployConfig: true,
+      nodeCompat: true,
+    },
     experimental: {
       database: true,
     },
