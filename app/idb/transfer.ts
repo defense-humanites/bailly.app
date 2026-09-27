@@ -1,4 +1,4 @@
-import { isStamp } from "./clock";
+import { isStamp, stampTime } from "./clock";
 import { IdbError } from "./Idb";
 import { IdbTags } from "./IdbTags";
 import {
@@ -37,6 +37,12 @@ export const BOOKMARKS_FILE_VERSION = 1;
  * application, with room for the tombstones).
  */
 const MAX_RECORDS = 20_000;
+/**
+ * How far in the future a stamp may be (clocks drift): beyond, the record is
+ * left out, so that a device with a wrong clock (or a forged file) cannot
+ * move every device's clock into the future.
+ */
+export const MAX_FUTURE_DRIFT = 24 * 60 * 60 * 1000;
 const MAX_STRING_LENGTH = 10_000;
 
 /**
@@ -84,17 +90,23 @@ const isText = (value: unknown, { required = false } = {}): value is string =>
   typeof value === "string" && value.length <= MAX_STRING_LENGTH && (!required || value.trim().length > 0);
 
 /**
+ * Whether a value is a stamp, not too far in the future.
+ */
+const isValidStamp = (value: unknown, now: number): value is string =>
+  isStamp(value) && stampTime(value) <= now + MAX_FUTURE_DRIFT;
+
+/**
  * The common fields of the records, if valid.
  */
-function versioned(value: Record<string, unknown>): { updatedAt: string; deleted?: true } | null {
-  if (!isStamp(value.updatedAt) || (value.deleted !== undefined && value.deleted !== true)) return null;
+function versioned(value: Record<string, unknown>, now: number): { updatedAt: string; deleted?: true } | null {
+  if (!isValidStamp(value.updatedAt, now) || (value.deleted !== undefined && value.deleted !== true)) return null;
   return { updatedAt: value.updatedAt, ...(value.deleted ? { deleted: true as const } : {}) };
 }
 
-function validateTag(value: unknown): TagRecord | null {
+function validateTag(value: unknown, now: number): TagRecord | null {
   if (!isObject(value) || !isText(value.key, { required: true }) || !isText(value.name, { required: true })) return null;
-  const common = versioned(value);
-  if (!common || !isStamp(value.createdAt)) return null;
+  const common = versioned(value, now);
+  if (!common || !isValidStamp(value.createdAt, now)) return null;
 
   const name = value.name.trim();
   if (comparableTagName(name) === "favoris") return null;
@@ -122,22 +134,22 @@ function validateEntry(value: Record<string, unknown>, deleted: boolean): { uri:
   return { uri: value.uri, word: value.word, excerpt: value.excerpt };
 }
 
-function validateTagged(value: unknown): TaggedRecord | null {
+function validateTagged(value: unknown, now: number): TaggedRecord | null {
   if (!isObject(value) || !isText(value.tagKey, { required: true })) return null;
-  const common = versioned(value);
+  const common = versioned(value, now);
   const entry = common && validateEntry(value, Boolean(common.deleted));
   return common && entry ? { tagKey: value.tagKey, ...entry, ...common } : null;
 }
 
-function validateStarred(value: unknown): StarredRecord | null {
+function validateStarred(value: unknown, now: number): StarredRecord | null {
   if (!isObject(value)) return null;
-  const common = versioned(value);
+  const common = versioned(value, now);
   const entry = common && validateEntry(value, Boolean(common.deleted));
   return common && entry ? { ...entry, ...common } : null;
 }
 
-function validateOrder(value: unknown): TagOrder | null {
-  if (!isObject(value) || !isStamp(value.updatedAt) || !Array.isArray(value.keys)) return null;
+function validateOrder(value: unknown, now: number): TagOrder | null {
+  if (!isObject(value) || !isValidStamp(value.updatedAt, now) || !Array.isArray(value.keys)) return null;
   const keys = value.keys.filter((key): key is string => isText(key, { required: true }));
   return { keys: [...new Set(keys)], updatedAt: value.updatedAt };
 }
@@ -147,7 +159,7 @@ function validateOrder(value: unknown): TagOrder | null {
  * records are left out, rather than refusing everything.
  * @throws {IdbError} If the value is not a state at all, or too large.
  */
-export function validateState(value: unknown): BookmarksState {
+export function validateState(value: unknown, now: number = Date.now()): BookmarksState {
   if (!isObject(value) || !Array.isArray(value.tags) || !Array.isArray(value.tagged) || !Array.isArray(value.starred)) {
     throw new IdbError("Ce fichier ne contient pas de signets.");
   }
@@ -159,10 +171,10 @@ export function validateState(value: unknown): BookmarksState {
 
   // Canonical form (duplicates merged).
   return mergeStates({
-    tags: keep(value.tags.map(validateTag)),
-    tagged: keep(value.tagged.map(validateTagged)),
-    starred: keep(value.starred.map(validateStarred)),
-    tagOrder: value.tagOrder === null || value.tagOrder === undefined ? null : validateOrder(value.tagOrder),
+    tags: keep(value.tags.map(tag => validateTag(tag, now))),
+    tagged: keep(value.tagged.map(record => validateTagged(record, now))),
+    starred: keep(value.starred.map(record => validateStarred(record, now))),
+    tagOrder: value.tagOrder === null || value.tagOrder === undefined ? null : validateOrder(value.tagOrder, now),
   }, emptyState());
 }
 

@@ -82,3 +82,20 @@ test("entries are kept as text (the excerpt is never rendered as HTML)", () => {
   const validated = validateState({ tags: [], tagged: [], starred: [{ uri: "logos", word: "λόγος", excerpt, updatedAt: stamp() }] });
   expect(validated.starred[0]?.excerpt).toBe(excerpt);
 });
+
+test("records stamped too far in the future are left out", () => {
+  const future = stamp(now + 2 * day);
+  const validated = validateState({
+    tags: [{ key: "t", name: "Futur", color: "Blue", createdAt: stamp(), updatedAt: future }],
+    tagged: [],
+    starred: [
+      { uri: "soon", word: "a", excerpt: "a", updatedAt: stamp(now + 60 * 60 * 1000) }, // An hour ahead: clocks drift.
+      { uri: "later", word: "b", excerpt: "b", updatedAt: future },
+    ],
+    tagOrder: { keys: ["t"], updatedAt: future },
+  }, now);
+
+  expect(validated.tags).toEqual([]);
+  expect(validated.starred.map(record => record.uri)).toEqual(["soon"]);
+  expect(validated.tagOrder).toBeNull();
+});
