@@ -59,6 +59,9 @@
             </template>
           </UModal>
 
+          <!-- Export, import -->
+          <BookmarksMenu />
+
           <CreateTag class="min-w-0 grow md:w-80 md:grow-0 xl:w-96" />
         </aside>
       </header>
@@ -71,7 +74,7 @@
         <!-- Favorites -->
         <BookmarkGroup
           :tag="{
-            key: -1,
+            key: 'favorites',
             name: 'Favoris',
             color: 'Yellow',
           }"

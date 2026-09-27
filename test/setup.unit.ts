@@ -8,5 +8,6 @@ import { clearIdb } from "./idbHelpers";
  */
 afterEach(async () => {
   await clearIdb();
-  localStorage.clear();
+  // Absent from the tests run in the Node environment (e.g. cryptography).
+  if (typeof localStorage !== "undefined") localStorage.clear();
 });

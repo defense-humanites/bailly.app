@@ -7,43 +7,57 @@ import {
   type IdbResult,
   type IdbTagged,
 } from "./Idb";
+import { entryTombstone, type TaggedRecord, type TagKey } from "./merge";
+
+/**
+ * A tagged entry as shown, with its excerpt if known (cf. `IdbExcerpt`).
+ */
+const toTagged = ({ tagKey, word, uri }: TaggedRecord, excerpt: string | undefined): IdbTagged =>
+  ({ tagKey, word, uri, excerpt: excerpt ?? "" });
 
 /**
  * A collection of methods for managing tagged entries.
+ * @remarks Detached entries leave a tombstone (cf. `merge.ts`); they are
+ * ignored when reading, as are the entries of a deleted tag (which a merge
+ * may bring: e.g. an entry added on a device to a tag deleted on another).
  */
 export class IdbTaggedEntry {
   /**
    * Associates an entry with a tag.
    * @param entry An input entry to convert into an `IdbTagged`.
-   * @param tagKey The primary key of the tag to which the entry must belong.
+   * @param tagKey The key of the tag to which the entry must belong.
    * @returns The inserted entry with its tag key.
    */
   static async add(
     entry: IdbEntryCreation,
-    tagKey: number,
+    tagKey: TagKey,
   ): Promise<IdbResult<IdbTagged>> {
     return attempt(async () => {
-      const taggedEntry: IdbTagged = { tagKey, ...Idb.buildIdbEntry(entry) };
+      const taggedEntry: IdbTagged = { tagKey, ...Idb.buildIdbEntry(entry, { requireExcerpt: false }) };
 
       const db = await Idb.getIndexedDB();
-      const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags], "readwrite");
+      const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags, IdbStore.Meta, IdbStore.Excerpts], "readwrite");
       const store = tx.objectStore(IdbStore.Tagged);
 
-      if ((await tx.objectStore(IdbStore.Tags).getKey(tagKey)) === undefined) {
+      const tag = await tx.objectStore(IdbStore.Tags).get(tagKey);
+      if (!tag || tag.deleted) {
         throw new IdbError("L'étiquette demandée n'existe pas.");
       }
 
-      if ((await store.index("tagKey+uri").getKey([tagKey, taggedEntry.uri])) !== undefined) {
+      const live = (await store.index("tagKey").getAll(tagKey)).filter(record => !record.deleted);
+      if (live.some(record => record.uri === taggedEntry.uri)) {
         throw new IdbError(`L'étiquette contient déjà l'entrée ${taggedEntry.word}.`);
       }
 
-      if ((await store.index("tagKey").count(tagKey)) >= Idb.config.tagMaxItems) {
+      if (live.length >= Idb.config.tagMaxItems) {
         throw new IdbError(
           `L'étiquette ne peut contenir plus de ${Idb.config.tagMaxItems} entrées.`,
         );
       }
 
-      await store.add(taggedEntry);
+      const { excerpt, ...record } = taggedEntry;
+      await store.put({ ...record, updatedAt: await Idb.stamp(tx.objectStore(IdbStore.Meta)) });
+      if (excerpt) await tx.objectStore(IdbStore.Excerpts).put({ uri: record.uri, excerpt });
       await tx.done;
 
       return taggedEntry;
@@ -53,19 +67,20 @@ export class IdbTaggedEntry {
   /**
    * Detaches an entry from a tag.
    * @param uri The URI of the entry to detach.
-   * @param tagKey The primary key of the tag to which the entry must not belong anymore.
+   * @param tagKey The key of the tag to which the entry must not belong anymore.
    */
-  static async remove(uri: string, tagKey: number): Promise<IdbResult> {
+  static async remove(uri: string, tagKey: TagKey): Promise<IdbResult> {
     return attempt(async () => {
       const db = await Idb.getIndexedDB();
-      const tx = db.transaction(IdbStore.Tagged, "readwrite");
+      const tx = db.transaction([IdbStore.Tagged, IdbStore.Meta], "readwrite");
+      const store = tx.objectStore(IdbStore.Tagged);
 
-      const key = await tx.store.index("tagKey+uri").getKey([tagKey, uri]);
-      if (key === undefined) {
+      const record = await store.get([tagKey, uri]);
+      if (!record || record.deleted) {
         throw new IdbError("L'étiquette ne référence pas l'entrée à supprimer.");
       }
 
-      await tx.store.delete(key);
+      await store.put(entryTombstone(record, await Idb.stamp(tx.objectStore(IdbStore.Meta))));
       await tx.done;
 
       return undefined;
@@ -75,20 +90,39 @@ export class IdbTaggedEntry {
   /**
    * Gets a tagged entry.
    * @param uri The URI of the requested entry.
-   * @param tagKey The primary key of the tag to which the entry must belong.
+   * @param tagKey The key of the tag to which the entry must belong.
    * @returns An entry with its tag key or `null`.
    */
-  static async get(uri: string, tagKey: number): Promise<IdbTagged | null> {
+  static async get(uri: string, tagKey: TagKey): Promise<IdbTagged | null> {
     const db = await Idb.getIndexedDB();
-    return (await db.getFromIndex(IdbStore.Tagged, "tagKey+uri", [tagKey, uri])) ?? null;
+    const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags, IdbStore.Excerpts]);
+    const [record, tag, excerpt] = await Promise.all([
+      tx.objectStore(IdbStore.Tagged).get([tagKey, uri]),
+      tx.objectStore(IdbStore.Tags).get(tagKey),
+      tx.objectStore(IdbStore.Excerpts).get(uri),
+    ]);
+    await tx.done;
+
+    return record && !record.deleted && tag && !tag.deleted ? toTagged(record, excerpt?.excerpt) : null;
   }
 
   /**
-   * Gets all the tagged entries.
+   * Gets all the tagged entries (of the existing tags).
    * @returns An array of entries with their tag key.
    */
   static async getAll(): Promise<IdbTagged[]> {
     const db = await Idb.getIndexedDB();
-    return await db.getAll(IdbStore.Tagged);
+    const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags, IdbStore.Excerpts]);
+    const [records, tags, excerpts] = await Promise.all([
+      tx.objectStore(IdbStore.Tagged).getAll(),
+      tx.objectStore(IdbStore.Tags).getAll(),
+      Idb.readExcerpts(tx.objectStore(IdbStore.Excerpts)),
+    ]);
+    await tx.done;
+
+    const liveTags = new Set(tags.filter(tag => !tag.deleted).map(tag => tag.key));
+    return records
+      .filter(record => !record.deleted && liveTags.has(record.tagKey))
+      .map(record => toTagged(record, excerpts.get(record.uri)));
   }
 }

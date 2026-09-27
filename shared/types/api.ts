@@ -128,3 +128,14 @@ export type ApiLookupData<F extends EntryField> = {
   orphanMorphology?: MorphologyGroups;
   entries: LookupEntry<F>[];
 };
+
+/**
+ * `GET /entries/excerpts?uris=…` (1 to `MAX_EXCERPTS_URIS` URIs, e.g. for the
+ * bookmarks received from another device): the entries found, in the
+ * requested order, and the URIs not found. A group of homonyms has no excerpt
+ * of its own: `homonyms` counts its entries.
+ */
+export type ApiExcerptsData = {
+  entries: (Pick<EntryData, "uri" | "word" | "excerpt"> & { homonyms?: number })[];
+  missing: string[];
+};

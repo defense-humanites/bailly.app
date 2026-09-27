@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import type { PopoverProps } from "@nuxt/ui";
-  import type { IdbEntry } from "~/idb";
+  import type { IdbEntry, TagKey } from "~/idb";
 
   const bookmarksStore = useBookmarksStore();
   const { currentTag, tags } = storeToRefs(bookmarksStore);
@@ -42,7 +42,7 @@
 
   const entryTagKeys = computed(() => new Set(bookmarksStore.tagKeysOf(props.entry.uri)));
 
-  const setTagged = async (tagKey: number, tagged: boolean): Promise<void> => {
+  const setTagged = async (tagKey: TagKey, tagged: boolean): Promise<void> => {
     if (tagged) {
       await bookmarksStore.tagEntry(props.entry, tagKey);
     } else {

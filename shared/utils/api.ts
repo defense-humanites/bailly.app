@@ -1,4 +1,9 @@
 /**
+ * The most URIs of a request for excerpts (`GET /entries/excerpts`).
+ */
+export const MAX_EXCERPTS_URIS = 100;
+
+/**
  * A value of an API parameter.
  */
 export type ApiQueryValue = string | number | boolean | readonly (string | number | undefined)[] | undefined;

@@ -55,10 +55,11 @@ test("Reorder tags", async () => {
 
   // Wrong values.
   expect(await IdbTags.reorder([keys.b, keys.a, keys.c, keys.a])).toSatisfy(error); // Too many keys.
-  expect(await IdbTags.reorder([keys.b, keys.a, keys.c, 999])).toSatisfy(error); // Too many keys, including different keys.
-  expect(await IdbTags.reorder([keys.b, keys.a, 999])).toSatisfy(error); // Different keys.
+  expect(await IdbTags.reorder([keys.b, keys.a, keys.c, "unknown"])).toSatisfy(error); // Too many keys, including different keys.
+  expect(await IdbTags.reorder([keys.b, keys.a, "unknown"])).toSatisfy(error); // Different keys.
   expect(await IdbTags.reorder([keys.b, keys.a])).toSatisfy(error); // Partial keys.
   expect(await IdbTags.reorder([])).toSatisfy(error);
+  expect(await IdbTags.reorder([keys.b, keys.a])).toEqual({ state: "error", message: "Les étiquettes ont changé entre-temps : réessayez." });
 });
 
 test("Delete tag", async () => {
@@ -74,7 +75,7 @@ test("Delete tag", async () => {
   expect(await IdbTags.remove(timeeTagKey)).toSatisfy(success);
   expect(await IdbTags.getAll()).toHaveLength(0);
 
-  expect(await IdbTags.remove(999)).toSatisfy(error);
+  expect(await IdbTags.remove("unknown")).toSatisfy(error);
 });
 
 test("Delete tag detaches its entries", async () => {
@@ -121,11 +122,8 @@ test("Get tags", async () => {
   const theeteteTag = await IdbTags.add(tags.theetete);
   expect(await IdbTags.getAll()).toHaveLength(2);
 
-  // Keys are not reset between tests (auto-increment), so use the actual ones.
-  await IdbTags.reorder([unwrap(theeteteTag).key, banquetTagKey]);
-  expect((await IdbTags.getAll()).map(tag => tag.name)).toEqual(["Théétète", "Banquet"]); // Defaults to `orderBy: "position"`.
-  expect((await IdbTags.getAll({ orderBy: "position" })).map(tag => tag.name)).toEqual(["Théétète", "Banquet"]);
-  expect((await IdbTags.getAll({ orderBy: "insertion" })).map(tag => tag.name)).toEqual(["Banquet", "Théétète"]);
+  await IdbTags.reorder([banquetTagKey, unwrap(theeteteTag).key]);
+  expect((await IdbTags.getAll()).map(tag => tag.name)).toEqual(["Banquet", "Théétète"]);
 });
 
 test("Get entry tags / tag keys (involves IdbTaggedEntry)", async () => {
@@ -156,11 +154,12 @@ test("Get entry tags / tag keys (involves IdbTaggedEntry)", async () => {
 
   expect(updatedFooEntryTags).toHaveLength(2);
   expect(updatedFooEntryTagKeys).toHaveLength(2);
+  // In the user's order (the latest created tag first).
   expect(updatedFooEntryTags).toEqual([
-    expect.objectContaining({ key: banquetTagKey, name: "Banquet", color: "Rose" }),
     expect.objectContaining({ key: theeteteTagKey, name: "Théétète", color: "Blue" }),
+    expect.objectContaining({ key: banquetTagKey, name: "Banquet", color: "Rose" }),
   ]);
-  expect(updatedFooEntryTagKeys).toEqual([banquetTagKey, theeteteTagKey]);
+  expect(updatedFooEntryTagKeys).toEqual([theeteteTagKey, banquetTagKey]);
 
   Idb.configure({ tagMaxItems: 1 });
   await IdbTaggedEntry.add({ word: "bar", uri: "bar", excerpt: "bar" }, theeteteTagKey);
@@ -181,12 +180,17 @@ test("New tags are placed first", async () => {
   const b = unwrap(await IdbTags.add({ name: "Sophocle" }));
   const c = unwrap(await IdbTags.add({ name: "Euripide" }));
 
-  expect(c.position).toBe(1);
-  expect((await IdbTags.getAll()).map(tag => [tag.key, tag.position])).toEqual([
-    [c.key, 1],
-    [b.key, 2],
-    [a.key, 3],
-  ]);
+  expect((await IdbTags.getAll()).map(tag => tag.key)).toEqual([c.key, b.key, a.key]);
+
+  // Also once the tags have been arranged: the order does not list the new tag.
+  unwrap(await IdbTags.reorder([a.key, b.key, c.key]));
+  const d = unwrap(await IdbTags.add({ name: "Aristophane" }));
+  expect((await IdbTags.getAll()).map(tag => tag.key)).toEqual([d.key, a.key, b.key, c.key]);
+});
+
+test("Tag keys are UUIDs", async () => {
+  const tag = unwrap(await IdbTags.add(tags.banquet));
+  expect(tag.key).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
 });
 
 test("Update keeps omitted values", async () => {
@@ -197,10 +201,10 @@ test("Update keeps omitted values", async () => {
     name: "Le Banquet",
     description: banquet.description,
     color: banquet.color,
-    position: banquet.position,
+    createdAt: banquet.createdAt,
   });
 
-  expect(await IdbTags.update(999, { name: "Timée" })).toSatisfy(error); // Unknown tag.
+  expect(await IdbTags.update("unknown", { name: "Timée" })).toSatisfy(error); // Unknown tag.
 });
 
 test("Reorder rejects duplicate keys", async () => {

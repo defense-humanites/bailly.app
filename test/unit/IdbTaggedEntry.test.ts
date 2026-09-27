@@ -26,13 +26,13 @@ test("Create tagged entry", async () => {
   expect(await IdbTaggedEntry.add(invalid({ word: "foo", uri: "", excerpt: "" }), banquetTagKey)).toSatisfy(error); // Bad values.
   expect(await IdbTaggedEntry.add(invalid({ word: "", uri: "foo", excerpt: "" }), banquetTagKey)).toSatisfy(error); // Bad values.
   expect(await IdbTaggedEntry.add(invalid({ word: "", uri: "", excerpt: "foo" }), banquetTagKey)).toSatisfy(error); // Bad values.
-  expect(await IdbTaggedEntry.add(invalid({ word: "foo", uri: "foo", excerpt: "" }), banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add(invalid({ word: "qux", uri: "qux", excerpt: "" }), banquetTagKey)).toSatisfy(success); // Excerpt not known yet.
   expect(await IdbTaggedEntry.add(invalid({ word: "foo", uri: "", excerpt: "foo" }), banquetTagKey)).toSatisfy(error); // Bad values.
   expect(await IdbTaggedEntry.add(invalid({ word: "", uri: "foo", excerpt: "foo" }), banquetTagKey)).toSatisfy(error); // Bad values.
   expect(await IdbTaggedEntry.add(invalid({ word: "", uri: "foo", children: [] }), banquetTagKey)).toSatisfy(error); // Bad values.
   expect(await IdbTaggedEntry.add(invalid({}), banquetTagKey)).toSatisfy(error); // Bad values.
 
-  expect(await IdbTaggedEntry.add(entries.alopex, 999)).toSatisfy(error); // Unknown tag.
+  expect(await IdbTaggedEntry.add(entries.alopex, "unknown")).toSatisfy(error); // Unknown tag.
 
   Idb.configure({ tagMaxItems: 1 });
   expect(await IdbTaggedEntry.add({ word: "baz", uri: "baz", excerpt: "baz" }, banquetTagKey)).toSatisfy(error); // Too many tagged entries.
@@ -44,7 +44,7 @@ test("Delete tagged entry", async () => {
 
   await IdbTaggedEntry.add(entries.rhinokeros, banquetTagKey);
 
-  expect(await IdbTaggedEntry.remove(entries.rhinokeros.uri, 999)).toSatisfy(error);
+  expect(await IdbTaggedEntry.remove(entries.rhinokeros.uri, "unknown")).toSatisfy(error);
   expect(await IdbTaggedEntry.remove("unknown", banquetTagKey)).toSatisfy(error);
 
   expect(await IdbTaggedEntry.remove(entries.rhinokeros.uri, banquetTagKey)).toSatisfy(success);
@@ -61,7 +61,7 @@ test("Get tagged entries", async () => {
   await IdbTaggedEntry.add(entries.rhinokeros, theeteteTagKey);
 
   expect(await IdbTaggedEntry.get(entries.rhinokeros.uri, banquetTagKey)).toBeTypeOf("object");
-  expect(await IdbTaggedEntry.get(entries.rhinokeros.uri, 999)).toBe(null);
+  expect(await IdbTaggedEntry.get(entries.rhinokeros.uri, "unknown")).toBe(null);
   expect(await IdbTaggedEntry.get("unknown", banquetTagKey)).toBe(null);
 
   expect(await IdbTaggedEntry.getAll()).toHaveLength(3);

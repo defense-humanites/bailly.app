@@ -1,9 +1,11 @@
 import { createPinia } from "pinia";
 import { expect, test } from "vitest";
 import { StorageKey } from "~/enums";
-import { IdbTaggedEntry, IdbTags } from "~/idb";
+import { IdbBookmarks, IdbTaggedEntry, IdbTags } from "~/idb";
+import { formatStamp } from "~/idb/clock";
+import { emptyState } from "~/idb/merge";
 import { useBookmarksStore } from "~/stores/bookmarks";
-import { entries, tags, unwrap } from "../idbHelpers";
+import { clearIdb, entries, tags, unwrap } from "../idbHelpers";
 
 /**
  * Returns a fresh store.
@@ -28,7 +30,7 @@ test("initialize loads the stored data", async () => {
 test("the current tag key is read from the local storage", async () => {
   unwrap(await IdbTags.add(tags.banquet));
   const theetete = unwrap(await IdbTags.add(tags.theetete));
-  localStorage.setItem(StorageKey.CurrentTag, String(theetete.key));
+  localStorage.setItem(StorageKey.CurrentTag, theetete.key);
 
   const store = newStore();
   await store.initialize();
@@ -52,7 +54,7 @@ test("createTag makes the new tag current and persists its key", async () => {
   const banquet = unwrap(await store.createTag(tags.banquet));
   expect(store.currentTag?.key).toBe(banquet.key);
   await nextTick();
-  expect(localStorage.getItem(StorageKey.CurrentTag)).toBe(String(banquet.key));
+  expect(localStorage.getItem(StorageKey.CurrentTag)).toBe(banquet.key);
 });
 
 test("tagEntry / untagEntry", async () => {
@@ -107,4 +109,129 @@ test("reorderTags makes the first tag current", async () => {
   await store.reorderTags([banquet.key, theetete.key]);
   expect(store.tags.map(tag => tag.key)).toEqual([banquet.key, theetete.key]);
   expect(store.currentTag?.key).toBe(banquet.key);
+});
+
+test("a current tag stored before the migration to UUIDs is found by its former key", async () => {
+  const stamp = formatStamp({ time: Date.now(), counter: 0, node: "test" });
+  unwrap(await IdbTags.add(tags.banquet)); // First position.
+  unwrap(await IdbBookmarks.merge({
+    tags: [{ key: "migrated", name: "Théétète", description: "", color: "Blue", createdAt: "0", updatedAt: stamp, legacyKey: 7 }],
+    tagged: [],
+    starred: [],
+    tagOrder: null,
+  }));
+  localStorage.setItem(StorageKey.CurrentTag, "7");
+
+  const store = newStore();
+  await store.initialize();
+  expect(store.currentTag?.name).toBe("Théétète");
+  await nextTick();
+  expect(localStorage.getItem(StorageKey.CurrentTag)).toBe("migrated");
+});
+
+test("mergeState merges a state and reloads the store", async () => {
+  const store = newStore();
+  await store.initialize();
+  const stamp = formatStamp({ time: Date.now() + 1_000, counter: 0, node: "test" });
+
+  const result = await store.mergeState({
+    tags: [{ key: "remote", name: "Lysis", description: "", color: "Green", createdAt: stamp, updatedAt: stamp }],
+    tagged: [{ tagKey: "remote", uri: entries.rhinokeros.uri, word: entries.rhinokeros.word, updatedAt: stamp }],
+    starred: [{ uri: entries.alopex.uri, word: entries.alopex.word, updatedAt: stamp }],
+    tagOrder: null,
+  });
+
+  expect(result.state).toBe("success");
+  expect(store.tags.map(tag => tag.name)).toEqual(["Lysis"]);
+  expect(store.entriesOf("remote")).toHaveLength(1);
+  expect(store.isStarred(entries.alopex.uri)).toBe(true);
+});
+
+test("exportBookmarks / importBookmarks: a file brings the bookmarks to another device", async () => {
+  const store = newStore();
+  await store.initialize();
+  const banquet = unwrap(await store.createTag(tags.banquet));
+  await store.tagEntry(entries.rhinokeros, banquet.key);
+  await store.starEntry(entries.alopex);
+  const file = JSON.stringify(await store.exportBookmarks());
+
+  // Another device (an empty database), which has a favorite of its own.
+  await clearIdb();
+  const other = newStore();
+  await other.initialize();
+  await other.refresh();
+  await other.starEntry(entries.rhinokeros);
+
+  expect((await other.importBookmarks(file)).state).toBe("success");
+  expect(other.tags.map(tag => tag.name)).toEqual([tags.banquet.name]);
+  expect(other.entriesOf(banquet.key)).toHaveLength(1);
+  expect(other.starredEntries.map(entry => entry.uri).sort()).toEqual([entries.alopex.uri, entries.rhinokeros.uri].sort());
+});
+
+test("importBookmarks reports an invalid file", async () => {
+  const store = newStore();
+  await store.initialize();
+  const toasts = useToast().toasts;
+  const toastCount = toasts.value.length;
+
+  const result = await store.importBookmarks("{}");
+  expect(result).toEqual({ state: "error", message: "Ce fichier n'est pas un export de signets de Bailly." });
+  expect(toasts.value.length).toBe(toastCount + 1);
+});
+
+test("importBookmarks restores bookmarks deleted after the export", async () => {
+  const store = newStore();
+  await store.initialize();
+  const banquet = unwrap(await store.createTag(tags.banquet));
+  await store.tagEntry(entries.rhinokeros, banquet.key);
+  await store.starEntry(entries.alopex);
+  const file = JSON.stringify(await store.exportBookmarks());
+
+  await store.removeTag(banquet.key);
+  await store.unstarEntry(entries.alopex.uri);
+  expect(store.tags).toHaveLength(0);
+
+  expect((await store.importBookmarks(file)).state).toBe("success");
+  expect(store.tags.map(tag => tag.name)).toEqual([tags.banquet.name]);
+  expect(store.entriesOf(banquet.key)).toHaveLength(1);
+  expect(store.isStarred(entries.alopex.uri)).toBe(true);
+});
+
+test("after a merge, the current tag follows the order of the tags", async () => {
+  const banquet = unwrap(await IdbTags.add(tags.banquet));
+  const theetete = unwrap(await IdbTags.add(tags.theetete));
+  const store = newStore();
+  await store.initialize();
+  // The latest created first: Théétète, then Banquet.
+  expect(store.tags.map(tag => tag.key)).toEqual([theetete.key, banquet.key]);
+  store.setCurrentTag(theetete.key);
+
+  const stamp = (offset: number) => formatStamp({ time: Date.now() + offset, counter: 0, node: "test" });
+  const state = await IdbBookmarks.getState();
+
+  // A change that does not touch the order (a renaming): the current tag stays.
+  const renamed = state.tags.map(tag => (tag.key === banquet.key ? { ...tag, name: "Le Banquet", updatedAt: stamp(1_000) } : tag));
+  unwrap(await store.mergeState({ ...state, tags: renamed }));
+  expect(store.currentTagKey).toBe(theetete.key);
+
+  // Arranged on another device: the first tag becomes the current one.
+  unwrap(await store.mergeState({ ...state, tags: renamed, tagOrder: { keys: [banquet.key, theetete.key], updatedAt: stamp(2_000) } }));
+  expect(store.currentTagKey).toBe(banquet.key);
+
+  // A tag created on another device comes first: it becomes the current one.
+  store.setCurrentTag(theetete.key);
+  const lysis = { key: "remote", name: "Lysis", description: "", color: "Green" as const, createdAt: stamp(3_000), updatedAt: stamp(3_000) };
+  unwrap(await store.mergeState({ ...emptyState(), tags: [lysis] }));
+  expect(store.currentTagKey).toBe("remote");
+});
+
+test("hold counts the interactions in progress", () => {
+  const store = newStore();
+  const first = store.hold();
+  const second = store.hold();
+  first();
+  first(); // Released once only.
+  expect(store.held).toBe(true);
+  second();
+  expect(store.held).toBe(false);
 });

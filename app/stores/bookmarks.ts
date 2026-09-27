@@ -1,6 +1,8 @@
 import { defineStore, skipHydrate } from "pinia";
 import { StorageKey } from "~/enums";
 import {
+  attempt,
+  IdbBookmarks,
   IdbStarred,
   IdbTaggedEntry,
   IdbTags,
@@ -10,8 +12,15 @@ import {
   type IdbTagCreation,
   type IdbTagged,
   type IdbTagWithKey,
+  type BookmarksState,
+  type MergeOutcome,
+  type SkippedRecords,
   type TagColorKey,
+  type TagKey,
 } from "~/idb";
+import { parseBookmarksFile, toBookmarksFile, type BookmarksFile } from "~/idb/transfer";
+import type { ApiExcerptsData, ApiResponse } from "#shared/types/api";
+import { MAX_EXCERPTS_URIS, toApiQuery } from "#shared/utils/api";
 
 const collator = new Intl.Collator("grc");
 
@@ -29,6 +38,7 @@ const sortEntries = <T extends IdbEntry>(entries: T[]): T[] =>
  */
 export const useBookmarksStore = defineStore("bookmarks", () => {
   const toast = useToast();
+  const { $api } = useNuxtApp();
 
   /**
    * A boolean representing whether the data has been loaded from IndexedDB.
@@ -54,17 +64,18 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    * The key of the current tag, on which to perform actions if no other tag is
    * explicitly chosen.
    * @remarks Stored in the local storage (the key of the previous application
-   * is migrated, cf. `utils/legacyStorage.ts`). Not hydrated from the server,
+   * is migrated, cf. `utils/legacyStorage.ts`; a numeric key, from before the
+   * tags had UUIDs, is resolved by `fetchTags`). Not hydrated from the server,
    * which cannot read it.
    */
-  const currentTagKey = skipHydrate(useLocalStorage<number | null>(
+  const currentTagKey = skipHydrate(useLocalStorage<TagKey | null>(
     StorageKey.CurrentTag,
     null,
     {
       writeDefaults: false,
       serializer: {
-        read: (value: string) => (value ? Number(value) : null),
-        write: (value: number | null) => String(value),
+        read: (value: string) => (value && value !== "null" ? value : null),
+        write: (value: TagKey | null) => String(value),
       },
     },
   ));
@@ -85,12 +96,12 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   /**
    * The keys of the tags to which an entry belongs.
    */
-  const tagKeysOf = (uri: string): number[] =>
+  const tagKeysOf = (uri: string): TagKey[] =>
     taggedEntries.value.filter(entry => entry.uri === uri).map(entry => entry.tagKey);
   /**
    * The entries that belong to a tag.
    */
-  const entriesOf = (tagKey: number): IdbTagged[] =>
+  const entriesOf = (tagKey: TagKey): IdbTagged[] =>
     taggedEntries.value.filter(entry => entry.tagKey === tagKey);
 
   /**
@@ -107,6 +118,48 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     return result;
   };
 
+  /**
+   * The user interactions in progress during which the bookmarks shown must
+   * not change under the user's feet (editing a tag, arranging the tags…):
+   * the synchronization and the reloads asked by other tabs wait for them
+   * (cf. `useBookmarksHold`).
+   */
+  const holds = ref(0);
+  const held = computed(() => holds.value > 0);
+
+  /**
+   * Holds the bookmarks shown during an interaction.
+   * @returns The function that releases the hold (once).
+   */
+  function hold(): () => void {
+    holds.value++;
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      holds.value--;
+    };
+  }
+
+  /**
+   * After a merge (another device, a file), follows the tags as this device
+   * does after its own changes: if the tags were rearranged, or if a new tag
+   * comes first, the first tag becomes the current one.
+   * @param before The keys of the tags before the merge, in order.
+   */
+  function followTagOrder(before: TagKey[]): void {
+    const after = tags.value.map(tag => tag.key);
+    const first = after[0];
+    if (first === undefined) return;
+
+    const known = new Set(before);
+    const still = new Set(after);
+    const common = after.filter(key => known.has(key));
+    const previous = before.filter(key => still.has(key));
+    const rearranged = common.some((key, i) => key !== previous[i]);
+    if (rearranged || !known.has(first)) currentTagKey.value = first;
+  }
+
   async function fetchStarredEntries(): Promise<void> {
     starredEntries.value = await IdbStarred.getAll();
   }
@@ -114,10 +167,17 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   /**
    * Fetches the tags; if the current tag no longer exists, the first tag
    * becomes the current one.
+   * @remarks A current tag stored before the migration to UUIDs (a numeric
+   * key) is found by its former key.
    */
   async function fetchTags(): Promise<void> {
-    tags.value = await IdbTags.getAll({ orderBy: "position" });
-    if (!currentTag.value) currentTagKey.value = tags.value[0]?.key ?? null;
+    tags.value = await IdbTags.getAll();
+    if (currentTag.value) return;
+
+    const legacyCurrentTag = tags.value.find(
+      tag => tag.legacyKey !== undefined && String(tag.legacyKey) === currentTagKey.value,
+    );
+    currentTagKey.value = (legacyCurrentTag ?? tags.value[0])?.key ?? null;
   }
 
   async function fetchTaggedEntries(): Promise<void> {
@@ -179,7 +239,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     return result;
   }
 
-  async function updateTag(key: number, data: IdbTagCreation): Promise<IdbResult<IdbTagWithKey>> {
+  async function updateTag(key: TagKey, data: IdbTagCreation): Promise<IdbResult<IdbTagWithKey>> {
     await initialize();
     const result = report(await IdbTags.update(key, data));
     if (result.state === "success") {
@@ -195,22 +255,23 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    * @param setFirstAsCurrent Whether the new first tag becomes the current one.
    */
   async function reorderTags(
-    orderedKeys: number[],
+    orderedKeys: TagKey[],
     setFirstAsCurrent = true,
   ): Promise<IdbResult<IdbTagWithKey[]>> {
     await initialize();
     const result = report(await IdbTags.reorder(orderedKeys));
-    if (result.state === "success") {
-      if (setFirstAsCurrent && orderedKeys[0] !== undefined) currentTagKey.value = orderedKeys[0];
-      await fetchTags();
+    if (result.state === "success" && setFirstAsCurrent && orderedKeys[0] !== undefined) {
+      currentTagKey.value = orderedKeys[0];
     }
+    // After a failure too: the tags shown are those stored.
+    await fetchTags();
     return result;
   }
 
   /**
    * Removes a tag and detaches its entries.
    */
-  async function removeTag(key: number): Promise<IdbResult> {
+  async function removeTag(key: TagKey): Promise<IdbResult> {
     await initialize();
     const result = report(await IdbTags.remove(key));
     if (result.state === "success") {
@@ -219,21 +280,169 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     return result;
   }
 
-  function setCurrentTag(key: number): void {
+  function setCurrentTag(key: TagKey): void {
     if (tags.value.some(tag => tag.key === key)) currentTagKey.value = key;
   }
 
-  async function tagEntry(entry: IdbEntryCreation, tagKey: number): Promise<IdbResult<IdbTagged>> {
+  async function tagEntry(entry: IdbEntryCreation, tagKey: TagKey): Promise<IdbResult<IdbTagged>> {
     await initialize();
     const result = report(await IdbTaggedEntry.add(entry, tagKey));
     if (result.state === "success") await fetchTaggedEntries();
     return result;
   }
 
-  async function untagEntry(uri: string, tagKey: number): Promise<IdbResult> {
+  async function untagEntry(uri: string, tagKey: TagKey): Promise<IdbResult> {
     await initialize();
     const result = report(await IdbTaggedEntry.remove(uri, tagKey));
     if (result.state === "success") await fetchTaggedEntries();
+    return result;
+  }
+
+  /**
+   * Reloads the data from IndexedDB (e.g. changed by another tab).
+   */
+  async function refresh(): Promise<void> {
+    await initialize();
+    await Promise.all([fetchTags(), fetchTaggedEntries(), fetchStarredEntries(), refreshNewTagColor()]);
+  }
+
+  /**
+   * Merges a state (imported, or from another device) into the stored
+   * bookmarks (cf. `idb/merge.ts`).
+   */
+  async function mergeState(state: BookmarksState): Promise<IdbResult<MergeOutcome>> {
+    await initialize();
+    const before = tags.value.map(tag => tag.key);
+    const result = report(await IdbBookmarks.merge(state));
+    if (result.state === "success" && result.data.changed) {
+      await refresh();
+      followTagOrder(before);
+    }
+    return result;
+  }
+
+  /**
+   * Merges the state of the locker the first time this device synchronizes
+   * with a key (cf. `IdbBookmarks.join`).
+   */
+  async function joinState(state: BookmarksState): Promise<IdbResult<MergeOutcome>> {
+    await initialize();
+    const before = tags.value.map(tag => tag.key);
+    const result = report(await IdbBookmarks.join(state));
+    if (result.state === "success" && result.data.changed) {
+      await refresh();
+      followTagOrder(before);
+    }
+    return result;
+  }
+
+  /**
+   * The bookmarks as an exported file (cf. `idb/transfer.ts`).
+   */
+  async function exportBookmarks(): Promise<BookmarksFile> {
+    const [state, excerpts] = await Promise.all([IdbBookmarks.getState(), IdbBookmarks.getExcerpts()]);
+    return toBookmarksFile(state, { excerpts });
+  }
+
+  /**
+   * The URIs the API does not know (e.g. an entry removed from the
+   * dictionary): not asked again during the visit.
+   */
+  const unknownUris = new Set<string>();
+
+  /**
+   * The pending fetch of excerpts, shared by concurrent calls; asked again
+   * meanwhile (e.g. after a merge), it makes another pass.
+   */
+  let filling: Promise<IdbResult<{ changed: boolean }>> | null = null;
+  let fillAgain = false;
+  // (A function: the flag is set by concurrent calls.)
+  const askedAgain = (): boolean => fillAgain;
+
+  /**
+   * Fetches from the API the excerpts of the bookmarks that have none on this
+   * device (e.g. received from another one, cf. `IdbExcerpt`), by
+   * batches. Offline or on failure, it stops there: the next call (next
+   * visit, next merge) tries again, and the bookmarks show their word
+   * meanwhile.
+   */
+  async function fillExcerpts(): Promise<IdbResult<{ changed: boolean }>> {
+    if (filling) {
+      fillAgain = true;
+      return filling;
+    }
+    filling = (async (): Promise<IdbResult<{ changed: boolean }>> => {
+      let changed = false;
+      do {
+        fillAgain = false;
+        const result = await fillExcerptsOnce();
+        if (result.state === "error") return result;
+        changed ||= result.data.changed;
+      } while (askedAgain());
+      return { state: "success", data: { changed } };
+    })().finally(() => {
+      filling = null;
+    });
+    return filling;
+  }
+
+  /**
+   * A pass of `fillExcerpts`.
+   */
+  async function fillExcerptsOnce(): Promise<IdbResult<{ changed: boolean }>> {
+    await initialize();
+    const uris = (await IdbBookmarks.missingExcerpts()).filter(uri => !unknownUris.has(uri));
+    const found = new Map<string, string>();
+    for (let i = 0; i < uris.length; i += MAX_EXCERPTS_URIS) {
+      try {
+        const { data } = await $api<ApiResponse<ApiExcerptsData>>("entries/excerpts", {
+          query: toApiQuery({ uris: uris.slice(i, i + MAX_EXCERPTS_URIS) }),
+        });
+        for (const { uri, word, excerpt, homonyms } of data.entries) {
+          // As for a group of homonyms added on this device (cf. `Idb.buildIdbEntry`).
+          const text = homonyms ? `${word} (v. les ${homonyms} entrées)` : excerpt;
+          if (text) found.set(uri, text);
+        }
+        for (const uri of data.missing) unknownUris.add(uri);
+      } catch {
+        break;
+      }
+    }
+    if (!found.size) return { state: "success", data: { changed: false } };
+
+    const result = await IdbBookmarks.fillExcerpts(found);
+    if (result.state === "success" && result.data.changed) await refresh();
+    return result;
+  }
+
+  /**
+   * What an import would leave out to keep within the limits (cf.
+   * `fitImport`), to ask the user first.
+   * @param text The content of the file.
+   */
+  async function previewImport(text: string): Promise<IdbResult<SkippedRecords>> {
+    await initialize();
+    return report(await attempt(async () => IdbBookmarks.previewRestore(parseBookmarksFile(text, await IdbBookmarks.referenceTime()))));
+  }
+
+  /**
+   * Imports an exported file: its bookmarks are restored, even if deleted
+   * since, without undoing later changes nor deleting anything (cf.
+   * `IdbBookmarks.restore`); what would exceed the limits is left out (cf.
+   * `fitImport`).
+   * @param text The content of the file.
+   */
+  async function importBookmarks(text: string): Promise<IdbResult<MergeOutcome & { skipped: SkippedRecords }>> {
+    await initialize();
+    const parsed = report(await attempt(async () => parseBookmarksFile(text, await IdbBookmarks.referenceTime())));
+    if (parsed.state === "error") return parsed;
+
+    const before = tags.value.map(tag => tag.key);
+    const result = report(await IdbBookmarks.restore(parsed.data));
+    if (result.state === "success" && result.data.changed) {
+      await refresh();
+      followTagOrder(before);
+    }
     return result;
   }
 
@@ -245,6 +454,8 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     newTagColor,
     currentTagKey,
     currentTag,
+    held,
+    hold,
     isStarred,
     tagKeysOf,
     entriesOf,
@@ -258,5 +469,12 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     setCurrentTag,
     tagEntry,
     untagEntry,
+    refresh,
+    mergeState,
+    joinState,
+    exportBookmarks,
+    previewImport,
+    importBookmarks,
+    fillExcerpts,
   };
 });

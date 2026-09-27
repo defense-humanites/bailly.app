@@ -1,8 +1,10 @@
-import { openDB, type DBSchema, type IDBPDatabase } from "idb";
-import type { ColorKey } from "~/enums";
+import { openDB, type DBSchema, type IDBPDatabase, type IDBPObjectStore, type IDBPTransaction, type StoreNames } from "idb";
 import type { Entry, EntryData } from "#shared/types/api";
 import type { PartialExcept } from "~/types";
-import type { TagColorKey } from "./IdbTags";
+import { nextStamp, type Stamp } from "./clock";
+import type { StarredRecord, TaggedRecord, TagKey, TagOrder, TagRecord } from "./merge";
+import { randomNodeId, randomUuid } from "./random";
+import { IdbTags, type TagColorKey } from "./IdbTags";
 
 /**
  * An error whose message is meant for the user (invalid data, limits…).
@@ -50,9 +52,9 @@ export type IdbEntry = Pick<EntryData, "word" | "uri" | "excerpt">;
  */
 export type IdbEntryCreation = Entry<"word" | "uri" | "excerpt">;
 /**
- * An `IdbEntry` with the IDB primary key of its associated tag.
+ * An `IdbEntry` with the key of its associated tag.
  */
-export type IdbTagged = IdbEntry & { tagKey: number };
+export type IdbTagged = IdbEntry & { tagKey: TagKey };
 /**
  * A tag used to identify collections of entries.
  */
@@ -60,24 +62,93 @@ export type IdbTag = {
   name: string;
   description: string;
   color: TagColorKey;
-  position: number;
 };
 /**
  * A given tag containing at least a name.
  */
-export type IdbTagCreation = Omit<PartialExcept<IdbTag, "name">, "position">;
+export type IdbTagCreation = PartialExcept<IdbTag, "name">;
 /**
- * An `IdbTag` with its IDB primary key.
+ * An `IdbTag` with its key.
  */
-export type IdbTagWithKey = IdbTag & { key: number };
+export type IdbTagWithKey = IdbTag & {
+  key: TagKey;
+  createdAt: Stamp;
+  /**
+   * The key of the tag before the migration to UUIDs (cf. `TagRecord`).
+   */
+  legacyKey?: number;
+};
 
 export enum IdbStore {
   History = "history",
   Starred = "starred",
   Tagged = "tagged",
   Tags = "tags",
+  Meta = "meta",
+  Excerpts = "excerpts",
 }
 
+/**
+ * The excerpt of a bookmarked entry, kept on this device (`IdbStore.Excerpts`).
+ * @remarks Not part of the bookmarks as merged and synchronized (cf.
+ * `merge.ts`): added with a bookmark on this device, or fetched from the API
+ * for a bookmark received without it; forgotten once no bookmark refers to
+ * the entry (cf. `IdbBookmarks.compact`).
+ */
+export type IdbExcerpt = {
+  uri: string;
+  excerpt: string;
+};
+
+/**
+ * The keys of the `meta` store.
+ */
+export enum IdbMetaKey {
+  /**
+   * The latest stamp issued or observed on this device (cf. `clock.ts`).
+   */
+  Clock = "clock",
+  /**
+   * The id of this device, in the stamps it issues.
+   */
+  Node = "node",
+  /**
+   * The order of the tags (`TagOrder`).
+   */
+  TagOrder = "tagOrder",
+  /**
+   * The synchronization settings (`IdbSyncConfig`), if enabled.
+   */
+  Sync = "sync",
+}
+
+/**
+ * The synchronization settings of this device.
+ */
+export type IdbSyncConfig = {
+  /**
+   * The synchronization key (16 bytes, base64url), from which the locker id,
+   * the access token and the encryption key are derived.
+   */
+  secret: string;
+  /**
+   * The date of the latest successful synchronization (ms).
+   */
+  lastSyncedAt: number | null;
+};
+
+type IdbMetaValues = {
+  [IdbMetaKey.Clock]: Stamp;
+  [IdbMetaKey.Node]: string;
+  [IdbMetaKey.TagOrder]: TagOrder;
+  [IdbMetaKey.Sync]: IdbSyncConfig;
+};
+
+/**
+ * The schema (version 4).
+ * @remarks The bookmarks are versioned records (cf. `merge.ts`): a deletion
+ * leaves a tombstone, and every change is stamped.
+ */
 export interface BaillyDB extends DBSchema {
   [IdbStore.History]: {
     key: number;
@@ -87,39 +158,48 @@ export interface BaillyDB extends DBSchema {
     };
   };
   [IdbStore.Starred]: {
-    key: number;
-    value: IdbEntry;
-    indexes: {
-      uri: string;
-    };
+    key: string;
+    value: StarredRecord;
   };
   [IdbStore.Tagged]: {
-    key: number;
-    value: IdbTagged;
+    key: [TagKey, string];
+    value: TaggedRecord;
     indexes: {
-      "uri": string;
-      "tagKey": number;
-      "tagKey+uri": [number, string];
+      uri: string;
+      tagKey: TagKey;
     };
   };
   [IdbStore.Tags]: {
-    key: number;
-    value: IdbTag;
-    indexes: {
-      "name": string;
-      "color": ColorKey;
-      "position": number;
-      "position+color": [number, ColorKey];
-    };
+    key: TagKey;
+    value: TagRecord;
+  };
+  [IdbStore.Meta]: {
+    key: string;
+    value: IdbMetaValues[IdbMetaKey];
+  };
+  [IdbStore.Excerpts]: {
+    key: string;
+    value: IdbExcerpt;
   };
 }
+
+/**
+ * The stores of the bookmarks (the history is kept apart).
+ */
+export const BOOKMARKS_STORES = [IdbStore.Starred, IdbStore.Tagged, IdbStore.Tags, IdbStore.Meta, IdbStore.Excerpts] as const;
+
+/**
+ * The `meta` store within a read-write transaction.
+ */
+export type IdbMetaStore = IDBPObjectStore<BaillyDB, ArrayLike<StoreNames<BaillyDB>>, IdbStore.Meta, "readwrite">;
 
 const IDB_NAME = "bailly";
 /**
  * The current schema version.
- * @remarks Versions 1 and 2 were used by the previous (Astro) application.
+ * @remarks Versions 1 and 2 were used by the previous (Astro) application;
+ * version 3 had numeric (auto-incremented) keys and no stamps.
  */
-const IDB_VERSION = 3;
+const IDB_VERSION = 4;
 
 type IdbConfig = {
   searchHistoryLength: number;
@@ -133,6 +213,123 @@ const IDB_DEFAULT_CONFIG: Readonly<IdbConfig> = {
   maxTags: 50,
 };
 
+/**
+ * The version 3 records, as migrated.
+ */
+type LegacyEntry = { word: string; uri: string; excerpt: string };
+type LegacyTag = { name: string; description?: string; color: TagColorKey; position: number };
+type LegacyData = {
+  tags: { key: number; value: LegacyTag }[];
+  tagged: (LegacyEntry & { tagKey: number })[];
+  starred: LegacyEntry[];
+};
+
+type UpgradeTransaction = IDBPTransaction<BaillyDB, StoreNames<BaillyDB>[], "versionchange">;
+
+/**
+ * Reads the version 3 bookmarks.
+ */
+async function readLegacyData(transaction: UpgradeTransaction): Promise<LegacyData> {
+  // The stores still have their version 3 shape: they are read untyped.
+  const store = (name: string) => transaction.objectStore(name as IdbStore.Tags);
+  const tagKeys = (await store(IdbStore.Tags).getAllKeys()) as unknown as number[];
+  const tagValues = (await store(IdbStore.Tags).getAll()) as unknown as LegacyTag[];
+
+  return {
+    tags: tagKeys.map((key, i) => ({ key, value: tagValues[i]! })),
+    tagged: (await store(IdbStore.Tagged).getAll()) as unknown as LegacyData["tagged"],
+    starred: (await store(IdbStore.Starred).getAll()) as unknown as LegacyEntry[],
+  };
+}
+
+/**
+ * Writes the version 3 bookmarks in the version 4 stores: the tags get a
+ * UUID (keeping their former key, cf. `TagRecord.legacyKey`), their order
+ * becomes the `tagOrder` record, every record is stamped, and the excerpts
+ * are kept apart (`IdbStore.Excerpts`).
+ */
+async function writeMigratedData(transaction: UpgradeTransaction, legacy: LegacyData): Promise<void> {
+  const node = randomNodeId();
+  let clock: Stamp | undefined;
+  const stamp = (): Stamp => (clock = nextStamp(clock, node));
+
+  // Stamped in insertion order (the former keys were auto-incremented).
+  const tags = [...legacy.tags].sort((a, b) => a.key - b.key).map(({ key, value }) => {
+    const createdAt = stamp();
+    const record: TagRecord = {
+      key: randomUuid(),
+      name: value.name,
+      description: typeof value.description === "string" ? value.description : "",
+      // A color that is not valid anymore gets the one an import or a
+      // synchronization would give it (cf. `transfer.ts`), so that the tag
+      // looks the same everywhere.
+      color: IdbTags.isColorKey(value.color) ? value.color : IdbTags.colorKeys[0]!,
+      createdAt,
+      updatedAt: createdAt,
+      legacyKey: key,
+    };
+    return { record, position: value.position };
+  });
+  const newKeys = new Map(tags.map(({ record }) => [record.legacyKey!, record.key]));
+
+  const tagStore = transaction.objectStore(IdbStore.Tags);
+  for (const { record } of tags) await tagStore.put(record);
+
+  const excerpts = new Map<string, string>();
+
+  const taggedStore = transaction.objectStore(IdbStore.Tagged);
+  for (const { tagKey, word, uri, excerpt } of legacy.tagged) {
+    const key = newKeys.get(tagKey);
+    if (key === undefined) continue;
+    await taggedStore.put({ tagKey: key, word, uri, updatedAt: stamp() });
+    if (excerpt) excerpts.set(uri, excerpt);
+  }
+
+  const starredStore = transaction.objectStore(IdbStore.Starred);
+  for (const { word, uri, excerpt } of legacy.starred) {
+    await starredStore.put({ word, uri, updatedAt: stamp() });
+    if (excerpt) excerpts.set(uri, excerpt);
+  }
+
+  const excerptStore = transaction.objectStore(IdbStore.Excerpts);
+  for (const [uri, excerpt] of excerpts) await excerptStore.put({ uri, excerpt });
+
+  const meta = transaction.objectStore(IdbStore.Meta);
+  if (tags.length) {
+    const order: TagOrder = {
+      keys: [...tags].sort((a, b) => a.position - b.position).map(({ record }) => record.key),
+      updatedAt: stamp(),
+    };
+    await meta.put(order, IdbMetaKey.TagOrder);
+  }
+  await meta.put(node, IdbMetaKey.Node);
+  if (clock) await meta.put(clock, IdbMetaKey.Clock);
+}
+
+/**
+ * Creates the version 4 stores of the bookmarks, migrating the version 3
+ * ones if needed.
+ */
+async function upgradeToV4(db: IDBPDatabase<BaillyDB>, oldVersion: number, transaction: UpgradeTransaction): Promise<void> {
+  let legacy: LegacyData | undefined;
+  if (oldVersion === 3) {
+    legacy = await readLegacyData(transaction);
+    for (const name of [IdbStore.Starred, IdbStore.Tagged, IdbStore.Tags]) db.deleteObjectStore(name);
+  }
+
+  db.createObjectStore(IdbStore.Starred, { keyPath: "uri" });
+
+  const tagged = db.createObjectStore(IdbStore.Tagged, { keyPath: ["tagKey", "uri"] });
+  tagged.createIndex("uri", "uri");
+  tagged.createIndex("tagKey", "tagKey");
+
+  db.createObjectStore(IdbStore.Tags, { keyPath: "key" });
+  db.createObjectStore(IdbStore.Meta);
+  db.createObjectStore(IdbStore.Excerpts, { keyPath: "uri" });
+
+  if (legacy) await writeMigratedData(transaction, legacy);
+}
+
 export class Idb {
   /**
    * The pending or opened connection.
@@ -141,6 +338,15 @@ export class Idb {
    */
   static #db: Promise<IDBPDatabase<BaillyDB>> | undefined;
   static #config: IdbConfig | undefined;
+  static #blockedHandler: (() => void) | undefined;
+
+  /**
+   * Sets what to do when the upgrade of the database waits for another tab
+   * to close it (e.g. telling the user).
+   */
+  static onBlocked(handler: () => void): void {
+    Idb.#blockedHandler = handler;
+  }
 
   static get config(): IdbConfig {
     if (Idb.#config === undefined) {
@@ -188,7 +394,7 @@ export class Idb {
 
   static #open(): Promise<IDBPDatabase<BaillyDB>> {
     return openDB<BaillyDB>(IDB_NAME, IDB_VERSION, {
-      upgrade(db, oldVersion) {
+      upgrade(db, oldVersion, _newVersion, transaction) {
         // Versions 1 and 2 only contained stores that are no longer used.
         if (oldVersion > 0 && oldVersion < 3) {
           for (const name of Array.from(db.objectStoreNames)) {
@@ -202,32 +408,23 @@ export class Idb {
           });
 
           history.createIndex("uri", "uri");
-
-          const starred = db.createObjectStore(IdbStore.Starred, {
-            autoIncrement: true,
-          });
-
-          starred.createIndex("uri", "uri");
-
-          const tagged = db.createObjectStore(IdbStore.Tagged, {
-            autoIncrement: true,
-          });
-
-          tagged.createIndex("uri", "uri");
-          tagged.createIndex("tagKey", "tagKey");
-          tagged.createIndex("tagKey+uri", ["tagKey", "uri"], { unique: true });
-
-          const tags = db.createObjectStore(IdbStore.Tags, {
-            autoIncrement: true,
-          });
-
-          tags.createIndex("name", "name");
-          tags.createIndex("color", "color");
-          tags.createIndex("position", "position");
-          tags.createIndex("position+color", ["position", "color"]);
         }
 
-        // Future versions: add `if (oldVersion < 4) { … }` blocks here.
+        if (oldVersion < 4) {
+          // The transaction stays active while its requests are awaited; if
+          // the migration fails, aborting it keeps the previous version.
+          upgradeToV4(db, oldVersion, transaction).catch((error: unknown) => {
+            console.error(error);
+            transaction.abort();
+          });
+        }
+
+        // Future versions: add `if (oldVersion < 5) { … }` blocks here.
+      },
+      blocked() {
+        // Another tab (e.g. of the previous version) keeps the database open
+        // in an older version: the upgrade waits until it is closed.
+        Idb.#blockedHandler?.();
       },
       blocking(_currentVersion, _blockedVersion, event) {
         // Another tab needs to upgrade the database: release it.
@@ -241,18 +438,69 @@ export class Idb {
   }
 
   /**
+   * The excerpts kept for the bookmarks, by URI (cf. `IdbExcerpt`).
+   */
+  static async readExcerpts(store: { getAll: () => Promise<IdbExcerpt[]> }): Promise<Map<string, string>> {
+    return new Map((await store.getAll()).map(({ uri, excerpt }) => [uri, excerpt]));
+  }
+
+  /**
+   * Reads a value of the `meta` store.
+   */
+  static async getMeta<K extends IdbMetaKey>(
+    store: Pick<IdbMetaStore, "get">,
+    key: K,
+  ): Promise<IdbMetaValues[K] | undefined> {
+    return (await store.get(key)) as IdbMetaValues[K] | undefined;
+  }
+
+  /**
+   * Reads a value of the `meta` store, in its own transaction.
+   */
+  static async readMeta<K extends IdbMetaKey>(key: K): Promise<IdbMetaValues[K] | undefined> {
+    const db = await Idb.getIndexedDB();
+    return (await db.get(IdbStore.Meta, key)) as IdbMetaValues[K] | undefined;
+  }
+
+  /**
+   * Writes (or, with `undefined`, deletes) a value of the `meta` store.
+   */
+  static async writeMeta<K extends IdbMetaKey>(key: K, value: IdbMetaValues[K] | undefined): Promise<void> {
+    const db = await Idb.getIndexedDB();
+    if (value === undefined) await db.delete(IdbStore.Meta, key);
+    else await db.put(IdbStore.Meta, value, key);
+  }
+
+  /**
+   * Issues a stamp for a change made in the ongoing transaction (which must
+   * include the `meta` store): the clock is kept in IndexedDB, so that the
+   * tabs of a device share it.
+   */
+  static async stamp(meta: IdbMetaStore): Promise<Stamp> {
+    let node = await Idb.getMeta(meta, IdbMetaKey.Node);
+    if (!node) {
+      node = randomNodeId();
+      await meta.put(node, IdbMetaKey.Node);
+    }
+
+    const stamp = nextStamp(await Idb.getMeta(meta, IdbMetaKey.Clock), node);
+    await meta.put(stamp, IdbMetaKey.Clock);
+    return stamp;
+  }
+
+  /**
    * A helper method that takes a given entry and flatten it to satisfy the
    * shape of an `IdbEntry`.
+   * @param options.requireExcerpt Whether an excerpt (or child entries) is
+   * required. A bookmark may have none: not known yet (e.g. received from
+   * another device, cf. `IdbExcerpt`), it is fetched later.
    */
-  static buildIdbEntry(entry: IdbEntryCreation): IdbEntry {
-    if (
-      !entry.word
-      || !entry.uri
-      || (!entry.excerpt && !entry.children?.length)
-    ) {
+  static buildIdbEntry(entry: IdbEntryCreation, { requireExcerpt = true } = {}): IdbEntry {
+    if (!entry.word || !entry.uri || (requireExcerpt && !entry.excerpt && !entry.children?.length)) {
       throw new IdbError(
-        "La création de l'entrée nécessite un mot, une URI et un extrait "
-        + "(ou des entrées enfants).",
+        requireExcerpt
+          ? "La création de l'entrée nécessite un mot, une URI et un extrait (ou des entrées enfants)."
+          : "La création de l'entrée nécessite un mot et une URI.",
       );
     }
 

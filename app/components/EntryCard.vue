@@ -39,15 +39,15 @@
 
   /**
    * The definition's HTML, with its links (cf. `linkDefinition`), none if the
-   * card is itself a link; the excerpt if there is no definition. Greek may
-   * be transliterated (cf. `useGreek`).
+   * card is itself a link. Greek may be transliterated (cf. `useGreek`).
+   * @remarks Without a definition, the excerpt is shown as text: it may come
+   * from IndexedDB (bookmarks imported or synchronized), which must never be
+   * rendered as HTML.
    */
   const greek = useGreek();
 
-  const content = (shown: DisplayedEntry): string =>
-    shown.htmlDefinition
-      ? greek.html(linkDefinition(shown.htmlDefinition, { links: !props.link }))
-      : greek.text(shown.excerpt);
+  const definitionHtml = (htmlDefinition: string): string =>
+    greek.html(linkDefinition(htmlDefinition, { links: !props.link }));
 
   /**
    * Follows the definition's internal links within the application, rather
@@ -73,15 +73,24 @@
 
 <template>
   <DefineEntry v-slot="{ entry: shown }">
-    <!-- The dictionary HTML comes from our own API. -->
+    <!-- The definition's HTML comes from our own API (never from IndexedDB). -->
     <!-- eslint-disable vue/no-v-html -->
     <div
+      v-if="shown.htmlDefinition"
       class="definition font-serif"
       :class="ui?.entry"
       @click="onDefinitionClick"
-      v-html="content(shown)"
+      v-html="definitionHtml(shown.htmlDefinition)"
     />
     <!-- eslint-enable vue/no-v-html -->
+    <div
+      v-else
+      class="definition font-serif"
+      :class="ui?.entry"
+    >
+      <!-- A bookmark whose excerpt is not known yet: its word. -->
+      {{ greek.text(shown.excerpt || shown.word) }}
+    </div>
   </DefineEntry>
 
   <DefineEntryCard v-slot="{ entry: shown }">

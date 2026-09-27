@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import { moveArrayElement, useSortable } from "@vueuse/integrations/useSortable";
   import type { SortableEvent } from "sortablejs";
-  import type { IdbTagWithKey } from "~/idb";
+  import type { IdbTagWithKey, TagKey } from "~/idb";
 
   const emit = defineEmits<{
-    (e: "reorderTags", orderedKeys: number[]): void;
+    (e: "reorderTags", orderedKeys: TagKey[]): void;
   }>();
 
   const props = defineProps<{
@@ -20,6 +20,9 @@
    * (i.e. the store state).
    */
   const sortableTags = ref<IdbTagWithKey[]>([...props.tags]);
+
+  // Shown in the "Arranger" window: the tags do not change while arranging.
+  useBookmarksHold();
 
   /**
    * Updates `sortableTags` when `props.tags` change.

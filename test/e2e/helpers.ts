@@ -46,11 +46,11 @@ type Bookmark = { word: string; uri: string; excerpt: string; children?: Omit<Bo
 interface BookmarksStore {
   initialize: () => Promise<void>;
   starEntry: (entry: Bookmark) => Promise<unknown>;
-  createTag: (tag: { name: string; color: string }) => Promise<{ data: { key: number } }>;
-  tagEntry: (entry: Bookmark, tagKey: number) => Promise<unknown>;
-  setCurrentTag: (key: number) => void;
-  tagKeysOf: (uri: string) => number[];
-  tags: { name: string; key: number }[];
+  createTag: (tag: { name: string; color: string }) => Promise<{ data: { key: string } }>;
+  tagEntry: (entry: Bookmark, tagKey: string) => Promise<unknown>;
+  setCurrentTag: (key: string) => void;
+  tagKeysOf: (uri: string) => string[];
+  tags: { name: string; key: string }[];
   taggedEntries: unknown[];
   starredEntries: unknown[];
 }

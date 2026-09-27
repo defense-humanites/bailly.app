@@ -17,7 +17,7 @@ test("Create starred entry", async () => {
   expect(await IdbStarred.add(invalid({ word: "foo", uri: "", excerpt: "" }))).toSatisfy(error); // Bad values.
   expect(await IdbStarred.add(invalid({ word: "", uri: "foo", excerpt: "" }))).toSatisfy(error); // Bad values.
   expect(await IdbStarred.add(invalid({ word: "", uri: "", excerpt: "foo" }))).toSatisfy(error); // Bad values.
-  expect(await IdbStarred.add(invalid({ word: "foo", uri: "foo", excerpt: "" }))).toSatisfy(error); // Bad values.
+  expect(await IdbStarred.add(invalid({ word: "qux", uri: "qux", excerpt: "" }))).toSatisfy(success); // Excerpt not known yet.
   expect(await IdbStarred.add(invalid({ word: "foo", uri: "", excerpt: "foo" }))).toSatisfy(error); // Bad values.
   expect(await IdbStarred.add(invalid({ word: "", uri: "foo", excerpt: "foo" }))).toSatisfy(error); // Bad values.
   expect(await IdbStarred.add(invalid({ word: "", uri: "foo", children: [] }))).toSatisfy(error); // Bad values.

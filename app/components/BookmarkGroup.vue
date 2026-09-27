@@ -57,6 +57,9 @@
    */
   const isDeleteConfirmationOpen = ref<boolean>(false);
 
+  // The bookmarks do not change while the tag is being edited.
+  useBookmarksHold(editMode);
+
   /**
    * Keeps the editable values in sync with the stored tag.
    */

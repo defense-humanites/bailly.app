@@ -1,3 +1,22 @@
+/**
+ * Whether the app is built for Cloudflare: a Cloudflare preset, or a build
+ * by Cloudflare (Workers Builds, Pages), where Nitro picks the preset itself.
+ * @remarks `NITRO_PRESET=cloudflare_module npm run dev` also emulates the
+ * Cloudflare bindings locally (D1 included), with Wrangler.
+ */
+const cloudflare = Boolean(
+  process.env.NITRO_PRESET?.startsWith("cloudflare") || process.env.WORKERS_CI || process.env.CF_PAGES,
+);
+
+/**
+ * The database of the bookmarks synchronization (encrypted lockers, cf.
+ * `server/lib/lockers.ts`): D1 on Cloudflare (binding `BOOKMARKS_SYNC`),
+ * SQLite elsewhere (`.data/bookmarks-sync.sqlite`, with `node:sqlite`).
+ */
+const bookmarksSyncDatabase = cloudflare
+  ? { connector: "cloudflare-d1" as const, options: { bindingName: "BOOKMARKS_SYNC" } }
+  : { connector: "sqlite" as const, options: { name: "bookmarks-sync" } };
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: [
@@ -51,6 +70,25 @@ export default defineNuxtConfig({
   devServer: { port: 4321 },
   compatibilityDate: "2025-07-15",
   nitro: {
+    /**
+     * Cloudflare builds: `.output/server/wrangler.json` is generated from
+     * `wrangler.jsonc` (Worker's name, D1 binding), with the entry point, the
+     * static files and the Node.js compatibility, so that `npx wrangler --cwd
+     * .output deploy` works however the build was started.
+     */
+    cloudflare: {
+      deployConfig: true,
+      nodeCompat: true,
+    },
+    experimental: {
+      database: true,
+    },
+    database: {
+      bookmarksSync: bookmarksSyncDatabase,
+    },
+    devDatabase: {
+      bookmarksSync: bookmarksSyncDatabase,
+    },
     /**
      * Development only: relays `/_api/**` to `DEV_API_PROXY` (e.g. a local
      * API on `http://localhost:3000`), so that the browser calls the API on
