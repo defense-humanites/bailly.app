@@ -34,3 +34,17 @@ test("a text encrypted with the key decrypts with it only", async () => {
   // Nor with the right key in another locker (authenticated locker id).
   await expect(decryptText(blob, { ...credentials, lockerId: other.lockerId })).rejects.toThrow();
 });
+
+test("the encoding byte is authenticated", async () => {
+  const credentials = await deriveCredentials(secret);
+  const blob = await encryptText("λόγος", credentials);
+  const bytes = Uint8Array.from(atob(blob.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0));
+  expect(bytes[0]).toBe(3); // Compressed, authenticated.
+
+  // Changed by the server: the decryption fails.
+  for (const encoding of [0, 1, 2]) {
+    bytes[0] = encoding;
+    const tampered = btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    await expect(decryptText(tampered, credentials)).rejects.toThrow();
+  }
+});

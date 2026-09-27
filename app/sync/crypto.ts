@@ -31,10 +31,27 @@ export async function deriveCredentials(secret: Uint8Array<ArrayBuffer>): Promis
 
 /**
  * The first byte of an encrypted blob: how its content is encoded.
+ * @remarks Since `RawAuthenticated` and `GzipAuthenticated`, this byte is
+ * authenticated with the locker id (additional data of AES-GCM); `Raw` and
+ * `Gzip` (first blobs, without it) are still read.
  */
 enum Encoding {
   Raw = 0,
   Gzip = 1,
+  RawAuthenticated = 2,
+  GzipAuthenticated = 3,
+}
+
+/**
+ * The additional (authenticated, not encrypted) data of a blob.
+ */
+function additionalData(lockerId: string, encoding: Encoding): Uint8Array<ArrayBuffer> {
+  const id = encoder.encode(lockerId);
+  if (encoding === Encoding.Raw || encoding === Encoding.Gzip) return id;
+  const data = new Uint8Array(id.byteLength + 1);
+  data.set(id);
+  data[id.byteLength] = encoding;
+  return data;
 }
 
 const IV_LENGTH = 12;
@@ -52,13 +69,19 @@ export async function encryptText(text: string, { key, lockerId }: SyncCredentia
   const plain = encoder.encode(text);
   const gzip = typeof CompressionStream !== "undefined";
   const content = gzip ? await transform(plain, new CompressionStream("gzip")) : plain;
+  const encoding = gzip ? Encoding.GzipAuthenticated : Encoding.RawAuthenticated;
 
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
-  // The locker id is authenticated: a blob cannot be moved to another locker.
-  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: encoder.encode(lockerId) }, key, content);
+  // The locker id and the encoding are authenticated: a blob cannot be moved
+  // to another locker, nor its encoding changed.
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv, additionalData: additionalData(lockerId, encoding) },
+    key,
+    content,
+  );
 
   const blob = new Uint8Array(1 + IV_LENGTH + ciphertext.byteLength);
-  blob[0] = gzip ? Encoding.Gzip : Encoding.Raw;
+  blob[0] = encoding;
   blob.set(iv, 1);
   blob.set(new Uint8Array(ciphertext), 1 + IV_LENGTH);
   return toBase64url(blob);
@@ -70,14 +93,16 @@ export async function encryptText(text: string, { key, lockerId }: SyncCredentia
  */
 export async function decryptText(blob: string, { key, lockerId }: SyncCredentials): Promise<string> {
   const bytes = fromBase64url(blob);
-  const encoding = bytes[0];
+  const encoding = bytes[0] as Encoding;
+  if (!(encoding in Encoding)) throw new Error("Unknown encoding.");
   const iv = bytes.slice(1, 1 + IV_LENGTH);
   const content = new Uint8Array(await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv, additionalData: encoder.encode(lockerId) },
+    { name: "AES-GCM", iv, additionalData: additionalData(lockerId, encoding) },
     key,
     bytes.slice(1 + IV_LENGTH),
   ));
 
-  const plain = encoding === Encoding.Gzip ? await transform(content, new DecompressionStream("gzip")) : content;
+  const gzip = encoding === Encoding.Gzip || encoding === Encoding.GzipAuthenticated;
+  const plain = gzip ? await transform(content, new DecompressionStream("gzip")) : content;
   return new TextDecoder().decode(plain);
 }
