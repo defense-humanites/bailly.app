@@ -43,6 +43,9 @@ export default defineNuxtConfig({
       searchHistoryLength: 60,
       tagMaxItems: 100,
       maxTags: 50,
+      // PayPal's donation button (cf. `PaypalDonateButton`).
+      paypalDonateButtonId: "HFBZZVKRBE7HY",
+      paypalEnv: "production",
     },
   },
   devServer: { port: 4321 },
