@@ -4,7 +4,7 @@ import type { PartialExcept } from "~/types";
 import { nextStamp, type Stamp } from "./clock";
 import type { StarredRecord, TaggedRecord, TagKey, TagOrder, TagRecord } from "./merge";
 import { randomNodeId, randomUuid } from "./random";
-import type { TagColorKey } from "./IdbTags";
+import { IdbTags, type TagColorKey } from "./IdbTags";
 
 /**
  * An error whose message is meant for the user (invalid data, limits…).
@@ -241,8 +241,11 @@ async function writeMigratedData(transaction: UpgradeTransaction, legacy: Legacy
     const record: TagRecord = {
       key: randomUuid(),
       name: value.name,
-      description: value.description ?? "",
-      color: value.color,
+      description: typeof value.description === "string" ? value.description : "",
+      // A color that is not valid anymore gets the one an import or a
+      // synchronization would give it (cf. `transfer.ts`), so that the tag
+      // looks the same everywhere.
+      color: IdbTags.isColorKey(value.color) ? value.color : IdbTags.colorKeys[0]!,
       createdAt,
       updatedAt: createdAt,
       legacyKey: key,

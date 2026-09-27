@@ -28,7 +28,8 @@ function createV3Database(): Promise<void> {
 
       // Keys 1 and 2; the second created tag was arranged first.
       tags.add({ name: "Banquet", description: "De l'amour", color: "Rose", position: 2 });
-      tags.add({ name: "Théétète", description: "", color: "Blue", position: 1 });
+      // A color unknown to the current version (e.g. removed since).
+      tags.add({ name: "Théétète", description: "", color: "Mauve", position: 1 });
       tagged.add({ tagKey: 1, word: "ἔρως", uri: "erôs", excerpt: "ἔρως amour" });
       tagged.add({ tagKey: 2, word: "ἐπιστήμη", uri: "epistêmê", excerpt: "ἐπιστήμη science" });
       tagged.add({ tagKey: 9, word: "orphelin", uri: "orphan", excerpt: "sans étiquette" });
@@ -57,6 +58,7 @@ test("Upgrade from version 3: UUIDs, stamps, order and legacy keys", async () =>
   const tags = await IdbTags.getAll();
   expect(tags.map(tag => [tag.name, tag.legacyKey])).toEqual([["Théétète", 2], ["Banquet", 1]]);
   expect(tags[1]).toMatchObject({ description: "De l'amour", color: "Rose" });
+  expect(tags[0]!.color).toBe(IdbTags.colorKeys[0]);
   for (const tag of tags) expect(tag.key).toMatch(/^[0-9a-f-]{36}$/);
 
   const [theetete, banquet] = tags;
