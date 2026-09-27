@@ -9,7 +9,7 @@ import {
 } from "./Idb";
 import { entryTombstone, type StarredRecord } from "./merge";
 
-const toEntry = ({ word, uri, excerpt }: StarredRecord): IdbEntry => ({ word, uri, excerpt });
+const toEntry = ({ word, uri, excerpt }: StarredRecord): IdbEntry => ({ word, uri, excerpt: excerpt ?? "" });
 
 /**
  * A collection of methods for managing starred entries (aka the favorites).
@@ -44,7 +44,7 @@ export class IdbStarred {
    */
   static async add(entry: IdbEntryCreation): Promise<IdbResult<IdbEntry>> {
     return attempt(async () => {
-      const data: IdbEntry = Idb.buildIdbEntry(entry);
+      const data: IdbEntry = Idb.buildIdbEntry(entry, { requireExcerpt: false });
 
       const db = await Idb.getIndexedDB();
       const tx = db.transaction([IdbStore.Starred, IdbStore.Meta], "readwrite");

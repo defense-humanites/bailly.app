@@ -19,6 +19,8 @@ import {
   type TagKey,
 } from "~/idb";
 import { parseBookmarksFile, toBookmarksFile, type BookmarksFile } from "~/idb/transfer";
+import type { ApiExcerptsData, ApiResponse } from "#shared/types/api";
+import { MAX_EXCERPTS_URIS, toApiQuery } from "#shared/utils/api";
 
 const collator = new Intl.Collator("grc");
 
@@ -36,6 +38,7 @@ const sortEntries = <T extends IdbEntry>(entries: T[]): T[] =>
  */
 export const useBookmarksStore = defineStore("bookmarks", () => {
   const toast = useToast();
+  const { $api } = useNuxtApp();
 
   /**
    * A boolean representing whether the data has been loaded from IndexedDB.
@@ -287,7 +290,56 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    * The bookmarks as an exported file (cf. `idb/transfer.ts`).
    */
   async function exportBookmarks(): Promise<BookmarksFile> {
-    return toBookmarksFile(await IdbBookmarks.getState());
+    return toBookmarksFile(await IdbBookmarks.getState(), { excerpts: true });
+  }
+
+  /**
+   * The URIs the API does not know (e.g. an entry removed from the
+   * dictionary): not asked again during the visit.
+   */
+  const unknownUris = new Set<string>();
+
+  /**
+   * The pending fetch of excerpts, shared by concurrent calls.
+   */
+  let filling: Promise<IdbResult<{ changed: boolean }>> | null = null;
+
+  /**
+   * Fetches from the API the excerpts of the bookmarks that have none on this
+   * device (e.g. received from another one, cf. `withoutExcerpts`), by
+   * batches. Offline or on failure, it stops there: the next call (next
+   * visit, next merge) tries again, and the bookmarks show their word
+   * meanwhile.
+   */
+  async function fillExcerpts(): Promise<IdbResult<{ changed: boolean }>> {
+    filling ??= (async (): Promise<IdbResult<{ changed: boolean }>> => {
+      await initialize();
+      const uris = (await IdbBookmarks.missingExcerpts()).filter(uri => !unknownUris.has(uri));
+      const found = new Map<string, string>();
+      for (let i = 0; i < uris.length; i += MAX_EXCERPTS_URIS) {
+        try {
+          const { data } = await $api<ApiResponse<ApiExcerptsData>>("entries/excerpts", {
+            query: toApiQuery({ uris: uris.slice(i, i + MAX_EXCERPTS_URIS) }),
+          });
+          for (const { uri, word, excerpt, homonyms } of data.entries) {
+            // As for a group of homonyms added on this device (cf. `Idb.buildIdbEntry`).
+            const text = homonyms ? `${word} (v. les ${homonyms} entrées)` : excerpt;
+            if (text) found.set(uri, text);
+          }
+          for (const uri of data.missing) unknownUris.add(uri);
+        } catch {
+          break;
+        }
+      }
+      if (!found.size) return { state: "success", data: { changed: false } };
+
+      const result = await IdbBookmarks.fillExcerpts(found);
+      if (result.state === "success" && result.data.changed) await refresh();
+      return result;
+    })().finally(() => {
+      filling = null;
+    });
+    return filling;
   }
 
   /**
@@ -344,5 +396,6 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     exportBookmarks,
     previewImport,
     importBookmarks,
+    fillExcerpts,
   };
 });

@@ -16,7 +16,14 @@ const MUTATIONS = new Set([
   "mergeState",
   "joinState",
   "importBookmarks",
+  "fillExcerpts",
 ]);
+
+/**
+ * The store actions that may bring bookmarks without their excerpt (cf.
+ * `withoutExcerpts`): the missing ones are then fetched.
+ */
+const MERGES = new Set(["mergeState", "joinState", "importBookmarks"]);
 
 /**
  * The store actions that add bookmarks: after the first one, the persistent
@@ -50,8 +57,10 @@ export default defineNuxtPlugin({
     const bookmarksStore = useBookmarksStore();
     onNuxtReady(async () => {
       await bookmarksStore.initialize();
-      // At each visit, the tombstones old enough are forgotten.
+      // At each visit, the tombstones old enough are forgotten, and the
+      // missing excerpts fetched.
       void IdbBookmarks.compact();
+      void bookmarksStore.fillExcerpts();
     });
 
     const channel = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel("bailly:bookmarks");
@@ -64,6 +73,7 @@ export default defineNuxtPlugin({
         if (outcome?.state !== "success" || outcome.data?.changed === false) return;
         channel?.postMessage("changed");
         if (ADDITIONS.has(name)) void requestPersistentStorage();
+        if (MERGES.has(name)) void bookmarksStore.fillExcerpts();
       });
     });
   },

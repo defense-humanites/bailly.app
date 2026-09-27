@@ -457,16 +457,16 @@ export class Idb {
   /**
    * A helper method that takes a given entry and flatten it to satisfy the
    * shape of an `IdbEntry`.
+   * @param options.requireExcerpt Whether an excerpt (or child entries) is
+   * required. A bookmark may have none: not known yet (e.g. received from
+   * another device, cf. `withoutExcerpts`), it is fetched later.
    */
-  static buildIdbEntry(entry: IdbEntryCreation): IdbEntry {
-    if (
-      !entry.word
-      || !entry.uri
-      || (!entry.excerpt && !entry.children?.length)
-    ) {
+  static buildIdbEntry(entry: IdbEntryCreation, { requireExcerpt = true } = {}): IdbEntry {
+    if (!entry.word || !entry.uri || (requireExcerpt && !entry.excerpt && !entry.children?.length)) {
       throw new IdbError(
-        "La création de l'entrée nécessite un mot, une URI et un extrait "
-        + "(ou des entrées enfants).",
+        requireExcerpt
+          ? "La création de l'entrée nécessite un mot, une URI et un extrait (ou des entrées enfants)."
+          : "La création de l'entrée nécessite un mot et une URI.",
       );
     }
 

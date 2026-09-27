@@ -9,7 +9,7 @@ import {
 } from "./Idb";
 import { entryTombstone, type TaggedRecord, type TagKey } from "./merge";
 
-const toTagged = ({ tagKey, word, uri, excerpt }: TaggedRecord): IdbTagged => ({ tagKey, word, uri, excerpt });
+const toTagged = ({ tagKey, word, uri, excerpt }: TaggedRecord): IdbTagged => ({ tagKey, word, uri, excerpt: excerpt ?? "" });
 
 /**
  * A collection of methods for managing tagged entries.
@@ -29,7 +29,7 @@ export class IdbTaggedEntry {
     tagKey: TagKey,
   ): Promise<IdbResult<IdbTagged>> {
     return attempt(async () => {
-      const taggedEntry: IdbTagged = { tagKey, ...Idb.buildIdbEntry(entry) };
+      const taggedEntry: IdbTagged = { tagKey, ...Idb.buildIdbEntry(entry, { requireExcerpt: false }) };
 
       const db = await Idb.getIndexedDB();
       const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags, IdbStore.Meta], "readwrite");

@@ -58,7 +58,7 @@ test("invalid records are left out, unknown colors replaced", () => {
     ],
     tagged: [
       { tagKey: "ok", uri: "logos", word: "λόγος", excerpt: "λόγος parole", updatedAt: stamp() },
-      { tagKey: "ok", uri: "psukhe", word: "ψυχή", excerpt: "", updatedAt: stamp() }, // No excerpt.
+      { tagKey: "ok", uri: "psukhe", word: "", excerpt: "ψυχή âme", updatedAt: stamp() }, // No word.
       { tagKey: "ok", uri: "", word: "", excerpt: "", updatedAt: stamp() },
     ],
     starred: [{ uri: "logos", word: "λόγος", excerpt: "", updatedAt: stamp(), deleted: "yes" }, "junk"],
@@ -77,10 +77,10 @@ test("file name", () => {
   expect(bookmarksFileName(new Date(2026, 8, 7))).toBe("bailly-signets-2026-09-07.json");
 });
 
-test("entries are kept as text (the excerpt is never rendered as HTML)", () => {
-  const excerpt = "<img src=x onerror=alert(1)> λόγος";
-  const validated = validateState({ tags: [], tagged: [], starred: [{ uri: "logos", word: "λόγος", excerpt, updatedAt: stamp() }] });
-  expect(validated.starred[0]?.excerpt).toBe(excerpt);
+test("the words are kept as text, and the excerpts left out (they come from the dictionary)", () => {
+  const word = "<img src=x onerror=alert(1)> λόγος";
+  const validated = validateState({ tags: [], tagged: [], starred: [{ uri: "logos", word, excerpt: "<b>λόγος</b>", updatedAt: stamp() }] });
+  expect(validated.starred).toEqual([{ uri: "logos", word, updatedAt: stamp() }]);
 });
 
 test("records stamped too far in the future are left out", () => {
@@ -113,4 +113,10 @@ test("a tombstone may have neither name nor entry", () => {
   expect(validated.tags.map(tag => tag.key)).toEqual(["deleted"]);
   expect(validated.tagged).toHaveLength(1);
   expect(validated.starred).toHaveLength(1);
+});
+
+test("a locker has no excerpts; an exported file keeps them, for its reader", () => {
+  const state = { tags: [], tagged: [], starred: [{ uri: "logos", word: "λόγος", excerpt: "λόγος parole", updatedAt: stamp() }], tagOrder: null };
+  expect(toBookmarksFile(state, { tombstones: true }).state.starred[0]).not.toHaveProperty("excerpt");
+  expect(toBookmarksFile(state, { excerpts: true }).state.starred[0]).toMatchObject({ excerpt: "λόγος parole" });
 });

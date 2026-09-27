@@ -57,6 +57,8 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await phone.getByRole("button", { name: "Rejoindre" }).click();
   await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
   expect(await bookmarksState(phone)).toEqual({ tags: ["Homère"], tagged: 1, starred: 2 });
+  // The excerpts are not synchronized: the phone fetches the one it lacks from the API.
+  await expect(phone.getByText(/ἔργα λόγου μέζω/).first()).toBeVisible();
 
   // The laptop gets the phone's favorite (e.g. at the next visit).
   await page.reload();

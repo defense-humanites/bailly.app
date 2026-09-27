@@ -5,6 +5,7 @@ import {
   compact,
   emptyState,
   fitImport,
+  knownExcerpts,
   limitExcesses,
   latestStamp,
   mergeStates,
@@ -15,6 +16,8 @@ import {
   type BookmarksState,
   type LimitExcess,
   type SkippedRecords,
+  withExcerpts,
+  withoutExcerpts,
 } from "./merge";
 
 export type MergeOutcome = {
@@ -98,6 +101,51 @@ export class IdbBookmarks {
   }
 
   /**
+   * The URIs of the bookmarks whose excerpt is not known on this device (e.g.
+   * received from another one, cf. `withoutExcerpts`).
+   */
+  static async missingExcerpts(): Promise<string[]> {
+    const state = await IdbBookmarks.getState();
+    const liveTags = new Set(state.tags.filter(tag => !tag.deleted).map(tag => tag.key));
+    const uris = new Set<string>();
+    for (const record of state.starred) {
+      if (!record.deleted && !record.excerpt) uris.add(record.uri);
+    }
+    for (const record of state.tagged) {
+      if (!record.deleted && !record.excerpt && liveTags.has(record.tagKey)) uris.add(record.uri);
+    }
+    return [...uris];
+  }
+
+  /**
+   * Keeps the excerpts fetched for bookmarks (not a change of the bookmarks:
+   * nothing is stamped nor synchronized).
+   * @param excerpts The excerpts, by URI.
+   * @returns Whether a bookmark got its excerpt.
+   */
+  static async fillExcerpts(excerpts: Map<string, string>): Promise<IdbResult<{ changed: boolean }>> {
+    return attempt(async () => {
+      const db = await Idb.getIndexedDB();
+      const tx = db.transaction([IdbStore.Tagged, IdbStore.Starred], "readwrite");
+      let changed = false;
+      for (const record of await tx.objectStore(IdbStore.Starred).getAll()) {
+        const excerpt = excerpts.get(record.uri);
+        if (!excerpt || record.excerpt || record.deleted) continue;
+        await tx.objectStore(IdbStore.Starred).put({ ...record, excerpt });
+        changed = true;
+      }
+      for (const record of await tx.objectStore(IdbStore.Tagged).getAll()) {
+        const excerpt = excerpts.get(record.uri);
+        if (!excerpt || record.excerpt || record.deleted) continue;
+        await tx.objectStore(IdbStore.Tagged).put({ ...record, excerpt });
+        changed = true;
+      }
+      await tx.done;
+      return { changed };
+    });
+  }
+
+  /**
    * Forgets the tombstones old enough (cf. `compact`): they are not sent
    * anymore, and need not be kept.
    * @returns The state, and whether the stored one changed.
@@ -133,7 +181,9 @@ export class IdbBookmarks {
         starred: await stores.starred.getAll(),
         tagOrder: (await Idb.getMeta(stores.meta, IdbMetaKey.TagOrder)) ?? null,
       };
-      const merged = compact(normalize(mergeStates(local, await incoming(local, stores.meta))));
+      // The excerpts are not merged: those known here stay (cf. `withoutExcerpts`).
+      const united = normalize(mergeStates(withoutExcerpts(local), withoutExcerpts(await incoming(local, stores.meta))));
+      const merged = withExcerpts(compact(united), knownExcerpts(local));
 
       // Beyond the limits: nothing is merged (the user makes room first).
       const excesses = limitExcesses(merged, Idb.config);

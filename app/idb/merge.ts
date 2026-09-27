@@ -48,13 +48,21 @@ export type TaggedRecord = Versioned & {
   tagKey: TagKey;
   uri: string;
   word: string;
-  excerpt: string;
+  /**
+   * The excerpt of the entry: a local copy (cf. `withoutExcerpts`), absent
+   * or empty until known.
+   */
+  excerpt?: string;
 };
 
 export type StarredRecord = Versioned & {
   uri: string;
   word: string;
-  excerpt: string;
+  /**
+   * The excerpt of the entry: a local copy (cf. `withoutExcerpts`), absent
+   * or empty until known.
+   */
+  excerpt?: string;
 };
 
 export type TagOrder = {
@@ -90,12 +98,52 @@ export const tagTombstone = (tag: TagRecord, updatedAt: Stamp): TagRecord => ({
  * (not its word nor its excerpt), with the stamp of its deletion.
  */
 export const entryTombstone = <T extends TaggedRecord | StarredRecord>(record: T, updatedAt: Stamp): T => ({
-  ...record,
+  ...withoutExcerpt(record),
   word: "",
-  excerpt: "",
   updatedAt,
   deleted: true,
 });
+
+/**
+ * A record without its excerpt.
+ */
+const withoutExcerpt = <T extends TaggedRecord | StarredRecord>({ excerpt: _excerpt, ...record }: T): T => record as T;
+
+/**
+ * A state without the excerpts of its entries. The excerpts are not part of
+ * the bookmarks as merged and synchronized: each device keeps a copy of those
+ * it knows (added on it, or fetched from the API), so that the lockers stay
+ * small and the excerpts shown always come from the dictionary.
+ */
+export function withoutExcerpts(state: BookmarksState): BookmarksState {
+  return {
+    ...state,
+    tagged: state.tagged.map(withoutExcerpt),
+    starred: state.starred.map(withoutExcerpt),
+  };
+}
+
+/**
+ * The excerpts known in a state, by URI.
+ */
+export function knownExcerpts(state: BookmarksState): Map<string, string> {
+  const excerpts = new Map<string, string>();
+  for (const record of [...state.tagged, ...state.starred]) {
+    if (record.excerpt && !record.deleted) excerpts.set(record.uri, record.excerpt);
+  }
+  return excerpts;
+}
+
+/**
+ * Gives the live entries of a state the excerpts known for their URI.
+ */
+export function withExcerpts(state: BookmarksState, excerpts: Map<string, string>): BookmarksState {
+  const give = <T extends TaggedRecord | StarredRecord>(record: T): T => {
+    const excerpt = record.deleted ? undefined : excerpts.get(record.uri);
+    return excerpt ? { ...record, excerpt } : record;
+  };
+  return { ...state, tagged: state.tagged.map(give), starred: state.starred.map(give) };
+}
 
 /**
  * The identity of the records of each kind.

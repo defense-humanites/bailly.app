@@ -88,7 +88,8 @@
       class="definition font-serif"
       :class="ui?.entry"
     >
-      {{ greek.text(shown.excerpt) }}
+      <!-- A bookmark whose excerpt is not known yet: its word. -->
+      {{ greek.text(shown.excerpt || shown.word) }}
     </div>
   </DefineEntry>
 

@@ -11,6 +11,7 @@ import {
   type TaggedRecord,
   type TagOrder,
   type TagRecord,
+  withoutExcerpts,
   withoutTombstones,
 } from "./merge";
 
@@ -47,10 +48,13 @@ const MAX_STRING_LENGTH = 10_000;
 
 /**
  * Prepares a state for the outside: without the tombstones old enough to be
- * forgotten, nor the former keys of the tags (only meaningful on this device).
+ * forgotten, nor the former keys of the tags (only meaningful on this device),
+ * nor the excerpts (cf. `withoutExcerpts`), unless asked.
+ * @param options.excerpts Whether to keep the excerpts (for the reader of an
+ * exported file: an import ignores them).
  */
-export function exportState(state: BookmarksState): BookmarksState {
-  const compacted = compact(state);
+export function exportState(state: BookmarksState, { excerpts = false }: { excerpts?: boolean } = {}): BookmarksState {
+  const compacted = compact(excerpts ? state : withoutExcerpts(state));
   return {
     ...compacted,
     tags: compacted.tags.map(({ legacyKey: _legacyKey, ...tag }) => tag),
@@ -61,12 +65,14 @@ export function exportState(state: BookmarksState): BookmarksState {
  * The bookmarks as a file.
  * @param options.tombstones Whether to keep the (recent) tombstones: needed
  * to synchronize, useless in an exported file (an import never deletes).
+ * @param options.excerpts Whether to keep the excerpts known on this device
+ * (for the reader of an exported file; never in a locker).
  */
 export function toBookmarksFile(
   state: BookmarksState,
-  { now = new Date(), tombstones = false }: { now?: Date; tombstones?: boolean } = {},
+  { now = new Date(), tombstones = false, excerpts = false }: { now?: Date; tombstones?: boolean; excerpts?: boolean } = {},
 ): BookmarksFile {
-  const exported = exportState(state);
+  const exported = exportState(state, { excerpts });
   return {
     format: BOOKMARKS_FILE_FORMAT,
     version: BOOKMARKS_FILE_VERSION,
@@ -128,14 +134,15 @@ function validateTag(value: unknown, now: number): TagRecord | null {
 }
 
 /**
- * The entry fields of a record: a word and an excerpt are required, as when
- * a bookmark is created on the device (a deletion may have neither).
- * @remarks They are text, and shown as such (never as HTML).
+ * The entry fields of a record: a word is required, as when a bookmark is
+ * created on the device (a deletion may have none).
+ * @remarks The word is text, and shown as such (never as HTML). An excerpt,
+ * if any (an exported file), is ignored: the excerpts shown come from the
+ * dictionary (cf. `withoutExcerpts`).
  */
-function validateEntry(value: Record<string, unknown>, deleted: boolean): { uri: string; word: string; excerpt: string } | null {
-  if (!isText(value.uri, { required: true })) return null;
-  if (!isText(value.word, { required: !deleted }) || !isText(value.excerpt, { required: !deleted })) return null;
-  return { uri: value.uri, word: value.word, excerpt: value.excerpt };
+function validateEntry(value: Record<string, unknown>, deleted: boolean): { uri: string; word: string } | null {
+  if (!isText(value.uri, { required: true }) || !isText(value.word, { required: !deleted })) return null;
+  return { uri: value.uri, word: value.word };
 }
 
 function validateTagged(value: unknown, now: number): TaggedRecord | null {

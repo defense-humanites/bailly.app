@@ -1,4 +1,48 @@
 {
+ "/entries/excerpts?uris=logos": {
+  "data": {
+   "version": "2023-02-28",
+   "entries": [
+    {
+     "uri": "logos",
+     "word": "λόγος",
+     "excerpt": "λόγος, ου (ὁ) A parole : I la parole, en gén. : ἔργα λόγου μέζω, Hdt. 2, 35, actions au-dessus de ce qu’on en pourrait dire ; λόγου κρεῖσσον, Thc. 2,…"
+    }
+   ],
+   "missing": []
+  }
+ },
+ "/entries/excerpts?uris=logos,psukhê": {
+  "data": {
+   "version": "2023-02-28",
+   "entries": [
+    {
+     "uri": "logos",
+     "word": "λόγος",
+     "excerpt": "λόγος, ου (ὁ) A parole : I la parole, en gén. : ἔργα λόγου μέζω, Hdt. 2, 35, actions au-dessus de ce qu’on en pourrait dire ; λόγου κρεῖσσον, Thc. 2,…"
+    },
+    {
+     "uri": "psukhê",
+     "word": "ψυχή",
+     "excerpt": "ψυχή, ῆς (ἡ) souffle, âme"
+    }
+   ],
+   "missing": []
+  }
+ },
+ "/entries/excerpts?uris=psukhê": {
+  "data": {
+   "version": "2023-02-28",
+   "entries": [
+    {
+     "uri": "psukhê",
+     "word": "ψυχή",
+     "excerpt": "ψυχή, ῆς (ἡ) souffle, âme"
+    }
+   ],
+   "missing": []
+  }
+ },
  "/entry/chliainô?fields=word,uri,excerpt,htmlDefinition&siblings=true": {
   "data": {
    "$query": {

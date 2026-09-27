@@ -18,9 +18,11 @@ test("deletions leave tombstones in the state", async () => {
   expect(state.tagged).toEqual([expect.objectContaining({ uri: entries.rhinokeros.uri, deleted: true })]);
 
   // A tombstone keeps only the identity of the record.
-  expect(state.starred[0]).toMatchObject({ word: "", excerpt: "" });
+  expect(state.starred[0]).toMatchObject({ word: "" });
+  expect(state.starred[0]).not.toHaveProperty("excerpt");
   expect(state.tags[0]).toMatchObject({ name: "", description: "" });
-  expect(state.tagged[0]).toMatchObject({ word: "", excerpt: "" });
+  expect(state.tagged[0]).toMatchObject({ word: "" });
+  expect(state.tagged[0]).not.toHaveProperty("excerpt");
 
   // Each change has a later stamp.
   const [star] = state.starred;
@@ -145,8 +147,8 @@ test("join: online bookmarks deleted here come back", async () => {
 test("the tombstones old enough are forgotten", async () => {
   const day = 24 * 60 * 60 * 1000;
   const db = await Idb.getIndexedDB();
-  await db.put(IdbStore.Starred, { uri: "old", word: "", excerpt: "", updatedAt: remoteStamp(Date.now() - 100 * day), deleted: true });
-  await db.put(IdbStore.Starred, { uri: "recent", word: "", excerpt: "", updatedAt: remoteStamp(Date.now() - 10 * day), deleted: true });
+  await db.put(IdbStore.Starred, { uri: "old", word: "", updatedAt: remoteStamp(Date.now() - 100 * day), deleted: true });
+  await db.put(IdbStore.Starred, { uri: "recent", word: "", updatedAt: remoteStamp(Date.now() - 10 * day), deleted: true });
   unwrap(await IdbStarred.add(entries.alopex));
 
   expect(unwrap(await IdbBookmarks.compact()).changed).toBe(false);
@@ -197,4 +199,30 @@ test("an import leaves out what exceeds the limits, and deletes nothing", async 
   const outcome = unwrap(await IdbBookmarks.restore(imported));
   expect(outcome.skipped).toEqual({ tags: 0, entries: 1 });
   expect((await IdbStarred.getAll()).map(entry => entry.uri).sort()).toEqual([entries.alopex.uri, "philia"].sort());
+});
+
+test("the excerpts are not merged: those known here stay, the missing ones are filled", async () => {
+  unwrap(await IdbStarred.add(entries.alopex));
+  const remote: BookmarksState = {
+    tags: [],
+    tagged: [],
+    starred: [
+      // Another device's version, later, with another excerpt (ignored).
+      { uri: entries.alopex.uri, word: entries.alopex.word, excerpt: "autre", updatedAt: remoteStamp(Date.now() + 60_000) },
+      { uri: "philia", word: "φιλία", updatedAt: remoteStamp(Date.now() + 60_000) },
+    ],
+    tagOrder: null,
+  };
+  unwrap(await IdbBookmarks.merge(remote));
+
+  expect(await IdbStarred.get(entries.alopex.uri)).toMatchObject({ excerpt: entries.alopex.excerpt });
+  expect(await IdbStarred.get("philia")).toMatchObject({ excerpt: "" });
+  expect(await IdbBookmarks.missingExcerpts()).toEqual(["philia"]);
+
+  const before = await IdbBookmarks.getState();
+  expect(unwrap(await IdbBookmarks.fillExcerpts(new Map([["philia", "φιλία amitié"], ["unknown", "…"]]))).changed).toBe(true);
+  expect(await IdbStarred.get("philia")).toMatchObject({ excerpt: "φιλία amitié" });
+  expect(await IdbBookmarks.missingExcerpts()).toEqual([]);
+  // Not a change of the bookmarks: nothing stamped.
+  expect((await IdbBookmarks.getState()).starred.map(record => record.updatedAt)).toEqual(before.starred.map(record => record.updatedAt));
 });

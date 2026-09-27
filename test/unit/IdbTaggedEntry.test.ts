@@ -26,7 +26,7 @@ test("Create tagged entry", async () => {
   expect(await IdbTaggedEntry.add(invalid({ word: "foo", uri: "", excerpt: "" }), banquetTagKey)).toSatisfy(error); // Bad values.
   expect(await IdbTaggedEntry.add(invalid({ word: "", uri: "foo", excerpt: "" }), banquetTagKey)).toSatisfy(error); // Bad values.
   expect(await IdbTaggedEntry.add(invalid({ word: "", uri: "", excerpt: "foo" }), banquetTagKey)).toSatisfy(error); // Bad values.
-  expect(await IdbTaggedEntry.add(invalid({ word: "foo", uri: "foo", excerpt: "" }), banquetTagKey)).toSatisfy(error); // Bad values.
+  expect(await IdbTaggedEntry.add(invalid({ word: "qux", uri: "qux", excerpt: "" }), banquetTagKey)).toSatisfy(success); // Excerpt not known yet.
   expect(await IdbTaggedEntry.add(invalid({ word: "foo", uri: "", excerpt: "foo" }), banquetTagKey)).toSatisfy(error); // Bad values.
   expect(await IdbTaggedEntry.add(invalid({ word: "", uri: "foo", excerpt: "foo" }), banquetTagKey)).toSatisfy(error); // Bad values.
   expect(await IdbTaggedEntry.add(invalid({ word: "", uri: "foo", children: [] }), banquetTagKey)).toSatisfy(error); // Bad values.

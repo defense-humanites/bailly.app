@@ -4,7 +4,16 @@ import sqlite from "db0/connectors/node-sqlite";
 import { beforeEach, expect, test } from "vitest";
 import { parseBookmarksFile } from "../../app/idb/transfer";
 import { formatStamp } from "../../app/idb/clock";
-import { emptyState, joinRecords, mergeStates, normalize, type BookmarksState } from "../../app/idb/merge";
+import {
+  emptyState,
+  joinRecords,
+  knownExcerpts,
+  mergeStates,
+  normalize,
+  withExcerpts,
+  withoutExcerpts,
+  type BookmarksState,
+} from "../../app/idb/merge";
 import { decryptText, deriveCredentials, type SyncCredentials } from "../../app/sync/crypto";
 import { lockerBlob, synchronize, SyncLimitError, SyncTooLargeError, type SyncDependencies } from "../../app/sync/engine";
 import { deleteLocker, hashToken, readLocker, resetSchemaCache, writeLocker } from "../../server/lib/lockers";
@@ -46,12 +55,14 @@ function device(server: typeof fetch, initial: BookmarksState = emptyState()) {
   let state = initial;
   const deps: SyncDependencies = {
     readState: () => Promise.resolve(state),
+    // As `IdbBookmarks`: the excerpts known here stay, the others are not merged.
     mergeState: (remote) => {
-      state = normalize(mergeStates(state, remote));
+      state = withExcerpts(normalize(mergeStates(withoutExcerpts(state), withoutExcerpts(remote))), knownExcerpts(state));
       return Promise.resolve(state);
     },
     joinState: (remote) => {
-      state = normalize(mergeStates(state, joinRecords(state, remote, stamp())));
+      const joined = joinRecords(state, remote, stamp());
+      state = withExcerpts(normalize(mergeStates(withoutExcerpts(state), withoutExcerpts(joined))), knownExcerpts(state));
       return Promise.resolve(state);
     },
     fetch: server,
@@ -101,7 +112,7 @@ test("two devices converge through the locker", async () => {
   await synchronize(credentials, phone.deps);
 
   expect(liveStars(laptop.state)).toEqual(["psukhe"]);
-  expect(phone.state).toEqual(laptop.state);
+  expect(withoutExcerpts(phone.state)).toEqual(withoutExcerpts(laptop.state));
 
   // The server only holds ciphertext.
   const locker = await readLocker(db, credentials.lockerId, await hashToken(credentials.token));
@@ -126,7 +137,7 @@ test("a write by another device between the read and the write: merged, then wri
 
   expect(liveStars(laptop.state).sort()).toEqual(["anthropos", "logos"]);
   await synchronize(credentials, otherDevice.deps);
-  expect(otherDevice.state).toEqual(laptop.state);
+  expect(withoutExcerpts(otherDevice.state)).toEqual(withoutExcerpts(laptop.state));
 });
 
 test("a purged locker is recreated; a deleted one stops the devices", async () => {
@@ -179,7 +190,7 @@ test("a device joining (again) does not delete online what it deleted meanwhile"
   await synchronize(credentials, phone.deps, { first: true });
   await synchronize(credentials, laptop.deps);
   expect(liveStars(phone.state).sort()).toEqual(["anthropos", "logos"]);
-  expect(laptop.state).toEqual(phone.state);
+  expect(withoutExcerpts(laptop.state)).toEqual(withoutExcerpts(phone.state));
 
   // Afterwards, a deletion on the phone reaches the laptop again.
   phone.change(addStar("anthropos", true));
