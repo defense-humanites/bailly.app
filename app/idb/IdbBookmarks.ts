@@ -4,7 +4,8 @@ import {
   canonical,
   compact,
   emptyState,
-  enforceLimits,
+  fitImport,
+  limitExcesses,
   latestStamp,
   mergeStates,
   normalize,
@@ -12,7 +13,8 @@ import {
   recordId,
   restoreRecords,
   type BookmarksState,
-  type DroppedRecords,
+  type LimitExcess,
+  type SkippedRecords,
 } from "./merge";
 
 export type MergeOutcome = {
@@ -22,9 +24,10 @@ export type MergeOutcome = {
    */
   changed: boolean;
   /**
-   * The bookmarks deleted to keep within the limits (cf. `enforceLimits`).
+   * The limits the merge would exceed: if any, nothing was merged (cf.
+   * `limitExcesses`).
    */
-  dropped: DroppedRecords;
+  excesses: LimitExcess[];
 };
 
 /**
@@ -76,8 +79,22 @@ export class IdbBookmarks {
    * anything (cf. `restoreRecords`).
    * @returns The merged state, and whether the stored one changed.
    */
-  static async restore(imported: BookmarksState): Promise<IdbResult<MergeOutcome>> {
-    return IdbBookmarks.#mergeInto(async (local, meta) => restoreRecords(local, imported, await Idb.stamp(meta)));
+  static async restore(imported: BookmarksState): Promise<IdbResult<MergeOutcome & { skipped: SkippedRecords }>> {
+    let skipped: SkippedRecords = { tags: 0, entries: 0 };
+    const result = await IdbBookmarks.#mergeInto(async (local, meta) => {
+      const fitted = fitImport(local, imported, Idb.config);
+      skipped = fitted.skipped;
+      return restoreRecords(local, fitted.state, await Idb.stamp(meta));
+    });
+    return result.state === "success" ? { ...result, data: { ...result.data, skipped } } : result;
+  }
+
+  /**
+   * What `restore` would leave out of an imported state to keep within the
+   * limits (nothing is written).
+   */
+  static async previewRestore(imported: BookmarksState): Promise<SkippedRecords> {
+    return fitImport(await IdbBookmarks.getState(), imported, Idb.config).skipped;
   }
 
   /**
@@ -93,8 +110,8 @@ export class IdbBookmarks {
    * Merges a state into the stored one, in a single transaction: only the
    * records that change are written (and the tombstones old enough are
    * forgotten, cf. `compact`), and the clock moves past the merged stamps, so
-   * that later changes on this device supersede them. The bookmarks are kept
-   * within the limits (cf. `enforceLimits`).
+   * that later changes on this device supersede them. A merge that would
+   * exceed the limits is not applied (cf. `limitExcesses`).
    * @param incoming The state to merge, from the stored one.
    */
   static async #mergeInto(
@@ -116,8 +133,14 @@ export class IdbBookmarks {
         starred: await stores.starred.getAll(),
         tagOrder: (await Idb.getMeta(stores.meta, IdbMetaKey.TagOrder)) ?? null,
       };
-      const limited = enforceLimits(normalize(mergeStates(local, await incoming(local, stores.meta))), Idb.config);
-      const merged = compact(limited.state);
+      const merged = compact(normalize(mergeStates(local, await incoming(local, stores.meta))));
+
+      // Beyond the limits: nothing is merged (the user makes room first).
+      const excesses = limitExcesses(merged, Idb.config);
+      if (excesses.length) {
+        await tx.done;
+        return { state: local, changed: false, excesses };
+      }
 
       /**
        * The records of a kind that differ from the stored ones.
@@ -162,7 +185,7 @@ export class IdbBookmarks {
       return {
         state: merged,
         changed: Boolean(changes.tags.length || changes.tagged.length || changes.starred.length || changes.tagOrder),
-        dropped: limited.dropped,
+        excesses: [],
       };
     });
   }

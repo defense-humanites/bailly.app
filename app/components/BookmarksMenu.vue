@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import type { DropdownMenuItem } from "@nuxt/ui";
+  import type { SkippedRecords } from "~/idb";
   import { bookmarksFileName } from "~/idb/transfer";
   import { fromBase64url } from "~/sync/base64url";
 
@@ -49,7 +50,39 @@
   const plural = (n: number, word: string): string => `${n} ${word}${n > 1 ? "s" : ""}`;
 
   /**
+   * An import that would exceed the limits, while the user confirms it: the
+   * content of the file, and what would be left out.
+   */
+  const pendingImport = shallowRef<{ text: string; skipped: SkippedRecords } | null>(null);
+
+  const isImportConfirmOpen = computed({
+    get: () => pendingImport.value !== null,
+    set: (isOpen: boolean) => {
+      if (!isOpen) pendingImport.value = null;
+    },
+  });
+
+  /**
+   * What an import would leave out, e.g. « 2 étiquettes et 30 entrées ».
+   */
+  const skippedText = computed(() => {
+    const skipped = pendingImport.value?.skipped;
+    if (!skipped) return "";
+    return [skipped.tags ? plural(skipped.tags, "étiquette") : "", skipped.entries ? plural(skipped.entries, "entrée") : ""]
+      .filter(Boolean)
+      .join(" et ");
+  });
+
+  const skippedPlural = computed(() => {
+    const skipped = pendingImport.value?.skipped;
+    return Boolean(skipped && skipped.tags + skipped.entries > 1);
+  });
+
+  const { maxTags, tagMaxItems } = useRuntimeConfig().public;
+
+  /**
    * Imports the chosen file: its bookmarks are merged into the stored ones.
+   * If some would exceed the limits, the user is asked first.
    */
   const importBookmarks = async (event: Event): Promise<void> => {
     const input = event.target as HTMLInputElement;
@@ -62,8 +95,28 @@
       return;
     }
 
+    const text = await file.text();
+    const preview = await bookmarksStore.previewImport(text);
+    // Errors are reported by the store.
+    if (preview.state === "error") return;
+    if (preview.data.tags || preview.data.entries) {
+      pendingImport.value = { text, skipped: preview.data };
+      return;
+    }
+    await runImport(text);
+  };
+
+  const confirmImport = (): void => {
+    if (pendingImport.value) void runImport(pendingImport.value.text);
+  };
+
+  /**
+   * Imports the content of a file (what exceeds the limits is left out).
+   */
+  const runImport = async (text: string): Promise<void> => {
+    pendingImport.value = null;
     const before = counts();
-    const result = await bookmarksStore.importBookmarks(await file.text());
+    const result = await bookmarksStore.importBookmarks(text);
     // Errors are reported by the store.
     if (result.state === "error") return;
 
@@ -83,6 +136,12 @@
 
   const syncStore = useSyncStore();
   const { enabled: syncEnabled, status: syncStatus } = storeToRefs(syncStore);
+
+  /**
+   * Whether the synchronization failed (e.g. the limits would be exceeded:
+   * the user has to make room).
+   */
+  const syncNeedsAttention = computed(() => syncEnabled.value && syncStatus.value === "error");
 
   const isSyncOpen = ref(false);
   /**
@@ -155,14 +214,25 @@
       :items="items"
       :content="{ align: 'end' }"
     >
-      <UTooltip text="Sauvegarde des signets">
+      <UTooltip :text="syncNeedsAttention ? 'Sauvegarde des signets : la synchronisation demande votre attention' : 'Sauvegarde des signets'">
         <UButton
-          icon="i-lucide-ellipsis"
           size="2xl"
           variant="subtle"
-          aria-label="Sauvegarde des signets"
+          :aria-label="syncNeedsAttention ? 'Sauvegarde des signets (la synchronisation demande votre attention)' : 'Sauvegarde des signets'"
           class="px-2.5"
-        />
+        >
+          <UChip
+            :show="syncNeedsAttention"
+            color="warning"
+            size="md"
+            inset
+          >
+            <UIcon
+              name="i-lucide-ellipsis"
+              class="size-6"
+            />
+          </UChip>
+        </UButton>
       </UTooltip>
     </UDropdownMenu>
 
@@ -172,6 +242,32 @@
       v-model:open="isSyncOpen"
       :link-secret="linkSecret"
     />
+
+    <UModal
+      v-model:open="isImportConfirmOpen"
+      title="Limites des signets"
+      :ui="{ footer: 'justify-end flex-wrap' }"
+    >
+      <template #body>
+        <p class="text-sm">
+          {{ skippedText }} de ce fichier ne {{ skippedPlural ? "tiennent" : "tient" }} pas dans les limites
+          (au plus {{ maxTags }} étiquettes, {{ tagMaxItems }} entrées par étiquette et {{ tagMaxItems }} favoris) :
+          {{ skippedPlural ? "elles ne seront pas importées" : "elle ne sera pas importée" }}. Vos signets actuels restent tous.
+        </p>
+      </template>
+      <template #footer>
+        <UButton
+          label="Annuler"
+          color="neutral"
+          variant="outline"
+          @click="isImportConfirmOpen = false"
+        />
+        <UButton
+          label="Importer les autres"
+          @click="confirmImport"
+        />
+      </template>
+    </UModal>
 
     <!-- Opened by "Importer des signets". -->
     <input

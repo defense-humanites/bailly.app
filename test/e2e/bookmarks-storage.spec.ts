@@ -139,3 +139,35 @@ test("an import restores the bookmarks deleted since the export", async ({ page,
   await expect(page.getByText("Ajout : 1 étiquette et 2 entrées.", { exact: true })).toBeVisible();
   expect(await bookmarksState(page)).toEqual({ tags: ["Homère"], tagged: 1, starred: 1 });
 });
+
+test("an import beyond the limits asks first, then leaves out what does not fit", async ({ page, goto }) => {
+  test.setTimeout(60_000);
+  const hundred = Array.from({ length: 100 }, (_, i) => ({ word: `mot${i}`, uri: `mot-${i}`, excerpt: `mot${i}, extrait` }));
+  await goto("/signets", { waitUntil: "hydration" });
+  await seedBookmarks(page, { starred: hundred });
+
+  const stamp = `${String(Date.now()).padStart(13, "0")}-0000-e2e`;
+  const file = {
+    format: "bailly-bookmarks",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    state: {
+      tags: [{ key: "4b8c3c1e-5a4e-4f0e-9d7a-1c2b3d4e5f60", name: "Homère", description: "", color: "Blue", createdAt: stamp, updatedAt: stamp }],
+      tagged: [{ tagKey: "4b8c3c1e-5a4e-4f0e-9d7a-1c2b3d4e5f60", ...logos, updatedAt: stamp }],
+      starred: [{ ...logos, updatedAt: stamp }, { word: "ψυχή", uri: "psukhê", excerpt: "ψυχή, ῆς (ἡ) souffle", updatedAt: stamp }],
+      tagOrder: null,
+    },
+  };
+
+  await page.getByRole("button", { name: "Sauvegarde des signets" }).click();
+  const [chooser] = await Promise.all([
+    page.waitForEvent("filechooser"),
+    page.getByRole("menuitem", { name: "Importer des signets" }).click(),
+  ]);
+  await chooser.setFiles({ name: "signets.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(file)) });
+
+  await expect(page.getByText(/2 entrées de ce fichier ne tiennent pas dans les limites/)).toBeVisible();
+  await page.getByRole("button", { name: "Importer les autres" }).click();
+  await expect(page.getByText("Ajout : 1 étiquette et 1 entrée.", { exact: true })).toBeVisible();
+  expect(await bookmarksState(page)).toEqual({ tags: ["Homère"], tagged: 1, starred: 100 });
+});

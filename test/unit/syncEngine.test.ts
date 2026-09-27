@@ -6,7 +6,7 @@ import { parseBookmarksFile } from "../../app/idb/transfer";
 import { formatStamp } from "../../app/idb/clock";
 import { emptyState, joinRecords, mergeStates, normalize, type BookmarksState } from "../../app/idb/merge";
 import { decryptText, deriveCredentials, type SyncCredentials } from "../../app/sync/crypto";
-import { lockerBlob, synchronize, SyncTooLargeError, type SyncDependencies } from "../../app/sync/engine";
+import { lockerBlob, synchronize, SyncLimitError, SyncTooLargeError, type SyncDependencies } from "../../app/sync/engine";
 import { deleteLocker, hashToken, readLocker, resetSchemaCache, writeLocker } from "../../server/lib/lockers";
 import { LockerDeletedError, SyncBusyError, SyncTimeoutError } from "../../app/sync/lockerClient";
 
@@ -249,4 +249,18 @@ test("a content too large leaves out the older tombstones first, then is refused
 
   // Too large even without tombstones.
   await expect(lockerBlob(state, credentials, 100)).rejects.toThrow(SyncTooLargeError);
+});
+
+test("a merge beyond the limits stops the synchronization: nothing is written", async () => {
+  const server = fakeServer(db);
+  const laptop = device(server);
+  laptop.change(addStar("logos"));
+  expect(await synchronize(credentials, laptop.deps)).toBe(1);
+
+  const phone = device(server);
+  phone.change(addStar("psukhe"));
+  const refused = { ...phone.deps, mergeState: () => Promise.reject(new SyncLimitError("Limites dépassées.")) };
+  await expect(synchronize(credentials, refused)).rejects.toThrow(SyncLimitError);
+  expect(liveStars(phone.state)).toEqual(["psukhe"]);
+  expect(await synchronize(credentials, laptop.deps)).toBe(1); // The locker did not change.
 });

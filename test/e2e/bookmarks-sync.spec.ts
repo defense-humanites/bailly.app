@@ -171,6 +171,95 @@ test("a device keeps the key once the online bookmarks are merged, even if sendi
   await expect.poll(() => bookmarksState(page)).toEqual({ tags: [], tagged: 0, starred: 2 });
 });
 
+test("joining beyond the limits is refused until the device makes room", async ({ page, goto, browser, baseURL }) => {
+  test.setTimeout(90_000);
+  const hundred = Array.from({ length: 100 }, (_, i) => ({ word: `mot${i}`, uri: `mot-${i}`, excerpt: `mot${i}, extrait` }));
+
+  await goto("/signets", { waitUntil: "hydration" });
+  await seedBookmarks(page, { starred: hundred });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
+  await expect(page.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  const link = await syncLink(page);
+
+  // The phone has a favorite of its own: 101 once brought together.
+  const phone = await newDevice(browser, baseURL, "/");
+  await seedBookmarks(phone, { starred: [psukhe] });
+  await phone.goto(link!);
+  await phone.getByRole("button", { name: "Activer", exact: true }).click();
+  await expect(phone.getByText(/les favoris compteraient 101 entrées \(100 au plus\) : retirez-en au moins 1\. Réessayez ensuite\./)).toBeVisible();
+  expect(await bookmarksState(phone)).toEqual({ tags: [], tagged: 0, starred: 1 });
+
+  // Nothing changed online either; once the phone makes room, it joins.
+  await phone.keyboard.press("Escape");
+  await phone.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { unstarEntry: (uri: string) => Promise<unknown> };
+    await store.unstarEntry("psukhê");
+  });
+  await phone.goto(link!);
+  await phone.getByRole("button", { name: "Activer", exact: true }).click();
+  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  expect((await bookmarksState(phone)).starred).toBe(100);
+});
+
+test("a synchronization beyond the limits waits until the device makes room", async ({ page, goto, browser, baseURL }) => {
+  test.setTimeout(90_000);
+  const many = Array.from({ length: 99 }, (_, i) => ({ word: `mot${i}`, uri: `mot-${i}`, excerpt: `mot${i}, extrait` }));
+  const star = (target: Page, entry: typeof logos) => target.evaluate(async (entry) => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { starEntry: (entry: unknown) => Promise<unknown> };
+    await store.starEntry(entry);
+  }, entry);
+  const syncNow = (target: Page) => target.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { sync: () => Promise<boolean> };
+    return store.sync();
+  });
+
+  await goto("/signets", { waitUntil: "hydration" });
+  await seedBookmarks(page, { starred: many });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
+  const link = await syncLink(page);
+  await page.keyboard.press("Escape");
+
+  const phone = await newDevice(browser, baseURL, "/signets");
+  await phone.goto(link!);
+  await phone.getByRole("button", { name: "Activer", exact: true }).click();
+  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await phone.keyboard.press("Escape");
+
+  // Each device adds its 100th favorite, the phone offline.
+  await phone.route("**/api/sync/**", route => route.abort());
+  await star(phone, logos);
+  await star(page, psukhe);
+  expect(await syncNow(page)).toBe(true);
+
+  // Back online, the phone does not merge (101 favorites), and says why.
+  await phone.unroute("**/api/sync/**");
+  expect(await syncNow(phone)).toBe(false);
+  await expect(phone.getByRole("button", { name: /la synchronisation demande votre attention/ })).toBeVisible();
+  await openSync(phone);
+  await expect(phone.getByText(/les favoris compteraient 101 entrées \(100 au plus\) : retirez-en au moins 1\.$/)).toBeVisible();
+  expect((await bookmarksState(phone)).starred).toBe(100);
+  await phone.keyboard.press("Escape");
+
+  // Once it makes room, the synchronization resumes by itself.
+  await phone.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { unstarEntry: (uri: string) => Promise<unknown> };
+    await store.unstarEntry("mot-0");
+  });
+  await expect(phone.getByRole("button", { name: /la synchronisation demande votre attention/ })).toHaveCount(0, { timeout: 15_000 });
+  await expect.poll(async () => (await bookmarksState(phone)).starred).toBe(100);
+  await page.reload();
+  await waitForHydration(page);
+  await expect.poll(async () => (await bookmarksState(page)).starred).toBe(100); // With the phone's, without mot-0.
+});
+
 test("enabling a key again brings back the online bookmarks deleted meanwhile", async ({ page, goto, browser, baseURL }) => {
   test.setTimeout(60_000);
   await goto("/signets", { waitUntil: "hydration" });

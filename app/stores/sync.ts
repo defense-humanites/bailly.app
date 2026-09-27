@@ -1,9 +1,9 @@
 import { defineStore } from "pinia";
 import { IdbBookmarks, Idb, IdbError, IdbMetaKey, type IdbResult, type IdbSyncConfig } from "~/idb";
-import type { BookmarksState } from "~/idb/merge";
+import type { BookmarksState, LimitExcess } from "~/idb/merge";
 import { fromBase64url, toBase64url } from "~/sync/base64url";
 import { deriveCredentials, type SyncCredentials } from "~/sync/crypto";
-import { synchronize, SyncTooLargeError, type SyncOptions } from "~/sync/engine";
+import { synchronize, SyncLimitError, SyncTooLargeError, type SyncOptions } from "~/sync/engine";
 import {
   fetchLocker,
   LockerDeletedError,
@@ -104,7 +104,30 @@ export const useSyncStore = defineStore("sync", () => {
   async function mergeRemote(state: BookmarksState, first = false): Promise<BookmarksState> {
     const result = first ? await bookmarksStore.joinState(state) : await bookmarksStore.mergeState(state);
     if (result.state === "error") throw new IdbError(result.message);
+    if (result.data.excesses.length) throw new SyncLimitError(describeExcesses(result.data.excesses, first));
     return result.data.state;
+  }
+
+  /**
+   * Explains the limits a merge would exceed, and what to remove on this
+   * device (which always suffices: the bookmarks online keep within them).
+   * @param first Whether the key is being enabled (then retried by the user).
+   */
+  function describeExcesses(excesses: LimitExcess[], first: boolean): string {
+    const { maxTags, tagMaxItems } = Idb.config;
+    const parts = excesses.slice(0, 3).map((excess) => {
+      if (excess.kind === "tags") {
+        return `vous auriez ${excess.count} étiquettes (${maxTags} au plus) : supprimez-en au moins ${excess.count - maxTags}`;
+      }
+      const over = excess.count - tagMaxItems;
+      return excess.tag === null
+        ? `les favoris compteraient ${excess.count} entrées (${tagMaxItems} au plus) : retirez-en au moins ${over}`
+        : `l'étiquette « ${excess.tag} » compterait ${excess.count} entrées (${tagMaxItems} au plus) : retirez-en au moins ${over}`;
+    });
+    if (excesses.length > parts.length) parts.push("d'autres limites sont aussi dépassées");
+    // Otherwise, the window adds that the changes will be sent.
+    return `Réunis avec ceux de vos autres appareils, vos signets dépasseraient les limites. Sur cet appareil, ${parts.join(" ; ")}.`
+      + (first ? " Réessayez ensuite." : "");
   }
 
   /**
@@ -168,7 +191,9 @@ export const useSyncStore = defineStore("sync", () => {
    */
   function describe(e: unknown): string {
     if (e instanceof LockerDeletedError) return `${e.message} Vos signets restent sur cet appareil.`;
-    if (e instanceof SyncNetworkError || e instanceof SyncTooLargeError || e instanceof IdbError) return e.message;
+    if (e instanceof SyncNetworkError || e instanceof SyncTooLargeError || e instanceof SyncLimitError || e instanceof IdbError) {
+      return e.message;
+    }
     console.error(e);
     return "La synchronisation a échoué. Vos signets restent sur cet appareil.";
   }

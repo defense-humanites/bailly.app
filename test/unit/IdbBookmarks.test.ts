@@ -162,12 +162,13 @@ test("the tombstones old enough are forgotten", async () => {
   expect((await IdbBookmarks.getState()).starred.map(record => record.uri)).toEqual([entries.alopex.uri, "recent"].sort());
 });
 
-test("a merge keeps the bookmarks within the limits: the later additions are left out", async () => {
+test("a merge beyond the limits is not applied", async () => {
   Idb.configure({ tagMaxItems: 2 });
   unwrap(await IdbStarred.add(entries.alopex));
   unwrap(await IdbStarred.add(entries.rhinokeros));
+  const before = await IdbBookmarks.getState();
 
-  // Added on another device, later, while this one was full.
+  // Added on another device while this one was full.
   const outcome = unwrap(await IdbBookmarks.merge({
     tags: [],
     tagged: [],
@@ -175,7 +176,25 @@ test("a merge keeps the bookmarks within the limits: the later additions are lef
     tagOrder: null,
   }));
 
-  expect(outcome.dropped).toEqual({ tags: 0, entries: 1 });
-  expect((await IdbStarred.getAll()).map(entry => entry.uri).sort()).toEqual([entries.alopex.uri, entries.rhinokeros.uri].sort());
-  expect((await IdbBookmarks.getState()).starred.find(record => record.uri === "philia")).toMatchObject({ deleted: true });
+  expect(outcome).toMatchObject({ changed: false, excesses: [{ kind: "entries", tag: null, count: 3 }] });
+  expect(await IdbBookmarks.getState()).toEqual(before);
+});
+
+test("an import leaves out what exceeds the limits, and deletes nothing", async () => {
+  Idb.configure({ tagMaxItems: 2 });
+  unwrap(await IdbStarred.add(entries.alopex));
+  const imported: BookmarksState = {
+    tags: [],
+    tagged: [],
+    starred: [
+      { uri: "philia", word: "φιλία", excerpt: "φιλία amitié", updatedAt: remoteStamp(1) },
+      { uri: "eros", word: "ἔρως", excerpt: "ἔρως amour", updatedAt: remoteStamp(2) },
+    ],
+    tagOrder: null,
+  };
+
+  expect(await IdbBookmarks.previewRestore(imported)).toEqual({ tags: 0, entries: 1 });
+  const outcome = unwrap(await IdbBookmarks.restore(imported));
+  expect(outcome.skipped).toEqual({ tags: 0, entries: 1 });
+  expect((await IdbStarred.getAll()).map(entry => entry.uri).sort()).toEqual([entries.alopex.uri, "philia"].sort());
 });

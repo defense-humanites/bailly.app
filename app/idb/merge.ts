@@ -223,7 +223,7 @@ export function normalize(state: BookmarksState): BookmarksState {
 
 /**
  * The limits of the bookmarks (cf. `Idb.config`): tags, and entries per tag
- * (the favorites included).
+ * (and favorites).
  */
 export type BookmarksLimits = {
   maxTags: number;
@@ -231,71 +231,132 @@ export type BookmarksLimits = {
 };
 
 /**
- * What `enforceLimits` deleted.
+ * A limit that a state exceeds: the number of tags, or the number of entries
+ * of a tag (its name) or of the favorites (`null`).
  */
-export type DroppedRecords = {
+export type LimitExcess
+  = | { kind: "tags"; count: number }
+    | { kind: "entries"; tag: string | null; count: number };
+
+/**
+ * The limits a state exceeds, e.g. once merged with another device's (none
+ * if it keeps within them).
+ * @remarks A merge that would exceed them is not applied: the user makes room
+ * first (the bookmarks online always keep within them, each device checking
+ * before writing).
+ */
+export function limitExcesses(state: BookmarksState, { maxTags, tagMaxItems }: BookmarksLimits): LimitExcess[] {
+  const excesses: LimitExcess[] = [];
+  const liveTags = state.tags.filter(tag => !tag.deleted);
+  if (liveTags.length > maxTags) excesses.push({ kind: "tags", count: liveTags.length });
+
+  const counts = new Map<TagKey, number>();
+  for (const record of state.tagged) {
+    if (!record.deleted) counts.set(record.tagKey, (counts.get(record.tagKey) ?? 0) + 1);
+  }
+  for (const tag of liveTags) {
+    const count = counts.get(tag.key) ?? 0;
+    if (count > tagMaxItems) excesses.push({ kind: "entries", tag: tag.name, count });
+  }
+
+  const starred = state.starred.filter(record => !record.deleted).length;
+  if (starred > tagMaxItems) excesses.push({ kind: "entries", tag: null, count: starred });
+
+  return excesses;
+}
+
+/**
+ * What an import leaves out to keep within the limits.
+ */
+export type SkippedRecords = {
   tags: number;
   entries: number;
 };
 
 /**
- * Keeps the bookmarks within the limits, which a merge may exceed (e.g.
- * entries added to a tag on two devices, or two devices brought together):
- * the earliest win (the tags created first, the entries added first), as on
- * a device where the later additions are refused; the others are deleted,
- * with their entries for a tag. Their tombstones keep the stamp of the
- * record, so that every device deletes them alike.
+ * Keeps an imported state within what the limits leave room for, once
+ * restored into the local one (cf. `restoreRecords`): the local bookmarks all
+ * stay; among the new tags, those created first are imported, and among the
+ * new entries of a tag (or of the favorites), those added first. The rest is
+ * left out (an import never deletes anything).
+ * @remarks The tags are counted by name, as `normalize` fuses the homonyms.
  */
-export function enforceLimits(
-  state: BookmarksState,
+export function fitImport(
+  local: BookmarksState,
+  imported: BookmarksState,
   { maxTags, tagMaxItems }: BookmarksLimits,
-): { state: BookmarksState; dropped: DroppedRecords } {
-  function earliestAdded<T extends Versioned>(id: (record: T) => string): (a: T, b: T) => number {
-    return (a, b) => (a.updatedAt !== b.updatedAt ? (a.updatedAt < b.updatedAt ? -1 : 1) : (id(a) < id(b) ? -1 : 1));
+): { state: BookmarksState; skipped: SkippedRecords } {
+  const byAdded = <T extends Versioned & { uri: string }>(a: T, b: T): number =>
+    a.updatedAt !== b.updatedAt ? (a.updatedAt < b.updatedAt ? -1 : 1) : (a.uri < b.uri ? -1 : 1);
+
+  // The tags once restored (the latest live version of each), by name.
+  const tags = new Map<TagKey, TagRecord>();
+  for (const tag of [...local.tags, ...imported.tags]) {
+    if (tag.deleted) continue;
+    const current = tags.get(tag.key);
+    if (!current || tag.updatedAt > current.updatedAt) tags.set(tag.key, tag);
+  }
+  const groups = new Map<string, TagRecord[]>();
+  for (const tag of tags.values()) {
+    const name = comparableTagName(tag.name);
+    groups.set(name, [...(groups.get(name) ?? []), tag]);
   }
 
-  const liveTags = state.tags
-    .filter(tag => !tag.deleted)
-    .sort((a, b) => (a.createdAt !== b.createdAt ? (a.createdAt < b.createdAt ? -1 : 1) : (a.key < b.key ? -1 : 1)));
-  const droppedTags = new Set(liveTags.slice(maxTags).map(recordId.tag));
-  const keptTags = new Set(liveTags.slice(0, maxTags).map(recordId.tag));
+  // New tags (no local one of that name), the first created first.
+  const localKeys = new Set(local.tags.filter(tag => !tag.deleted).map(tag => tag.key));
+  const existing = [...groups.values()].filter(group => group.some(tag => localKeys.has(tag.key)));
+  const created = (group: TagRecord[]): Stamp => group.map(tag => tag.createdAt).sort()[0]!;
+  const added = [...groups.values()]
+    .filter(group => !existing.includes(group))
+    .sort((a, b) => (created(a) < created(b) ? -1 : created(a) > created(b) ? 1 : 0));
+  const skippedGroups = added.slice(Math.max(0, maxTags - existing.length));
+  const skippedKeys = new Set(skippedGroups.flatMap(group => group.map(tag => tag.key)));
 
-  const droppedTagged = new Set<string>();
-  const byTag = new Map<TagKey, TaggedRecord[]>();
-  for (const record of state.tagged) {
-    if (record.deleted) continue;
-    if (droppedTags.has(record.tagKey)) droppedTagged.add(recordId.tagged(record));
-    else if (keptTags.has(record.tagKey)) byTag.set(record.tagKey, [...(byTag.get(record.tagKey) ?? []), record]);
-  }
-  for (const records of byTag.values()) {
-    for (const record of records.sort(earliestAdded<TaggedRecord>(recordId.tagged)).slice(tagMaxItems)) {
-      droppedTagged.add(recordId.tagged(record));
+  /**
+   * The imported entries left out of a collection (a tag, or the
+   * favorites): those beyond the room left by the local ones.
+   */
+  const overflow = <T extends Versioned & { uri: string }>(localRecords: T[], importedRecords: T[]): Set<string> => {
+    const here = new Set(localRecords.filter(record => !record.deleted).map(record => record.uri));
+    const seen = new Set<string>();
+    const fresh = importedRecords
+      .filter(record => !record.deleted && !here.has(record.uri))
+      .sort(byAdded)
+      .filter((record) => {
+        if (seen.has(record.uri)) return false;
+        seen.add(record.uri);
+        return true;
+      });
+    return new Set(fresh.slice(Math.max(0, tagMaxItems - here.size)).map(record => record.uri));
+  };
+
+  let skippedEntries = 0;
+  const skippedTagged = new Set<string>();
+  for (const group of groups.values()) {
+    const keys = new Set(group.map(tag => tag.key));
+    const importedRecords = imported.tagged.filter(record => keys.has(record.tagKey));
+    if (skippedKeys.has(group[0]!.key)) {
+      const uris = new Set(importedRecords.filter(record => !record.deleted).map(record => record.uri));
+      skippedEntries += uris.size;
+      continue;
+    }
+    const uris = overflow(local.tagged.filter(record => keys.has(record.tagKey)), importedRecords);
+    skippedEntries += uris.size;
+    for (const record of importedRecords) {
+      if (uris.has(record.uri)) skippedTagged.add(recordId.tagged(record));
     }
   }
-
-  const droppedStarred = new Set(
-    state.starred
-      .filter(record => !record.deleted)
-      .sort(earliestAdded<StarredRecord>(recordId.starred))
-      .slice(tagMaxItems)
-      .map(recordId.starred),
-  );
-
-  const dropped = { tags: droppedTags.size, entries: droppedTagged.size + droppedStarred.size };
-  if (!dropped.tags && !dropped.entries) return { state, dropped };
+  const skippedStarred = overflow(local.starred, imported.starred);
+  skippedEntries += skippedStarred.size;
 
   return {
     state: {
-      ...state,
-      tags: state.tags.map(tag => (droppedTags.has(recordId.tag(tag)) ? tagTombstone(tag, tag.updatedAt) : tag)),
-      tagged: state.tagged.map(record =>
-        droppedTagged.has(recordId.tagged(record)) ? entryTombstone(record, record.updatedAt) : record,
-      ),
-      starred: state.starred.map(record =>
-        droppedStarred.has(recordId.starred(record)) ? entryTombstone(record, record.updatedAt) : record,
-      ),
+      ...imported,
+      tags: imported.tags.filter(tag => !skippedKeys.has(tag.key)),
+      tagged: imported.tagged.filter(record => !skippedKeys.has(record.tagKey) && !skippedTagged.has(recordId.tagged(record))),
+      starred: imported.starred.filter(record => !skippedStarred.has(record.uri)),
     },
-    dropped,
+    skipped: { tags: skippedGroups.length, entries: skippedEntries },
   };
 }
 

@@ -2,7 +2,6 @@ import { defineStore, skipHydrate } from "pinia";
 import { StorageKey } from "~/enums";
 import {
   attempt,
-  Idb,
   IdbBookmarks,
   IdbStarred,
   IdbTaggedEntry,
@@ -15,6 +14,7 @@ import {
   type IdbTagWithKey,
   type BookmarksState,
   type MergeOutcome,
+  type SkippedRecords,
   type TagColorKey,
   type TagKey,
 } from "~/idb";
@@ -113,27 +113,6 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
       });
     }
     return result;
-  };
-
-  /**
-   * Tells the user about the bookmarks a merge deleted to keep within the
-   * limits (cf. `enforceLimits`).
-   */
-  const reportDropped = (result: IdbResult<MergeOutcome>): void => {
-    if (result.state !== "success") return;
-    const { tags, entries } = result.data.dropped;
-    if (!tags && !entries) return;
-
-    const count = (n: number, noun: string) => `${n} ${noun}${n > 1 ? "s" : ""}`;
-    const what = [tags ? count(tags, "étiquette") : "", entries ? count(entries, "entrée") : ""].filter(Boolean).join(" et ");
-    const plural = tags + entries > 1;
-    const { maxTags, tagMaxItems } = Idb.config;
-    toast.add({
-      title: "Limite des signets atteinte",
-      description: `${what} ${plural ? "n'ont" : "n'a"} pas été conservée${plural ? "s" : ""} (au plus ${maxTags} étiquettes, ${tagMaxItems} entrées par étiquette et ${tagMaxItems} favoris).`,
-      icon: "i-lucide-triangle-alert",
-      color: "warning",
-    });
   };
 
   async function fetchStarredEntries(): Promise<void> {
@@ -290,7 +269,6 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     await initialize();
     const result = report(await IdbBookmarks.merge(state));
     if (result.state === "success" && result.data.changed) await refresh();
-    reportDropped(result);
     return result;
   }
 
@@ -302,7 +280,6 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     await initialize();
     const result = report(await IdbBookmarks.join(state));
     if (result.state === "success" && result.data.changed) await refresh();
-    reportDropped(result);
     return result;
   }
 
@@ -314,19 +291,29 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   }
 
   /**
-   * Imports an exported file: its bookmarks are restored, even if deleted
-   * since, without undoing later changes nor deleting anything (cf.
-   * `IdbBookmarks.restore`).
+   * What an import would leave out to keep within the limits (cf.
+   * `fitImport`), to ask the user first.
    * @param text The content of the file.
    */
-  async function importBookmarks(text: string): Promise<IdbResult<MergeOutcome>> {
+  async function previewImport(text: string): Promise<IdbResult<SkippedRecords>> {
+    await initialize();
+    return report(await attempt(async () => IdbBookmarks.previewRestore(parseBookmarksFile(text))));
+  }
+
+  /**
+   * Imports an exported file: its bookmarks are restored, even if deleted
+   * since, without undoing later changes nor deleting anything (cf.
+   * `IdbBookmarks.restore`); what would exceed the limits is left out (cf.
+   * `fitImport`).
+   * @param text The content of the file.
+   */
+  async function importBookmarks(text: string): Promise<IdbResult<MergeOutcome & { skipped: SkippedRecords }>> {
     await initialize();
     const parsed = report(await attempt(() => Promise.resolve().then(() => parseBookmarksFile(text))));
     if (parsed.state === "error") return parsed;
 
     const result = report(await IdbBookmarks.restore(parsed.data));
     if (result.state === "success" && result.data.changed) await refresh();
-    reportDropped(result);
     return result;
   }
 
@@ -355,6 +342,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     mergeState,
     joinState,
     exportBookmarks,
+    previewImport,
     importBookmarks,
   };
 });

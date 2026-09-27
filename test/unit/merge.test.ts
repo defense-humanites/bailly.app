@@ -5,7 +5,8 @@ import {
   comparableTagName,
   compact,
   emptyState,
-  enforceLimits,
+  fitImport,
+  limitExcesses,
   mergeStates,
   normalize,
   joinRecords,
@@ -138,32 +139,21 @@ describe("normalize", () => {
     ));
   });
 
-  test("devices synchronizing through a server converge, within the limits", () => {
+  test("the locker keeps within the limits: a merge beyond them is not applied", () => {
     const limits = { maxTags: 2, tagMaxItems: 1 };
     fc.assert(fc.property(
       fc.array(stateArb, { minLength: 2, maxLength: 4 }),
-      fc.array(fc.nat(), { maxLength: 8 }),
+      fc.array(fc.nat(), { maxLength: 12 }),
       (devices, schedule) => {
         let server = emptyState();
-        const sync = (i: number) => {
-          devices[i] = enforceLimits(normalize(mergeStates(devices[i]!, server)), limits).state;
-          server = devices[i];
-        };
-
-        for (const n of schedule) sync(n % devices.length);
-        for (let round = 0; round < 2; round++) {
-          devices.forEach((_, i) => {
-            sync(i);
-          });
+        for (const n of schedule) {
+          const i = n % devices.length;
+          const merged = normalize(mergeStates(devices[i]!, server));
+          if (limitExcesses(merged, limits).length) continue; // The user makes room first.
+          devices[i] = merged;
+          server = merged;
+          expect(limitExcesses(server, limits)).toEqual([]);
         }
-
-        for (const device of devices) expect(device).toEqual(server);
-        const liveTags = new Set(server.tags.filter(tag => !tag.deleted).map(tag => tag.key));
-        expect(liveTags.size).toBeLessThanOrEqual(limits.maxTags);
-        for (const key of liveTags) {
-          expect(server.tagged.filter(record => !record.deleted && record.tagKey === key).length).toBeLessThanOrEqual(limits.tagMaxItems);
-        }
-        expect(server.starred.filter(record => !record.deleted).length).toBeLessThanOrEqual(limits.tagMaxItems);
       },
     ));
   });
@@ -263,30 +253,65 @@ test("joinRecords: what exists online is not deleted by the joining device, onli
   expect(merged.starred.find(record => record.uri === "deletedHere")?.updatedAt).toBe(stamp(20));
 });
 
-test("enforceLimits keeps the tags created first and the entries added first", () => {
-  const tag = (key: string, created: number): TagRecord =>
-    ({ key, name: key, description: "", color: "Blue", createdAt: stamp(created), updatedAt: stamp(created) });
+test("limitExcesses: the tags, the entries of each tag, and the favorites", () => {
+  const tag = (key: string, name: string, deleted?: true): TagRecord =>
+    ({ key, name, description: "", color: "Blue", createdAt: stamp(1), updatedAt: stamp(1), ...(deleted ? { deleted } : {}) });
+  const entry = (tagKey: string, uri: string, deleted?: true): TaggedRecord =>
+    ({ tagKey, uri, word: uri, excerpt: uri, updatedAt: stamp(2), ...(deleted ? { deleted } : {}) });
+  const star = (uri: string): StarredRecord => ({ uri, word: uri, excerpt: uri, updatedAt: stamp(3) });
+  const limits = { maxTags: 2, tagMaxItems: 2 };
+
+  const within: BookmarksState = {
+    tags: [tag("a", "Homère"), tag("b", "Platon"), tag("c", "Ancienne", true)],
+    tagged: [entry("a", "x"), entry("a", "y"), entry("a", "z", true), entry("c", "x"), entry("c", "y"), entry("c", "z")],
+    starred: [star("x"), star("y")],
+    tagOrder: null,
+  };
+  expect(limitExcesses(within, limits)).toEqual([]);
+
+  const beyond: BookmarksState = {
+    ...within,
+    tags: [...within.tags, tag("d", "Sophocle")],
+    tagged: [...within.tagged, entry("a", "w")],
+    starred: [...within.starred, star("z")],
+  };
+  expect(limitExcesses(beyond, limits)).toEqual([
+    { kind: "tags", count: 3 },
+    { kind: "entries", tag: "Homère", count: 3 },
+    { kind: "entries", tag: null, count: 3 },
+  ]);
+});
+
+test("fitImport: the local bookmarks stay, the new ones added first are imported, within the limits", () => {
+  const tag = (key: string, name: string, created: number): TagRecord =>
+    ({ key, name, description: "", color: "Blue", createdAt: stamp(created), updatedAt: stamp(created) });
   const entry = (tagKey: string, uri: string, added: number): TaggedRecord =>
     ({ tagKey, uri, word: uri, excerpt: uri, updatedAt: stamp(added) });
-  const state: BookmarksState = {
-    tags: [tag("b", 2), tag("a", 1), tag("c", 3)],
-    tagged: [entry("a", "y", 12), entry("a", "x", 11), entry("a", "z", 13), entry("c", "x", 14)],
-    starred: [
-      { uri: "later", word: "l", excerpt: "l", updatedAt: stamp(21) },
-      { uri: "first", word: "f", excerpt: "f", updatedAt: stamp(20) },
-      { uri: "latest", word: "t", excerpt: "t", updatedAt: stamp(22) },
-    ],
+  const star = (uri: string, added: number): StarredRecord => ({ uri, word: uri, excerpt: uri, updatedAt: stamp(added) });
+  const limits = { maxTags: 3, tagMaxItems: 3 };
+
+  const local: BookmarksState = {
+    tags: [tag("a", "Homère", 1), tag("b", "Platon", 2)],
+    tagged: [entry("a", "x", 10), entry("a", "y", 11)],
+    starred: [star("s1", 20), star("s2", 21)],
+    tagOrder: null,
+  };
+  const imported: BookmarksState = {
+    // "homere" is fused with "Homère"; one tag only has room ("Eschyle", created first).
+    tags: [tag("h", "homere", 5), tag("e", "Eschyle", 3), tag("s", "Sophocle", 4)],
+    tagged: [entry("h", "y", 1), entry("h", "v", 13), entry("h", "u", 12), entry("e", "p", 1), entry("s", "q", 1)],
+    starred: [star("s1", 1), star("s4", 24), star("s3", 23)],
     tagOrder: null,
   };
 
-  const { state: limited, dropped } = enforceLimits(state, { maxTags: 2, tagMaxItems: 2 });
-  expect(dropped).toEqual({ tags: 1, entries: 3 });
-  expect(limited.tags.filter(t => t.deleted).map(t => t.key)).toEqual(["c"]);
-  expect(limited.tagged.filter(r => !r.deleted).map(r => r.uri)).toEqual(["y", "x"]);
-  // Deleted at their own stamp (every device deletes them alike).
-  expect(limited.tagged.find(r => r.uri === "z")).toMatchObject({ deleted: true, updatedAt: stamp(13), word: "" });
-  expect(limited.starred.filter(r => !r.deleted).map(r => r.uri)).toEqual(["later", "first"]);
+  const { state, skipped } = fitImport(local, imported, limits);
+  expect(state.tags.map(t => t.key)).toEqual(["h", "e"]);
+  // Homère: x, y here, room for one more: u (added before v).
+  expect(state.tagged.map(r => `${r.tagKey}:${r.uri}`)).toEqual(["h:y", "h:u", "e:p"]);
+  expect(state.starred.map(r => r.uri)).toEqual(["s1", "s3"]);
+  expect(skipped).toEqual({ tags: 1, entries: 3 }); // Sophocle; v, q, s4.
 
-  // Within the limits: unchanged.
-  expect(enforceLimits(limited, { maxTags: 2, tagMaxItems: 2 })).toEqual({ state: limited, dropped: { tags: 0, entries: 0 } });
+  // Restored, then merged: within the limits.
+  const merged = normalize(mergeStates(local, restoreRecords(local, state, stamp(100))));
+  expect(limitExcesses(merged, limits)).toEqual([]);
 });

@@ -53,6 +53,17 @@ export class SyncTooLargeError extends Error {
   }
 }
 
+/**
+ * Brought together with the locker, the bookmarks would exceed the limits:
+ * nothing is merged nor written, until the user makes room on this device.
+ */
+export class SyncLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SyncLimitError";
+  }
+}
+
 const DAY = 24 * 60 * 60 * 1000;
 
 /**

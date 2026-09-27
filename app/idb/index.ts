@@ -17,4 +17,13 @@ export { IdbStarred } from "./IdbStarred";
 export { IdbTaggedEntry } from "./IdbTaggedEntry";
 export { IdbTags, type TagColorKey } from "./IdbTags";
 export type { Stamp } from "./clock";
-export type { BookmarksState, StarredRecord, TaggedRecord, TagKey, TagOrder, TagRecord } from "./merge";
+export type {
+  BookmarksState,
+  LimitExcess,
+  SkippedRecords,
+  StarredRecord,
+  TaggedRecord,
+  TagKey,
+  TagOrder,
+  TagRecord,
+} from "./merge";
