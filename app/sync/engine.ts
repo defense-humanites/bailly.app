@@ -51,7 +51,7 @@ export async function synchronize(credentials: SyncCredentials, deps: SyncDepend
       version = 0;
     }
 
-    const blob = await encryptText(JSON.stringify(toBookmarksFile(state)), credentials);
+    const blob = await encryptText(JSON.stringify(toBookmarksFile(state, { tombstones: true })), credentials);
     const result = await storeLocker(credentials, version, blob, deps.fetch);
     if (result.state === "written") return result.version;
   }

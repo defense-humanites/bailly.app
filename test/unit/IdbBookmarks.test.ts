@@ -89,3 +89,41 @@ test("merge fuses homonymous tags", async () => {
     [local.key, entries.rhinokeros.uri],
   ]);
 });
+
+test("restore brings back what an exported state contains, even deleted since", async () => {
+  const banquet = unwrap(await IdbTags.add(tags.banquet));
+  unwrap(await IdbTaggedEntry.add(entries.rhinokeros, banquet.key));
+  unwrap(await IdbStarred.add(entries.alopex));
+  const backup = await IdbBookmarks.getState();
+
+  // Everything deleted, then a tag created with the same name as another.
+  unwrap(await IdbStarred.remove(entries.alopex.uri));
+  unwrap(await IdbTags.remove(banquet.key));
+  const other = unwrap(await IdbTags.add({ name: "Lysis" }));
+
+  expect(unwrap(await IdbBookmarks.restore(backup)).changed).toBe(true);
+  expect((await IdbTags.getAll()).map(tag => tag.name).sort()).toEqual(["Banquet", "Lysis"]);
+  expect(await IdbTaggedEntry.get(entries.rhinokeros.uri, banquet.key)).not.toBeNull();
+  expect(await IdbStarred.get(entries.alopex.uri)).not.toBeNull();
+  expect((await IdbTags.getAll()).some(tag => tag.key === other.key)).toBe(true);
+
+  // Restoring again changes nothing.
+  expect(unwrap(await IdbBookmarks.restore(backup)).changed).toBe(false);
+});
+
+test("restore does not undo later changes, nor delete anything", async () => {
+  const banquet = unwrap(await IdbTags.add(tags.banquet));
+  const backup = await IdbBookmarks.getState();
+  unwrap(await IdbTags.update(banquet.key, { name: "Le Banquet" }));
+  unwrap(await IdbStarred.add(entries.alopex));
+
+  // A backup that holds a deletion (older files kept the tombstones).
+  const withDeletion: BookmarksState = {
+    ...backup,
+    starred: [{ ...entries.alopex, excerpt: entries.alopex.excerpt, updatedAt: remoteStamp(Date.now() + 60_000), deleted: true }],
+  };
+  unwrap(await IdbBookmarks.restore(withDeletion));
+
+  expect((await IdbTags.getAll()).map(tag => tag.name)).toEqual(["Le Banquet"]);
+  expect(await IdbStarred.get(entries.alopex.uri)).not.toBeNull();
+});

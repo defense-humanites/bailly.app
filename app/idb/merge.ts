@@ -216,6 +216,45 @@ export function compact(state: BookmarksState, maxAge: number = TOMBSTONE_MAX_AG
 }
 
 /**
+ * A state without its tombstones (e.g. in an exported file).
+ */
+export function withoutTombstones(state: BookmarksState): BookmarksState {
+  return {
+    ...state,
+    tags: state.tags.filter(tag => !tag.deleted),
+    tagged: state.tagged.filter(record => !record.deleted),
+    starred: state.starred.filter(record => !record.deleted),
+  };
+}
+
+/**
+ * Prepares an imported state (a backup) to be merged into the local one, so
+ * that the import restores what the file contains without undoing the later
+ * changes: the records missing or deleted here are restored as changes made
+ * now (`stamp`), which supersede their deletion; the others keep the latest
+ * version, as in a synchronization; the file's tombstones are ignored (an
+ * import never deletes anything).
+ */
+export function restoreRecords(local: BookmarksState, imported: BookmarksState, stamp: Stamp): BookmarksState {
+  const restore = <T extends Versioned>(id: (record: T) => string, localRecords: T[], importedRecords: T[]): T[] => {
+    const here = new Map(localRecords.map(record => [id(record), record]));
+    return importedRecords
+      .filter(record => !record.deleted)
+      .map((record) => {
+        const current = here.get(id(record));
+        return !current || current.deleted ? { ...record, updatedAt: stamp } : record;
+      });
+  };
+
+  return {
+    tags: restore(recordId.tag, local.tags, imported.tags),
+    tagged: restore(recordId.tagged, local.tagged, imported.tagged),
+    starred: restore(recordId.starred, local.starred, imported.starred),
+    tagOrder: imported.tagOrder,
+  };
+}
+
+/**
  * The latest stamp of a state.
  */
 export function latestStamp(state: BookmarksState): Stamp | undefined {

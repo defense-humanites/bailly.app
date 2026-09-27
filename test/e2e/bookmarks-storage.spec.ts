@@ -101,6 +101,41 @@ test("export, then import on another device (menu of the bookmarks page)", async
     other.getByRole("menuitem", { name: "Importer des signets" }).click(),
   ]);
   await again.setFiles(path);
-  await expect(other.getByText("Vos signets étaient déjà à jour.", { exact: true })).toBeVisible();
+  await expect(other.getByText("Tous les signets de ce fichier étaient déjà là.", { exact: true })).toBeVisible();
   await context.close();
+});
+
+test("an import restores the bookmarks deleted since the export", async ({ page, goto }) => {
+  await goto("/signets", { waitUntil: "hydration" });
+  await seedBookmarks(page, { starred: [logos], tags: [{ name: "Homère", color: "Blue", entries: [logos] }] });
+
+  await page.getByRole("button", { name: "Sauvegarde des signets" }).click();
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("menuitem", { name: "Exporter les signets" }).click(),
+  ]);
+  const path = await download.path();
+
+  // Everything deleted.
+  await page.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as {
+      tags: { key: string }[];
+      removeTag: (key: string) => Promise<unknown>;
+      unstarEntry: (uri: string) => Promise<unknown>;
+    };
+    for (const tag of [...store.tags]) await store.removeTag(tag.key);
+    await store.unstarEntry("logos");
+  });
+  await expect.poll(() => bookmarksState(page)).toEqual({ tags: [], tagged: 0, starred: 0 });
+
+  await page.getByRole("button", { name: "Sauvegarde des signets" }).click();
+  const [chooser] = await Promise.all([
+    page.waitForEvent("filechooser"),
+    page.getByRole("menuitem", { name: "Importer des signets" }).click(),
+  ]);
+  await chooser.setFiles(path);
+
+  await expect(page.getByText("Ajout : 1 étiquette et 2 entrées.", { exact: true })).toBeVisible();
+  expect(await bookmarksState(page)).toEqual({ tags: ["Homère"], tagged: 1, starred: 1 });
 });

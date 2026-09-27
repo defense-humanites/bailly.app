@@ -278,14 +278,19 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   }
 
   /**
-   * Imports an exported file: its bookmarks are merged into the stored ones
-   * (the latest version of each wins, as in a synchronization).
+   * Imports an exported file: its bookmarks are restored, even if deleted
+   * since, without undoing later changes nor deleting anything (cf.
+   * `IdbBookmarks.restore`).
    * @param text The content of the file.
    */
   async function importBookmarks(text: string): Promise<IdbResult<MergeOutcome>> {
+    await initialize();
     const parsed = report(await attempt(() => Promise.resolve().then(() => parseBookmarksFile(text))));
     if (parsed.state === "error") return parsed;
-    return mergeState(parsed.data);
+
+    const result = report(await IdbBookmarks.restore(parsed.data));
+    if (result.state === "success" && result.data.changed) await refresh();
+    return result;
   }
 
   return {

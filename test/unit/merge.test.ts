@@ -8,6 +8,7 @@ import {
   mergeStates,
   normalize,
   orderTags,
+  restoreRecords,
   type BookmarksState,
   type StarredRecord,
   type TaggedRecord,
@@ -187,4 +188,28 @@ test("compact removes the old tombstones only", () => {
     ],
   };
   expect(compact(state, 90 * day, 1_000 + 100 * day).starred.map(record => record.uri)).toEqual(["recent", "live"]);
+});
+
+test("restoreRecords: what is missing or deleted comes back, later changes stay, nothing is deleted", () => {
+  const entry = (uri: string, time: number, deleted?: true): StarredRecord =>
+    withoutUndefined({ uri, word: uri, excerpt: "", updatedAt: stamp(time), deleted });
+  const local: BookmarksState = {
+    ...emptyState(),
+    starred: [entry("deleted", 5, true), entry("changed", 9), entry("kept", 1)],
+  };
+  const imported: BookmarksState = {
+    ...emptyState(),
+    starred: [entry("deleted", 2), entry("changed", 3), entry("missing", 2), entry("kept", 8, true)],
+  };
+
+  const restored = restoreRecords(local, imported, stamp(20));
+  expect(restored.starred).toEqual([
+    entry("deleted", 20), // Restored, after its deletion.
+    entry("changed", 3), // As is: the later local version wins the merge.
+    entry("missing", 20),
+  ]);
+
+  const merged = mergeStates(local, restored);
+  expect(merged.starred.filter(record => !record.deleted).map(record => record.uri)).toEqual(["changed", "deleted", "kept", "missing"]);
+  expect(merged.starred.find(record => record.uri === "changed")?.updatedAt).toBe(stamp(9));
 });

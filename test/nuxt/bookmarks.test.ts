@@ -177,3 +177,21 @@ test("importBookmarks reports an invalid file", async () => {
   expect(result).toEqual({ state: "error", message: "Ce fichier n'est pas un export de signets de Bailly." });
   expect(toasts.value.length).toBe(toastCount + 1);
 });
+
+test("importBookmarks restores bookmarks deleted after the export", async () => {
+  const store = newStore();
+  await store.initialize();
+  const banquet = unwrap(await store.createTag(tags.banquet));
+  await store.tagEntry(entries.rhinokeros, banquet.key);
+  await store.starEntry(entries.alopex);
+  const file = JSON.stringify(await store.exportBookmarks());
+
+  await store.removeTag(banquet.key);
+  await store.unstarEntry(entries.alopex.uri);
+  expect(store.tags).toHaveLength(0);
+
+  expect((await store.importBookmarks(file)).state).toBe("success");
+  expect(store.tags.map(tag => tag.name)).toEqual([tags.banquet.name]);
+  expect(store.entriesOf(banquet.key)).toHaveLength(1);
+  expect(store.isStarred(entries.alopex.uri)).toBe(true);
+});

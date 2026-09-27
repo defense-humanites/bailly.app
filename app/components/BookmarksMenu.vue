@@ -75,7 +75,7 @@
 
     toast.add({
       title: "Signets importés",
-      description: added.length ? `Ajout : ${added.join(" et ")}.` : "Vos signets étaient déjà à jour.",
+      description: added.length ? `Ajout : ${added.join(" et ")}.` : "Tous les signets de ce fichier étaient déjà là.",
       icon: "i-lucide-circle-check",
       color: "success",
     });

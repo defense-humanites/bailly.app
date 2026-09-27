@@ -1,5 +1,5 @@
 import { maxStamp } from "./clock";
-import { attempt, Idb, IdbMetaKey, IdbStore, type IdbResult } from "./Idb";
+import { attempt, Idb, IdbMetaKey, IdbStore, type IdbMetaStore, type IdbResult } from "./Idb";
 import {
   canonical,
   emptyState,
@@ -7,6 +7,7 @@ import {
   mergeStates,
   normalize,
   recordId,
+  restoreRecords,
   type BookmarksState,
 } from "./merge";
 
@@ -43,13 +44,33 @@ export class IdbBookmarks {
   }
 
   /**
-   * Merges a state (e.g. imported, or from another device) into the stored
-   * one, in a single transaction: only the records that change are written,
-   * and the clock moves past the merged stamps, so that later changes on this
-   * device supersede them.
+   * Merges a state from another device into the stored one (the latest
+   * version of each record wins, cf. `merge.ts`).
    * @returns The merged state, and whether the stored one changed.
    */
   static async merge(remote: BookmarksState): Promise<IdbResult<MergeOutcome>> {
+    return IdbBookmarks.#mergeInto(() => Promise.resolve(remote));
+  }
+
+  /**
+   * Restores an imported state (a backup): what the file contains comes back
+   * (even if deleted since), without undoing later changes nor deleting
+   * anything (cf. `restoreRecords`).
+   * @returns The merged state, and whether the stored one changed.
+   */
+  static async restore(imported: BookmarksState): Promise<IdbResult<MergeOutcome>> {
+    return IdbBookmarks.#mergeInto(async (local, meta) => restoreRecords(local, imported, await Idb.stamp(meta)));
+  }
+
+  /**
+   * Merges a state into the stored one, in a single transaction: only the
+   * records that change are written, and the clock moves past the merged
+   * stamps, so that later changes on this device supersede them.
+   * @param incoming The state to merge, from the stored one.
+   */
+  static async #mergeInto(
+    incoming: (local: BookmarksState, meta: IdbMetaStore) => Promise<BookmarksState>,
+  ): Promise<IdbResult<MergeOutcome>> {
     return attempt(async () => {
       const db = await Idb.getIndexedDB();
       const tx = db.transaction([IdbStore.Tags, IdbStore.Tagged, IdbStore.Starred, IdbStore.Meta], "readwrite");
@@ -66,7 +87,7 @@ export class IdbBookmarks {
         starred: await stores.starred.getAll(),
         tagOrder: (await Idb.getMeta(stores.meta, IdbMetaKey.TagOrder)) ?? null,
       };
-      const merged = normalize(mergeStates(local, remote));
+      const merged = normalize(mergeStates(local, await incoming(local, stores.meta)));
 
       /**
        * The records of a kind that differ from the stored ones.

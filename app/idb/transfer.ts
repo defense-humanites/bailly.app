@@ -11,12 +11,13 @@ import {
   type TaggedRecord,
   type TagOrder,
   type TagRecord,
+  withoutTombstones,
 } from "./merge";
 
 /**
- * The bookmarks as exchanged outside of the browser (exported file, and the
- * content of the synchronized state): the whole state, tombstones included,
- * so that importing it merges like a synchronization would.
+ * The bookmarks as exchanged outside of the browser: an exported file (the
+ * existing bookmarks), and the content of the synchronized locker (with the
+ * recent tombstones, so that deletions reach the other devices).
  */
 export type BookmarksFile = {
   format: typeof BOOKMARKS_FILE_FORMAT;
@@ -50,12 +51,21 @@ export function exportState(state: BookmarksState): BookmarksState {
   };
 }
 
-export function toBookmarksFile(state: BookmarksState, now: Date = new Date()): BookmarksFile {
+/**
+ * The bookmarks as a file.
+ * @param options.tombstones Whether to keep the (recent) tombstones: needed
+ * to synchronize, useless in an exported file (an import never deletes).
+ */
+export function toBookmarksFile(
+  state: BookmarksState,
+  { now = new Date(), tombstones = false }: { now?: Date; tombstones?: boolean } = {},
+): BookmarksFile {
+  const exported = exportState(state);
   return {
     format: BOOKMARKS_FILE_FORMAT,
     version: BOOKMARKS_FILE_VERSION,
     exportedAt: now.toISOString(),
-    state: exportState(state),
+    state: tombstones ? exported : withoutTombstones(exported),
   };
 }
 

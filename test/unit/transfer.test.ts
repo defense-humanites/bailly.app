@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { formatStamp } from "../../app/idb/clock";
-import { emptyState, type BookmarksState } from "../../app/idb/merge";
+import { emptyState, withoutTombstones, type BookmarksState } from "../../app/idb/merge";
 import {
   BOOKMARKS_FILE_FORMAT,
   bookmarksFileName,
@@ -24,10 +24,14 @@ const state: BookmarksState = {
   tagOrder: { keys: ["t1"], updatedAt: stamp() },
 };
 
-test("an exported file reads back as the exported state", () => {
-  const file = toBookmarksFile(state, new Date(now));
+test("an exported file reads back as the existing bookmarks", () => {
+  const file = toBookmarksFile(state, { now: new Date(now) });
   expect(file).toMatchObject({ format: BOOKMARKS_FILE_FORMAT, version: 1, exportedAt: new Date(now).toISOString() });
-  expect(parseBookmarksFile(JSON.stringify(file))).toEqual(exportState(state));
+  expect(parseBookmarksFile(JSON.stringify(file))).toEqual(withoutTombstones(exportState(state)));
+  expect(file.state.starred).toEqual([]); // No tombstones in an exported file…
+
+  // … but in the synchronized content.
+  expect(toBookmarksFile(state, { tombstones: true }).state.starred).toHaveLength(1);
 });
 
 test("the export leaves out the former keys and the old tombstones only", () => {
