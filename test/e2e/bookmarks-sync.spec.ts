@@ -43,6 +43,12 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await expect(keyWords).toHaveCount(12);
   const words = await keyWords.allInnerTexts();
   await expect(page.getByRole("img", { name: "QR code de la clé" }).locator("svg")).toBeVisible();
+
+  // A click on the words copies them.
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.getByRole("list", { name: "Les 12 mots de la clé" }).click();
+  await expect(page.getByText("Clé copiée", { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(words.join(" "));
   await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
   await expect(page.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
   await page.keyboard.press("Escape");

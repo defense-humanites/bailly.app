@@ -145,28 +145,32 @@
    */
   type PasswordCredentialConstructor = new (data: { id: string; password: string; name?: string }) => Credential;
 
+  const PasswordCredential = import.meta.client
+    ? (window as unknown as { PasswordCredential?: PasswordCredentialConstructor }).PasswordCredential
+    : undefined;
+
   /**
-   * Offers to save the key in the password manager: the form's submission
-   * (the browsers' cue), and Chrome's API.
+   * Offers to save the key in the password manager.
+   * @remarks Only Chrome (and the browsers built on it) lets a page do so
+   * (`PasswordCredential`): Safari and Firefox only offer to save what the
+   * user types in a login form. Elsewhere, the user copies the key.
    */
   const saveToPasswordManager = async (): Promise<void> => {
-    const PasswordCredential = (window as unknown as { PasswordCredential?: PasswordCredentialConstructor }).PasswordCredential;
-    if (PasswordCredential) {
-      try {
-        await navigator.credentials.store(new PasswordCredential({
-          id: CREDENTIAL_NAME,
-          password: words.value.join(" "),
-          name: "Clé de synchronisation de Bailly.app",
-        }));
-      } catch {
-        // Refused, or unavailable: the form's submission remains.
-      }
+    if (!PasswordCredential) return;
+    try {
+      await navigator.credentials.store(new PasswordCredential({
+        id: CREDENTIAL_NAME,
+        password: words.value.join(" "),
+        name: "Clé de synchronisation de Bailly.app",
+      }));
+    } catch {
+      toast.add({
+        title: "Le navigateur n'a pas pu enregistrer la clé.",
+        description: "Copiez les mots, ou téléchargez le kit de récupération.",
+        icon: "i-lucide-circle-alert",
+        color: "error",
+      });
     }
-    toast.add({
-      title: "Enregistrement proposé au navigateur",
-      description: "Si votre gestionnaire de mots de passe ne l'a pas proposé, copiez la clé ou téléchargez le kit de récupération.",
-      icon: "i-lucide-key-round",
-    });
   };
 
   const downloadRecoveryKit = (): void => {
@@ -195,9 +199,20 @@
     }, 0);
   };
 
+  /**
+   * Whether the words have just been copied (shown for a moment).
+   */
+  const copied = ref(false);
+  let copiedTimer: ReturnType<typeof setTimeout> | undefined;
+
   const copyWords = async (): Promise<void> => {
     try {
       await navigator.clipboard.writeText(words.value.join(" "));
+      copied.value = true;
+      clearTimeout(copiedTimer);
+      copiedTimer = setTimeout(() => {
+        copied.value = false;
+      }, 2_000);
       toast.add({ title: "Clé copiée", icon: "i-lucide-circle-check", color: "success" });
     } catch {
       toast.add({ title: "La clé n'a pas pu être copiée.", icon: "i-lucide-circle-alert", color: "error" });
@@ -347,19 +362,33 @@
             Conservez cette clé <strong>hors du navigateur</strong> : elle permet d'activer la synchronisation
             sur vos autres appareils, et de retrouver vos signets si ce navigateur les efface.
           </p>
-          <ol
-            class="grid grid-cols-2 gap-x-4 gap-y-1.5 rounded-md bg-elevated p-3 font-medium sm:grid-cols-3"
-            aria-label="Les 12 mots de la clé"
-          >
-            <li
-              v-for="(word, i) in words"
-              :key="i"
-              class="flex gap-1.5"
+          <!-- A click on the words copies them (the button, for the keyboard). -->
+          <div class="relative">
+            <ol
+              class="grid cursor-pointer grid-cols-2 gap-x-4 gap-y-1.5 rounded-md bg-elevated p-3 pe-12 font-medium transition-colors hover:bg-accented/60 sm:grid-cols-3"
+              aria-label="Les 12 mots de la clé"
+              title="Copier les mots"
+              @click="copyWords"
             >
-              <span class="w-5 text-right text-muted tabular-nums">{{ i + 1 }}.</span>
-              <span>{{ word }}</span>
-            </li>
-          </ol>
+              <li
+                v-for="(word, i) in words"
+                :key="i"
+                class="flex gap-1.5"
+              >
+                <span class="w-5 text-right text-muted tabular-nums">{{ i + 1 }}.</span>
+                <span>{{ word }}</span>
+              </li>
+            </ol>
+            <UButton
+              :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
+              :aria-label="copied ? 'Mots copiés' : 'Copier les mots'"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              class="absolute end-1.5 top-1.5"
+              @click="copyWords"
+            />
+          </div>
 
           <div class="flex items-center gap-4">
             <!-- eslint-disable vue/no-v-html -- A generated SVG. -->
@@ -376,42 +405,14 @@
           </div>
 
           <div class="flex flex-col gap-2">
-            <!--
-              A form with a login and a password: submitting it is the cue for
-              the browsers to offer to save the key in their password manager.
-            -->
-            <form
-              class="contents"
-              @submit.prevent="saveToPasswordManager"
-            >
-              <input
-                type="text"
-                name="username"
-                autocomplete="username"
-                :value="CREDENTIAL_NAME"
-                readonly
-                tabindex="-1"
-                aria-hidden="true"
-                class="sr-only"
-              >
-              <input
-                type="password"
-                name="password"
-                autocomplete="new-password"
-                :value="words.join(' ')"
-                readonly
-                tabindex="-1"
-                aria-hidden="true"
-                class="sr-only"
-              >
-              <UButton
-                type="submit"
-                label="Enregistrer dans le gestionnaire de mots de passe"
-                icon="i-lucide-key-round"
-                variant="outline"
-                block
-              />
-            </form>
+            <UButton
+              v-if="PasswordCredential"
+              label="Enregistrer comme mot de passe"
+              icon="i-lucide-key-round"
+              variant="outline"
+              block
+              @click="saveToPasswordManager"
+            />
             <UButton
               label="Télécharger le kit de récupération"
               icon="i-lucide-file-down"
@@ -419,24 +420,22 @@
               block
               @click="downloadRecoveryKit"
             />
-            <div class="flex gap-2">
-              <UButton
-                label="Copier les mots"
-                icon="i-lucide-copy"
-                variant="outline"
-                block
-                @click="copyWords"
-              />
-              <UButton
-                v-if="canShare"
-                label="Partager"
-                icon="i-lucide-share"
-                variant="outline"
-                block
-                @click="shareWords"
-              />
-            </div>
+            <UButton
+              v-if="canShare"
+              label="Partager"
+              icon="i-lucide-share"
+              variant="outline"
+              block
+              @click="shareWords"
+            />
           </div>
+          <p
+            v-if="!PasswordCredential"
+            class="text-muted"
+          >
+            Pour la garder dans votre gestionnaire de mots de passe, copiez les mots et collez-les dans une
+            nouvelle entrée (identifiant : « {{ CREDENTIAL_NAME }} »).
+          </p>
         </template>
 
         <!-- Enabled -->
