@@ -91,6 +91,19 @@ export interface ApiLookupResponse<
   };
 }
 
+/** An entry of `GET /entries/excerpts`; `homonyms` only for a group of homonyms. */
+export type ExcerptEntry = Pick<Entry, "uri" | "word" | "excerpt"> & {
+  homonyms?: number;
+};
+
+export interface ApiExcerptsResponse extends ApiResponse {
+  data: {
+    version: string;
+    entries: ExcerptEntry[];
+    missing: string[];
+  };
+}
+
 export type DatabaseEntry = {
   orderedID: number;
   word: string;

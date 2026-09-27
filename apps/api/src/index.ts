@@ -5,6 +5,11 @@ import { secureHeaders } from "@hono/hono/secure-headers";
 import { Database } from "./Database.ts";
 import { setParams } from "./helpers.ts";
 import { getEntry } from "./model/entry.ts";
+import {
+  ExcerptsParamError,
+  getExcerpts,
+  parseExcerptsUris
+} from "./model/excerpts.ts";
 import { getEntries, preloadLookupStatements } from "./model/lookup.ts";
 import { getRandomEntry } from "./model/randomEntry.ts";
 import { Morpheus } from "./Morpheus.ts";
@@ -107,6 +112,27 @@ app.post("/entry", async (c) => {
     count: responses.length,
     queries: responses
   });
+});
+
+// Excerpts of a list of entries (e.g. synchronized bookmarks); fixed fields.
+app.get("/entries/excerpts", async (c) => {
+  let uris: string[];
+
+  try {
+    uris = parseExcerptsUris(c.req.query("uris"));
+  } catch (error) {
+    if (error instanceof ExcerptsParamError) {
+      throw new HTTPException(400, { message: error.message });
+    }
+    throw error;
+  }
+
+  const excerpts = await getExcerpts(uris);
+
+  // The dictionary rarely changes: the same batch can be served by a cache.
+  c.header("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
+
+  return c.json(excerpts);
 });
 
 app.get("/lookup/:q", async (c) => {
