@@ -27,7 +27,10 @@
   const busy = ref(false);
 
   /**
-   * The name under which password managers save the key.
+   * The name suggested for the key in a password manager.
+   * @remarks The key is not saved there by the page: the browsers only save
+   * what the user types in a login form (Chrome's `PasswordCredential` does
+   * not prompt reliably either). The user copies the words instead.
    */
   const CREDENTIAL_NAME = "Bailly.app (synchronisation des signets)";
 
@@ -139,39 +142,6 @@
 
   const numberedWords = (): string =>
     words.value.map((word, i) => `${String(i + 1).padStart(2, " ")}. ${word}`).join("\n");
-
-  /**
-   * Chrome's API to save credentials (absent from the DOM types).
-   */
-  type PasswordCredentialConstructor = new (data: { id: string; password: string; name?: string }) => Credential;
-
-  const PasswordCredential = import.meta.client
-    ? (window as unknown as { PasswordCredential?: PasswordCredentialConstructor }).PasswordCredential
-    : undefined;
-
-  /**
-   * Offers to save the key in the password manager.
-   * @remarks Only Chrome (and the browsers built on it) lets a page do so
-   * (`PasswordCredential`): Safari and Firefox only offer to save what the
-   * user types in a login form. Elsewhere, the user copies the key.
-   */
-  const saveToPasswordManager = async (): Promise<void> => {
-    if (!PasswordCredential) return;
-    try {
-      await navigator.credentials.store(new PasswordCredential({
-        id: CREDENTIAL_NAME,
-        password: words.value.join(" "),
-        name: "Clé de synchronisation de Bailly.app",
-      }));
-    } catch {
-      toast.add({
-        title: "Le navigateur n'a pas pu enregistrer la clé.",
-        description: "Copiez les mots, ou téléchargez le kit de récupération.",
-        icon: "i-lucide-circle-alert",
-        color: "error",
-      });
-    }
-  };
 
   const downloadRecoveryKit = (): void => {
     const text = [
@@ -406,14 +376,6 @@
 
           <div class="flex flex-col gap-2">
             <UButton
-              v-if="PasswordCredential"
-              label="Enregistrer comme mot de passe"
-              icon="i-lucide-key-round"
-              variant="outline"
-              block
-              @click="saveToPasswordManager"
-            />
-            <UButton
               label="Télécharger le kit de récupération"
               icon="i-lucide-file-down"
               variant="outline"
@@ -429,10 +391,7 @@
               @click="shareWords"
             />
           </div>
-          <p
-            v-if="!PasswordCredential"
-            class="text-muted"
-          >
+          <p class="text-muted">
             Pour la garder dans votre gestionnaire de mots de passe, copiez les mots et collez-les dans une
             nouvelle entrée (identifiant : « {{ CREDENTIAL_NAME }} »).
           </p>
