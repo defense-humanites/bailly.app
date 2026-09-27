@@ -10,6 +10,14 @@ import {
   type BookmarksState,
 } from "./merge";
 
+export type MergeOutcome = {
+  state: BookmarksState;
+  /**
+   * Whether the stored bookmarks changed.
+   */
+  changed: boolean;
+};
+
 /**
  * Methods on the bookmarks as a whole (favorites, tags, tagged entries and
  * the order of the tags), with their tombstones: the state that is exported,
@@ -39,9 +47,9 @@ export class IdbBookmarks {
    * one, in a single transaction: only the records that change are written,
    * and the clock moves past the merged stamps, so that later changes on this
    * device supersede them.
-   * @returns The merged state.
+   * @returns The merged state, and whether the stored one changed.
    */
-  static async merge(remote: BookmarksState): Promise<IdbResult<BookmarksState>> {
+  static async merge(remote: BookmarksState): Promise<IdbResult<MergeOutcome>> {
     return attempt(async () => {
       const db = await Idb.getIndexedDB();
       const tx = db.transaction([IdbStore.Tags, IdbStore.Tagged, IdbStore.Starred, IdbStore.Meta], "readwrite");
@@ -68,19 +76,26 @@ export class IdbBookmarks {
         return after.filter(record => stored.get(id(record)) !== canonical(record));
       };
 
-      for (const record of changed(recordId.tag, local.tags, merged.tags)) await stores.tags.put(record);
-      for (const record of changed(recordId.tagged, local.tagged, merged.tagged)) await stores.tagged.put(record);
-      for (const record of changed(recordId.starred, local.starred, merged.starred)) await stores.starred.put(record);
-      if (merged.tagOrder && canonical(merged.tagOrder) !== canonical(local.tagOrder)) {
-        await stores.meta.put(merged.tagOrder, IdbMetaKey.TagOrder);
-      }
+      const changes = {
+        tags: changed(recordId.tag, local.tags, merged.tags),
+        tagged: changed(recordId.tagged, local.tagged, merged.tagged),
+        starred: changed(recordId.starred, local.starred, merged.starred),
+        tagOrder: merged.tagOrder && canonical(merged.tagOrder) !== canonical(local.tagOrder) ? merged.tagOrder : null,
+      };
+      for (const record of changes.tags) await stores.tags.put(record);
+      for (const record of changes.tagged) await stores.tagged.put(record);
+      for (const record of changes.starred) await stores.starred.put(record);
+      if (changes.tagOrder) await stores.meta.put(changes.tagOrder, IdbMetaKey.TagOrder);
 
       const clock = maxStamp(await Idb.getMeta(stores.meta, IdbMetaKey.Clock), latestStamp(merged));
       if (clock) await stores.meta.put(clock, IdbMetaKey.Clock);
 
       await tx.done;
 
-      return merged;
+      return {
+        state: merged,
+        changed: Boolean(changes.tags.length || changes.tagged.length || changes.starred.length || changes.tagOrder),
+      };
     });
   }
 }

@@ -103,12 +103,32 @@ export enum IdbMetaKey {
    * The order of the tags (`TagOrder`).
    */
   TagOrder = "tagOrder",
+  /**
+   * The synchronization settings (`IdbSyncConfig`), if enabled.
+   */
+  Sync = "sync",
 }
+
+/**
+ * The synchronization settings of this device.
+ */
+export type IdbSyncConfig = {
+  /**
+   * The synchronization key (16 bytes, base64url), from which the locker id,
+   * the access token and the encryption key are derived.
+   */
+  secret: string;
+  /**
+   * The date of the latest successful synchronization (ms).
+   */
+  lastSyncedAt: number | null;
+};
 
 type IdbMetaValues = {
   [IdbMetaKey.Clock]: Stamp;
   [IdbMetaKey.Node]: string;
   [IdbMetaKey.TagOrder]: TagOrder;
+  [IdbMetaKey.Sync]: IdbSyncConfig;
 };
 
 /**
@@ -381,6 +401,23 @@ export class Idb {
     key: K,
   ): Promise<IdbMetaValues[K] | undefined> {
     return (await store.get(key)) as IdbMetaValues[K] | undefined;
+  }
+
+  /**
+   * Reads a value of the `meta` store, in its own transaction.
+   */
+  static async readMeta<K extends IdbMetaKey>(key: K): Promise<IdbMetaValues[K] | undefined> {
+    const db = await Idb.getIndexedDB();
+    return (await db.get(IdbStore.Meta, key)) as IdbMetaValues[K] | undefined;
+  }
+
+  /**
+   * Writes (or, with `undefined`, deletes) a value of the `meta` store.
+   */
+  static async writeMeta<K extends IdbMetaKey>(key: K, value: IdbMetaValues[K] | undefined): Promise<void> {
+    const db = await Idb.getIndexedDB();
+    if (value === undefined) await db.delete(IdbStore.Meta, key);
+    else await db.put(IdbStore.Meta, value, key);
   }
 
   /**

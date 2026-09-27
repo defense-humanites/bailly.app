@@ -8,9 +8,10 @@ export type {
   IdbTag,
   IdbTagCreation,
   IdbTagged,
+  IdbSyncConfig,
   IdbTagWithKey,
 } from "./Idb";
-export { IdbBookmarks } from "./IdbBookmarks";
+export { IdbBookmarks, type MergeOutcome } from "./IdbBookmarks";
 export { IdbHistory } from "./IdbHistory";
 export { IdbStarred } from "./IdbStarred";
 export { IdbTaggedEntry } from "./IdbTaggedEntry";

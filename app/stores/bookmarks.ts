@@ -13,6 +13,7 @@ import {
   type IdbTagged,
   type IdbTagWithKey,
   type BookmarksState,
+  type MergeOutcome,
   type TagColorKey,
   type TagKey,
 } from "~/idb";
@@ -262,10 +263,10 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    * Merges a state (imported, or from another device) into the stored
    * bookmarks (cf. `idb/merge.ts`).
    */
-  async function mergeState(state: BookmarksState): Promise<IdbResult<BookmarksState>> {
+  async function mergeState(state: BookmarksState): Promise<IdbResult<MergeOutcome>> {
     await initialize();
     const result = report(await IdbBookmarks.merge(state));
-    if (result.state === "success") await refresh();
+    if (result.state === "success" && result.data.changed) await refresh();
     return result;
   }
 
@@ -281,7 +282,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    * (the latest version of each wins, as in a synchronization).
    * @param text The content of the file.
    */
-  async function importBookmarks(text: string): Promise<IdbResult<BookmarksState>> {
+  async function importBookmarks(text: string): Promise<IdbResult<MergeOutcome>> {
     const parsed = report(await attempt(() => Promise.resolve().then(() => parseBookmarksFile(text))));
     if (parsed.state === "error") return parsed;
     return mergeState(parsed.data);

@@ -51,7 +51,7 @@ test("merge applies a remote state", async () => {
 
   // Merging again changes nothing.
   const state = await IdbBookmarks.getState();
-  unwrap(await IdbBookmarks.merge(remote));
+  expect(unwrap(await IdbBookmarks.merge(remote)).changed).toBe(false);
   expect(await IdbBookmarks.getState()).toEqual(state);
 });
 

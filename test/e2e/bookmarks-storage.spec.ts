@@ -76,7 +76,7 @@ test("export, then import on another device (menu of the bookmarks page)", async
   ]);
   expect(download.suggestedFilename()).toMatch(/^bailly-signets-\d{4}-\d{2}-\d{2}\.json$/);
   const path = await download.path();
-  await expect(page.getByText("Signets exportés")).toBeVisible();
+  await expect(page.getByText("Signets exportés", { exact: true })).toBeVisible();
 
   // Another device: a new browser context, with its own storage.
   const context = await browser.newContext({ locale: "fr-FR" });
@@ -91,7 +91,7 @@ test("export, then import on another device (menu of the bookmarks page)", async
   ]);
   await chooser.setFiles(path);
 
-  await expect(other.getByText("Ajout : 1 étiquette et 2 entrées.")).toBeVisible();
+  await expect(other.getByText("Ajout : 1 étiquette et 2 entrées.", { exact: true })).toBeVisible();
   expect(await bookmarksState(other)).toEqual({ tags: ["Homère"], tagged: 1, starred: 1 });
 
   // Importing again adds nothing.
@@ -101,6 +101,6 @@ test("export, then import on another device (menu of the bookmarks page)", async
     other.getByRole("menuitem", { name: "Importer des signets" }).click(),
   ]);
   await again.setFiles(path);
-  await expect(other.getByText("Vos signets étaient déjà à jour.")).toBeVisible();
+  await expect(other.getByText("Vos signets étaient déjà à jour.", { exact: true })).toBeVisible();
   await context.close();
 });

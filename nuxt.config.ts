@@ -1,3 +1,12 @@
+/**
+ * The database of the bookmarks synchronization (encrypted lockers, cf.
+ * `server/lib/lockers.ts`): D1 on Cloudflare (binding `BOOKMARKS_SYNC`),
+ * SQLite elsewhere (`.data/bookmarks-sync.sqlite`, with `node:sqlite`).
+ */
+const bookmarksSyncDatabase = process.env.NITRO_PRESET?.startsWith("cloudflare")
+  ? { connector: "cloudflare-d1" as const, options: { bindingName: "BOOKMARKS_SYNC" } }
+  : { connector: "sqlite" as const, options: { name: "bookmarks-sync" } };
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: [
@@ -48,6 +57,15 @@ export default defineNuxtConfig({
   devServer: { port: 4321 },
   compatibilityDate: "2025-07-15",
   nitro: {
+    experimental: {
+      database: true,
+    },
+    database: {
+      bookmarksSync: bookmarksSyncDatabase,
+    },
+    devDatabase: {
+      bookmarksSync: bookmarksSyncDatabase,
+    },
     /**
      * Development only: relays `/_api/**` to `DEV_API_PROXY` (e.g. a local
      * API on `http://localhost:3000`), so that the browser calls the API on

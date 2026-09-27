@@ -46,7 +46,8 @@ export default defineNuxtPlugin({
     bookmarksStore.$onAction(({ name, after }) => {
       if (!MUTATIONS.has(name)) return;
       after((result: unknown) => {
-        if ((result as { state?: string } | undefined)?.state !== "success") return;
+        const outcome = result as { state?: string; data?: { changed?: boolean } } | undefined;
+        if (outcome?.state !== "success" || outcome.data?.changed === false) return;
         channel?.postMessage("changed");
         if (ADDITIONS.has(name)) void requestPersistentStorage();
       });
