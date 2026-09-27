@@ -146,3 +146,10 @@ test.describe("search options", () => {
     await expect(searchInput(page)).toHaveAttribute("placeholder", "anazētéō…");
   });
 });
+
+test("the pointer on the results, as on the history's links and the buttons", async ({ page, goto }) => {
+  await goto("/logos", { waitUntil: "hydration" });
+  await expect(page.getByRole("button", { name: "Entrées consultées récemment" })).toHaveCSS("cursor", "pointer");
+  await searchInput(page).fill("logos");
+  await expect(searchResults(page).getByRole("option").first()).toHaveCSS("cursor", "pointer");
+});
