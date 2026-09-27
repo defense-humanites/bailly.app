@@ -1,9 +1,19 @@
 /**
+ * Whether the app is built for Cloudflare: a Cloudflare preset, or a build
+ * by Cloudflare (Workers Builds, Pages), where Nitro picks the preset itself.
+ * @remarks `NITRO_PRESET=cloudflare_module npm run dev` also emulates the
+ * Cloudflare bindings locally (D1 included), with Wrangler.
+ */
+const cloudflare = Boolean(
+  process.env.NITRO_PRESET?.startsWith("cloudflare") || process.env.WORKERS_CI || process.env.CF_PAGES,
+);
+
+/**
  * The database of the bookmarks synchronization (encrypted lockers, cf.
  * `server/lib/lockers.ts`): D1 on Cloudflare (binding `BOOKMARKS_SYNC`),
  * SQLite elsewhere (`.data/bookmarks-sync.sqlite`, with `node:sqlite`).
  */
-const bookmarksSyncDatabase = process.env.NITRO_PRESET?.startsWith("cloudflare")
+const bookmarksSyncDatabase = cloudflare
   ? { connector: "cloudflare-d1" as const, options: { bindingName: "BOOKMARKS_SYNC" } }
   : { connector: "sqlite" as const, options: { name: "bookmarks-sync" } };
 

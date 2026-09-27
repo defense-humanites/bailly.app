@@ -26,3 +26,6 @@ logs
 .env
 .env.*
 !.env.example
+
+# Wrangler (local emulation of Cloudflare)
+.wrangler
