@@ -268,6 +268,45 @@ test("a synchronization beyond the limits waits until the device makes room", as
   await expect.poll(async () => (await bookmarksState(page)).starred).toBe(100); // With the phone's, without mot-0.
 });
 
+test("the synchronization waits while the tags are being arranged", async ({ page, goto, browser, baseURL }) => {
+  test.setTimeout(60_000);
+  const syncNow = (target: Page) => target.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { sync: () => Promise<boolean> };
+    return store.sync();
+  });
+
+  await goto("/signets", { waitUntil: "hydration" });
+  await seedBookmarks(page, { starred: [logos], tags: [{ name: "Homère", color: "Blue" }, { name: "Platon", color: "Green" }] });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
+  const link = await syncLink(page);
+  await page.keyboard.press("Escape");
+
+  const phone = await newDevice(browser, baseURL, "/");
+  await phone.goto(link!);
+  await phone.getByRole("button", { name: "Activer", exact: true }).click();
+  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await phone.keyboard.press("Escape");
+
+  // The laptop arranges its tags while the phone adds a favorite.
+  await page.getByRole("button", { name: "Arranger" }).click();
+  await expect(page.getByRole("dialog", { name: "Arranger les étiquettes" })).toBeVisible();
+  await seedBookmarks(phone, { starred: [psuche] });
+  // (Once its settings are loaded, after the reload.)
+  await expect.poll(() => syncNow(phone)).toBe(true);
+
+  await syncNow(page); // Deferred: nothing changes under the user's feet.
+  expect((await bookmarksState(page)).starred).toBe(1);
+
+  // Once the window is closed, the laptop synchronizes, and the phone's
+  // favorite shows (without reloading).
+  await page.keyboard.press("Escape");
+  await expect(page.getByText(/ψυχή, ῆς/).first()).toBeVisible({ timeout: 15_000 });
+  expect((await bookmarksState(page)).starred).toBe(2);
+});
+
 test("enabling a key again brings back the online bookmarks deleted meanwhile", async ({ page, goto, browser, baseURL }) => {
   test.setTimeout(60_000);
   await goto("/signets", { waitUntil: "hydration" });

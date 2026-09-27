@@ -118,6 +118,48 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     return result;
   };
 
+  /**
+   * The user interactions in progress during which the bookmarks shown must
+   * not change under the user's feet (editing a tag, arranging the tags…):
+   * the synchronization and the reloads asked by other tabs wait for them
+   * (cf. `useBookmarksHold`).
+   */
+  const holds = ref(0);
+  const held = computed(() => holds.value > 0);
+
+  /**
+   * Holds the bookmarks shown during an interaction.
+   * @returns The function that releases the hold (once).
+   */
+  function hold(): () => void {
+    holds.value++;
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      holds.value--;
+    };
+  }
+
+  /**
+   * After a merge (another device, a file), follows the tags as this device
+   * does after its own changes: if the tags were rearranged, or if a new tag
+   * comes first, the first tag becomes the current one.
+   * @param before The keys of the tags before the merge, in order.
+   */
+  function followTagOrder(before: TagKey[]): void {
+    const after = tags.value.map(tag => tag.key);
+    const first = after[0];
+    if (first === undefined) return;
+
+    const known = new Set(before);
+    const still = new Set(after);
+    const common = after.filter(key => known.has(key));
+    const previous = before.filter(key => still.has(key));
+    const rearranged = common.some((key, i) => key !== previous[i]);
+    if (rearranged || !known.has(first)) currentTagKey.value = first;
+  }
+
   async function fetchStarredEntries(): Promise<void> {
     starredEntries.value = await IdbStarred.getAll();
   }
@@ -270,8 +312,12 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    */
   async function mergeState(state: BookmarksState): Promise<IdbResult<MergeOutcome>> {
     await initialize();
+    const before = tags.value.map(tag => tag.key);
     const result = report(await IdbBookmarks.merge(state));
-    if (result.state === "success" && result.data.changed) await refresh();
+    if (result.state === "success" && result.data.changed) {
+      await refresh();
+      followTagOrder(before);
+    }
     return result;
   }
 
@@ -281,8 +327,12 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    */
   async function joinState(state: BookmarksState): Promise<IdbResult<MergeOutcome>> {
     await initialize();
+    const before = tags.value.map(tag => tag.key);
     const result = report(await IdbBookmarks.join(state));
-    if (result.state === "success" && result.data.changed) await refresh();
+    if (result.state === "success" && result.data.changed) {
+      await refresh();
+      followTagOrder(before);
+    }
     return result;
   }
 
@@ -365,8 +415,12 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     const parsed = report(await attempt(() => Promise.resolve().then(() => parseBookmarksFile(text))));
     if (parsed.state === "error") return parsed;
 
+    const before = tags.value.map(tag => tag.key);
     const result = report(await IdbBookmarks.restore(parsed.data));
-    if (result.state === "success" && result.data.changed) await refresh();
+    if (result.state === "success" && result.data.changed) {
+      await refresh();
+      followTagOrder(before);
+    }
     return result;
   }
 
@@ -378,6 +432,8 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     newTagColor,
     currentTagKey,
     currentTag,
+    held,
+    hold,
     isStarred,
     tagKeysOf,
     entriesOf,

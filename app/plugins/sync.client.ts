@@ -19,10 +19,18 @@ const LOCAL_CHANGES = new Set([
 const REVISIT_DELAY = 10_000;
 
 /**
+ * How often the bookmarks are synchronized while the page is shown, so that
+ * the changes made on the other devices appear without reloading it.
+ */
+const POLL_INTERVAL = 60_000;
+
+/**
  * Runs the synchronization of the bookmarks, if enabled on this device: once
- * the application is ready, when the user comes back to the page or the
- * network comes back, and shortly after each change (or right away when the
- * page is hidden, before the browser suspends it).
+ * the application is ready, every minute while the page is shown, when the
+ * user comes back to the page or the network comes back, and shortly after
+ * each change (or right away when the page is hidden, before the browser
+ * suspends it). It waits for the end of the interactions that hold the
+ * bookmarks shown (cf. `useBookmarksHold`).
  */
 export default defineNuxtPlugin({
   name: "bookmarks-sync",
@@ -54,6 +62,15 @@ export default defineNuxtPlugin({
     useEventListener(window, "online", () => {
       syncStore.schedule(0);
     });
+    // Back to the window (e.g. from another application, the page having
+    // stayed visible).
+    useEventListener(window, "focus", () => {
+      if (Date.now() - (syncStore.lastSyncedAt ?? 0) > REVISIT_DELAY) syncStore.schedule(0);
+    });
+    useIntervalFn(() => {
+      if (document.visibilityState !== "visible" || !navigator.onLine) return;
+      if (Date.now() - (syncStore.lastSyncedAt ?? 0) >= POLL_INTERVAL - 1_000) syncStore.schedule(0);
+    }, POLL_INTERVAL);
 
     // The tabs tell each other when the settings change (key enabled,
     // disabled or deleted, latest synchronization).

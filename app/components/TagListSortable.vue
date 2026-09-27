@@ -21,6 +21,9 @@
    */
   const sortableTags = ref<IdbTagWithKey[]>([...props.tags]);
 
+  // Shown in the "Arranger" window: the tags do not change while arranging.
+  useBookmarksHold();
+
   /**
    * Updates `sortableTags` when `props.tags` change.
    */

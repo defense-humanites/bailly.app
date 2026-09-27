@@ -231,11 +231,30 @@ export const useSyncStore = defineStore("sync", () => {
   let again = false;
 
   /**
+   * Whether a synchronization waits for the end of an interaction (cf.
+   * `bookmarksStore.hold`).
+   */
+  let deferred = false;
+
+  watch(() => bookmarksStore.held, (held) => {
+    if (held || !deferred) return;
+    deferred = false;
+    schedule(0);
+  });
+
+  /**
    * Synchronizes now (once the synchronization in progress, if any, is over).
+   * @param options.force Whether to synchronize even during an interaction
+   * that holds the bookmarks shown (e.g. asked by the user, or before the
+   * page is suspended); otherwise, it waits for its end.
    * @returns Whether it succeeded.
    */
-  async function sync(): Promise<boolean> {
+  async function sync({ force = false }: { force?: boolean } = {}): Promise<boolean> {
     if (!enabled.value) return false;
+    if (!force && bookmarksStore.held) {
+      deferred = true;
+      return status.value === "idle";
+    }
     if (running) {
       again = true;
       await running;
@@ -288,7 +307,7 @@ export const useSyncStore = defineStore("sync", () => {
     if (timer === undefined) return;
     clearTimeout(timer);
     timer = undefined;
-    void sync();
+    void sync({ force: true });
   }
 
   /**
@@ -368,7 +387,7 @@ export const useSyncStore = defineStore("sync", () => {
 
     // Already this device's key: a synchronization is enough.
     if (hasKey(secret)) {
-      await sync();
+      await sync({ force: true });
       return { state: "success", data: undefined };
     }
 
@@ -398,7 +417,7 @@ export const useSyncStore = defineStore("sync", () => {
     clearTimeout(timer);
     timer = undefined;
     if (enabled.value) {
-      await Promise.race([sync(), new Promise((resolve) => {
+      await Promise.race([sync({ force: true }), new Promise((resolve) => {
         setTimeout(resolve, DISABLE_DELAY);
       })]);
     }

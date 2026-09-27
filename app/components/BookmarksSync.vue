@@ -522,7 +522,7 @@
           label="Synchroniser"
           icon="i-lucide-refresh-cw"
           :loading="status === 'syncing'"
-          @click="syncStore.sync()"
+          @click="syncStore.sync({ force: true })"
         />
       </template>
 

@@ -64,7 +64,20 @@ export default defineNuxtPlugin({
     });
 
     const channel = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel("bailly:bookmarks");
-    if (channel) channel.onmessage = () => void bookmarksStore.refresh();
+    // A change in another tab: reloaded, once the interaction in progress (if
+    // any) is over (cf. `useBookmarksHold`).
+    let refreshDeferred = false;
+    if (channel) {
+      channel.onmessage = () => {
+        if (bookmarksStore.held) refreshDeferred = true;
+        else void bookmarksStore.refresh();
+      };
+    }
+    watch(() => bookmarksStore.held, (held) => {
+      if (held || !refreshDeferred) return;
+      refreshDeferred = false;
+      void bookmarksStore.refresh();
+    });
 
     bookmarksStore.$onAction(({ name, after }) => {
       if (!MUTATIONS.has(name)) return;

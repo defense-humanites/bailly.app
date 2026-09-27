@@ -3,6 +3,7 @@ import { expect, test } from "vitest";
 import { StorageKey } from "~/enums";
 import { IdbBookmarks, IdbTaggedEntry, IdbTags } from "~/idb";
 import { formatStamp } from "~/idb/clock";
+import { emptyState } from "~/idb/merge";
 import { useBookmarksStore } from "~/stores/bookmarks";
 import { clearIdb, entries, tags, unwrap } from "../idbHelpers";
 
@@ -194,4 +195,43 @@ test("importBookmarks restores bookmarks deleted after the export", async () => 
   expect(store.tags.map(tag => tag.name)).toEqual([tags.banquet.name]);
   expect(store.entriesOf(banquet.key)).toHaveLength(1);
   expect(store.isStarred(entries.alopex.uri)).toBe(true);
+});
+
+test("after a merge, the current tag follows the order of the tags", async () => {
+  const banquet = unwrap(await IdbTags.add(tags.banquet));
+  const theetete = unwrap(await IdbTags.add(tags.theetete));
+  const store = newStore();
+  await store.initialize();
+  // The latest created first: Théétète, then Banquet.
+  expect(store.tags.map(tag => tag.key)).toEqual([theetete.key, banquet.key]);
+  store.setCurrentTag(theetete.key);
+
+  const stamp = (offset: number) => formatStamp({ time: Date.now() + offset, counter: 0, node: "test" });
+  const state = await IdbBookmarks.getState();
+
+  // A change that does not touch the order (a renaming): the current tag stays.
+  const renamed = state.tags.map(tag => (tag.key === banquet.key ? { ...tag, name: "Le Banquet", updatedAt: stamp(1_000) } : tag));
+  unwrap(await store.mergeState({ ...state, tags: renamed }));
+  expect(store.currentTagKey).toBe(theetete.key);
+
+  // Arranged on another device: the first tag becomes the current one.
+  unwrap(await store.mergeState({ ...state, tags: renamed, tagOrder: { keys: [banquet.key, theetete.key], updatedAt: stamp(2_000) } }));
+  expect(store.currentTagKey).toBe(banquet.key);
+
+  // A tag created on another device comes first: it becomes the current one.
+  store.setCurrentTag(theetete.key);
+  const lysis = { key: "remote", name: "Lysis", description: "", color: "Green" as const, createdAt: stamp(3_000), updatedAt: stamp(3_000) };
+  unwrap(await store.mergeState({ ...emptyState(), tags: [lysis] }));
+  expect(store.currentTagKey).toBe("remote");
+});
+
+test("hold counts the interactions in progress", () => {
+  const store = newStore();
+  const first = store.hold();
+  const second = store.hold();
+  first();
+  first(); // Released once only.
+  expect(store.held).toBe(true);
+  second();
+  expect(store.held).toBe(false);
 });
