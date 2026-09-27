@@ -22,13 +22,17 @@ export type ApiParams<K extends keyof QueryableFields> = {
   limit?: number;
   offset?: number;
   siblings: boolean;
+  /** Fields of the siblings (`siblings=true`); `fields` by default. */
+  siblingsFields?: NonEmptyArray<keyof QueryableFields>;
   skipMorpheus: boolean;
 };
 
-export type ApiEntryParams<K extends keyof QueryableFields> = Pick<
-  ApiParams<K>,
-  "q" | "fields" | "siblings"
->;
+export type ApiEntryParams<
+  K extends keyof QueryableFields,
+  S extends keyof QueryableFields = K
+> =
+  & Pick<ApiParams<K>, "q" | "fields" | "siblings">
+  & { siblingsFields?: NonEmptyArray<keyof Pick<QueryableFields, S>> };
 export type ApiLookupParams<K extends keyof QueryableFields> = Pick<
   ApiParams<K>,
   | "q"
@@ -52,12 +56,13 @@ export type ApiResponse = {
 };
 
 export interface ApiEntryResponse<
-  K extends keyof QueryableFields
+  K extends keyof QueryableFields,
+  S extends keyof QueryableFields = K
 > extends ApiResponse {
   data: {
     version: string;
     entry: PartialExcept<Entry<K>, K | "children">;
-    siblings: Siblings<K>;
+    siblings: Siblings<S>;
   };
 }
 

@@ -36,6 +36,7 @@ export function setParams<
     limit: setNumericParam(params.limit),
     offset: setNumericParam(params.offset),
     siblings: setBooleanParam(params.siblings),
+    siblingsFields: setOptionalSelectedFields(params.siblingsFields),
     skipMorpheus: setBooleanParam(params.skipMorpheus)
   };
 
@@ -132,4 +133,21 @@ export function setSelectedFields(
     : settings.queryDefaultFields;
 
   return selectedFields as NonEmptyArray<keyof QueryableFields>;
+}
+
+/**
+ * Like `setSelectedFields()`, for an optional list of fields (e.g. `siblingsFields`):
+ * `undefined` if the list is invalid, so that the caller falls back to its default
+ * (e.g. `fields`) rather than to the default fields of the API.
+ */
+export function setOptionalSelectedFields(
+  fields?: unknown
+): NonEmptyArray<keyof QueryableFields> | undefined {
+  if (fields === undefined) return undefined;
+
+  const formattedFields = Settings.formatFields(String(fields));
+
+  return Settings.getSettings().checkFields(formattedFields)
+    ? formattedFields as NonEmptyArray<keyof QueryableFields>
+    : undefined;
 }

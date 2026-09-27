@@ -23,11 +23,20 @@ function normalizeUri(q: string): string {
   });
 }
 
-export async function getEntry<K extends keyof QueryableFields>({
+/**
+ * @param siblingsFields The fields of the siblings (with `siblings`), `fields` by
+ *   default. A page usually needs the whole entry, but only a preview of its
+ *   siblings (e.g. `word`, `uri` and `excerpt`, without `htmlDefinition`).
+ */
+export async function getEntry<
+  K extends keyof QueryableFields,
+  S extends keyof QueryableFields = K
+>({
   q,
   fields,
-  siblings: getSiblings
-}: ApiEntryParams<K>): Promise<ApiEntryResponse<K>> {
+  siblings: getSiblings,
+  siblingsFields
+}: ApiEntryParams<K, S>): Promise<ApiEntryResponse<K, S>> {
   const db = await Database.getConnection();
   const settings = Settings.getSettings();
   const fieldsStr: string = fields.join(", ");
@@ -104,7 +113,7 @@ export async function getEntry<K extends keyof QueryableFields>({
   }
 
   const siblingsSql = `
-    SELECT orderedID, ${fieldsStr}
+    SELECT orderedID, ${(siblingsFields ?? fields).join(", ")}
     FROM bailly
     WHERE orderedID = $previousID
     OR orderedID = $nextID
@@ -159,8 +168,8 @@ export async function getEntry<K extends keyof QueryableFields>({
       version: settings.dbVersion,
       entry: narrowedEntry as Entry<K>,
       siblings: {
-        previous: previousEntry as Entry<K>,
-        next: nextEntry as Entry<K>
+        previous: previousEntry as Entry<S>,
+        next: nextEntry as Entry<S>
       }
     }
   };
