@@ -18,6 +18,10 @@ const CHANGE_DELAY = 3_000;
  * rate limiting rule blocks for 10 seconds).
  */
 const BUSY_DELAY = 15_000;
+/**
+ * The longest a synchronization may take before it is reported as failed.
+ */
+const ATTEMPT_TIMEOUT = 30_000;
 
 /**
  * A store for the online synchronization of the bookmarks (cf. `app/sync/`):
@@ -93,29 +97,71 @@ export const useSyncStore = defineStore("sync", () => {
     status.value = "idle";
   }
 
+  /**
+   * Runs the engine once with credentials, the tabs taking turns (Web Locks).
+   * @returns The error, if it failed.
+   */
+  async function attempt(creds: SyncCredentials): Promise<unknown> {
+    const run = async (): Promise<unknown> => {
+      try {
+        await synchronize(creds, { readState: () => IdbBookmarks.getState(), mergeState: mergeRemote });
+        return null;
+      } catch (e: unknown) {
+        return e;
+      }
+    };
+
+    // A synchronization that never ends (e.g. a request left pending) must
+    // not leave the user waiting.
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const expired = new Promise<unknown>((resolve) => {
+      timeout = setTimeout(() => {
+        resolve(new Error("La synchronisation n'a pas abouti dans le délai prévu."));
+      }, ATTEMPT_TIMEOUT);
+    });
+
+    const locked = typeof navigator !== "undefined" && "locks" in navigator
+      ? navigator.locks.request("bailly:bookmarks-sync", run)
+      : run();
+    try {
+      return await Promise.race([locked, expired]);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  /**
+   * An error of the synchronization, explained to the user.
+   */
+  function describe(e: unknown): string {
+    if (e instanceof LockerDeletedError) return `${e.message} Vos signets restent sur cet appareil.`;
+    if (e instanceof SyncNetworkError) return e.message;
+    console.error(e);
+    return "La synchronisation a échoué. Vos signets restent sur cet appareil.";
+  }
+
   async function runOnce(): Promise<void> {
     if (!config || !credentials) return;
     status.value = "syncing";
     error.value = null;
-    try {
-      await synchronize(credentials, { readState: () => IdbBookmarks.getState(), mergeState: mergeRemote });
+
+    const failure = await attempt(credentials);
+    if (!failure) {
       config = { ...config, lastSyncedAt: Date.now() };
       await Idb.writeMeta(IdbMetaKey.Sync, config);
       lastSyncedAt.value = config.lastSyncedAt;
       status.value = "idle";
-    } catch (e: unknown) {
-      if (e instanceof LockerDeletedError) {
-        await forget();
-        error.value = `${e.message} Vos signets restent sur cet appareil.`;
-        return;
-      }
-      if (!(e instanceof SyncNetworkError)) console.error(e);
-      if (e instanceof SyncBusyError) schedule(BUSY_DELAY);
-      status.value = "error";
-      error.value = e instanceof SyncNetworkError
-        ? e.message
-        : "La synchronisation a échoué. Vos signets restent sur cet appareil.";
+      return;
     }
+
+    if (failure instanceof LockerDeletedError) {
+      await forget();
+      error.value = describe(failure);
+      return;
+    }
+    if (failure instanceof SyncBusyError) schedule(BUSY_DELAY);
+    status.value = "error";
+    error.value = describe(failure);
   }
 
   // (Asserted: set and cleared by concurrent calls.)
@@ -124,7 +170,6 @@ export const useSyncStore = defineStore("sync", () => {
 
   /**
    * Synchronizes now (once the synchronization in progress, if any, is over).
-   * @remarks The tabs of the application take turns (Web Locks).
    * @returns Whether it succeeded.
    */
   async function sync(): Promise<boolean> {
@@ -147,11 +192,7 @@ export const useSyncStore = defineStore("sync", () => {
     again = false;
     running = (async () => {
       do {
-        if (typeof navigator !== "undefined" && "locks" in navigator) {
-          await navigator.locks.request("bailly:bookmarks-sync", runOnce);
-        } else {
-          await runOnce();
-        }
+        await runOnce();
       } while (takeAgain());
     })();
 
@@ -188,25 +229,49 @@ export const useSyncStore = defineStore("sync", () => {
     void sync();
   }
 
-  async function activate(secret: Uint8Array): Promise<void> {
-    const value: IdbSyncConfig = { secret: toBase64url(secret), lastSyncedAt: null };
+  /**
+   * Synchronizes with a key, then keeps it on this device: only once the
+   * first synchronization succeeded, so that a failure leaves the device as
+   * it was (e.g. with its former key).
+   * @returns The error, explained to the user, if it failed.
+   */
+  async function activate(secret: Uint8Array<ArrayBuffer>): Promise<IdbResult> {
+    clearTimeout(timer);
+    const previousStatus = status.value;
+    status.value = "syncing";
+
+    const failure = await attempt(await deriveCredentials(secret));
+    if (failure) {
+      status.value = previousStatus;
+      return { state: "error", message: describe(failure) };
+    }
+
+    const value: IdbSyncConfig = { secret: toBase64url(secret), lastSyncedAt: Date.now() };
     await Idb.writeMeta(IdbMetaKey.Sync, value);
     await setConfig(value);
-    await sync();
+    status.value = "idle";
+    error.value = null;
+    return { state: "success", data: undefined };
+  }
+
+  /**
+   * Whether this device synchronizes with a key.
+   */
+  function hasKey(secret: Uint8Array): boolean {
+    return config?.secret === toBase64url(secret);
   }
 
   /**
    * Enables the synchronization with a new key (this device's bookmarks are
    * the first to be sent).
    */
-  async function enable(): Promise<boolean> {
-    await activate(crypto.getRandomValues(new Uint8Array(16)));
-    return status.value === "idle";
+  async function enable(): Promise<IdbResult> {
+    return activate(crypto.getRandomValues(new Uint8Array(16)));
   }
 
   /**
    * Joins the synchronization of another device, with its key: its bookmarks
-   * and this device's are merged.
+   * and this device's are merged. The key replaces this device's, if any.
    * @param key The 12 words of the key, or the secret itself (from a link).
    */
   async function join(key: string[] | Uint8Array<ArrayBuffer>): Promise<IdbResult> {
@@ -223,6 +288,14 @@ export const useSyncStore = defineStore("sync", () => {
       secret = key;
     }
 
+    // Already this device's key: a synchronization is enough.
+    if (hasKey(secret)) {
+      await sync();
+      return { state: "success", data: undefined };
+    }
+
+    // A key that no device uses is most likely mistyped (a new locker is only
+    // created by `enable`).
     try {
       if (!(await fetchLocker(await deriveCredentials(secret)))) {
         return { state: "error", message: "Aucun signet n'est synchronisé avec cette clé : vérifiez-la." };
@@ -231,11 +304,10 @@ export const useSyncStore = defineStore("sync", () => {
       if (e instanceof LockerDeletedError) {
         return { state: "error", message: "Cette clé a été désactivée : activez la synchronisation avec une nouvelle clé." };
       }
-      return { state: "error", message: e instanceof Error ? e.message : String(e) };
+      return { state: "error", message: describe(e) };
     }
 
-    await activate(secret);
-    return { state: "success", data: undefined };
+    return activate(secret);
   }
 
   /**
@@ -300,5 +372,6 @@ export const useSyncStore = defineStore("sync", () => {
     deleteRemote,
     words,
     link,
+    hasKey,
   };
 });

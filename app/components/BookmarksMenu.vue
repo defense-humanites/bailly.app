@@ -91,8 +91,13 @@
   const linkSecret = ref<Uint8Array<ArrayBuffer> | null>(null);
 
   const route = useRoute();
-  onMounted(() => {
-    const match = /^#sync=([\w-]{22})$/.exec(route.hash);
+
+  /**
+   * Opens the synchronization window with the key of a link, when the page
+   * loads or when its fragment changes (a link opened in the same tab).
+   */
+  const readLink = (hash: string): void => {
+    const match = /^#sync=([\w-]{22})$/.exec(hash);
     if (!match) return;
     try {
       linkSecret.value = fromBase64url(match[1]!);
@@ -102,7 +107,12 @@
     }
     // The key does not stay in the address (history, shared links).
     void navigateTo({ hash: "" }, { replace: true });
+  };
+
+  onMounted(() => {
+    readLink(route.hash);
   });
+  watch(() => route.hash, readLink);
 
   /**
    * Whether the synchronization window has been opened.

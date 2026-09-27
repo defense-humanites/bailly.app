@@ -73,6 +73,14 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await expect(tablet.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
   expect(await bookmarksState(tablet)).toEqual({ tags: ["Homère"], tagged: 1, starred: 2 });
 
+  // The same link, opened again (in the same tab): nothing to replace.
+  await tablet.keyboard.press("Escape");
+  await tablet.goto(link!);
+  await expect(tablet.getByText("Cet appareil est déjà synchronisé avec la clé de ce lien.")).toBeVisible();
+  await expect(tablet.getByRole("button", { name: "Remplacer la clé" })).toHaveCount(0);
+  await tablet.getByRole("button", { name: "Voir la synchronisation" }).click();
+  await expect(tablet.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+
   // A change on the tablet reaches the laptop.
   await tablet.keyboard.press("Escape");
   await seedBookmarks(tablet, { tags: [{ name: "Platon", color: "Rose" }] });
@@ -109,4 +117,24 @@ test("a wrong key is explained", async ({ goto, page }) => {
   await page.getByRole("textbox").fill(Array(12).fill("abaisser").join(" "));
   await page.getByRole("button", { name: "Rejoindre" }).click();
   await expect(page.getByText(/ne forment pas une clé valide|Aucun signet n'est synchronisé avec cette clé/)).toBeVisible();
+});
+
+test("a failed first synchronization is reported, and leaves the device as it was", async ({ page, goto, browser, baseURL }) => {
+  await goto("/signets", { waitUntil: "hydration" });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await expect(page.getByRole("list", { name: "Les 12 mots de la clé" })).toBeVisible();
+  const link = await syncLink(page);
+
+  // The phone reaches the server once (the key exists), then loses it.
+  const phone = await newDevice(browser, baseURL, "/");
+  let requests = 0;
+  await phone.route("**/api/sync/**", route => (++requests === 1 ? route.continue() : route.abort()));
+  await phone.goto(link!);
+  await phone.getByRole("button", { name: "Activer", exact: true }).click();
+  await expect(phone.getByText("Le serveur de synchronisation est injoignable.")).toBeVisible();
+
+  await phone.keyboard.press("Escape");
+  await openSync(phone);
+  await expect(phone.getByRole("button", { name: "Activer la synchronisation" })).toBeVisible();
 });

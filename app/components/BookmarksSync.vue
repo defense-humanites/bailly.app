@@ -45,15 +45,36 @@
     delete: "Supprimer les signets en ligne ?",
   };
 
-  const enable = async (): Promise<void> => {
+  /**
+   * The error of an action, explained to the user.
+   */
+  const actionError = ref<string | null>(null);
+
+  /**
+   * Runs an action of the window: busy meanwhile, and any unexpected error
+   * shown (rather than nothing happening).
+   */
+  const run = async (action: () => Promise<void>): Promise<void> => {
     busy.value = true;
+    actionError.value = null;
     try {
-      await syncStore.enable();
-      await showKey();
+      await action();
+    } catch (e: unknown) {
+      console.error(e);
+      actionError.value = "Une erreur inattendue est survenue. Vos signets restent sur cet appareil.";
     } finally {
       busy.value = false;
     }
   };
+
+  const enable = () => run(async () => {
+    const result = await syncStore.enable();
+    if (result.state === "error") {
+      actionError.value = result.message;
+      return;
+    }
+    await showKey();
+  });
 
   /* Joining: the words typed (or pasted), or the key of a link. */
 
@@ -77,29 +98,25 @@
     return complete.find(word => !module.resolveWord(word)) ?? null;
   });
 
-  const join = async (): Promise<void> => {
-    busy.value = true;
-    joinError.value = null;
-    try {
-      const result = await syncStore.join(props.linkSecret ?? typedWords.value);
-      if (result.state === "error") {
-        joinError.value = result.message;
-        return;
-      }
-      toast.add({ title: "Synchronisation activée", icon: "i-lucide-circle-check", color: "success" });
-      view.value = "status";
-    } finally {
-      busy.value = false;
-    }
-  };
+  /**
+   * Whether the key of the link is already this device's.
+   */
+  const sameKey = computed(() => Boolean(props.linkSecret && enabled.value && syncStore.hasKey(props.linkSecret)));
 
   /**
-   * Replaces the key of this device by the key of a link.
+   * Joins with the words typed or the key of the link (which replaces this
+   * device's key, if any, once the first synchronization succeeded).
    */
-  const replaceKey = async (): Promise<void> => {
-    await syncStore.disable();
-    await join();
-  };
+  const join = () => run(async () => {
+    joinError.value = null;
+    const result = await syncStore.join(props.linkSecret ?? typedWords.value);
+    if (result.state === "error") {
+      joinError.value = result.message;
+      return;
+    }
+    toast.add({ title: "Synchronisation activée", icon: "i-lucide-circle-check", color: "success" });
+    view.value = "status";
+  });
 
   /* The key, outside of the browser. */
 
@@ -202,6 +219,7 @@
     if (!isOpen) return;
     joinText.value = "";
     joinError.value = null;
+    actionError.value = null;
     view.value = props.linkSecret ? "join" : enabled.value ? "status" : "intro";
   }, { immediate: true });
 
@@ -240,11 +258,11 @@
         <!-- Not enabled -->
         <template v-else-if="view === 'intro'">
           <UAlert
-            v-if="error"
-            color="warning"
+            v-if="actionError ?? error"
+            :color="actionError ? 'error' : 'warning'"
             variant="subtle"
-            icon="i-lucide-info"
-            :title="error"
+            :icon="actionError ? 'i-lucide-circle-alert' : 'i-lucide-info'"
+            :title="actionError ?? error ?? undefined"
           />
           <p>
             Retrouvez vos signets sur tous vos appareils (ordinateur, téléphone…), sans créer de compte.
@@ -257,7 +275,10 @@
 
         <!-- Join -->
         <template v-else-if="view === 'join'">
-          <template v-if="linkSecret">
+          <p v-if="sameKey">
+            Cet appareil est déjà synchronisé avec la clé de ce lien.
+          </p>
+          <template v-else-if="linkSecret">
             <p>
               Activer la synchronisation sur cet appareil avec la clé de ce lien ? Vos signets de cet appareil
               et ceux de vos autres appareils seront réunis.
@@ -280,7 +301,7 @@
             <UFormField
               :label="`Les ${SYNC_KEY_WORD_COUNT} mots de votre clé`"
               help="Dans l'ordre, séparés par des espaces. Accents et majuscules sont facultatifs ; les 4 premières lettres de chaque mot suffisent."
-              :error="joinError ?? (unknownWord ? `« ${unknownWord} » n'est pas un mot de la liste.` : undefined)"
+              :error="joinError ?? actionError ?? (unknownWord ? `« ${unknownWord} » n'est pas un mot de la liste.` : undefined)"
             >
               <UTextarea
                 v-model="joinText"
@@ -298,11 +319,11 @@
             </p>
           </form>
           <UAlert
-            v-if="linkSecret && joinError"
+            v-if="linkSecret && (joinError ?? actionError)"
             color="error"
             variant="subtle"
             icon="i-lucide-circle-alert"
-            :title="joinError"
+            :title="joinError ?? actionError ?? undefined"
           />
         </template>
 
@@ -472,10 +493,15 @@
           @click="linkSecret ? (open = false) : (view = enabled ? 'status' : 'intro')"
         />
         <UButton
-          v-if="linkSecret && enabled"
+          v-if="sameKey"
+          label="Voir la synchronisation"
+          @click="view = 'status'"
+        />
+        <UButton
+          v-else-if="linkSecret && enabled"
           label="Remplacer la clé"
           :loading="busy"
-          @click="replaceKey"
+          @click="join"
         />
         <UButton
           v-else-if="linkSecret"
