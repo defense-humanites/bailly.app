@@ -9,7 +9,11 @@ import {
 } from "./Idb";
 import { entryTombstone, type TaggedRecord, type TagKey } from "./merge";
 
-const toTagged = ({ tagKey, word, uri, excerpt }: TaggedRecord): IdbTagged => ({ tagKey, word, uri, excerpt: excerpt ?? "" });
+/**
+ * A tagged entry as shown, with its excerpt if known (cf. `IdbExcerpt`).
+ */
+const toTagged = ({ tagKey, word, uri }: TaggedRecord, excerpt: string | undefined): IdbTagged =>
+  ({ tagKey, word, uri, excerpt: excerpt ?? "" });
 
 /**
  * A collection of methods for managing tagged entries.
@@ -32,7 +36,7 @@ export class IdbTaggedEntry {
       const taggedEntry: IdbTagged = { tagKey, ...Idb.buildIdbEntry(entry, { requireExcerpt: false }) };
 
       const db = await Idb.getIndexedDB();
-      const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags, IdbStore.Meta], "readwrite");
+      const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags, IdbStore.Meta, IdbStore.Excerpts], "readwrite");
       const store = tx.objectStore(IdbStore.Tagged);
 
       const tag = await tx.objectStore(IdbStore.Tags).get(tagKey);
@@ -51,7 +55,9 @@ export class IdbTaggedEntry {
         );
       }
 
-      await store.put({ ...taggedEntry, updatedAt: await Idb.stamp(tx.objectStore(IdbStore.Meta)) });
+      const { excerpt, ...record } = taggedEntry;
+      await store.put({ ...record, updatedAt: await Idb.stamp(tx.objectStore(IdbStore.Meta)) });
+      if (excerpt) await tx.objectStore(IdbStore.Excerpts).put({ uri: record.uri, excerpt });
       await tx.done;
 
       return taggedEntry;
@@ -89,14 +95,15 @@ export class IdbTaggedEntry {
    */
   static async get(uri: string, tagKey: TagKey): Promise<IdbTagged | null> {
     const db = await Idb.getIndexedDB();
-    const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags]);
-    const [record, tag] = await Promise.all([
+    const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags, IdbStore.Excerpts]);
+    const [record, tag, excerpt] = await Promise.all([
       tx.objectStore(IdbStore.Tagged).get([tagKey, uri]),
       tx.objectStore(IdbStore.Tags).get(tagKey),
+      tx.objectStore(IdbStore.Excerpts).get(uri),
     ]);
     await tx.done;
 
-    return record && !record.deleted && tag && !tag.deleted ? toTagged(record) : null;
+    return record && !record.deleted && tag && !tag.deleted ? toTagged(record, excerpt?.excerpt) : null;
   }
 
   /**
@@ -105,14 +112,17 @@ export class IdbTaggedEntry {
    */
   static async getAll(): Promise<IdbTagged[]> {
     const db = await Idb.getIndexedDB();
-    const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags]);
-    const [records, tags] = await Promise.all([
+    const tx = db.transaction([IdbStore.Tagged, IdbStore.Tags, IdbStore.Excerpts]);
+    const [records, tags, excerpts] = await Promise.all([
       tx.objectStore(IdbStore.Tagged).getAll(),
       tx.objectStore(IdbStore.Tags).getAll(),
+      Idb.readExcerpts(tx.objectStore(IdbStore.Excerpts)),
     ]);
     await tx.done;
 
     const liveTags = new Set(tags.filter(tag => !tag.deleted).map(tag => tag.key));
-    return records.filter(record => !record.deleted && liveTags.has(record.tagKey)).map(toTagged);
+    return records
+      .filter(record => !record.deleted && liveTags.has(record.tagKey))
+      .map(record => toTagged(record, excerpts.get(record.uri)));
   }
 }

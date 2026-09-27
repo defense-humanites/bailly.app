@@ -9,7 +9,10 @@ import {
 } from "./Idb";
 import { entryTombstone, type StarredRecord } from "./merge";
 
-const toEntry = ({ word, uri, excerpt }: StarredRecord): IdbEntry => ({ word, uri, excerpt: excerpt ?? "" });
+/**
+ * A favorite as shown, with its excerpt if known (cf. `IdbExcerpt`).
+ */
+const toEntry = ({ word, uri }: StarredRecord, excerpt: string | undefined): IdbEntry => ({ word, uri, excerpt: excerpt ?? "" });
 
 /**
  * A collection of methods for managing starred entries (aka the favorites).
@@ -24,8 +27,13 @@ export class IdbStarred {
    */
   static async get(uri: string): Promise<IdbEntry | null> {
     const db = await Idb.getIndexedDB();
-    const record = await db.get(IdbStore.Starred, uri);
-    return record && !record.deleted ? toEntry(record) : null;
+    const tx = db.transaction([IdbStore.Starred, IdbStore.Excerpts]);
+    const [record, excerpt] = await Promise.all([
+      tx.objectStore(IdbStore.Starred).get(uri),
+      tx.objectStore(IdbStore.Excerpts).get(uri),
+    ]);
+    await tx.done;
+    return record && !record.deleted ? toEntry(record, excerpt?.excerpt) : null;
   }
 
   /**
@@ -34,7 +42,13 @@ export class IdbStarred {
    */
   static async getAll(): Promise<IdbEntry[]> {
     const db = await Idb.getIndexedDB();
-    return (await db.getAll(IdbStore.Starred)).filter(record => !record.deleted).map(toEntry);
+    const tx = db.transaction([IdbStore.Starred, IdbStore.Excerpts]);
+    const [records, excerpts] = await Promise.all([
+      tx.objectStore(IdbStore.Starred).getAll(),
+      Idb.readExcerpts(tx.objectStore(IdbStore.Excerpts)),
+    ]);
+    await tx.done;
+    return records.filter(record => !record.deleted).map(record => toEntry(record, excerpts.get(record.uri)));
   }
 
   /**
@@ -47,7 +61,7 @@ export class IdbStarred {
       const data: IdbEntry = Idb.buildIdbEntry(entry, { requireExcerpt: false });
 
       const db = await Idb.getIndexedDB();
-      const tx = db.transaction([IdbStore.Starred, IdbStore.Meta], "readwrite");
+      const tx = db.transaction([IdbStore.Starred, IdbStore.Meta, IdbStore.Excerpts], "readwrite");
       const store = tx.objectStore(IdbStore.Starred);
 
       const live = (await store.getAll()).filter(record => !record.deleted);
@@ -61,7 +75,8 @@ export class IdbStarred {
         throw new IdbError(`L'entrée ${data.word} a déjà été ajoutée aux favoris.`);
       }
 
-      await store.put({ ...data, updatedAt: await Idb.stamp(tx.objectStore(IdbStore.Meta)) });
+      await store.put({ uri: data.uri, word: data.word, updatedAt: await Idb.stamp(tx.objectStore(IdbStore.Meta)) });
+      if (data.excerpt) await tx.objectStore(IdbStore.Excerpts).put({ uri: data.uri, excerpt: data.excerpt });
       await tx.done;
 
       return data;

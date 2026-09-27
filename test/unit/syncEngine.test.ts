@@ -4,16 +4,7 @@ import sqlite from "db0/connectors/node-sqlite";
 import { beforeEach, expect, test } from "vitest";
 import { parseBookmarksFile } from "../../app/idb/transfer";
 import { formatStamp } from "../../app/idb/clock";
-import {
-  emptyState,
-  joinRecords,
-  knownExcerpts,
-  mergeStates,
-  normalize,
-  withExcerpts,
-  withoutExcerpts,
-  type BookmarksState,
-} from "../../app/idb/merge";
+import { emptyState, joinRecords, mergeStates, normalize, type BookmarksState } from "../../app/idb/merge";
 import { decryptText, deriveCredentials, type SyncCredentials } from "../../app/sync/crypto";
 import { lockerBlob, synchronize, SyncLimitError, SyncTooLargeError, type SyncDependencies } from "../../app/sync/engine";
 import { deleteLocker, hashToken, readLocker, resetSchemaCache, writeLocker } from "../../server/lib/lockers";
@@ -55,14 +46,12 @@ function device(server: typeof fetch, initial: BookmarksState = emptyState()) {
   let state = initial;
   const deps: SyncDependencies = {
     readState: () => Promise.resolve(state),
-    // As `IdbBookmarks`: the excerpts known here stay, the others are not merged.
     mergeState: (remote) => {
-      state = withExcerpts(normalize(mergeStates(withoutExcerpts(state), withoutExcerpts(remote))), knownExcerpts(state));
+      state = normalize(mergeStates(state, remote));
       return Promise.resolve(state);
     },
     joinState: (remote) => {
-      const joined = joinRecords(state, remote, stamp());
-      state = withExcerpts(normalize(mergeStates(withoutExcerpts(state), withoutExcerpts(joined))), knownExcerpts(state));
+      state = normalize(mergeStates(state, joinRecords(state, remote, stamp())));
       return Promise.resolve(state);
     },
     fetch: server,
@@ -81,7 +70,7 @@ function device(server: typeof fetch, initial: BookmarksState = emptyState()) {
 // Recent stamps: older tombstones are not uploaded (cf. `compact`).
 let time = Date.now();
 const stamp = () => formatStamp({ time: time++, counter: 0, node: "t" });
-const star = (uri: string, deleted?: true) => ({ uri, word: uri, excerpt: `${uri} …`, updatedAt: stamp(), ...(deleted ? { deleted } : {}) });
+const star = (uri: string, deleted?: true) => ({ uri, word: uri, updatedAt: stamp(), ...(deleted ? { deleted } : {}) });
 const addStar = (uri: string, deleted?: true) => (state: BookmarksState) => mergeStates(state, { ...emptyState(), starred: [star(uri, deleted)] });
 const liveStars = (state: BookmarksState) => state.starred.filter(record => !record.deleted).map(record => record.uri);
 
@@ -112,7 +101,7 @@ test("two devices converge through the locker", async () => {
   await synchronize(credentials, phone.deps);
 
   expect(liveStars(laptop.state)).toEqual(["psukhe"]);
-  expect(withoutExcerpts(phone.state)).toEqual(withoutExcerpts(laptop.state));
+  expect(phone.state).toEqual(laptop.state);
 
   // The server only holds ciphertext.
   const locker = await readLocker(db, credentials.lockerId, await hashToken(credentials.token));
@@ -137,7 +126,7 @@ test("a write by another device between the read and the write: merged, then wri
 
   expect(liveStars(laptop.state).sort()).toEqual(["anthropos", "logos"]);
   await synchronize(credentials, otherDevice.deps);
-  expect(withoutExcerpts(otherDevice.state)).toEqual(withoutExcerpts(laptop.state));
+  expect(otherDevice.state).toEqual(laptop.state);
 });
 
 test("a purged locker is recreated; a deleted one stops the devices", async () => {
@@ -190,7 +179,7 @@ test("a device joining (again) does not delete online what it deleted meanwhile"
   await synchronize(credentials, phone.deps, { first: true });
   await synchronize(credentials, laptop.deps);
   expect(liveStars(phone.state).sort()).toEqual(["anthropos", "logos"]);
-  expect(withoutExcerpts(laptop.state)).toEqual(withoutExcerpts(phone.state));
+  expect(laptop.state).toEqual(phone.state);
 
   // Afterwards, a deletion on the phone reaches the laptop again.
   phone.change(addStar("anthropos", true));
@@ -240,7 +229,7 @@ test("a cancelled synchronization aborts its requests, and merges nothing afterw
 test("a content too large leaves out the older tombstones first, then is refused", async () => {
   const day = 24 * 60 * 60 * 1000;
   const tombstone = (uri: string, age: number) =>
-    ({ uri, word: "", excerpt: "", updatedAt: formatStamp({ time: Date.now() - age, counter: 0, node: "t" }), deleted: true as const });
+    ({ uri, word: "", updatedAt: formatStamp({ time: Date.now() - age, counter: 0, node: "t" }), deleted: true as const });
   const state: BookmarksState = {
     ...emptyState(),
     starred: [

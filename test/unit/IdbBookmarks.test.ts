@@ -44,9 +44,9 @@ test("merge applies a remote state", async () => {
 
   const remote: BookmarksState = {
     tags: [{ key: "remote-tag", name: "Lysis", description: "", color: "Green", createdAt: remoteStamp(1), updatedAt: remoteStamp(1) }],
-    tagged: [{ tagKey: "remote-tag", uri: "philia", word: "φιλία", excerpt: "φιλία amitié", updatedAt: remoteStamp(1) }],
+    tagged: [{ tagKey: "remote-tag", uri: "philia", word: "φιλία", updatedAt: remoteStamp(1) }],
     // The favorite removed on the other device, later.
-    starred: [{ ...entries.alopex, excerpt: entries.alopex.excerpt, updatedAt: remoteStamp(Date.now() + 60_000), deleted: true }],
+    starred: [{ uri: entries.alopex.uri, word: entries.alopex.word, updatedAt: remoteStamp(Date.now() + 60_000), deleted: true }],
     tagOrder: null,
   };
 
@@ -68,7 +68,7 @@ test("after a merge, local changes supersede the merged ones", async () => {
   unwrap(await IdbBookmarks.merge({
     tags: [],
     tagged: [],
-    starred: [{ ...entries.alopex, excerpt: entries.alopex.excerpt, updatedAt: remoteStamp(ahead) }],
+    starred: [{ uri: entries.alopex.uri, word: entries.alopex.word, updatedAt: remoteStamp(ahead) }],
     tagOrder: null,
   }));
 
@@ -85,7 +85,7 @@ test("merge fuses homonymous tags", async () => {
   // Created later on another device, with an entry.
   unwrap(await IdbBookmarks.merge({
     tags: [{ key: "remote-tag", name: "homere", description: "", color: "Rose", createdAt: remoteStamp(Date.now() + 1_000), updatedAt: remoteStamp(Date.now() + 1_000) }],
-    tagged: [{ tagKey: "remote-tag", uri: "philia", word: "φιλία", excerpt: "φιλία amitié", updatedAt: remoteStamp(Date.now() + 1_000) }],
+    tagged: [{ tagKey: "remote-tag", uri: "philia", word: "φιλία", updatedAt: remoteStamp(Date.now() + 1_000) }],
     starred: [],
     tagOrder: null,
   }));
@@ -127,7 +127,7 @@ test("restore does not undo later changes, nor delete anything", async () => {
   // A backup that holds a deletion (older files kept the tombstones).
   const withDeletion: BookmarksState = {
     ...backup,
-    starred: [{ ...entries.alopex, excerpt: entries.alopex.excerpt, updatedAt: remoteStamp(Date.now() + 60_000), deleted: true }],
+    starred: [{ uri: entries.alopex.uri, word: entries.alopex.word, updatedAt: remoteStamp(Date.now() + 60_000), deleted: true }],
   };
   unwrap(await IdbBookmarks.restore(withDeletion));
 
@@ -158,7 +158,7 @@ test("the tombstones old enough are forgotten", async () => {
   unwrap(await IdbBookmarks.merge({
     tags: [],
     tagged: [],
-    starred: [{ uri: "older", word: "", excerpt: "", updatedAt: remoteStamp(Date.now() - 200 * day), deleted: true }],
+    starred: [{ uri: "older", word: "", updatedAt: remoteStamp(Date.now() - 200 * day), deleted: true }],
     tagOrder: null,
   }));
   expect((await IdbBookmarks.getState()).starred.map(record => record.uri)).toEqual([entries.alopex.uri, "recent"].sort());
@@ -174,7 +174,7 @@ test("a merge beyond the limits is not applied", async () => {
   const outcome = unwrap(await IdbBookmarks.merge({
     tags: [],
     tagged: [],
-    starred: [{ uri: "philia", word: "φιλία", excerpt: "φιλία amitié", updatedAt: remoteStamp(Date.now() + 60_000) }],
+    starred: [{ uri: "philia", word: "φιλία", updatedAt: remoteStamp(Date.now() + 60_000) }],
     tagOrder: null,
   }));
 
@@ -189,8 +189,8 @@ test("an import leaves out what exceeds the limits, and deletes nothing", async 
     tags: [],
     tagged: [],
     starred: [
-      { uri: "philia", word: "φιλία", excerpt: "φιλία amitié", updatedAt: remoteStamp(1) },
-      { uri: "eros", word: "ἔρως", excerpt: "ἔρως amour", updatedAt: remoteStamp(2) },
+      { uri: "philia", word: "φιλία", updatedAt: remoteStamp(1) },
+      { uri: "eros", word: "ἔρως", updatedAt: remoteStamp(2) },
     ],
     tagOrder: null,
   };
@@ -201,19 +201,14 @@ test("an import leaves out what exceeds the limits, and deletes nothing", async 
   expect((await IdbStarred.getAll()).map(entry => entry.uri).sort()).toEqual([entries.alopex.uri, "philia"].sort());
 });
 
-test("the excerpts are not merged: those known here stay, the missing ones are filled", async () => {
+test("the excerpts are kept apart: those known here stay, the missing ones are filled, the unused ones forgotten", async () => {
   unwrap(await IdbStarred.add(entries.alopex));
-  const remote: BookmarksState = {
+  unwrap(await IdbBookmarks.merge({
     tags: [],
     tagged: [],
-    starred: [
-      // Another device's version, later, with another excerpt (ignored).
-      { uri: entries.alopex.uri, word: entries.alopex.word, excerpt: "autre", updatedAt: remoteStamp(Date.now() + 60_000) },
-      { uri: "philia", word: "φιλία", updatedAt: remoteStamp(Date.now() + 60_000) },
-    ],
+    starred: [{ uri: "philia", word: "φιλία", updatedAt: remoteStamp(Date.now() + 60_000) }],
     tagOrder: null,
-  };
-  unwrap(await IdbBookmarks.merge(remote));
+  }));
 
   expect(await IdbStarred.get(entries.alopex.uri)).toMatchObject({ excerpt: entries.alopex.excerpt });
   expect(await IdbStarred.get("philia")).toMatchObject({ excerpt: "" });
@@ -223,6 +218,12 @@ test("the excerpts are not merged: those known here stay, the missing ones are f
   expect(unwrap(await IdbBookmarks.fillExcerpts(new Map([["philia", "φιλία amitié"], ["unknown", "…"]]))).changed).toBe(true);
   expect(await IdbStarred.get("philia")).toMatchObject({ excerpt: "φιλία amitié" });
   expect(await IdbBookmarks.missingExcerpts()).toEqual([]);
-  // Not a change of the bookmarks: nothing stamped.
-  expect((await IdbBookmarks.getState()).starred.map(record => record.updatedAt)).toEqual(before.starred.map(record => record.updatedAt));
+  // Not a change of the bookmarks: nothing stamped; nothing kept for an entry not bookmarked.
+  expect(await IdbBookmarks.getState()).toEqual(before);
+  expect([...(await IdbBookmarks.getExcerpts()).keys()].sort()).toEqual([entries.alopex.uri, "philia"].sort());
+
+  // No longer bookmarked: its excerpt is forgotten at the next visit.
+  unwrap(await IdbStarred.remove(entries.alopex.uri));
+  unwrap(await IdbBookmarks.compact());
+  expect([...(await IdbBookmarks.getExcerpts()).keys()]).toEqual(["philia"]);
 });

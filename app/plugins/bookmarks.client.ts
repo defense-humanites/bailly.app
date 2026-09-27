@@ -21,7 +21,7 @@ const MUTATIONS = new Set([
 
 /**
  * The store actions that may bring bookmarks without their excerpt (cf.
- * `withoutExcerpts`): the missing ones are then fetched.
+ * `IdbExcerpt`): the missing ones are then fetched.
  */
 const MERGES = new Set(["mergeState", "joinState", "importBookmarks"]);
 

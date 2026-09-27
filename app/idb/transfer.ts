@@ -11,7 +11,6 @@ import {
   type TaggedRecord,
   type TagOrder,
   type TagRecord,
-  withoutExcerpts,
   withoutTombstones,
 } from "./merge";
 
@@ -27,6 +26,10 @@ export type BookmarksFile = {
    * The date of the export (ISO 8601).
    */
   exportedAt: string;
+  /**
+   * The bookmarks. In an exported file, the entries also carry their
+   * `excerpt` (if known), for the reader of the file.
+   */
   state: BookmarksState;
 };
 
@@ -48,13 +51,10 @@ const MAX_STRING_LENGTH = 10_000;
 
 /**
  * Prepares a state for the outside: without the tombstones old enough to be
- * forgotten, nor the former keys of the tags (only meaningful on this device),
- * nor the excerpts (cf. `withoutExcerpts`), unless asked.
- * @param options.excerpts Whether to keep the excerpts (for the reader of an
- * exported file: an import ignores them).
+ * forgotten, nor the former keys of the tags (only meaningful on this device).
  */
-export function exportState(state: BookmarksState, { excerpts = false }: { excerpts?: boolean } = {}): BookmarksState {
-  const compacted = compact(excerpts ? state : withoutExcerpts(state));
+export function exportState(state: BookmarksState): BookmarksState {
+  const compacted = compact(state);
   return {
     ...compacted,
     tags: compacted.tags.map(({ legacyKey: _legacyKey, ...tag }) => tag),
@@ -65,19 +65,25 @@ export function exportState(state: BookmarksState, { excerpts = false }: { excer
  * The bookmarks as a file.
  * @param options.tombstones Whether to keep the (recent) tombstones: needed
  * to synchronize, useless in an exported file (an import never deletes).
- * @param options.excerpts Whether to keep the excerpts known on this device
- * (for the reader of an exported file; never in a locker).
+ * @param options.excerpts The excerpts known on this device (cf. `IdbExcerpt`),
+ * given to the entries for the reader of an exported file (an import ignores
+ * them; never in a locker).
  */
 export function toBookmarksFile(
   state: BookmarksState,
-  { now = new Date(), tombstones = false, excerpts = false }: { now?: Date; tombstones?: boolean; excerpts?: boolean } = {},
+  { now = new Date(), tombstones = false, excerpts }: { now?: Date; tombstones?: boolean; excerpts?: Map<string, string> } = {},
 ): BookmarksFile {
-  const exported = exportState(state, { excerpts });
+  const exported = exportState(state);
+  const kept = tombstones ? exported : withoutTombstones(exported);
+  const withExcerpt = <T extends TaggedRecord | StarredRecord>(record: T): T => {
+    const excerpt = record.deleted ? undefined : excerpts?.get(record.uri);
+    return excerpt ? { ...record, excerpt } : record;
+  };
   return {
     format: BOOKMARKS_FILE_FORMAT,
     version: BOOKMARKS_FILE_VERSION,
     exportedAt: now.toISOString(),
-    state: tombstones ? exported : withoutTombstones(exported),
+    state: excerpts ? { ...kept, tagged: kept.tagged.map(withExcerpt), starred: kept.starred.map(withExcerpt) } : kept,
   };
 }
 
@@ -138,7 +144,7 @@ function validateTag(value: unknown, now: number): TagRecord | null {
  * created on the device (a deletion may have none).
  * @remarks The word is text, and shown as such (never as HTML). An excerpt,
  * if any (an exported file), is ignored: the excerpts shown come from the
- * dictionary (cf. `withoutExcerpts`).
+ * dictionary (cf. `IdbExcerpt`).
  */
 function validateEntry(value: Record<string, unknown>, deleted: boolean): { uri: string; word: string } | null {
   if (!isText(value.uri, { required: true }) || !isText(value.word, { required: !deleted })) return null;

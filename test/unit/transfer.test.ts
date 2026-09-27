@@ -19,8 +19,8 @@ const state: BookmarksState = {
     { key: "t1", name: "Homère", description: "", color: "Blue", createdAt: stamp(), updatedAt: stamp(), legacyKey: 3 },
     { key: "t2", name: "Ancienne", description: "", color: "Rose", createdAt: stamp(), updatedAt: stamp(now - 100 * day), deleted: true },
   ],
-  tagged: [{ tagKey: "t1", uri: "logos", word: "λόγος", excerpt: "λόγος parole", updatedAt: stamp() }],
-  starred: [{ uri: "psukhê", word: "ψυχή", excerpt: "ψυχή âme", updatedAt: stamp(now - 10 * day), deleted: true }],
+  tagged: [{ tagKey: "t1", uri: "logos", word: "λόγος", updatedAt: stamp() }],
+  starred: [{ uri: "psukhê", word: "ψυχή", updatedAt: stamp(now - 10 * day), deleted: true }],
   tagOrder: { keys: ["t1"], updatedAt: stamp() },
 };
 
@@ -116,7 +116,8 @@ test("a tombstone may have neither name nor entry", () => {
 });
 
 test("a locker has no excerpts; an exported file keeps them, for its reader", () => {
-  const state = { tags: [], tagged: [], starred: [{ uri: "logos", word: "λόγος", excerpt: "λόγος parole", updatedAt: stamp() }], tagOrder: null };
+  const state: BookmarksState = { tags: [], tagged: [], starred: [{ uri: "logos", word: "λόγος", updatedAt: stamp() }], tagOrder: null };
+  const excerpts = new Map([["logos", "λόγος parole"]]);
   expect(toBookmarksFile(state, { tombstones: true }).state.starred[0]).not.toHaveProperty("excerpt");
-  expect(toBookmarksFile(state, { excerpts: true }).state.starred[0]).toMatchObject({ excerpt: "λόγος parole" });
+  expect(toBookmarksFile(state, { excerpts }).state.starred[0]).toMatchObject({ excerpt: "λόγος parole" });
 });

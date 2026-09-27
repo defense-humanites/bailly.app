@@ -85,7 +85,20 @@ export enum IdbStore {
   Tagged = "tagged",
   Tags = "tags",
   Meta = "meta",
+  Excerpts = "excerpts",
 }
+
+/**
+ * The excerpt of a bookmarked entry, kept on this device (`IdbStore.Excerpts`).
+ * @remarks Not part of the bookmarks as merged and synchronized (cf.
+ * `merge.ts`): added with a bookmark on this device, or fetched from the API
+ * for a bookmark received without it; forgotten once no bookmark refers to
+ * the entry (cf. `IdbBookmarks.compact`).
+ */
+export type IdbExcerpt = {
+  uri: string;
+  excerpt: string;
+};
 
 /**
  * The keys of the `meta` store.
@@ -164,12 +177,16 @@ export interface BaillyDB extends DBSchema {
     key: string;
     value: IdbMetaValues[IdbMetaKey];
   };
+  [IdbStore.Excerpts]: {
+    key: string;
+    value: IdbExcerpt;
+  };
 }
 
 /**
  * The stores of the bookmarks (the history is kept apart).
  */
-export const BOOKMARKS_STORES = [IdbStore.Starred, IdbStore.Tagged, IdbStore.Tags, IdbStore.Meta] as const;
+export const BOOKMARKS_STORES = [IdbStore.Starred, IdbStore.Tagged, IdbStore.Tags, IdbStore.Meta, IdbStore.Excerpts] as const;
 
 /**
  * The `meta` store within a read-write transaction.
@@ -228,7 +245,8 @@ async function readLegacyData(transaction: UpgradeTransaction): Promise<LegacyDa
 /**
  * Writes the version 3 bookmarks in the version 4 stores: the tags get a
  * UUID (keeping their former key, cf. `TagRecord.legacyKey`), their order
- * becomes the `tagOrder` record, and every record is stamped.
+ * becomes the `tagOrder` record, every record is stamped, and the excerpts
+ * are kept apart (`IdbStore.Excerpts`).
  */
 async function writeMigratedData(transaction: UpgradeTransaction, legacy: LegacyData): Promise<void> {
   const node = randomNodeId();
@@ -257,16 +275,24 @@ async function writeMigratedData(transaction: UpgradeTransaction, legacy: Legacy
   const tagStore = transaction.objectStore(IdbStore.Tags);
   for (const { record } of tags) await tagStore.put(record);
 
+  const excerpts = new Map<string, string>();
+
   const taggedStore = transaction.objectStore(IdbStore.Tagged);
   for (const { tagKey, word, uri, excerpt } of legacy.tagged) {
     const key = newKeys.get(tagKey);
-    if (key !== undefined) await taggedStore.put({ tagKey: key, word, uri, excerpt, updatedAt: stamp() });
+    if (key === undefined) continue;
+    await taggedStore.put({ tagKey: key, word, uri, updatedAt: stamp() });
+    if (excerpt) excerpts.set(uri, excerpt);
   }
 
   const starredStore = transaction.objectStore(IdbStore.Starred);
   for (const { word, uri, excerpt } of legacy.starred) {
-    await starredStore.put({ word, uri, excerpt, updatedAt: stamp() });
+    await starredStore.put({ word, uri, updatedAt: stamp() });
+    if (excerpt) excerpts.set(uri, excerpt);
   }
+
+  const excerptStore = transaction.objectStore(IdbStore.Excerpts);
+  for (const [uri, excerpt] of excerpts) await excerptStore.put({ uri, excerpt });
 
   const meta = transaction.objectStore(IdbStore.Meta);
   if (tags.length) {
@@ -299,6 +325,7 @@ async function upgradeToV4(db: IDBPDatabase<BaillyDB>, oldVersion: number, trans
 
   db.createObjectStore(IdbStore.Tags, { keyPath: "key" });
   db.createObjectStore(IdbStore.Meta);
+  db.createObjectStore(IdbStore.Excerpts, { keyPath: "uri" });
 
   if (legacy) await writeMigratedData(transaction, legacy);
 }
@@ -411,6 +438,13 @@ export class Idb {
   }
 
   /**
+   * The excerpts kept for the bookmarks, by URI (cf. `IdbExcerpt`).
+   */
+  static async readExcerpts(store: { getAll: () => Promise<IdbExcerpt[]> }): Promise<Map<string, string>> {
+    return new Map((await store.getAll()).map(({ uri, excerpt }) => [uri, excerpt]));
+  }
+
+  /**
    * Reads a value of the `meta` store.
    */
   static async getMeta<K extends IdbMetaKey>(
@@ -459,7 +493,7 @@ export class Idb {
    * shape of an `IdbEntry`.
    * @param options.requireExcerpt Whether an excerpt (or child entries) is
    * required. A bookmark may have none: not known yet (e.g. received from
-   * another device, cf. `withoutExcerpts`), it is fetched later.
+   * another device, cf. `IdbExcerpt`), it is fetched later.
    */
   static buildIdbEntry(entry: IdbEntryCreation, { requireExcerpt = true } = {}): IdbEntry {
     if (!entry.word || !entry.uri || (requireExcerpt && !entry.excerpt && !entry.children?.length)) {

@@ -5,7 +5,6 @@ import {
   compact,
   emptyState,
   fitImport,
-  knownExcerpts,
   limitExcesses,
   latestStamp,
   mergeStates,
@@ -16,8 +15,6 @@ import {
   type BookmarksState,
   type LimitExcess,
   type SkippedRecords,
-  withExcerpts,
-  withoutExcerpts,
 } from "./merge";
 
 export type MergeOutcome = {
@@ -101,43 +98,60 @@ export class IdbBookmarks {
   }
 
   /**
-   * The URIs of the bookmarks whose excerpt is not known on this device (e.g.
-   * received from another one, cf. `withoutExcerpts`).
+   * The excerpts kept on this device, by URI (cf. `IdbExcerpt`).
    */
-  static async missingExcerpts(): Promise<string[]> {
-    const state = await IdbBookmarks.getState();
+  static async getExcerpts(): Promise<Map<string, string>> {
+    const db = await Idb.getIndexedDB();
+    return Idb.readExcerpts(db.transaction(IdbStore.Excerpts).objectStore(IdbStore.Excerpts));
+  }
+
+  /**
+   * The URIs of the (live) bookmarks of a state.
+   */
+  static #bookmarkedUris(state: Pick<BookmarksState, "tags" | "tagged" | "starred">): Set<string> {
     const liveTags = new Set(state.tags.filter(tag => !tag.deleted).map(tag => tag.key));
     const uris = new Set<string>();
     for (const record of state.starred) {
-      if (!record.deleted && !record.excerpt) uris.add(record.uri);
+      if (!record.deleted) uris.add(record.uri);
     }
     for (const record of state.tagged) {
-      if (!record.deleted && !record.excerpt && liveTags.has(record.tagKey)) uris.add(record.uri);
+      if (!record.deleted && liveTags.has(record.tagKey)) uris.add(record.uri);
     }
-    return [...uris];
+    return uris;
+  }
+
+  /**
+   * The URIs of the bookmarks whose excerpt is not known on this device (e.g.
+   * received from another one, cf. `IdbExcerpt`).
+   */
+  static async missingExcerpts(): Promise<string[]> {
+    const [state, excerpts] = await Promise.all([IdbBookmarks.getState(), IdbBookmarks.getExcerpts()]);
+    return [...IdbBookmarks.#bookmarkedUris(state)].filter(uri => !excerpts.has(uri));
   }
 
   /**
    * Keeps the excerpts fetched for bookmarks (not a change of the bookmarks:
    * nothing is stamped nor synchronized).
-   * @param excerpts The excerpts, by URI.
-   * @returns Whether a bookmark got its excerpt.
+   * @param excerpts The excerpts, by URI (those of entries no longer
+   * bookmarked are left out).
+   * @returns Whether an excerpt was added or changed.
    */
   static async fillExcerpts(excerpts: Map<string, string>): Promise<IdbResult<{ changed: boolean }>> {
     return attempt(async () => {
       const db = await Idb.getIndexedDB();
-      const tx = db.transaction([IdbStore.Tagged, IdbStore.Starred], "readwrite");
+      const tx = db.transaction([IdbStore.Tags, IdbStore.Tagged, IdbStore.Starred, IdbStore.Excerpts], "readwrite");
+      const bookmarked = IdbBookmarks.#bookmarkedUris({
+        tags: await tx.objectStore(IdbStore.Tags).getAll(),
+        tagged: await tx.objectStore(IdbStore.Tagged).getAll(),
+        starred: await tx.objectStore(IdbStore.Starred).getAll(),
+      });
+      const store = tx.objectStore(IdbStore.Excerpts);
+      const known = await Idb.readExcerpts(store);
+
       let changed = false;
-      for (const record of await tx.objectStore(IdbStore.Starred).getAll()) {
-        const excerpt = excerpts.get(record.uri);
-        if (!excerpt || record.excerpt || record.deleted) continue;
-        await tx.objectStore(IdbStore.Starred).put({ ...record, excerpt });
-        changed = true;
-      }
-      for (const record of await tx.objectStore(IdbStore.Tagged).getAll()) {
-        const excerpt = excerpts.get(record.uri);
-        if (!excerpt || record.excerpt || record.deleted) continue;
-        await tx.objectStore(IdbStore.Tagged).put({ ...record, excerpt });
+      for (const [uri, excerpt] of excerpts) {
+        if (!excerpt || !bookmarked.has(uri) || known.get(uri) === excerpt) continue;
+        await store.put({ uri, excerpt });
         changed = true;
       }
       await tx.done;
@@ -147,11 +161,29 @@ export class IdbBookmarks {
 
   /**
    * Forgets the tombstones old enough (cf. `compact`): they are not sent
-   * anymore, and need not be kept.
+   * anymore, and need not be kept; and the excerpts of the entries no longer
+   * bookmarked.
    * @returns The state, and whether the stored one changed.
    */
   static async compact(): Promise<IdbResult<MergeOutcome>> {
-    return IdbBookmarks.#mergeInto(() => Promise.resolve(emptyState()));
+    const result = await IdbBookmarks.#mergeInto(() => Promise.resolve(emptyState()));
+    if (result.state === "error") return result;
+
+    return attempt(async () => {
+      const db = await Idb.getIndexedDB();
+      const tx = db.transaction([IdbStore.Tags, IdbStore.Tagged, IdbStore.Starred, IdbStore.Excerpts], "readwrite");
+      const bookmarked = IdbBookmarks.#bookmarkedUris({
+        tags: await tx.objectStore(IdbStore.Tags).getAll(),
+        tagged: await tx.objectStore(IdbStore.Tagged).getAll(),
+        starred: await tx.objectStore(IdbStore.Starred).getAll(),
+      });
+      const store = tx.objectStore(IdbStore.Excerpts);
+      for (const uri of await store.getAllKeys()) {
+        if (!bookmarked.has(uri)) await store.delete(uri);
+      }
+      await tx.done;
+      return result.data;
+    });
   }
 
   /**
@@ -181,9 +213,7 @@ export class IdbBookmarks {
         starred: await stores.starred.getAll(),
         tagOrder: (await Idb.getMeta(stores.meta, IdbMetaKey.TagOrder)) ?? null,
       };
-      // The excerpts are not merged: those known here stay (cf. `withoutExcerpts`).
-      const united = normalize(mergeStates(withoutExcerpts(local), withoutExcerpts(await incoming(local, stores.meta))));
-      const merged = withExcerpts(compact(united), knownExcerpts(local));
+      const merged = compact(normalize(mergeStates(local, await incoming(local, stores.meta))));
 
       // Beyond the limits: nothing is merged (the user makes room first).
       const excesses = limitExcesses(merged, Idb.config);

@@ -290,7 +290,8 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    * The bookmarks as an exported file (cf. `idb/transfer.ts`).
    */
   async function exportBookmarks(): Promise<BookmarksFile> {
-    return toBookmarksFile(await IdbBookmarks.getState(), { excerpts: true });
+    const [state, excerpts] = await Promise.all([IdbBookmarks.getState(), IdbBookmarks.getExcerpts()]);
+    return toBookmarksFile(state, { excerpts });
   }
 
   /**
@@ -306,7 +307,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
 
   /**
    * Fetches from the API the excerpts of the bookmarks that have none on this
-   * device (e.g. received from another one, cf. `withoutExcerpts`), by
+   * device (e.g. received from another one, cf. `IdbExcerpt`), by
    * batches. Offline or on failure, it stops there: the next call (next
    * visit, next merge) tries again, and the bookmarks show their word
    * meanwhile.

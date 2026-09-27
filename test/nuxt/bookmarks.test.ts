@@ -135,8 +135,8 @@ test("mergeState merges a state and reloads the store", async () => {
 
   const result = await store.mergeState({
     tags: [{ key: "remote", name: "Lysis", description: "", color: "Green", createdAt: stamp, updatedAt: stamp }],
-    tagged: [{ tagKey: "remote", ...entries.rhinokeros, excerpt: entries.rhinokeros.excerpt, updatedAt: stamp }],
-    starred: [{ ...entries.alopex, excerpt: entries.alopex.excerpt, updatedAt: stamp }],
+    tagged: [{ tagKey: "remote", uri: entries.rhinokeros.uri, word: entries.rhinokeros.word, updatedAt: stamp }],
+    starred: [{ uri: entries.alopex.uri, word: entries.alopex.word, updatedAt: stamp }],
     tagOrder: null,
   });
 

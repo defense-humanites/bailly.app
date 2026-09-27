@@ -66,6 +66,9 @@ test("Upgrade from version 3: UUIDs, stamps, order and legacy keys", async () =>
     [[banquet!.key, "erôs"], [theetete!.key, "epistêmê"]].sort(),
   );
   expect(await IdbStarred.getAll()).toEqual([{ word: "λόγος", uri: "logos", excerpt: "λόγος parole" }]);
+  // The excerpts are kept apart from the bookmarks (not synchronized).
+  expect((await IdbBookmarks.getState()).starred).toEqual([{ word: "λόγος", uri: "logos", updatedAt: expect.any(String) as string }]);
+  expect(await db.get(IdbStore.Excerpts, "erôs")).toEqual({ uri: "erôs", excerpt: "ἔρως amour" });
   expect(await IdbHistory.get()).toEqual([{ word: "ψυχή", uri: "psukhê", excerpt: "ψυχή âme" }]);
 
   // Everything is stamped, and the clock and the device id are set.

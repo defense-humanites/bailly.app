@@ -51,7 +51,6 @@ const taggedArb: fc.Arbitrary<TaggedRecord> = fc
     tagKey: tagKeyArb,
     uri: uriArb,
     word: fc.constant("λόγος"),
-    excerpt: fc.constantFrom("parole", "raison"),
     updatedAt: stampArb,
     deleted: deletedArb,
   })
@@ -61,7 +60,6 @@ const starredArb: fc.Arbitrary<StarredRecord> = fc
   .record({
     uri: uriArb,
     word: fc.constant("λόγος"),
-    excerpt: fc.constantFrom("parole", "raison"),
     updatedAt: stampArb,
     deleted: deletedArb,
   })
@@ -165,8 +163,8 @@ describe("normalize", () => {
         { key: "t1", name: "Homère", description: "", color: "Blue", createdAt: stamp(1), updatedAt: stamp(1) },
       ],
       tagged: [
-        { tagKey: "t2", uri: "logos", word: "λόγος", excerpt: "", updatedAt: stamp(3) },
-        { tagKey: "t1", uri: "psyche", word: "ψυχή", excerpt: "", updatedAt: stamp(4) },
+        { tagKey: "t2", uri: "logos", word: "λόγος", updatedAt: stamp(3) },
+        { tagKey: "t1", uri: "psyche", word: "ψυχή", updatedAt: stamp(4) },
       ],
       starred: [],
       tagOrder: null,
@@ -184,7 +182,7 @@ describe("normalize", () => {
 
 test("the latest version of a record wins; at the same stamp, the deletion", () => {
   const star = (updatedAt: string, deleted?: true): StarredRecord =>
-    withoutUndefined({ uri: "logos", word: "λόγος", excerpt: "", updatedAt, deleted });
+    withoutUndefined({ uri: "logos", word: "λόγος", updatedAt, deleted });
   const state = (starred: StarredRecord[]): BookmarksState => ({ ...emptyState(), starred });
 
   expect(mergeStates(state([star(stamp(1))]), state([star(stamp(2), true)])).starred).toEqual([star(stamp(2), true)]);
@@ -204,9 +202,9 @@ test("compact removes the old tombstones only", () => {
   const state: BookmarksState = {
     ...emptyState(),
     starred: [
-      { uri: "old", word: "", excerpt: "", updatedAt: stamp(0), deleted: true },
-      { uri: "recent", word: "", excerpt: "", updatedAt: stamp(80 * day), deleted: true },
-      { uri: "live", word: "", excerpt: "", updatedAt: stamp(0) },
+      { uri: "old", word: "", updatedAt: stamp(0), deleted: true },
+      { uri: "recent", word: "", updatedAt: stamp(80 * day), deleted: true },
+      { uri: "live", word: "", updatedAt: stamp(0) },
     ],
   };
   expect(compact(state, 90 * day, 1_000 + 100 * day).starred.map(record => record.uri)).toEqual(["recent", "live"]);
@@ -214,7 +212,7 @@ test("compact removes the old tombstones only", () => {
 
 test("restoreRecords: what is missing or deleted comes back, later changes stay, nothing is deleted", () => {
   const entry = (uri: string, time: number, deleted?: true): StarredRecord =>
-    withoutUndefined({ uri, word: uri, excerpt: "", updatedAt: stamp(time), deleted });
+    withoutUndefined({ uri, word: uri, updatedAt: stamp(time), deleted });
   const local: BookmarksState = {
     ...emptyState(),
     starred: [entry("deleted", 5, true), entry("changed", 9), entry("kept", 1)],
@@ -238,7 +236,7 @@ test("restoreRecords: what is missing or deleted comes back, later changes stay,
 
 test("joinRecords: what exists online is not deleted by the joining device, online deletions apply", () => {
   const entry = (uri: string, time: number, deleted?: true): StarredRecord =>
-    withoutUndefined({ uri, word: uri, excerpt: "", updatedAt: stamp(time), deleted });
+    withoutUndefined({ uri, word: uri, updatedAt: stamp(time), deleted });
   const local: BookmarksState = {
     ...emptyState(),
     starred: [entry("deletedHere", 8, true), entry("deletedOnline", 2), entry("addedHere", 9)],
@@ -257,8 +255,8 @@ test("limitExcesses: the tags, the entries of each tag, and the favorites", () =
   const tag = (key: string, name: string, deleted?: true): TagRecord =>
     ({ key, name, description: "", color: "Blue", createdAt: stamp(1), updatedAt: stamp(1), ...(deleted ? { deleted } : {}) });
   const entry = (tagKey: string, uri: string, deleted?: true): TaggedRecord =>
-    ({ tagKey, uri, word: uri, excerpt: uri, updatedAt: stamp(2), ...(deleted ? { deleted } : {}) });
-  const star = (uri: string): StarredRecord => ({ uri, word: uri, excerpt: uri, updatedAt: stamp(3) });
+    ({ tagKey, uri, word: uri, updatedAt: stamp(2), ...(deleted ? { deleted } : {}) });
+  const star = (uri: string): StarredRecord => ({ uri, word: uri, updatedAt: stamp(3) });
   const limits = { maxTags: 2, tagMaxItems: 2 };
 
   const within: BookmarksState = {
@@ -286,8 +284,8 @@ test("fitImport: the local bookmarks stay, the new ones added first are imported
   const tag = (key: string, name: string, created: number): TagRecord =>
     ({ key, name, description: "", color: "Blue", createdAt: stamp(created), updatedAt: stamp(created) });
   const entry = (tagKey: string, uri: string, added: number): TaggedRecord =>
-    ({ tagKey, uri, word: uri, excerpt: uri, updatedAt: stamp(added) });
-  const star = (uri: string, added: number): StarredRecord => ({ uri, word: uri, excerpt: uri, updatedAt: stamp(added) });
+    ({ tagKey, uri, word: uri, updatedAt: stamp(added) });
+  const star = (uri: string, added: number): StarredRecord => ({ uri, word: uri, updatedAt: stamp(added) });
   const limits = { maxTags: 3, tagMaxItems: 3 };
 
   const local: BookmarksState = {
