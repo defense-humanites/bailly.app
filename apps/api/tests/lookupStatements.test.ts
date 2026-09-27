@@ -6,8 +6,9 @@ import { Settings } from "../src/Settings.ts";
 /*
  * The lookup statements are all prepared at startup (`preloadLookupStatements()`,
  * called by `src/index.ts`): 4 search columns × 2 operators × (1 count statement +
- * 2^n sets of fields, `word` excluded). The field order is canonical, so that no
- * request compiles a new statement, whatever the order of `fields`.
+ * 2 lookup statements — priority rows, other rows — × 2^n sets of fields, `word`
+ * excluded). The field order is canonical, so that no request compiles a new
+ * statement, whatever the order of `fields`.
  */
 
 const optionalFields = Settings.getSettings().queryAllowedFields
@@ -16,7 +17,7 @@ const optionalFields = Settings.getSettings().queryAllowedFields
 Deno.test("preloadLookupStatements: every variant is prepared at startup", () => {
   assertEquals(
     Database.preparedStatementCount,
-    4 * 2 * (1 + 2 ** optionalFields.length)
+    4 * 2 * (1 + 2 * 2 ** optionalFields.length)
   );
 });
 
@@ -31,6 +32,8 @@ Deno.test("GET /lookup: no statement compiled at request time", async () => {
     "/lookup/λογος?fields=uri&diacriticSensitive=true",
     "/lookup/%22λογος%22?fields=uri",
     "/lookup/α?fields=uri&limit=5",
+    "/lookup/λογος%24?fields=uri&limit=5",
+    "/lookup/*λογος?fields=uri,excerpt&limit=5",
     "/lookup/λογ%3Fς?fields=uri"
   ];
 
