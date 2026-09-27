@@ -7,10 +7,14 @@ import {
   type IdbEntryCreation,
   type IdbResult,
 } from "./Idb";
+import type { StarredRecord } from "./merge";
+
+const toEntry = ({ word, uri, excerpt }: StarredRecord): IdbEntry => ({ word, uri, excerpt });
 
 /**
  * A collection of methods for managing starred entries (aka the favorites).
  * @remarks The favorites are limited like tags (cf. `Idb.config.tagMaxItems`).
+ * Removed entries leave a tombstone (cf. `merge.ts`), ignored when reading.
  */
 export class IdbStarred {
   /**
@@ -20,7 +24,8 @@ export class IdbStarred {
    */
   static async get(uri: string): Promise<IdbEntry | null> {
     const db = await Idb.getIndexedDB();
-    return (await db.getFromIndex(IdbStore.Starred, "uri", uri)) ?? null;
+    const record = await db.get(IdbStore.Starred, uri);
+    return record && !record.deleted ? toEntry(record) : null;
   }
 
   /**
@@ -29,7 +34,7 @@ export class IdbStarred {
    */
   static async getAll(): Promise<IdbEntry[]> {
     const db = await Idb.getIndexedDB();
-    return await db.getAll(IdbStore.Starred);
+    return (await db.getAll(IdbStore.Starred)).filter(record => !record.deleted).map(toEntry);
   }
 
   /**
@@ -42,19 +47,21 @@ export class IdbStarred {
       const data: IdbEntry = Idb.buildIdbEntry(entry);
 
       const db = await Idb.getIndexedDB();
-      const tx = db.transaction(IdbStore.Starred, "readwrite");
+      const tx = db.transaction([IdbStore.Starred, IdbStore.Meta], "readwrite");
+      const store = tx.objectStore(IdbStore.Starred);
 
-      if ((await tx.store.count()) >= Idb.config.tagMaxItems) {
+      const live = (await store.getAll()).filter(record => !record.deleted);
+      if (live.length >= Idb.config.tagMaxItems) {
         throw new IdbError(
           `Les favoris ne peuvent contenir plus de ${Idb.config.tagMaxItems} entrées.`,
         );
       }
 
-      if ((await tx.store.index("uri").getKey(data.uri)) !== undefined) {
+      if (live.some(record => record.uri === data.uri)) {
         throw new IdbError(`L'entrée ${data.word} a déjà été ajoutée aux favoris.`);
       }
 
-      await tx.store.add(data);
+      await store.put({ ...data, updatedAt: await Idb.stamp(tx.objectStore(IdbStore.Meta)) });
       await tx.done;
 
       return data;
@@ -68,14 +75,15 @@ export class IdbStarred {
   static async remove(uri: string): Promise<IdbResult> {
     return attempt(async () => {
       const db = await Idb.getIndexedDB();
-      const tx = db.transaction(IdbStore.Starred, "readwrite");
+      const tx = db.transaction([IdbStore.Starred, IdbStore.Meta], "readwrite");
+      const store = tx.objectStore(IdbStore.Starred);
 
-      const key = await tx.store.index("uri").getKey(uri);
-      if (key === undefined) {
+      const record = await store.get(uri);
+      if (!record || record.deleted) {
         throw new IdbError("L'entrée à supprimer n'a pas été ajoutée aux favoris.");
       }
 
-      await tx.store.delete(key);
+      await store.put({ ...record, deleted: true, updatedAt: await Idb.stamp(tx.objectStore(IdbStore.Meta)) });
       await tx.done;
 
       return undefined;

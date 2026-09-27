@@ -71,7 +71,7 @@
         <!-- Favorites -->
         <BookmarkGroup
           :tag="{
-            key: -1,
+            key: 'favorites',
             name: 'Favoris',
             color: 'Yellow',
           }"

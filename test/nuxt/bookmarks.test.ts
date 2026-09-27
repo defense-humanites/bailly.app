@@ -1,7 +1,8 @@
 import { createPinia } from "pinia";
 import { expect, test } from "vitest";
 import { StorageKey } from "~/enums";
-import { IdbTaggedEntry, IdbTags } from "~/idb";
+import { IdbBookmarks, IdbTaggedEntry, IdbTags } from "~/idb";
+import { formatStamp } from "~/idb/clock";
 import { useBookmarksStore } from "~/stores/bookmarks";
 import { entries, tags, unwrap } from "../idbHelpers";
 
@@ -28,7 +29,7 @@ test("initialize loads the stored data", async () => {
 test("the current tag key is read from the local storage", async () => {
   unwrap(await IdbTags.add(tags.banquet));
   const theetete = unwrap(await IdbTags.add(tags.theetete));
-  localStorage.setItem(StorageKey.CurrentTag, String(theetete.key));
+  localStorage.setItem(StorageKey.CurrentTag, theetete.key);
 
   const store = newStore();
   await store.initialize();
@@ -52,7 +53,7 @@ test("createTag makes the new tag current and persists its key", async () => {
   const banquet = unwrap(await store.createTag(tags.banquet));
   expect(store.currentTag?.key).toBe(banquet.key);
   await nextTick();
-  expect(localStorage.getItem(StorageKey.CurrentTag)).toBe(String(banquet.key));
+  expect(localStorage.getItem(StorageKey.CurrentTag)).toBe(banquet.key);
 });
 
 test("tagEntry / untagEntry", async () => {
@@ -107,4 +108,40 @@ test("reorderTags makes the first tag current", async () => {
   await store.reorderTags([banquet.key, theetete.key]);
   expect(store.tags.map(tag => tag.key)).toEqual([banquet.key, theetete.key]);
   expect(store.currentTag?.key).toBe(banquet.key);
+});
+
+test("a current tag stored before the migration to UUIDs is found by its former key", async () => {
+  const stamp = formatStamp({ time: Date.now(), counter: 0, node: "test" });
+  unwrap(await IdbTags.add(tags.banquet)); // First position.
+  unwrap(await IdbBookmarks.merge({
+    tags: [{ key: "migrated", name: "Théétète", description: "", color: "Blue", createdAt: "0", updatedAt: stamp, legacyKey: 7 }],
+    tagged: [],
+    starred: [],
+    tagOrder: null,
+  }));
+  localStorage.setItem(StorageKey.CurrentTag, "7");
+
+  const store = newStore();
+  await store.initialize();
+  expect(store.currentTag?.name).toBe("Théétète");
+  await nextTick();
+  expect(localStorage.getItem(StorageKey.CurrentTag)).toBe("migrated");
+});
+
+test("mergeState merges a state and reloads the store", async () => {
+  const store = newStore();
+  await store.initialize();
+  const stamp = formatStamp({ time: Date.now() + 1_000, counter: 0, node: "test" });
+
+  const result = await store.mergeState({
+    tags: [{ key: "remote", name: "Lysis", description: "", color: "Green", createdAt: stamp, updatedAt: stamp }],
+    tagged: [{ tagKey: "remote", ...entries.rhinokeros, excerpt: entries.rhinokeros.excerpt, updatedAt: stamp }],
+    starred: [{ ...entries.alopex, excerpt: entries.alopex.excerpt, updatedAt: stamp }],
+    tagOrder: null,
+  });
+
+  expect(result.state).toBe("success");
+  expect(store.tags.map(tag => tag.name)).toEqual(["Lysis"]);
+  expect(store.entriesOf("remote")).toHaveLength(1);
+  expect(store.isStarred(entries.alopex.uri)).toBe(true);
 });

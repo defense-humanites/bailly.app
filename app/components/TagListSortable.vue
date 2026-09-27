@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import { moveArrayElement, useSortable } from "@vueuse/integrations/useSortable";
   import type { SortableEvent } from "sortablejs";
-  import type { IdbTagWithKey } from "~/idb";
+  import type { IdbTagWithKey, TagKey } from "~/idb";
 
   const emit = defineEmits<{
-    (e: "reorderTags", orderedKeys: number[]): void;
+    (e: "reorderTags", orderedKeys: TagKey[]): void;
   }>();
 
   const props = defineProps<{

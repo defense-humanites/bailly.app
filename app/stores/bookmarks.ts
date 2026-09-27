@@ -1,6 +1,7 @@
 import { defineStore, skipHydrate } from "pinia";
 import { StorageKey } from "~/enums";
 import {
+  IdbBookmarks,
   IdbStarred,
   IdbTaggedEntry,
   IdbTags,
@@ -10,7 +11,9 @@ import {
   type IdbTagCreation,
   type IdbTagged,
   type IdbTagWithKey,
+  type BookmarksState,
   type TagColorKey,
+  type TagKey,
 } from "~/idb";
 
 const collator = new Intl.Collator("grc");
@@ -54,17 +57,18 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    * The key of the current tag, on which to perform actions if no other tag is
    * explicitly chosen.
    * @remarks Stored in the local storage (the key of the previous application
-   * is migrated, cf. `utils/legacyStorage.ts`). Not hydrated from the server,
+   * is migrated, cf. `utils/legacyStorage.ts`; a numeric key, from before the
+   * tags had UUIDs, is resolved by `fetchTags`). Not hydrated from the server,
    * which cannot read it.
    */
-  const currentTagKey = skipHydrate(useLocalStorage<number | null>(
+  const currentTagKey = skipHydrate(useLocalStorage<TagKey | null>(
     StorageKey.CurrentTag,
     null,
     {
       writeDefaults: false,
       serializer: {
-        read: (value: string) => (value ? Number(value) : null),
-        write: (value: number | null) => String(value),
+        read: (value: string) => (value && value !== "null" ? value : null),
+        write: (value: TagKey | null) => String(value),
       },
     },
   ));
@@ -85,12 +89,12 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   /**
    * The keys of the tags to which an entry belongs.
    */
-  const tagKeysOf = (uri: string): number[] =>
+  const tagKeysOf = (uri: string): TagKey[] =>
     taggedEntries.value.filter(entry => entry.uri === uri).map(entry => entry.tagKey);
   /**
    * The entries that belong to a tag.
    */
-  const entriesOf = (tagKey: number): IdbTagged[] =>
+  const entriesOf = (tagKey: TagKey): IdbTagged[] =>
     taggedEntries.value.filter(entry => entry.tagKey === tagKey);
 
   /**
@@ -114,10 +118,17 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   /**
    * Fetches the tags; if the current tag no longer exists, the first tag
    * becomes the current one.
+   * @remarks A current tag stored before the migration to UUIDs (a numeric
+   * key) is found by its former key.
    */
   async function fetchTags(): Promise<void> {
-    tags.value = await IdbTags.getAll({ orderBy: "position" });
-    if (!currentTag.value) currentTagKey.value = tags.value[0]?.key ?? null;
+    tags.value = await IdbTags.getAll();
+    if (currentTag.value) return;
+
+    const legacyCurrentTag = tags.value.find(
+      tag => tag.legacyKey !== undefined && String(tag.legacyKey) === currentTagKey.value,
+    );
+    currentTagKey.value = (legacyCurrentTag ?? tags.value[0])?.key ?? null;
   }
 
   async function fetchTaggedEntries(): Promise<void> {
@@ -179,7 +190,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     return result;
   }
 
-  async function updateTag(key: number, data: IdbTagCreation): Promise<IdbResult<IdbTagWithKey>> {
+  async function updateTag(key: TagKey, data: IdbTagCreation): Promise<IdbResult<IdbTagWithKey>> {
     await initialize();
     const result = report(await IdbTags.update(key, data));
     if (result.state === "success") {
@@ -195,7 +206,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    * @param setFirstAsCurrent Whether the new first tag becomes the current one.
    */
   async function reorderTags(
-    orderedKeys: number[],
+    orderedKeys: TagKey[],
     setFirstAsCurrent = true,
   ): Promise<IdbResult<IdbTagWithKey[]>> {
     await initialize();
@@ -210,7 +221,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   /**
    * Removes a tag and detaches its entries.
    */
-  async function removeTag(key: number): Promise<IdbResult> {
+  async function removeTag(key: TagKey): Promise<IdbResult> {
     await initialize();
     const result = report(await IdbTags.remove(key));
     if (result.state === "success") {
@@ -219,21 +230,40 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     return result;
   }
 
-  function setCurrentTag(key: number): void {
+  function setCurrentTag(key: TagKey): void {
     if (tags.value.some(tag => tag.key === key)) currentTagKey.value = key;
   }
 
-  async function tagEntry(entry: IdbEntryCreation, tagKey: number): Promise<IdbResult<IdbTagged>> {
+  async function tagEntry(entry: IdbEntryCreation, tagKey: TagKey): Promise<IdbResult<IdbTagged>> {
     await initialize();
     const result = report(await IdbTaggedEntry.add(entry, tagKey));
     if (result.state === "success") await fetchTaggedEntries();
     return result;
   }
 
-  async function untagEntry(uri: string, tagKey: number): Promise<IdbResult> {
+  async function untagEntry(uri: string, tagKey: TagKey): Promise<IdbResult> {
     await initialize();
     const result = report(await IdbTaggedEntry.remove(uri, tagKey));
     if (result.state === "success") await fetchTaggedEntries();
+    return result;
+  }
+
+  /**
+   * Reloads the data from IndexedDB (e.g. changed by another tab).
+   */
+  async function refresh(): Promise<void> {
+    await initialize();
+    await Promise.all([fetchTags(), fetchTaggedEntries(), fetchStarredEntries(), refreshNewTagColor()]);
+  }
+
+  /**
+   * Merges a state (imported, or from another device) into the stored
+   * bookmarks (cf. `idb/merge.ts`).
+   */
+  async function mergeState(state: BookmarksState): Promise<IdbResult<BookmarksState>> {
+    await initialize();
+    const result = report(await IdbBookmarks.merge(state));
+    if (result.state === "success") await refresh();
     return result;
   }
 
@@ -258,5 +288,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     setCurrentTag,
     tagEntry,
     untagEntry,
+    refresh,
+    mergeState,
   };
 });
