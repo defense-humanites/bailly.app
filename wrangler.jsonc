@@ -1,5 +1,13 @@
 {
   "name": "bailly-app-nuxt",
+  // The test deployment, on `nuxt.bailly.app`, behind Cloudflare Access: no
+  // `workers.dev` address nor version URLs, which the Access application of
+  // `nuxt.bailly.app` does not cover.
+  "routes": [
+    { "pattern": "nuxt.bailly.app", "custom_domain": true }
+  ],
+  "workers_dev": false,
+  "preview_urls": false,
   "d1_databases": [
     // @TODO Preview D1 database. Change it when the `bailly-app-nuxt` repository
     // will be merged in the production `bailly-app` repository.
