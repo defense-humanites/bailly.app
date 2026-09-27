@@ -68,6 +68,7 @@
         "to": `/${siblings.previous.uri}`,
         "aria-label": `Entrée précédente : ${greek.text(siblings.previous.word)}`,
         "ui": { linkLabel: "max-sm:sr-only" },
+        "tooltip": { text: "Entrée précédente", kbds: ["arrowleft"] },
       }
       : placeholder,
     // The title: active (no hover effect), without the active background.
@@ -86,9 +87,44 @@
         "aria-label": `Entrée suivante : ${greek.text(siblings.next.word)}`,
         "class": "justify-end text-right",
         "ui": { linkLabel: "max-sm:sr-only" },
+        "tooltip": { text: "Entrée suivante", kbds: ["arrowright"] },
       }
       : placeholder,
   ];
+
+  /**
+   * The compact bar is shown once the title has scrolled under it (its
+   * wrapper, of no height, is stuck under the header then).
+   */
+  const title = useTemplateRef<HTMLElement>("title");
+  const compactBar = useTemplateRef<ComponentPublicInstance>("compactBar");
+  const compactBarShown = ref(false);
+  const { y } = useWindowScroll();
+
+  const updateCompactBar = (): void => {
+    const barTop = (compactBar.value?.$el as HTMLElement | undefined)?.getBoundingClientRect().top;
+    const titleBottom = title.value?.getBoundingClientRect().bottom;
+    if (barTop === undefined || titleBottom === undefined) return;
+    compactBarShown.value = titleBottom <= barTop;
+  };
+
+  onMounted(updateCompactBar);
+  watch(y, () => requestAnimationFrame(updateCompactBar));
+
+  /**
+   * Keyboard: the left and right arrows lead to the previous and next
+   * entries, unless they are used by a control (e.g. the search input, a
+   * menu, a panel) or with a modifier (e.g. Alt+← goes back in history).
+   */
+  useEventListener("keydown", (event: KeyboardEvent) => {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    const sibling = { ArrowLeft: siblings.previous, ArrowRight: siblings.next }[event.key];
+    if (!sibling) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.closest("input, textarea, select, [contenteditable], [role=dialog], [role=listbox], [role=menu], [role=radiogroup], [role=slider], [role=tablist]")) return;
+    event.preventDefault();
+    void navigateTo(`/${sibling.uri}`);
+  });
 
   useSeoMeta({
     title: `${entry.word.replace(/\u03D0/g, "β")} (${convert(entry.word, "greek", "transliteration", { preset: "ala-lc-ancient" })})`,
@@ -98,13 +134,13 @@
 
 <template>
   <article>
-    <!--
-      The title and the links to the neighbouring entries stick under the
-      header (cf. `--header-bottom`, which follows the mobile title row), on
-      an almost opaque background; a line under them once they are stuck,
-      where supported (cf. `.entry-header`).
-    -->
-    <header class="entry-header sticky top-(--header-bottom) z-20 -mx-2 bg-white/95 px-2 backdrop-blur-sm transition-[top] duration-300 ease-out motion-reduce:transition-none">
+    <EntryCompactBar
+      ref="compactBar"
+      :word="greek.text(entry.word)"
+      :siblings="siblings"
+      :shown="compactBarShown"
+    />
+    <header ref="title">
       <UNavigationMenu
         :ui="{
           root: '[&>div]:w-full',

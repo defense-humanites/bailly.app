@@ -56,18 +56,39 @@ test.describe("entry page", () => {
     await expect(page.locator("[id='2']")).toHaveCount(1);
   });
 
-  test("the title and the neighbours' links stick under the header", async ({ page, goto }) => {
-    const bottom = (selector: string) => page.locator(selector).first().evaluate(element => Math.round(element.getBoundingClientRect().bottom));
-    const top = (selector: string) => page.locator(selector).first().evaluate(element => Math.round(element.getBoundingClientRect().top));
+  test("a compact bar appears once the title is out of sight", async ({ page, goto }) => {
+    const bar = page.getByRole("navigation", { name: "Navigation de l'entrée" });
     for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 700 });
       await goto("/logos", { waitUntil: "hydration" });
+      await expect(bar).toBeHidden();
       await page.mouse.wheel(0, 1500);
-      await expect.poll(() => top("main article > header")).toBe(await bottom("body > div header"));
-      await expect(page.locator("main h1")).toBeInViewport();
-      // A line under it once stuck (scroll-state queries, supported by Chromium).
-      await expect(page.locator("main article > header > nav")).not.toHaveCSS("border-bottom-color", "rgba(0, 0, 0, 0)");
+      await expect(bar).toBeVisible();
+      await expect(bar).toContainText("λόγος");
+      // Right under the header.
+      const [barTop, headerBottom] = await page.evaluate(async () => {
+        const nav = document.querySelector("nav[aria-label='Navigation de l\\'entrée']")!;
+        await Promise.all(nav.getAnimations().map(animation => animation.finished));
+        return [nav.getBoundingClientRect().top, document.querySelector("body > div header")!.getBoundingClientRect().bottom];
+      });
+      expect(Math.abs(barTop - headerBottom)).toBeLessThan(1);
+      await page.mouse.wheel(0, -3000);
+      await expect(bar).toBeHidden();
     }
+  });
+
+  test("keyboard: the arrows lead to the neighbouring entries", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    const nextWord = (await page.locator("article > header").getByRole("link", { name: /^Entrée suivante : / }).getAttribute("aria-label"))!.replace("Entrée suivante : ", "");
+    // Not while typing in the search bar.
+    await page.locator("header input[role=combobox]").focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator("main h1")).toHaveText("λόγος");
+    await page.locator("main h1").click();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator("main h1")).toHaveText(nextWord);
+    await page.keyboard.press("ArrowLeft");
+    await expect(page.locator("main h1")).toHaveText("λόγος");
   });
 
   test("the arrow of a definition sits in the line of its text", async ({ page, goto }) => {
