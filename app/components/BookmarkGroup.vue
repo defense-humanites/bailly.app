@@ -311,7 +311,7 @@
               rows="1"
               aria-label="Nom de l'étiquette"
               :maxlength="IdbTags.nameMaxLength"
-              class="min-w-0 grow resize-none overflow-hidden rounded-r-2xl bg-white/60 px-2 py-0.5 text-xl/7 font-bold wrap-break-word text-tag-600 hover:bg-white/90 focus:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300"
+              class="min-w-0 grow resize-none overflow-hidden rounded-r-2xl bg-white/60 px-2 py-0.5 text-xl/7 font-bold md:py-0 md:text-2xl/8 wrap-break-word text-tag-600 hover:bg-white/90 focus:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300"
               :class="{ 'animate-shake': isTagNameErrored }"
               @input="onNameInput"
             />
@@ -326,7 +326,7 @@
               :name="icon"
               class="mx-2 mt-1 size-6 shrink-0"
             />
-            <span class="ml-2 min-w-0 grow px-0 py-0.5 pe-2 text-xl/7 font-bold wrap-break-word">{{ tagName }}</span>
+            <span class="ml-2 min-w-0 grow px-0 py-0.5 pe-2 text-xl/7 font-bold md:py-0 md:text-2xl/8 wrap-break-word">{{ tagName }}</span>
           </div>
         </div>
 
