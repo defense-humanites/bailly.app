@@ -55,6 +55,21 @@ export default defineNuxtConfig({
    * variables (cf. `.env.example`).
    */
   runtimeConfig: {
+    /**
+     * The daily budget of an address for the synchronization lockers (cf.
+     * `server/lib/syncBudget.ts`; 0: no limit, e.g. `NUXT_SYNC_DAILY_BYTES=0`);
+     * the header giving the client's address, set by the proxy in front of
+     * the server (only then trusted; the connection's address otherwise);
+     * an optional secret mixed in the pseudonyms of the addresses
+     * (`NUXT_SYNC_ADDRESS_SECRET`).
+     */
+    sync: {
+      dailyBytes: 1_000_000,
+      dailyCreations: 100,
+      dailyGrowth: 5_000_000,
+      addressHeader: cloudflare ? "cf-connecting-ip" : "",
+      addressSecret: "",
+    },
     public: {
       apiHost: "https://api.bailly.app",
       searchDebounceTime: 90,

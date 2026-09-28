@@ -4,11 +4,11 @@ import sqlite from "db0/connectors/node-sqlite";
 import { beforeEach, expect, test } from "vitest";
 import { parseBookmarksFile } from "../../app/idb/transfer";
 import { formatStamp } from "../../app/idb/clock";
-import { emptyState, joinRecords, mergeStates, normalize, type BookmarksState } from "../../app/idb/merge";
+import { emptyState, joinRecords, mergeStates, normalize, withoutTombstones, type BookmarksState } from "../../app/idb/merge";
 import { decryptText, deriveCredentials, type SyncCredentials } from "../../app/sync/crypto";
 import { lockerBlob, synchronize, SyncLimitError, SyncTooLargeError, type SyncDependencies } from "../../app/sync/engine";
-import { deleteLocker, hashToken, readLocker, resetSchemaCache, writeLocker } from "../../server/lib/lockers";
-import { LockerDeletedError, SyncBusyError, SyncTimeoutError } from "../../app/sync/lockerClient";
+import { DAY, deleteLocker, hashToken, IDLE_MAX_DAYS, purgeLockers, readLocker, resetSchemaCache, writeLocker } from "../../server/lib/lockers";
+import { LockerDeletedError, SyncBusyError, SyncQuotaError, SyncTimeoutError } from "../../app/sync/lockerClient";
 
 /**
  * A stand-in for the server routes (`server/api/sync/[id]`), on an in-memory
@@ -25,6 +25,7 @@ function fakeServer(db: Database, { beforeWrite }: { beforeWrite?: () => Promise
     if (!init?.method || init.method === "GET") {
       const result = await readLocker(db, id, hash);
       if (result.state === "found") return json(200, { version: result.version, blob: result.blob });
+      if (result.state === "empty") return new Response(null, { status: 204 });
       return json(result.state === "deleted" ? 410 : 404, {});
     }
     if (init.method === "PUT") {
@@ -51,7 +52,7 @@ function device(server: typeof fetch, initial: BookmarksState = emptyState()) {
       return Promise.resolve(state);
     },
     joinState: (remote) => {
-      state = normalize(mergeStates(state, joinRecords(state, remote, stamp())));
+      state = normalize(mergeStates(withoutTombstones(state), joinRecords(state, remote, stamp())));
       return Promise.resolve(state);
     },
     fetch: server,
@@ -135,7 +136,16 @@ test("a purged locker is recreated; a deleted one stops the devices", async () =
   laptop.change(addStar("logos"));
   await synchronize(credentials, laptop.deps);
 
-  // Purged (as after 18 months unchanged).
+  // Emptied (as after 18 months without access), then filled again by the
+  // first device, which the second merges.
+  await purgeLockers(db, Date.now() + (IDLE_MAX_DAYS + 1) * DAY);
+  const phone = device(server);
+  phone.change(addStar("psukhe"));
+  expect(await synchronize(credentials, phone.deps)).toBe(2);
+  expect(await synchronize(credentials, laptop.deps)).toBe(3);
+  expect(liveStars(laptop.state)).toEqual(["logos", "psukhe"]);
+
+  // Deleted (as after 3 years without access).
   await db.sql`DELETE FROM sync_lockers`;
   expect(await synchronize(credentials, laptop.deps)).toBe(1);
 
@@ -153,9 +163,36 @@ test("a locker that cannot be decrypted makes the synchronization fail", async (
   await expect(synchronize({ ...credentials, key: other.key }, laptop.deps)).rejects.toThrow();
 });
 
+test("a device joining a locker the server emptied: its earlier deletions do not apply elsewhere", async () => {
+  const server = fakeServer(db);
+  const phone = device(server);
+  phone.change(addStar("logos"));
+  await synchronize(credentials, phone.deps, { first: true });
+
+  // Emptied (the phone did not come back), while the laptop, outside this
+  // synchronization, had deleted the same entry.
+  await purgeLockers(db, Date.now() + (IDLE_MAX_DAYS + 1) * DAY);
+  const laptop = device(server);
+  laptop.change(addStar("logos"));
+  laptop.change(addStar("logos", true));
+  laptop.change(addStar("psukhe"));
+  await synchronize(credentials, laptop.deps, { first: true });
+  expect(laptop.state.starred.some(record => record.deleted)).toBe(false);
+
+  await synchronize(credentials, phone.deps);
+  expect(liveStars(phone.state)).toEqual(["logos", "psukhe"]);
+});
+
 test("too many requests (rate limiting): an error to retry later", async () => {
   const limited: typeof fetch = () => Promise.resolve(new Response("", { status: 429 }));
   await expect(synchronize(credentials, device(limited).deps)).rejects.toBeInstanceOf(SyncBusyError);
+});
+
+test("too many lockers created from this network today: an error of its own", async () => {
+  const exhausted: typeof fetch = (_input, init) => Promise.resolve(!init?.method || init.method === "GET"
+    ? new Response(null, { status: 404 })
+    : new Response(JSON.stringify({ statusCode: 429, data: { reason: "daily-budget" } }), { status: 429 }));
+  await expect(synchronize(credentials, device(exhausted).deps)).rejects.toBeInstanceOf(SyncQuotaError);
 });
 
 test("a device joining (again) does not delete online what it deleted meanwhile", async () => {

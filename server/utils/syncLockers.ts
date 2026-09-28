@@ -1,4 +1,4 @@
-import { createError, getRequestHeader, readRawBody, type H3Event } from "h3";
+import { createError, getRequestHeader, getRequestIP, readRawBody, type H3Event } from "h3";
 import { hashToken, LOCKER_ID_PATTERN, TOKEN_PATTERN } from "../lib/lockers";
 
 /**
@@ -47,4 +47,18 @@ export async function readBoundedJson(event: H3Event, maxBytes: number): Promise
   } catch {
     throw createError({ statusCode: 400 });
   }
+}
+
+/**
+ * The address of the client, for its daily budget (cf. `server/lib/syncBudget.ts`):
+ * from the header set by the proxy in front of the server if one is
+ * configured (`CF-Connecting-IP` on Cloudflare), from the connection
+ * otherwise. A header is only trusted when configured: a client could set
+ * any value. In a list (e.g. `X-Forwarded-For`), the last address is the one
+ * the proxy added.
+ */
+export function requestAddress(event: H3Event): string | undefined {
+  const header = useRuntimeConfig(event).sync.addressHeader;
+  const value = header ? getRequestHeader(event, header)?.split(",").at(-1)?.trim() : undefined;
+  return value || getRequestIP(event);
 }

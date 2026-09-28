@@ -1,8 +1,8 @@
 import { MAX_LOCKER_BLOB_LENGTH } from "#shared/utils/sync";
-import { canonical, compact, TOMBSTONE_MAX_AGE, type BookmarksState } from "~/idb/merge";
+import { canonical, compact, emptyState, TOMBSTONE_MAX_AGE, type BookmarksState } from "~/idb/merge";
 import { exportState, parseBookmarksFile, toBookmarksFile } from "~/idb/transfer";
 import { decryptText, encryptText, type SyncCredentials } from "./crypto";
-import { fetchLocker, storeLocker, SyncTimeoutError } from "./lockerClient";
+import { EMPTY_LOCKER, fetchLocker, storeLocker, SyncTimeoutError } from "./lockerClient";
 
 export type SyncDependencies = {
   /**
@@ -16,7 +16,8 @@ export type SyncDependencies = {
   mergeState: (state: BookmarksState) => Promise<BookmarksState>;
   /**
    * Merges a state into the stored bookmarks the first time this device
-   * synchronizes with a key (cf. `joinRecords`).
+   * synchronizes with a key (cf. `joinRecords`), forgetting this device's
+   * earlier deletions (cf. `IdbBookmarks.join`).
    * @returns The merged state.
    */
   joinState?: (state: BookmarksState) => Promise<BookmarksState>;
@@ -133,7 +134,7 @@ export async function synchronize(
 
     let state: BookmarksState;
     let version: number;
-    if (locker) {
+    if (locker && locker !== EMPTY_LOCKER) {
       const text = await decryptText(locker.blob, credentials);
       const remote = parseBookmarksFile(text, deps.referenceTime ? await deps.referenceTime() : Date.now());
       checkCancelled();
@@ -142,9 +143,11 @@ export async function synchronize(
       if (sameBookmarks(state, remote)) return locker.version;
       version = locker.version;
     } else {
-      // Not created yet, or purged after a long idle period: (re)created
-      // from this device's bookmarks.
-      state = await deps.readState();
+      // Not created yet, or emptied (or deleted) after a long idle period:
+      // (re)filled with this device's bookmarks. The first time with this key,
+      // without its earlier deletions (cf. `joinState`): the other devices'
+      // bookmarks are not online to protect them.
+      state = first && deps.joinState ? await deps.joinState(emptyState()) : await deps.readState();
       version = 0;
     }
 

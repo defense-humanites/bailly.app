@@ -5,11 +5,13 @@ import { fromBase64url, toBase64url } from "~/sync/base64url";
 import { deriveCredentials, type SyncCredentials } from "~/sync/crypto";
 import { synchronize, SyncLimitError, SyncTooLargeError, type SyncOptions } from "~/sync/engine";
 import {
+  EMPTY_LOCKER,
   fetchLocker,
   LockerDeletedError,
   removeLocker,
   SyncBusyError,
   SyncNetworkError,
+  SyncQuotaError,
   SyncTimeoutError,
 } from "~/sync/lockerClient";
 
@@ -366,7 +368,8 @@ export const useSyncStore = defineStore("sync", () => {
     await setConfig(value);
     settingsChanged();
     errorNeedsAction.value = needsAction(failure);
-    if (failure && errorNeedsAction.value) {
+    if (failure && (errorNeedsAction.value || failure instanceof SyncQuotaError)) {
+      // To be done by the user, or tomorrow: no retry in a few seconds.
       status.value = "error";
       error.value = `Vos signets en ligne ont été ajoutés à cet appareil, mais l'envoi des siens n'a pas abouti. ${describe(failure)}`;
     } else if (failure) {
@@ -399,8 +402,11 @@ export const useSyncStore = defineStore("sync", () => {
    * Joins the synchronization of another device, with its key: its bookmarks
    * and this device's are merged. The key replaces this device's, if any.
    * @param key The 12 words of the key, or the secret itself (from a link).
+   * @returns `emptied`: the server had emptied the locker after a long
+   * inactivity (the key is valid, but only this device's bookmarks are online
+   * now).
    */
-  async function join(key: string[] | Uint8Array<ArrayBuffer>): Promise<IdbResult> {
+  async function join(key: string[] | Uint8Array<ArrayBuffer>): Promise<IdbResult<{ emptied: boolean }>> {
     let secret: Uint8Array<ArrayBuffer>;
     if (Array.isArray(key)) {
       const { wordsToSecret, SyncKeyError } = await import("~/sync/key");
@@ -416,16 +422,17 @@ export const useSyncStore = defineStore("sync", () => {
 
     // Already this device's key: a synchronization is enough.
     if (hasKey(secret)) {
-      if (await sync({ force: true })) return { state: "success", data: undefined };
+      if (await sync({ force: true })) return { state: "success", data: { emptied: false } };
       return { state: "error", message: error.value ?? "La synchronisation a échoué." };
     }
 
     // A key that no device uses is most likely mistyped (a new locker is only
-    // created by `enable`).
+    // created by `enable`; an emptied one still exists).
+    let emptied: boolean;
     try {
-      if (!(await fetchLocker(await deriveCredentials(secret), { signal: AbortSignal.timeout(ATTEMPT_TIMEOUT) }))) {
-        return { state: "error", message: "Aucun signet n'est synchronisé avec cette clé : vérifiez-la." };
-      }
+      const locker = await fetchLocker(await deriveCredentials(secret), { signal: AbortSignal.timeout(ATTEMPT_TIMEOUT) });
+      if (!locker) return { state: "error", message: "Aucun signet n'est synchronisé avec cette clé : vérifiez-la." };
+      emptied = locker === EMPTY_LOCKER;
     } catch (e: unknown) {
       if (e instanceof LockerDeletedError) {
         return { state: "error", message: "Cette clé a été désactivée : activez la synchronisation avec une nouvelle clé." };
@@ -433,7 +440,8 @@ export const useSyncStore = defineStore("sync", () => {
       return { state: "error", message: describe(e) };
     }
 
-    return activate(secret);
+    const result = await activate(secret);
+    return result.state === "success" ? { state: "success", data: { emptied } } : result;
   }
 
   /**

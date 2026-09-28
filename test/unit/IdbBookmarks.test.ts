@@ -144,6 +144,16 @@ test("join: online bookmarks deleted here come back", async () => {
   expect(await IdbStarred.get(entries.alopex.uri)).not.toBeNull();
 });
 
+test("join: this device's earlier deletions are forgotten, so that they delete nothing elsewhere", async () => {
+  unwrap(await IdbStarred.add(entries.alopex));
+  unwrap(await IdbStarred.remove(entries.alopex.uri));
+  unwrap(await IdbStarred.add(entries.rhinokeros));
+
+  // E.g. a locker the server emptied: nothing online.
+  unwrap(await IdbBookmarks.join({ tags: [], tagged: [], starred: [], tagOrder: null }));
+  expect((await IdbBookmarks.getState()).starred.map(record => record.uri)).toEqual([entries.rhinokeros.uri]);
+});
+
 test("the tombstones old enough are forgotten", async () => {
   const day = 24 * 60 * 60 * 1000;
   const db = await Idb.getIndexedDB();

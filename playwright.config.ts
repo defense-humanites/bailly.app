@@ -55,7 +55,15 @@ export default defineConfig<ConfigOptions>({
       : [{
           command: "nuxt build && node .output/server/index.mjs",
           url: baseURL,
-          env: { PORT: String(appPort), NUXT_PUBLIC_API_HOST: `http://127.0.0.1:${apiPort}` },
+          // No daily budget for the synchronization: all the tests come from
+          // one address (cf. `server/lib/syncBudget.ts`, tested on its own).
+          env: {
+            PORT: String(appPort),
+            NUXT_PUBLIC_API_HOST: `http://127.0.0.1:${apiPort}`,
+            NUXT_SYNC_DAILY_BYTES: "0",
+            NUXT_SYNC_DAILY_CREATIONS: "0",
+            NUXT_SYNC_DAILY_GROWTH: "0",
+          },
           timeout: 300_000,
           reuseExistingServer: !ci,
         }]),

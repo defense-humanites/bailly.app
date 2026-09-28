@@ -12,6 +12,7 @@ import {
   joinRecords,
   recordId,
   restoreRecords,
+  withoutTombstones,
   type BookmarksState,
   type LimitExcess,
   type SkippedRecords,
@@ -66,11 +67,17 @@ export class IdbBookmarks {
   /**
    * Merges the state of the locker the first time this device synchronizes
    * with a key: what exists online is not deleted by this device's earlier
-   * deletions (cf. `joinRecords`).
+   * deletions (cf. `joinRecords`), which are forgotten: made outside this
+   * synchronization, they must not delete anything on the other devices
+   * either (e.g. when the server had emptied the locker, and the device
+   * fills it again).
    * @returns The merged state, and whether the stored one changed.
    */
   static async join(remote: BookmarksState): Promise<IdbResult<MergeOutcome>> {
-    return IdbBookmarks.#mergeInto(async (local, meta) => joinRecords(local, remote, await Idb.stamp(meta)));
+    return IdbBookmarks.#mergeInto(
+      async (local, meta) => joinRecords(local, remote, await Idb.stamp(meta)),
+      { forgetDeletions: true },
+    );
   }
 
   /**
@@ -205,9 +212,11 @@ export class IdbBookmarks {
    * that later changes on this device supersede them. A merge that would
    * exceed the limits is not applied (cf. `limitExcesses`).
    * @param incoming The state to merge, from the stored one.
+   * @param options.forgetDeletions Whether the stored tombstones are forgotten.
    */
   static async #mergeInto(
     incoming: (local: BookmarksState, meta: IdbMetaStore) => Promise<BookmarksState>,
+    { forgetDeletions = false }: { forgetDeletions?: boolean } = {},
   ): Promise<IdbResult<MergeOutcome>> {
     return attempt(async () => {
       const db = await Idb.getIndexedDB();
@@ -226,7 +235,7 @@ export class IdbBookmarks {
         tagOrder: (await Idb.getMeta(stores.meta, IdbMetaKey.TagOrder)) ?? null,
       };
       const received = await incoming(local, stores.meta);
-      const merged = compact(normalize(mergeStates(local, received)));
+      const merged = compact(normalize(mergeStates(forgetDeletions ? withoutTombstones(local) : local, received)));
 
       // Beyond the limits: nothing is merged (the user makes room first).
       const excesses = limitExcesses(merged, Idb.config, received);

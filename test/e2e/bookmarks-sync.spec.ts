@@ -147,6 +147,35 @@ test("a failed first synchronization is reported, and leaves the device as it wa
   await expect(phone.getByRole("button", { name: "Activer la synchronisation" })).toBeVisible();
 });
 
+test("a key whose online bookmarks the server emptied: joining explains it", async ({ page, goto, browser, baseURL }) => {
+  await goto("/signets", { waitUntil: "hydration" });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await expect(page.getByRole("list", { name: "Les 12 mots de la clé" })).toBeVisible();
+  const link = await syncLink(page);
+
+  // The check of the key finds the locker emptied (as after 18 months
+  // without access).
+  const phone = await newDevice(browser, baseURL, "/");
+  let requests = 0;
+  await phone.route("**/api/sync/**", route => (++requests === 1 ? route.fulfill({ status: 204 }) : route.continue()));
+  await phone.goto(link!);
+  await phone.getByRole("button", { name: "Activer", exact: true }).click();
+  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(phone.getByText(/Faute d'activité, le serveur avait effacé vos signets en ligne/)).toBeVisible();
+});
+
+test("too many synchronizations enabled from this network today: explained", async ({ page, goto }) => {
+  await goto("/signets", { waitUntil: "hydration" });
+  await page.route("**/api/sync/**", route => (route.request().method() === "PUT"
+    ? route.fulfill({ status: 429, contentType: "application/json", body: JSON.stringify({ statusCode: 429, data: { reason: "daily-budget" } }) })
+    : route.continue()));
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await expect(page.getByText(/Trop de signets ont été envoyés depuis ce réseau aujourd'hui/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Activer la synchronisation" })).toBeVisible();
+});
+
 test("a device keeps the key once the online bookmarks are merged, even if sending its own fails", async ({ page, goto, browser, baseURL }) => {
   test.setTimeout(60_000);
 

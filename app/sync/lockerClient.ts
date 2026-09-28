@@ -36,6 +36,17 @@ export class SyncBusyError extends SyncNetworkError {
 }
 
 /**
+ * Too much sent from this network today (the daily budget of an address, cf.
+ * `server/lib/syncBudget.ts`): to retry tomorrow, or from another network.
+ */
+export class SyncQuotaError extends SyncNetworkError {
+  constructor() {
+    super("Trop de signets ont été envoyés depuis ce réseau aujourd'hui : la synchronisation reprendra demain, ou depuis un autre réseau (les données mobiles, par exemple).");
+    this.name = "SyncQuotaError";
+  }
+}
+
+/**
  * The attempt took too long, and was cancelled.
  */
 export class SyncTimeoutError extends SyncNetworkError {
@@ -46,6 +57,12 @@ export class SyncTimeoutError extends SyncNetworkError {
 }
 
 export type LockerContent = { version: number; blob: string };
+/**
+ * A locker emptied by the server after a long inactivity (or never accessed
+ * after the day of its creation): the key is valid, the devices fill it
+ * again (writing at version `0`).
+ */
+export const EMPTY_LOCKER = "empty";
 export type StoreResult = { state: "written"; version: number } | { state: "conflict"; version: number };
 
 export type LockerRequestOptions = {
@@ -79,20 +96,29 @@ async function request(
   return response;
 }
 
-function unexpected(response: Response): never {
+async function unexpected(response: Response): Promise<never> {
   if (response.status === 410) throw new LockerDeletedError();
-  if (response.status === 429) throw new SyncBusyError();
+  if (response.status === 429) {
+    // The daily budget of the address, or the rate limiting rule of Cloudflare.
+    const body = (await response.json().catch(() => ({}))) as { data?: { reason?: unknown } };
+    throw body.data?.reason === "daily-budget" ? new SyncQuotaError() : new SyncBusyError();
+  }
   throw new SyncNetworkError(`Le serveur de synchronisation a répondu par une erreur (${response.status}).`);
 }
 
 /**
  * Reads the locker.
- * @returns Its content, or `null` if it does not exist (yet, or anymore:
- * idle lockers are purged).
+ * @returns Its content; `EMPTY_LOCKER` if the server emptied it; `null` if it
+ * does not exist (yet, or anymore: its row is deleted after 3 years without
+ * access).
  */
-export async function fetchLocker(credentials: SyncCredentials, options: LockerRequestOptions = {}): Promise<LockerContent | null> {
+export async function fetchLocker(
+  credentials: SyncCredentials,
+  options: LockerRequestOptions = {},
+): Promise<LockerContent | typeof EMPTY_LOCKER | null> {
   const response = await request(credentials, {}, options);
   if (response.status === 404) return null;
+  if (response.status === 204) return EMPTY_LOCKER;
   if (!response.ok) return unexpected(response);
   return (await response.json()) as LockerContent;
 }
@@ -128,5 +154,5 @@ export async function storeLocker(
  */
 export async function removeLocker(credentials: SyncCredentials, options: LockerRequestOptions = {}): Promise<void> {
   const response = await request(credentials, { method: "DELETE" }, options);
-  if (!response.ok && response.status !== 404) unexpected(response);
+  if (!response.ok && response.status !== 404) await unexpected(response);
 }

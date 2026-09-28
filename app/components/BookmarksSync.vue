@@ -137,7 +137,16 @@
       return;
     }
     linkKey.value = null;
-    toast.add({ title: "Synchronisation activée", icon: "i-lucide-circle-check", color: "success" });
+    toast.add({
+      title: "Synchronisation activée",
+      // The key is valid, but the server had emptied its locker.
+      description: result.data.emptied
+        ? "Faute d'activité, le serveur avait effacé vos signets en ligne : ceux de cet appareil les remplacent. Vos autres appareils y ajouteront les leurs à leur prochaine synchronisation."
+        : undefined,
+      icon: "i-lucide-circle-check",
+      color: "success",
+      duration: result.data.emptied ? 15_000 : undefined,
+    });
     view.value = "status";
   });
 
