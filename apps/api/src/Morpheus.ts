@@ -300,8 +300,8 @@ export class Morpheus {
 
     const analyses: MorpheusAnalysis[] = [];
 
-    // One form at a time: a failure (e.g. more than 25 analyses, which libmorpheus
-    // reports as an internal error) only loses the analyses of this form.
+    // One form at a time: a failure (an internal error of libmorpheus, e.g. more than
+    // 25 analyses before its 0.4.2 release) only loses the analyses of this form.
     for (const form of forms) {
       const betaCode = convert(form, "greek", "beta-code", { preset: "perseus" });
       const dropCrasis = guessedRough && hasInitialRoughBreathing(form);

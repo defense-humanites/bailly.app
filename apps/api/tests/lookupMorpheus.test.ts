@@ -137,17 +137,22 @@ for (const [q, expected, absent] of crasisCases) {
 }
 
 /*
- * libmorpheus fails on a form with more than 25 analyses (internal error): e.g. Ἰω
- * (`*)iw`) or ἁπιλλω (`a(pillw`). The forms are analyzed one at a time, so that such
- * a failure only loses the analyses of this form, not those of the others.
+ * Forms with many analyses. Before its 0.4.2 release, libmorpheus failed on a form
+ * with more than 25 analyses (internal error), e.g. Ἰω (`*)iw`, 29), ἁπιλλω
+ * (`a(pillw`, 28), ἀναλοω (`a)nalow`, 26); its 0.4.1 release crashed the process on
+ * forms at 4, 5 or 8 analyses, e.g. ἀμφεσταν (`a)mfestan`). The forms are also
+ * analyzed one at a time, so that a failure only loses the analyses of this form.
  */
 const failureCases: [string, string[]][] = [
-  ["ιω", ["eimi_(1)", "hiêmi"]],
-  ["απιλλω", ["apeileô-ô"]]
+  ["ιω", ["eimi_(1)", "hiêmi", "Ios"]],
+  ["απιλλω", ["apeileô-ô"]],
+  ["αναλοω", ["analiskô"]],
+  ["αμφεσταν", ["amphistêmi"]],
+  ["συνετε", ["suniêmi"]]
 ];
 
 for (const [q, expected] of failureCases) {
-  test(`GET /lookup/${q}: a failing form does not lose the others`, async () => {
+  test(`GET /lookup/${q}: forms with many analyses`, async () => {
     assertIncludes(morpheusURIs(await lookup(q)), expected, q);
   });
 }

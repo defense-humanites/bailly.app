@@ -6,7 +6,7 @@
     "jsr:@hono/hono@^4.13.8": "4.13.8",
     "jsr:@humanities/bailly-search-key@0.2": "0.2.0",
     "jsr:@humanities/greek-conversion@1.0.0-beta.5": "1.0.0-beta.5",
-    "jsr:@libmorpheus/deno@0.4": "0.4.0",
+    "jsr:@libmorpheus/deno@~0.4.2": "0.4.2",
     "jsr:@std/assert@^1.0.19": "1.0.19",
     "jsr:@std/async@^1.5.0": "1.5.0",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
@@ -50,8 +50,8 @@
     "@humanities/greek-conversion@1.0.0-beta.5": {
       "integrity": "ab83df8e59ce28b43f911fa82243230217a790da957f2c7aa97b5de23ed1317d"
     },
-    "@libmorpheus/deno@0.4.0": {
-      "integrity": "b0f529afe1199c48d3f6dd3467e04bb4e7c246ac82072f109a5b49ee998fd548"
+    "@libmorpheus/deno@0.4.2": {
+      "integrity": "5accb96e62f5c56632c29e4de553908485a08449ba2e16a8d06409fd75923982"
     },
     "@std/assert@1.0.19": {
       "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
@@ -117,7 +117,7 @@
       "jsr:@hono/hono@^4.13.8",
       "jsr:@humanities/bailly-search-key@0.2",
       "jsr:@humanities/greek-conversion@1.0.0-beta.5",
-      "jsr:@libmorpheus/deno@0.4",
+      "jsr:@libmorpheus/deno@~0.4.2",
       "jsr:@std/assert@^1.0.19",
       "jsr:@std/streams@^1.1.2",
       "jsr:@std/testing@^1.0.20"
