@@ -178,6 +178,35 @@ test("the charge of a write, for the daily budget of its address", async () => {
   expect(await writeCharge(db, other, hash, 0, "abcdefg")).toEqual(charge(0));
 });
 
+test("the growth of a day is counted net: shrinking then growing again costs nothing more", async () => {
+  const day = Date.UTC(2026, 0, 10);
+  const charge = (growth: number) => ({ bytes: 0, creations: 0, growth, established: false });
+  await writeLocker(db, id, hash, 0, "a".repeat(100), day);
+  await readLocker(db, id, hash, day + DAY); // Confirmed.
+
+  const next = day + DAY;
+  expect(await writeCharge(db, id, hash, 1, "a".repeat(150), next)).toEqual(charge(50));
+  await writeLocker(db, id, hash, 1, "a".repeat(150), next);
+  await writeLocker(db, id, hash, 2, "a", next);
+  // Back to 150: already paid today; beyond, only the difference.
+  expect(await writeCharge(db, id, hash, 3, "a".repeat(150), next)).toEqual(charge(0));
+  expect(await writeCharge(db, id, hash, 3, "a".repeat(160), next)).toEqual(charge(10));
+
+  // The next day, from the size at its start.
+  expect(await writeCharge(db, id, hash, 3, "a".repeat(150), next + DAY)).toEqual(charge(149));
+});
+
+test("the index of a previous version is dropped", async () => {
+  await db.sql`CREATE TABLE sync_lockers (
+    id TEXT PRIMARY KEY, token_hash TEXT NOT NULL, version INTEGER NOT NULL, blob TEXT NOT NULL,
+    deleted INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL
+  )`;
+  await db.sql`CREATE INDEX sync_lockers_unconfirmed ON sync_lockers (updated_at)`;
+  await readLocker(db, id, hash);
+  const { rows } = await db.sql`SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'sync_lockers'`;
+  expect(rows?.map(row => row.name)).not.toContain("sync_lockers_unconfirmed");
+});
+
 test("an emptied locker, with another token: missing", async () => {
   const created = Date.UTC(2026, 0, 10);
   await writeLocker(db, id, hash, 0, "first", created, { series: true });

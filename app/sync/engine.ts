@@ -167,8 +167,14 @@ export async function synchronize(
     if (result.state === "written") {
       if (!locker || locker === EMPTY_LOCKER) {
         // Once written, the earlier deletions are forgotten here too (a
-        // deletion made during this synchronization with them, if any).
-        if (first && deps.joinState) await deps.joinState(emptyState());
+        // deletion made during this synchronization with them, if any). A
+        // failure changes nothing for the other devices: the locker, written,
+        // counts.
+        if (first && deps.joinState) {
+          await deps.joinState(emptyState()).catch((e: unknown) => {
+            console.error("The earlier deletions could not be forgotten", e);
+          });
+        }
         if (locker === EMPTY_LOCKER) onRefilled?.();
       }
       return result.version;

@@ -1,5 +1,5 @@
 import { isValidBlob, MAX_BLOB_LENGTH, purgeLockers, SERIES_CREATIONS, writeCharge, writeLocker } from "../../lib/lockers";
-import { chargeBudget, secondsUntilTomorrow } from "../../lib/syncBudget";
+import { chargeBudget, purgeBudgets, secondsUntilTomorrow } from "../../lib/syncBudget";
 
 /**
  * Writes a synchronization locker (`{ version, blob }`, `version` being the
@@ -52,10 +52,11 @@ export default defineEventHandler(async (event) => {
 
   switch (result.state) {
     case "written":
-      // Now and then, the lockers are purged, after the response if the
-      // platform allows it (the budgets are, once a day, by `chargeBudget`).
+      // Now and then, the lockers and the budgets are purged, after the
+      // response if the platform allows it (the budgets also are, once a day,
+      // by `chargeBudget`).
       if (Math.random() < 0.01) {
-        const purge = purgeLockers(db).catch((e: unknown) => {
+        const purge = purgeLockers(db).then(() => purgeBudgets(db)).catch((e: unknown) => {
           console.error("Purge of the lockers failed", e);
         });
         if (typeof event.waitUntil === "function") event.waitUntil(purge);

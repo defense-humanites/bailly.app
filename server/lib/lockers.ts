@@ -142,14 +142,21 @@ export async function ensureSchema(db: Database): Promise<void> {
         updated_at INTEGER NOT NULL,
         created_day INTEGER NOT NULL DEFAULT 0,
         seen_day INTEGER NOT NULL DEFAULT 0,
-        series INTEGER NOT NULL DEFAULT 0
+        series INTEGER NOT NULL DEFAULT 0,
+        peak_size INTEGER NOT NULL DEFAULT 0,
+        peak_day INTEGER NOT NULL DEFAULT 0
       )`;
       // A table created before the retention: its lockers count as accessed
       // on the day of their last write (and as created long ago).
       await tolerate(db.sql`ALTER TABLE sync_lockers ADD COLUMN created_day INTEGER NOT NULL DEFAULT 0`);
       await tolerate(db.sql`ALTER TABLE sync_lockers ADD COLUMN seen_day INTEGER NOT NULL DEFAULT 0`);
       await tolerate(db.sql`ALTER TABLE sync_lockers ADD COLUMN series INTEGER NOT NULL DEFAULT 0`);
+      await tolerate(db.sql`ALTER TABLE sync_lockers ADD COLUMN peak_size INTEGER NOT NULL DEFAULT 0`);
+      await tolerate(db.sql`ALTER TABLE sync_lockers ADD COLUMN peak_day INTEGER NOT NULL DEFAULT 0`);
       await db.sql`DROP INDEX IF EXISTS sync_lockers_updated_at`;
+      // Created by a previous version (on the preview database), replaced by
+      // `sync_lockers_series`.
+      await db.sql`DROP INDEX IF EXISTS sync_lockers_unconfirmed`;
       // For the purges (and the migration below): partial indexes, holding
       // only the candidates of each purge (their conditions are repeated
       // word for word in the purges, so that SQLite uses them).
@@ -260,13 +267,24 @@ export async function writeCharge(
   now: number = Date.now(),
 ): Promise<WriteCharge> {
   await ensureSchema(db);
-  const { rows } = await db.sql`SELECT token_hash, deleted, created_day, seen_day, length(blob) AS size
+  const { rows } = await db.sql`SELECT token_hash, deleted, created_day, seen_day, length(blob) AS size, peak_size, peak_day
     FROM sync_lockers WHERE id = ${id}`;
-  const row = rows?.[0] as { token_hash: string; deleted: number; created_day: number; seen_day: number; size: number } | undefined;
+  const row = rows?.[0] as {
+    token_hash: string;
+    deleted: number;
+    created_day: number;
+    seen_day: number;
+    size: number;
+    peak_size: number;
+    peak_day: number;
+  } | undefined;
   if (!row) return expectedVersion === 0 ? { bytes: blob.length + ROW_OVERHEAD, creations: 1, growth: 0 } : FREE;
   if (row.deleted || !sameHash(row.token_hash, tokenHash)) return FREE;
 
-  const added = Math.max(0, blob.length - row.size);
+  // The growth of the day, net: beyond the largest size of the locker today
+  // (shrinking then growing again costs nothing more).
+  const base = row.size && row.peak_day === dayOf(now) ? Math.max(row.peak_size, row.size) : row.size;
+  const added = Math.max(0, blob.length - base);
   const confirmed = row.seen_day > row.created_day;
   if (!row.size) {
     // Emptied: after a long inactivity (only a locker that old can be), free
@@ -295,24 +313,35 @@ export async function writeLocker(
 ): Promise<WriteResult> {
   await ensureSchema(db);
   const today = dayOf(now);
+  const size = blob.length;
 
   let written: { version: number } | undefined;
   if (expectedVersion === 0) {
-    const { rows } = await db.sql`INSERT INTO sync_lockers (id, token_hash, version, blob, deleted, updated_at, created_day, seen_day, series)
-      VALUES (${id}, ${tokenHash}, 1, ${blob}, 0, ${now}, ${today}, ${today}, ${series ? 1 : 0})
+    const { rows } = await db.sql`INSERT INTO sync_lockers
+        (id, token_hash, version, blob, deleted, updated_at, created_day, seen_day, series, peak_size, peak_day)
+      VALUES (${id}, ${tokenHash}, 1, ${blob}, 0, ${now}, ${today}, ${today}, ${series ? 1 : 0}, ${size}, ${today})
       ON CONFLICT (id) DO NOTHING RETURNING version`;
     written = rows?.[0] as { version: number } | undefined;
     if (!written) {
       // Emptied: filled again, at its next version.
       const { rows: refilled } = await db.sql`UPDATE sync_lockers
-        SET version = version + 1, blob = ${blob}, updated_at = ${now}, seen_day = ${today}
+        SET version = version + 1, blob = ${blob}, updated_at = ${now}, seen_day = ${today}, peak_size = ${size}, peak_day = ${today}
         WHERE id = ${id} AND token_hash = ${tokenHash} AND blob = '' AND deleted = 0
         RETURNING version`;
       written = refilled?.[0] as { version: number } | undefined;
     }
   } else {
+    // The largest size of the day (cf. `writeCharge`): from the size before
+    // this write on the first write of the day (the right-hand sides read
+    // the row before the update).
     const { rows } = await db.sql`UPDATE sync_lockers
-      SET version = version + 1, blob = ${blob}, updated_at = ${now}, seen_day = ${today}
+      SET version = version + 1, blob = ${blob}, updated_at = ${now}, seen_day = ${today},
+        peak_size = CASE
+          WHEN peak_day = ${today} AND peak_size > ${size} THEN peak_size
+          WHEN peak_day <> ${today} AND length(blob) > ${size} THEN length(blob)
+          ELSE ${size}
+        END,
+        peak_day = ${today}
       WHERE id = ${id} AND token_hash = ${tokenHash} AND version = ${expectedVersion} AND deleted = 0
       RETURNING version`;
     written = rows?.[0] as { version: number } | undefined;

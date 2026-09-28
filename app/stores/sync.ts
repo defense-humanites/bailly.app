@@ -147,6 +147,7 @@ export const useSyncStore = defineStore("sync", () => {
   async function forget(): Promise<void> {
     await Idb.writeMeta(IdbMetaKey.Sync, undefined);
     await setConfig(null);
+    clearQuota();
     status.value = "idle";
     settingsChanged();
   }
@@ -229,7 +230,6 @@ export const useSyncStore = defineStore("sync", () => {
     // While the daily budget is spent, the changes of the other devices are
     // still received; this device's wait (unless asked by the user).
     const readOnly = !force && Date.now() < quotaUntil;
-    const quotaError = error.value;
     status.value = "syncing";
     error.value = null;
 
@@ -239,12 +239,12 @@ export const useSyncStore = defineStore("sync", () => {
     errorNeedsAction.value = needsAction(failure);
     if (!failure && readOnly) {
       status.value = "error";
-      error.value = quotaError;
+      error.value = quotaMessage;
       schedule(Math.max(0, quotaUntil - Date.now()));
       return;
     }
     if (!failure) {
-      quotaUntil = 0;
+      clearQuota();
       config = { ...config, lastSyncedAt: Date.now() };
       await Idb.writeMeta(IdbMetaKey.Sync, config);
       lastSyncedAt.value = config.lastSyncedAt;
@@ -259,9 +259,9 @@ export const useSyncStore = defineStore("sync", () => {
       return;
     }
     if (failure instanceof SyncBusyError) schedule(BUSY_DELAY);
-    if (failure instanceof SyncQuotaError) waitForQuota(failure);
     status.value = "error";
     error.value = describe(failure);
+    if (failure instanceof SyncQuotaError) waitForQuota(failure);
   }
 
   /**
@@ -270,10 +270,23 @@ export const useSyncStore = defineStore("sync", () => {
    * by the user.
    */
   let quotaUntil = 0;
+  /**
+   * The error shown meanwhile.
+   */
+  let quotaMessage: string | null = null;
 
+  /**
+   * Waits for the daily budget (the error being shown).
+   */
   function waitForQuota(failure: SyncQuotaError): void {
     quotaUntil = Date.now() + failure.retryAfter * 1000;
+    quotaMessage = error.value;
     schedule(failure.retryAfter * 1000);
+  }
+
+  function clearQuota(): void {
+    quotaUntil = 0;
+    quotaMessage = null;
   }
 
   // (Asserted: set and cleared by concurrent calls.)
@@ -401,13 +414,15 @@ export const useSyncStore = defineStore("sync", () => {
     const value: IdbSyncConfig = { secret: toBase64url(secret), lastSyncedAt: failure ? null : Date.now() };
     await Idb.writeMeta(IdbMetaKey.Sync, value);
     await setConfig(value);
+    // A budget spent with a former key no longer concerns this one.
+    clearQuota();
     settingsChanged();
     errorNeedsAction.value = needsAction(failure);
     if (failure && (errorNeedsAction.value || failure instanceof SyncQuotaError)) {
       // To be done by the user, or tomorrow: no retry in a few seconds.
-      if (failure instanceof SyncQuotaError) waitForQuota(failure);
       status.value = "error";
       error.value = `Vos signets en ligne ont été ajoutés à cet appareil, mais l'envoi des siens n'a pas abouti. ${describe(failure)}`;
+      if (failure instanceof SyncQuotaError) waitForQuota(failure);
     } else if (failure) {
       status.value = "error";
       error.value = `Vos signets en ligne ont été ajoutés à cet appareil, mais l'envoi des siens n'a pas abouti : nouvel essai dans quelques secondes. (${describe(failure)})`;
