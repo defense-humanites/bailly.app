@@ -100,6 +100,19 @@ test.describe("bookmarks page", () => {
     expect(await height()).toBe(before);
   });
 
+  test("an empty tag: its text aligned with the name", async ({ page }) => {
+    const [name, text] = await card(page, "Vide").evaluate((element) => {
+      const left = (node: Node) => {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        return range.getBoundingClientRect().left;
+      };
+      const title = [...element.querySelectorAll("[data-slot=header] span")].find(span => span.textContent.trim() === "Vide")!;
+      return [left(title), left(element.querySelector("[data-slot=body] p")!)];
+    });
+    expect(text).toBeCloseTo(name, 0);
+  });
+
   test("removing a favorite", async ({ page }) => {
     await page.getByRole("button", { name: "Modifier les favoris" }).click();
     await page.getByRole("button", { name: "Retirer « λόγος » des favoris" }).click();

@@ -427,9 +427,8 @@
 
     <!-- Content -->
     <template v-if="!entries.length">
-      <p
-        class="sm:ml-9 font-semibold text-tag-600"
-      >
+      <!-- Aligned with the name (as the description). -->
+      <p class="ms-12 font-semibold text-tag-600">
         <slot />
       </p>
     </template>
