@@ -312,14 +312,19 @@
               </template>
             </TagColorPicker>
 
-            <!-- A field on one line (Enter validates), in the name's text. -->
+            <!--
+              A field on one line (Enter validates), in the name's text: its
+              height comes from the same padding and line height as the name
+              (32 px), rather than from a fixed height, in which each browser
+              centres the text its own way.
+            -->
             <input
               ref="tag-name-input"
               v-model="tagName"
               type="text"
               aria-label="Nom de l'étiquette"
               :maxlength="IdbTags.nameMaxLength"
-              class="h-8 min-w-0 grow rounded-r-full bg-white/60 px-2 text-xl font-bold text-tag-600 hover:bg-white/90 focus:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300 md:text-2xl"
+              class="min-w-0 grow rounded-r-full bg-white/60 px-2 py-0.5 text-xl/7 font-bold text-tag-600 hover:bg-white/90 focus:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300 md:py-0 md:text-2xl/8"
               :class="{ 'animate-shake': isTagNameErrored }"
             >
           </div>
