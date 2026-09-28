@@ -63,6 +63,8 @@ export default defineConfig<ConfigOptions>({
             NUXT_SYNC_DAILY_BYTES: "0",
             NUXT_SYNC_DAILY_CREATIONS: "0",
             NUXT_SYNC_DAILY_GROWTH: "0",
+            NUXT_SYNC_DAILY_TOTAL: "0",
+            NUXT_SYNC_DAILY_TOTAL_ESTABLISHED: "0",
           },
           timeout: 300_000,
           reuseExistingServer: !ci,

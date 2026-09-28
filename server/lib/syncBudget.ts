@@ -30,6 +30,17 @@ export type BudgetLimits = {
    */
   growth: number;
   /**
+   * Bytes a day added by all the addresses together (0: no limit), but the
+   * growth of the established lockers.
+   */
+  total?: number;
+  /**
+   * Bytes a day added to the established lockers by all the addresses
+   * together (0: no limit): their users are not blocked by an abuse of the
+   * other budget, which would have to prepare its lockers for weeks.
+   */
+  totalEstablished?: number;
+  /**
    * A secret of the server, if configured, mixed with the salt of the day: a
    * copy of the database alone then tells nothing of the addresses (without
    * it, the addresses could be found again by trying them all, as long as
@@ -174,10 +185,38 @@ async function hashAddress(db: Database, key: string, day: number, secret?: stri
 }
 
 /**
- * Adds a write to the budget of its address for the day, if it fits.
+ * The outcome of a charge: `creations`, the lockers created by the address
+ * today, this one included (0 when not counted).
+ */
+export type BudgetResult = { fits: true; creations: number } | { fits: false; scope: "address" | "server" };
+
+/**
+ * The keys of the server's own budgets (all addresses together).
+ */
+const SERVER_KEY = "*";
+const SERVER_ESTABLISHED_KEY = "*established";
+
+/**
+ * The days a warning about the budgets of the server was logged (at most
+ * once a day and an instance, for each).
+ */
+const warned = new Map<string, number>();
+
+function warnOnce(topic: string, day: number, message: string): void {
+  if (warned.get(topic) === day) return;
+  warned.set(topic, day);
+  console.warn(message);
+}
+
+let unreadableWarned = false;
+
+/**
+ * Adds a write to the budget of its address for the day, then to the budget
+ * of the server (all addresses together: whatever the number of addresses
+ * an abuse uses, the database grows by at most this much a day), if it fits.
  * @param address The address of the client, if known (without one, e.g. in
- * development, nothing is counted).
- * @returns Whether the write fits in the budget (it is then counted).
+ * development, the address is not counted).
+ * @returns Whether the write fits in the budgets (it is then counted).
  */
 export async function chargeBudget(
   db: Database,
@@ -185,32 +224,72 @@ export async function chargeBudget(
   charge: WriteCharge,
   limits: BudgetLimits,
   now: number = Date.now(),
-): Promise<boolean> {
-  if (!charge.bytes && !charge.creations && !charge.growth) return true;
+): Promise<BudgetResult> {
+  if (!charge.bytes && !charge.creations && !charge.growth) return { fits: true, creations: 0 };
+  const max = (limit: number | undefined): number => (limit && limit > 0 ? Math.min(limit, NO_LIMIT) : NO_LIMIT);
+  const day = dayOf(now);
+  let creations = 0;
+
+  // The address.
   const key = address ? addressKey(address) : null;
-  if (!key) return true;
-  const max = (limit: number): number => (limit > 0 ? Math.min(limit, NO_LIMIT) : NO_LIMIT);
+  if (address && !key && !unreadableWarned) {
+    unreadableWarned = true;
+    console.warn(`The address of a client is not an IP address (${address}): check the header of the proxy (NUXT_SYNC_ADDRESS_HEADER).`);
+  }
   const maxBytes = max(limits.bytes);
   const maxCreations = max(limits.creations);
   const maxGrowth = max(limits.growth);
-  if (maxBytes === NO_LIMIT && maxCreations === NO_LIMIT && maxGrowth === NO_LIMIT) return true;
-  if (charge.bytes > maxBytes || charge.creations > maxCreations || charge.growth > maxGrowth) return false;
+  if (key && (maxBytes < NO_LIMIT || maxCreations < NO_LIMIT || maxGrowth < NO_LIMIT)) {
+    if (charge.bytes > maxBytes || charge.creations > maxCreations || charge.growth > maxGrowth) {
+      return { fits: false, scope: "address" };
+    }
+    await ensureSchema(db);
+    const hashed = await hashAddress(db, key, day, limits.secret);
+    // Counted only if it fits (a refused write does not use the budget).
+    const { rows } = await db.sql`INSERT INTO sync_budgets (address, day, bytes, creations, growth)
+      VALUES (${hashed}, ${day}, ${charge.bytes}, ${charge.creations}, ${charge.growth})
+      ON CONFLICT (address, day) DO UPDATE
+        SET bytes = sync_budgets.bytes + excluded.bytes,
+          creations = sync_budgets.creations + excluded.creations,
+          growth = sync_budgets.growth + excluded.growth
+        WHERE sync_budgets.bytes + excluded.bytes <= ${maxBytes}
+          AND sync_budgets.creations + excluded.creations <= ${maxCreations}
+          AND sync_budgets.growth + excluded.growth <= ${maxGrowth}
+      RETURNING creations`;
+    const counted = rows?.[0] as { creations: number } | undefined;
+    if (!counted) return { fits: false, scope: "address" };
+    creations = charge.creations ? counted.creations : 0;
+  }
 
-  await ensureSchema(db);
-  const day = dayOf(now);
-  const hashed = await hashAddress(db, key, day, limits.secret);
-  // Counted only if it fits (a refused write does not use the budget).
-  const { rows } = await db.sql`INSERT INTO sync_budgets (address, day, bytes, creations, growth)
-    VALUES (${hashed}, ${day}, ${charge.bytes}, ${charge.creations}, ${charge.growth})
-    ON CONFLICT (address, day) DO UPDATE
-      SET bytes = sync_budgets.bytes + excluded.bytes,
-        creations = sync_budgets.creations + excluded.creations,
-        growth = sync_budgets.growth + excluded.growth
-      WHERE sync_budgets.bytes + excluded.bytes <= ${maxBytes}
-        AND sync_budgets.creations + excluded.creations <= ${maxCreations}
-        AND sync_budgets.growth + excluded.growth <= ${maxGrowth}
-    RETURNING bytes`;
-  return Boolean(rows?.length);
+  // The server: all the bytes added, the growth of the established lockers
+  // apart. A write refused here stays counted for its address, which only
+  // matters during an abuse.
+  const established = charge.established ? charge.growth : 0;
+  const pools = [
+    { key: SERVER_KEY, added: charge.bytes + charge.growth - established, limit: max(limits.total) },
+    { key: SERVER_ESTABLISHED_KEY, added: established, limit: max(limits.totalEstablished) },
+  ];
+  for (const pool of pools) {
+    if (pool.limit === NO_LIMIT || !pool.added) continue;
+    if (pool.added > pool.limit) return { fits: false, scope: "server" };
+    await ensureSchema(db);
+    const { rows } = await db.sql`INSERT INTO sync_budgets (address, day, bytes, creations, growth)
+      VALUES (${pool.key}, ${day}, ${pool.added}, 0, 0)
+      ON CONFLICT (address, day) DO UPDATE
+        SET bytes = sync_budgets.bytes + excluded.bytes
+        WHERE sync_budgets.bytes + excluded.bytes <= ${pool.limit}
+      RETURNING bytes`;
+    const counted = rows?.[0] as { bytes: number } | undefined;
+    if (!counted) {
+      warnOnce(`${pool.key}:full`, day, `The budget of the server for the synchronization (${pool.key}) is spent for today: writes are refused until midnight (UTC).`);
+      return { fits: false, scope: "server" };
+    }
+    if (counted.bytes > pool.limit / 2) {
+      warnOnce(`${pool.key}:half`, day, `The budget of the server for the synchronization (${pool.key}) is half spent today (${counted.bytes} bytes).`);
+    }
+  }
+
+  return { fits: true, creations };
 }
 
 /**

@@ -1,4 +1,4 @@
-import { isValidBlob, MAX_BLOB_LENGTH, purgeLockers, writeCharge, writeLocker } from "../../lib/lockers";
+import { isValidBlob, MAX_BLOB_LENGTH, purgeLockers, SERIES_CREATIONS, writeCharge, writeLocker } from "../../lib/lockers";
 import { chargeBudget, secondsUntilTomorrow } from "../../lib/syncBudget";
 
 /**
@@ -7,7 +7,8 @@ import { chargeBudget, secondsUntilTomorrow } from "../../lib/syncBudget";
  * the new version; 412 with the current version if it changed since (the
  * device merges it first); 404 if it does not exist (or the token is wrong);
  * 410 if a device deleted it; 429 with `data.reason: "daily-budget"` if the
- * address of the client created too much today (cf. `syncBudget.ts`).
+ * address of the client sent too much today, `"server-budget"` if all the
+ * addresses together did (cf. `syncBudget.ts`), with `Retry-After`.
  */
 export default defineEventHandler(async (event) => {
   const { id, tokenHash } = await lockerRequest(event);
@@ -20,19 +21,34 @@ export default defineEventHandler(async (event) => {
   }
 
   const db = useLockersDatabase();
-  const { dailyBytes, dailyCreations, dailyGrowth, addressSecret } = useRuntimeConfig(event).sync;
-  if (dailyBytes > 0 || dailyCreations > 0 || dailyGrowth > 0) {
+  const { dailyBytes, dailyCreations, dailyGrowth, dailyTotal, dailyTotalEstablished, addressSecret } = useRuntimeConfig(event).sync;
+  let series = false;
+  if (dailyBytes > 0 || dailyCreations > 0 || dailyGrowth > 0 || dailyTotal > 0 || dailyTotalEstablished > 0) {
     // Counted before the write: a write refused afterwards (e.g. a conflict)
     // still counts, which only matters to a script.
     const charge = await writeCharge(db, id, tokenHash, version, body.blob);
-    const limits = { bytes: dailyBytes, creations: dailyCreations, growth: dailyGrowth, secret: addressSecret };
-    if (!(await chargeBudget(db, requestAddress(event), charge, limits))) {
+    const limits = {
+      bytes: dailyBytes,
+      creations: dailyCreations,
+      growth: dailyGrowth,
+      total: dailyTotal,
+      totalEstablished: dailyTotalEstablished,
+      secret: addressSecret,
+    };
+    const budget = await chargeBudget(db, requestAddress(event), charge, limits);
+    if (!budget.fits) {
       setResponseHeader(event, "Retry-After", secondsUntilTomorrow());
-      throw createError({ statusCode: 429, statusMessage: "Too Many Requests", data: { reason: "daily-budget" } });
+      throw createError({
+        statusCode: 429,
+        statusMessage: "Too Many Requests",
+        data: { reason: budget.scope === "server" ? "server-budget" : "daily-budget" },
+      });
     }
+    // Beyond the first lockers created by the address today (cf. `purgeLockers`).
+    series = budget.creations > SERIES_CREATIONS;
   }
 
-  const result = await writeLocker(db, id, tokenHash, version, body.blob);
+  const result = await writeLocker(db, id, tokenHash, version, body.blob, Date.now(), { series });
 
   switch (result.state) {
     case "written":

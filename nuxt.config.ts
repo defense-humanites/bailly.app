@@ -56,8 +56,9 @@ export default defineNuxtConfig({
    */
   runtimeConfig: {
     /**
-     * The daily budget of an address for the synchronization lockers (cf.
-     * `server/lib/syncBudget.ts`; 0: no limit, e.g. `NUXT_SYNC_DAILY_BYTES=0`);
+     * The daily budgets of an address and of the server for the
+     * synchronization lockers (cf. `server/lib/syncBudget.ts`; 0: no limit,
+     * e.g. `NUXT_SYNC_DAILY_BYTES=0`);
      * the header giving the client's address, set by the proxy in front of
      * the server (only then trusted; the connection's address otherwise);
      * an optional secret mixed in the pseudonyms of the addresses
@@ -67,6 +68,8 @@ export default defineNuxtConfig({
       dailyBytes: 1_000_000,
       dailyCreations: 100,
       dailyGrowth: 5_000_000,
+      dailyTotal: 20_000_000,
+      dailyTotalEstablished: 20_000_000,
       addressHeader: cloudflare ? "cf-connecting-ip" : "",
       addressSecret: "",
     },

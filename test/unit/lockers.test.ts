@@ -12,7 +12,7 @@ import {
   resetSchemaCache,
   ROW_MAX_DAYS,
   ROW_OVERHEAD,
-  UNCONFIRMED_MAX_DAYS,
+  SERIES_MAX_DAYS,
   writeCharge,
   writeLocker,
 } from "../../server/lib/lockers";
@@ -67,21 +67,26 @@ test("a deleted locker stays deleted, so that the other devices stop", async () 
   expect(await writeLocker(db, id, hash, 0, "again")).toEqual({ state: "deleted" });
 });
 
-test("a locker never accessed after the day of its creation is emptied after 7 days, its row kept", async () => {
+test("a locker created in a series, never accessed after the day of its creation, is emptied after 30 days, its row kept", async () => {
   const created = Date.UTC(2026, 0, 10, 12);
   const other = "d".repeat(22);
-  await writeLocker(db, id, hash, 0, "abuse", created);
-  await writeLocker(db, other, hash, 0, "used", created);
+  const alone = "e".repeat(22);
+  await writeLocker(db, id, hash, 0, "abuse", created, { series: true });
+  await writeLocker(db, other, hash, 0, "used", created, { series: true });
+  // Not in a series (a user alone, whose browser may have deleted the
+  // bookmarks meanwhile): never emptied early.
+  await writeLocker(db, alone, hash, 0, "alone", created);
   // Accessed the same day (does not count), then the next day (counts).
   await readLocker(db, id, hash, created + 60_000);
   await readLocker(db, other, hash, created + DAY);
 
-  await purgeLockers(db, created + UNCONFIRMED_MAX_DAYS * DAY);
+  await purgeLockers(db, created + SERIES_MAX_DAYS * DAY);
   expect(await readLocker(db, id, hash, created)).toMatchObject({ state: "found" });
 
-  await purgeLockers(db, created + (UNCONFIRMED_MAX_DAYS + 1) * DAY);
+  await purgeLockers(db, created + (SERIES_MAX_DAYS + 1) * DAY);
   expect(await readLocker(db, id, hash)).toEqual({ state: "empty" });
   expect(await readLocker(db, other, hash)).toMatchObject({ state: "found", blob: "used" });
+  expect(await readLocker(db, alone, hash)).toMatchObject({ state: "found", blob: "alone" });
 });
 
 test("an emptied locker is filled again at version 0, at its next version", async () => {
@@ -145,7 +150,9 @@ test("the charge of a write, for the daily budget of its address", async () => {
   // Accessed on a later day: its growth still counts, in its own budget (a
   // script could create tiny lockers, read them the next day, then fill them).
   await readLocker(db, id, hash, created + DAY);
-  expect(await writeCharge(db, id, hash, 1, "abcdefg", created + DAY)).toEqual(charge(0, 0, 3));
+  expect(await writeCharge(db, id, hash, 1, "abcdefg", created + DAY)).toEqual({ ...charge(0, 0, 3), established: false });
+  // Created 30 days ago or more: established (a budget of the server of its own).
+  expect(await writeCharge(db, id, hash, 1, "abcdefg", created + 30 * DAY)).toEqual({ ...charge(0, 0, 3), established: true });
   // Another token: nothing (the write will be refused).
   expect(await writeCharge(db, id, await hashToken("c".repeat(43)), 1, "abcdefg", created + DAY)).toEqual(charge(0));
 
@@ -156,11 +163,11 @@ test("the charge of a write, for the daily budget of its address", async () => {
   await readLocker(db, id, hash, later);
   expect(await writeCharge(db, id, hash, 0, "abcdefg", later)).toEqual(charge(0));
 
-  // Emptied after 7 days without access, then read (which confirms it) to be
-  // filled: counted as bytes, as a creation would.
+  // Created in a series and emptied early, then read (which confirms it) to
+  // be filled: counted as bytes, as a creation would.
   const other = "d".repeat(22);
-  await writeLocker(db, other, hash, 0, "abcd", created);
-  const week = created + (UNCONFIRMED_MAX_DAYS + 1) * DAY;
+  await writeLocker(db, other, hash, 0, "abcd", created, { series: true });
+  const week = created + (SERIES_MAX_DAYS + 1) * DAY;
   await purgeLockers(db, week);
   expect(await readLocker(db, other, hash, week)).toEqual({ state: "empty" });
   expect(await writeCharge(db, other, hash, 0, "abcdefg", week)).toEqual(charge(7));
@@ -173,8 +180,8 @@ test("the charge of a write, for the daily budget of its address", async () => {
 
 test("an emptied locker, with another token: missing", async () => {
   const created = Date.UTC(2026, 0, 10);
-  await writeLocker(db, id, hash, 0, "first", created);
-  await purgeLockers(db, created + (UNCONFIRMED_MAX_DAYS + 1) * DAY);
+  await writeLocker(db, id, hash, 0, "first", created, { series: true });
+  await purgeLockers(db, created + (SERIES_MAX_DAYS + 1) * DAY);
   expect(await readLocker(db, id, await hashToken("c".repeat(43)))).toEqual({ state: "missing" });
 });
 
@@ -190,8 +197,8 @@ test("lockers written without the retention's columns (during a deployment) are 
 test("the purges read only their candidates (partial indexes)", async () => {
   await readLocker(db, id, hash); // The schema.
   const plan = async (query: string) => JSON.stringify(await db.prepare(`EXPLAIN QUERY PLAN ${query}`).all());
-  expect(await plan("SELECT id FROM sync_lockers WHERE seen_day <= created_day AND deleted = 0 AND blob <> '' AND created_day < 5 LIMIT 500"))
-    .toContain("sync_lockers_unconfirmed");
+  expect(await plan("SELECT id FROM sync_lockers WHERE series = 1 AND seen_day <= created_day AND deleted = 0 AND blob <> '' AND created_day < 5 LIMIT 500"))
+    .toContain("sync_lockers_series");
   expect(await plan("SELECT id FROM sync_lockers WHERE deleted = 0 AND blob <> '' AND seen_day < 5 AND seen_day > 0 LIMIT 500"))
     .toContain("sync_lockers_filled");
 });
@@ -221,5 +228,5 @@ test("blobs", () => {
 test("the purges have indexes", async () => {
   await readLocker(db, id, hash);
   const { rows } = await db.sql`SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'sync_lockers'`;
-  expect(rows?.map(row => row.name)).toEqual(expect.arrayContaining(["sync_lockers_seen_day", "sync_lockers_unconfirmed", "sync_lockers_filled"]));
+  expect(rows?.map(row => row.name)).toEqual(expect.arrayContaining(["sync_lockers_seen_day", "sync_lockers_series", "sync_lockers_filled"]));
 });

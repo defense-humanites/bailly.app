@@ -1,5 +1,5 @@
 import { MAX_LOCKER_BLOB_LENGTH } from "#shared/utils/sync";
-import { canonical, compact, emptyState, TOMBSTONE_MAX_AGE, type BookmarksState } from "~/idb/merge";
+import { canonical, compact, emptyState, TOMBSTONE_MAX_AGE, withoutTombstones, type BookmarksState } from "~/idb/merge";
 import { exportState, parseBookmarksFile, toBookmarksFile } from "~/idb/transfer";
 import { decryptText, encryptText, type SyncCredentials } from "./crypto";
 import { EMPTY_LOCKER, fetchLocker, storeLocker, SyncTimeoutError } from "./lockerClient";
@@ -45,6 +45,15 @@ export type SyncOptions = {
    * Called once the locker has been merged into the stored bookmarks.
    */
   onMerged?: () => void;
+  /**
+   * Called once this device has filled again a locker the server had emptied.
+   */
+  onRefilled?: () => void;
+  /**
+   * Whether to only receive: the locker is merged here, nothing is sent
+   * (e.g. while the daily budget is spent, cf. `SyncQuotaError`).
+   */
+  readOnly?: boolean;
   /**
    * Receives the time of the server (cf. `LockerRequestOptions`).
    */
@@ -121,7 +130,7 @@ const sameBookmarks = (a: BookmarksState, b: BookmarksState): boolean =>
 export async function synchronize(
   credentials: SyncCredentials,
   deps: SyncDependencies,
-  { first = false, signal, onMerged, onServerTime }: SyncOptions = {},
+  { first = false, signal, onMerged, onRefilled, onServerTime, readOnly = false }: SyncOptions = {},
 ): Promise<number> {
   const merge = first && deps.joinState ? deps.joinState : deps.mergeState;
   const requestOptions = { fetch: deps.fetch, signal, onServerTime };
@@ -140,21 +149,30 @@ export async function synchronize(
       checkCancelled();
       state = await merge(remote);
       onMerged?.();
-      if (sameBookmarks(state, remote)) return locker.version;
+      if (sameBookmarks(state, remote) || readOnly) return locker.version;
       version = locker.version;
     } else {
       // Not created yet, or emptied (or deleted) after a long idle period:
       // (re)filled with this device's bookmarks. The first time with this key,
       // without its earlier deletions (cf. `joinState`): the other devices'
       // bookmarks are not online to protect them.
-      state = first && deps.joinState ? await deps.joinState(emptyState()) : await deps.readState();
+      if (readOnly) return 0;
+      state = first ? withoutTombstones(await deps.readState()) : await deps.readState();
       version = 0;
     }
 
     const blob = await lockerBlob(state, credentials);
     checkCancelled();
     const result = await storeLocker(credentials, version, blob, requestOptions);
-    if (result.state === "written") return result.version;
+    if (result.state === "written") {
+      if (!locker || locker === EMPTY_LOCKER) {
+        // Once written, the earlier deletions are forgotten here too (a
+        // deletion made during this synchronization with them, if any).
+        if (first && deps.joinState) await deps.joinState(emptyState());
+        if (locker === EMPTY_LOCKER) onRefilled?.();
+      }
+      return result.version;
+    }
   }
 
   throw new Error("La synchronisation n'a pas abouti : trop de modifications simultanées.");

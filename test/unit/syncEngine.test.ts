@@ -183,16 +183,60 @@ test("a device joining a locker the server emptied: its earlier deletions do not
   expect(liveStars(phone.state)).toEqual(["logos", "psukhe"]);
 });
 
+test("a first synchronization into an empty locker that fails keeps the device's deletions", async () => {
+  const laptop = device(() => Promise.resolve(new Response(null, { status: 404 })));
+  laptop.change(addStar("logos"));
+  laptop.change(addStar("logos", true));
+  await expect(synchronize(credentials, laptop.deps, { first: true })).rejects.toThrow();
+  expect(laptop.state.starred.some(record => record.deleted)).toBe(true);
+});
+
+test("read only (the daily budget spent): the locker is merged here, nothing is sent", async () => {
+  const server = fakeServer(db);
+  const laptop = device(server);
+  const phone = device(server);
+  // Nothing online yet: nothing created.
+  laptop.change(addStar("logos"));
+  expect(await synchronize(credentials, laptop.deps, { readOnly: true })).toBe(0);
+  expect(await readLocker(db, credentials.lockerId, await hashToken(credentials.token))).toEqual({ state: "missing" });
+
+  await synchronize(credentials, laptop.deps);
+  phone.change(addStar("psukhe"));
+  expect(await synchronize(credentials, phone.deps, { readOnly: true })).toBe(1);
+  expect(liveStars(phone.state)).toEqual(["logos", "psukhe"]);
+  expect(await readLocker(db, credentials.lockerId, await hashToken(credentials.token))).toMatchObject({ version: 1 });
+});
+
+test("filling again an emptied locker is reported", async () => {
+  const server = fakeServer(db);
+  const laptop = device(server);
+  laptop.change(addStar("logos"));
+  let refilled = 0;
+  await synchronize(credentials, laptop.deps, { onRefilled: () => refilled++ });
+  expect(refilled).toBe(0); // Created, not filled again.
+
+  await purgeLockers(db, Date.now() + (IDLE_MAX_DAYS + 1) * DAY);
+  await synchronize(credentials, laptop.deps, { onRefilled: () => refilled++ });
+  expect(refilled).toBe(1);
+});
+
 test("too many requests (rate limiting): an error to retry later", async () => {
   const limited: typeof fetch = () => Promise.resolve(new Response("", { status: 429 }));
   await expect(synchronize(credentials, device(limited).deps)).rejects.toBeInstanceOf(SyncBusyError);
 });
 
-test("too many lockers created from this network today: an error of its own", async () => {
-  const exhausted: typeof fetch = (_input, init) => Promise.resolve(!init?.method || init.method === "GET"
+test("the daily budget spent (of the address or of the server): an error of its own, with its delay", async () => {
+  const exhausted = (reason: string): typeof fetch => (_input, init) => Promise.resolve(!init?.method || init.method === "GET"
     ? new Response(null, { status: 404 })
-    : new Response(JSON.stringify({ statusCode: 429, data: { reason: "daily-budget" } }), { status: 429 }));
-  await expect(synchronize(credentials, device(exhausted).deps)).rejects.toBeInstanceOf(SyncQuotaError);
+    : new Response(JSON.stringify({ statusCode: 429, data: { reason } }), { status: 429, headers: { "Retry-After": "3600" } }));
+
+  const address = await synchronize(credentials, device(exhausted("daily-budget")).deps).catch((e: unknown) => e);
+  expect(address).toBeInstanceOf(SyncQuotaError);
+  expect((address as SyncQuotaError).retryAfter).toBe(3600);
+  expect((address as SyncQuotaError).message).toMatch(/depuis ce réseau/);
+
+  const server = await synchronize(credentials, device(exhausted("server-budget")).deps).catch((e: unknown) => e);
+  expect((server as SyncQuotaError).message).toMatch(/Le serveur de synchronisation a reçu trop de signets/);
 });
 
 test("a device joining (again) does not delete online what it deleted meanwhile", async () => {

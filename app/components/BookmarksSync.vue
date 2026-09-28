@@ -174,6 +174,9 @@
       "Gardez ce document en lieu sûr : qui possède ces mots peut lire et",
       "modifier vos signets.",
       "",
+      "La copie en ligne de vos signets est effacée après 18 mois sans aucune",
+      "synchronisation (vos appareils gardent la leur).",
+      "",
     ].join("\n");
 
     const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
@@ -285,6 +288,9 @@
           <p>
             Une <strong>clé de 12 mots</strong> relie vos appareils. Vos signets sont chiffrés sur l'appareil
             avant d'être envoyés : sans la clé, personne ne peut les lire, pas même Bailly.app.
+          </p>
+          <p class="text-muted">
+            La copie en ligne est effacée après 18 mois sans aucune synchronisation.
           </p>
         </template>
 

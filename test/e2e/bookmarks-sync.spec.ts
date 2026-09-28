@@ -154,15 +154,22 @@ test("a key whose online bookmarks the server emptied: joining explains it", asy
   await expect(page.getByRole("list", { name: "Les 12 mots de la clé" })).toBeVisible();
   const link = await syncLink(page);
 
-  // The check of the key finds the locker emptied (as after 18 months
-  // without access).
+  // The locker is found emptied (as after 18 months without access), and
+  // the phone fills it again.
   const phone = await newDevice(browser, baseURL, "/");
-  let requests = 0;
-  await phone.route("**/api/sync/**", route => (++requests === 1 ? route.fulfill({ status: 204 }) : route.continue()));
+  let reads = 0;
+  let writes = 0;
+  await phone.route("**/api/sync/**", (route) => {
+    if (route.request().method() === "GET" && ++reads <= 2) return route.fulfill({ status: 204 });
+    if (route.request().method() === "PUT" && ++writes === 1) {
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ version: 2 }) });
+    }
+    return route.continue();
+  });
   await phone.goto(link!);
   await phone.getByRole("button", { name: "Activer", exact: true }).click();
   await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
-  await expect(phone.getByText(/Faute d'activité, le serveur avait effacé vos signets en ligne/)).toBeVisible();
+  await expect(phone.getByText(/Faute d'activité, le serveur avait effacé vos signets en ligne/).first()).toBeVisible();
 });
 
 test("too many synchronizations enabled from this network today: explained", async ({ page, goto }) => {

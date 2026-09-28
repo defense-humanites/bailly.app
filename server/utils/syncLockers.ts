@@ -59,6 +59,14 @@ export async function readBoundedJson(event: H3Event, maxBytes: number): Promise
  */
 export function requestAddress(event: H3Event): string | undefined {
   const header = useRuntimeConfig(event).sync.addressHeader;
+  if (!header && !proxyWarned && getRequestHeader(event, "x-forwarded-for")) {
+    // Behind a proxy, the connection's address is the proxy's: all the
+    // clients would share one budget.
+    proxyWarned = true;
+    console.warn("The server seems to be behind a proxy (X-Forwarded-For): set NUXT_SYNC_ADDRESS_HEADER, so that the budgets of the synchronization count each client.");
+  }
   const value = header ? getRequestHeader(event, header)?.split(",").at(-1)?.trim() : undefined;
   return value || getRequestIP(event);
 }
+
+let proxyWarned = false;

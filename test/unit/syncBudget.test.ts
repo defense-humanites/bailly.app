@@ -35,31 +35,31 @@ test("the key of an address: IPv4 whole, IPv6 by /56", () => {
 
 test("a budget in bytes and in creations, per address and per day", async () => {
   const now = Date.UTC(2026, 0, 10, 12);
-  expect(await chargeBudget(db, "203.0.113.7", creation(400), limits, now)).toBe(true);
-  expect(await chargeBudget(db, "203.0.113.7", creation(400), limits, now)).toBe(true);
+  expect((await chargeBudget(db, "203.0.113.7", creation(400), limits, now)).fits).toBe(true);
+  expect((await chargeBudget(db, "203.0.113.7", creation(400), limits, now)).fits).toBe(true);
   // Beyond the bytes: refused, and not counted.
-  expect(await chargeBudget(db, "203.0.113.7", creation(400), limits, now)).toBe(false);
-  expect(await chargeBudget(db, "203.0.113.7", creation(200), limits, now)).toBe(true);
+  expect((await chargeBudget(db, "203.0.113.7", creation(400), limits, now)).fits).toBe(false);
+  expect((await chargeBudget(db, "203.0.113.7", creation(200), limits, now)).fits).toBe(true);
   // Beyond the creations.
-  expect(await chargeBudget(db, "203.0.113.7", creation(0), limits, now)).toBe(false);
+  expect((await chargeBudget(db, "203.0.113.7", creation(0), limits, now)).fits).toBe(false);
   // The growth of the lockers in use: in its own budget.
-  expect(await chargeBudget(db, "203.0.113.7", growth(4_000), limits, now)).toBe(true);
-  expect(await chargeBudget(db, "203.0.113.7", growth(1_001), limits, now)).toBe(false);
-  expect(await chargeBudget(db, "203.0.113.7", growth(1_000), limits, now)).toBe(true);
+  expect((await chargeBudget(db, "203.0.113.7", growth(4_000), limits, now)).fits).toBe(true);
+  expect((await chargeBudget(db, "203.0.113.7", growth(1_001), limits, now)).fits).toBe(false);
+  expect((await chargeBudget(db, "203.0.113.7", growth(1_000), limits, now)).fits).toBe(true);
 
   // Another address, the same /56, the next day.
-  expect(await chargeBudget(db, "203.0.113.8", creation(400), limits, now)).toBe(true);
-  expect(await chargeBudget(db, "2001:db8:abcd:1201::1", creation(600), limits, now)).toBe(true);
-  expect(await chargeBudget(db, "2001:db8:abcd:12ff::2", creation(600), limits, now)).toBe(false);
-  expect(await chargeBudget(db, "203.0.113.7", creation(400), limits, now + DAY)).toBe(true);
+  expect((await chargeBudget(db, "203.0.113.8", creation(400), limits, now)).fits).toBe(true);
+  expect((await chargeBudget(db, "2001:db8:abcd:1201::1", creation(600), limits, now)).fits).toBe(true);
+  expect((await chargeBudget(db, "2001:db8:abcd:12ff::2", creation(600), limits, now)).fits).toBe(false);
+  expect((await chargeBudget(db, "203.0.113.7", creation(400), limits, now + DAY)).fits).toBe(true);
 });
 
 test("without an address or limits, nothing is counted", async () => {
-  expect(await chargeBudget(db, undefined, creation(5_000), limits)).toBe(true);
-  expect(await chargeBudget(db, "not an address", creation(5_000), limits)).toBe(true);
-  expect(await chargeBudget(db, "203.0.113.7", creation(5_000), { bytes: 0, creations: 0, growth: 0 })).toBe(true);
-  expect(await chargeBudget(db, "203.0.113.7", creation(5_000), { bytes: 0, creations: 1, growth: 0 })).toBe(true);
-  expect(await chargeBudget(db, "203.0.113.7", creation(5_000), { bytes: 0, creations: 1, growth: 0 })).toBe(false);
+  expect((await chargeBudget(db, undefined, creation(5_000), limits)).fits).toBe(true);
+  expect((await chargeBudget(db, "not an address", creation(5_000), limits)).fits).toBe(true);
+  expect((await chargeBudget(db, "203.0.113.7", creation(5_000), { bytes: 0, creations: 0, growth: 0 })).fits).toBe(true);
+  expect((await chargeBudget(db, "203.0.113.7", creation(5_000), { bytes: 0, creations: 1, growth: 0 })).fits).toBe(true);
+  expect((await chargeBudget(db, "203.0.113.7", creation(5_000), { bytes: 0, creations: 1, growth: 0 })).fits).toBe(false);
 });
 
 test("the addresses are not stored, and the counters and salts go after two days", async () => {
@@ -80,6 +80,42 @@ test("the addresses are not stored, and the counters and salts go after two days
   await purgeBudgets(db, now + 2 * DAY);
   expect((await db.sql`SELECT day FROM sync_budgets`).rows).toHaveLength(1);
   expect((await db.sql`SELECT day FROM sync_salts`).rows).toHaveLength(1);
+});
+
+test("the lockers created by an address today are counted (for the series)", async () => {
+  const now = Date.UTC(2026, 0, 10, 12);
+  expect(await chargeBudget(db, "203.0.113.7", creation(10), limits, now)).toEqual({ fits: true, creations: 1 });
+  expect(await chargeBudget(db, "203.0.113.7", creation(10), limits, now)).toEqual({ fits: true, creations: 2 });
+  // A write that creates nothing: 0.
+  expect(await chargeBudget(db, "203.0.113.7", growth(10), limits, now)).toEqual({ fits: true, creations: 0 });
+  // Without an address: not counted.
+  expect(await chargeBudget(db, undefined, creation(10), limits, now)).toEqual({ fits: true, creations: 0 });
+});
+
+test("the budget of the server: all the addresses together", async () => {
+  const now = Date.UTC(2026, 0, 10, 12);
+  const server = { ...limits, total: 1_500 };
+  expect(await chargeBudget(db, "203.0.113.7", creation(800), server, now)).toEqual({ fits: true, creations: 1 });
+  expect(await chargeBudget(db, "198.51.100.1", creation(800), server, now)).toEqual({ fits: false, scope: "server" });
+  expect(await chargeBudget(db, "198.51.100.2", growth(700), server, now)).toEqual({ fits: true, creations: 0 });
+  // Also without an address.
+  expect(await chargeBudget(db, undefined, growth(1), server, now)).toEqual({ fits: false, scope: "server" });
+  // The next day, again.
+  expect((await chargeBudget(db, "198.51.100.1", creation(800), server, now + DAY)).fits).toBe(true);
+  // An address beyond its own budget: refused as such.
+  expect(await chargeBudget(db, "203.0.113.7", creation(900), { ...server, total: 100_000 }, now)).toEqual({ fits: false, scope: "address" });
+});
+
+test("the growth of the established lockers: a budget of the server of its own", async () => {
+  const now = Date.UTC(2026, 0, 10, 12);
+  const server = { bytes: 10_000, creations: 10, growth: 10_000, total: 1_000, totalEstablished: 2_000 };
+  const established = (bytes: number) => ({ ...growth(bytes), established: true });
+  // The other budget spent (e.g. by an abuse)…
+  expect((await chargeBudget(db, "203.0.113.7", creation(1_000), server, now)).fits).toBe(true);
+  expect(await chargeBudget(db, "198.51.100.1", growth(1), server, now)).toEqual({ fits: false, scope: "server" });
+  // … the users of established lockers still write.
+  expect((await chargeBudget(db, "198.51.100.1", established(1_500), server, now)).fits).toBe(true);
+  expect(await chargeBudget(db, "198.51.100.2", established(600), server, now)).toEqual({ fits: false, scope: "server" });
 });
 
 test("a secret of the server changes the pseudonyms of the addresses", async () => {

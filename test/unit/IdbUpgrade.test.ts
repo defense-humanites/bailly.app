@@ -19,6 +19,6 @@ test("Upgrade from the legacy schema (v2)", async () => {
   });
 
   const db = await Idb.getIndexedDB();
-  expect(db.version).toBe(4);
+  expect(db.version).toBe(5);
   expect([...db.objectStoreNames].sort()).toEqual(Object.values(IdbStore).sort());
 });

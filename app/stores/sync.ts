@@ -5,7 +5,6 @@ import { fromBase64url, toBase64url } from "~/sync/base64url";
 import { deriveCredentials, type SyncCredentials } from "~/sync/crypto";
 import { synchronize, SyncLimitError, SyncTooLargeError, type SyncOptions } from "~/sync/engine";
 import {
-  EMPTY_LOCKER,
   fetchLocker,
   LockerDeletedError,
   removeLocker,
@@ -224,17 +223,28 @@ export const useSyncStore = defineStore("sync", () => {
     return "La synchronisation a échoué. Vos signets restent sur cet appareil.";
   }
 
-  async function runOnce(): Promise<void> {
+  async function runOnce(force = false): Promise<void> {
     if (!config || !credentials) return;
     const current = config;
+    // While the daily budget is spent, the changes of the other devices are
+    // still received; this device's wait (unless asked by the user).
+    const readOnly = !force && Date.now() < quotaUntil;
+    const quotaError = error.value;
     status.value = "syncing";
     error.value = null;
 
-    const failure = await attempt(credentials);
+    const failure = await attempt(credentials, { readOnly });
     // Disabled (or replaced) meanwhile: the outcome no longer concerns it.
     if (config !== current) return;
     errorNeedsAction.value = needsAction(failure);
+    if (!failure && readOnly) {
+      status.value = "error";
+      error.value = quotaError;
+      schedule(Math.max(0, quotaUntil - Date.now()));
+      return;
+    }
     if (!failure) {
+      quotaUntil = 0;
       config = { ...config, lastSyncedAt: Date.now() };
       await Idb.writeMeta(IdbMetaKey.Sync, config);
       lastSyncedAt.value = config.lastSyncedAt;
@@ -249,13 +259,27 @@ export const useSyncStore = defineStore("sync", () => {
       return;
     }
     if (failure instanceof SyncBusyError) schedule(BUSY_DELAY);
+    if (failure instanceof SyncQuotaError) waitForQuota(failure);
     status.value = "error";
     error.value = describe(failure);
+  }
+
+  /**
+   * Until when the automatic synchronizations only receive, the daily budget
+   * being spent (cf. `SyncQuotaError`): they send again then, or when asked
+   * by the user.
+   */
+  let quotaUntil = 0;
+
+  function waitForQuota(failure: SyncQuotaError): void {
+    quotaUntil = Date.now() + failure.retryAfter * 1000;
+    schedule(failure.retryAfter * 1000);
   }
 
   // (Asserted: set and cleared by concurrent calls.)
   let running = null as Promise<void> | null;
   let again = false;
+  let forceAgain = false;
 
   /**
    * Whether a synchronization waits for the end of an interaction (cf.
@@ -284,23 +308,31 @@ export const useSyncStore = defineStore("sync", () => {
     }
     if (running) {
       again = true;
+      // A forced request makes the next run forced (e.g. sending while the
+      // current one only receives, cf. `quotaUntil`).
+      forceAgain ||= force;
       await running;
       return status.value === "idle";
     }
 
     /**
-     * Whether a synchronization was requested meanwhile (then cleared).
+     * Whether a synchronization was requested meanwhile (then cleared), and
+     * whether it is forced.
      */
+    let forced = force;
     const takeAgain = (): boolean => {
       const value = again;
+      forced = forceAgain;
       again = false;
+      forceAgain = false;
       return value;
     };
 
     again = false;
+    forceAgain = false;
     running = (async () => {
       do {
-        await runOnce();
+        await runOnce(forced);
       } while (takeAgain());
     })();
 
@@ -343,7 +375,7 @@ export const useSyncStore = defineStore("sync", () => {
    * it was (e.g. with its former key).
    * @returns The error, explained to the user, if it failed.
    */
-  async function activate(secret: Uint8Array<ArrayBuffer>): Promise<IdbResult> {
+  async function activate(secret: Uint8Array<ArrayBuffer>): Promise<IdbResult<{ emptied: boolean }>> {
     clearTimeout(timer);
     const previousStatus = status.value;
     status.value = "syncing";
@@ -351,11 +383,14 @@ export const useSyncStore = defineStore("sync", () => {
     // Once the online bookmarks have been merged here, the device has joined,
     // even if sending its own ones fails: the key is kept, and the sending
     // retried.
-    const progress = { merged: false };
+    const progress = { merged: false, refilled: false };
     const failure = await attempt(await deriveCredentials(secret), {
       first: true,
       onMerged: () => {
         progress.merged = true;
+      },
+      onRefilled: () => {
+        progress.refilled = true;
       },
     });
     if (failure && !progress.merged) {
@@ -370,6 +405,7 @@ export const useSyncStore = defineStore("sync", () => {
     errorNeedsAction.value = needsAction(failure);
     if (failure && (errorNeedsAction.value || failure instanceof SyncQuotaError)) {
       // To be done by the user, or tomorrow: no retry in a few seconds.
+      if (failure instanceof SyncQuotaError) waitForQuota(failure);
       status.value = "error";
       error.value = `Vos signets en ligne ont été ajoutés à cet appareil, mais l'envoi des siens n'a pas abouti. ${describe(failure)}`;
     } else if (failure) {
@@ -380,7 +416,7 @@ export const useSyncStore = defineStore("sync", () => {
       status.value = "idle";
       error.value = null;
     }
-    return { state: "success", data: undefined };
+    return { state: "success", data: { emptied: progress.refilled } };
   }
 
   /**
@@ -395,16 +431,16 @@ export const useSyncStore = defineStore("sync", () => {
    * the first to be sent).
    */
   async function enable(): Promise<IdbResult> {
-    return activate(crypto.getRandomValues(new Uint8Array(16)));
+    const result = await activate(crypto.getRandomValues(new Uint8Array(16)));
+    return result.state === "success" ? { state: "success", data: undefined } : result;
   }
 
   /**
    * Joins the synchronization of another device, with its key: its bookmarks
    * and this device's are merged. The key replaces this device's, if any.
    * @param key The 12 words of the key, or the secret itself (from a link).
-   * @returns `emptied`: the server had emptied the locker after a long
-   * inactivity (the key is valid, but only this device's bookmarks are online
-   * now).
+   * @returns `emptied`: the server had emptied the locker (the key is valid,
+   * but only this device's bookmarks are online now).
    */
   async function join(key: string[] | Uint8Array<ArrayBuffer>): Promise<IdbResult<{ emptied: boolean }>> {
     let secret: Uint8Array<ArrayBuffer>;
@@ -428,11 +464,10 @@ export const useSyncStore = defineStore("sync", () => {
 
     // A key that no device uses is most likely mistyped (a new locker is only
     // created by `enable`; an emptied one still exists).
-    let emptied: boolean;
     try {
-      const locker = await fetchLocker(await deriveCredentials(secret), { signal: AbortSignal.timeout(ATTEMPT_TIMEOUT) });
-      if (!locker) return { state: "error", message: "Aucun signet n'est synchronisé avec cette clé : vérifiez-la." };
-      emptied = locker === EMPTY_LOCKER;
+      if (!(await fetchLocker(await deriveCredentials(secret), { signal: AbortSignal.timeout(ATTEMPT_TIMEOUT) }))) {
+        return { state: "error", message: "Aucun signet n'est synchronisé avec cette clé : vérifiez-la." };
+      }
     } catch (e: unknown) {
       if (e instanceof LockerDeletedError) {
         return { state: "error", message: "Cette clé a été désactivée : activez la synchronisation avec une nouvelle clé." };
@@ -440,8 +475,7 @@ export const useSyncStore = defineStore("sync", () => {
       return { state: "error", message: describe(e) };
     }
 
-    const result = await activate(secret);
-    return result.state === "success" ? { state: "success", data: { emptied } } : result;
+    return activate(secret);
   }
 
   /**

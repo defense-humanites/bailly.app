@@ -36,13 +36,22 @@ export class SyncBusyError extends SyncNetworkError {
 }
 
 /**
- * Too much sent from this network today (the daily budget of an address, cf.
- * `server/lib/syncBudget.ts`): to retry tomorrow, or from another network.
+ * Too much sent today, from this network or to the server (the daily budgets
+ * of an address and of the server, cf. `server/lib/syncBudget.ts`): to retry
+ * after `retryAfter` (tomorrow).
  */
 export class SyncQuotaError extends SyncNetworkError {
-  constructor() {
-    super("Trop de signets ont été envoyés depuis ce réseau aujourd'hui : la synchronisation reprendra demain, ou depuis un autre réseau (les données mobiles, par exemple).");
+  /**
+   * The seconds to wait before retrying (the `Retry-After` of the server).
+   */
+  readonly retryAfter: number;
+
+  constructor(scope: "address" | "server", retryAfter: number) {
+    super(scope === "server"
+      ? "Le serveur de synchronisation a reçu trop de signets aujourd'hui : la synchronisation reprendra demain."
+      : "Trop de signets ont été envoyés depuis ce réseau aujourd'hui : la synchronisation reprendra demain, ou depuis un autre réseau (les données mobiles, par exemple).");
     this.name = "SyncQuotaError";
+    this.retryAfter = retryAfter;
   }
 }
 
@@ -101,7 +110,12 @@ async function unexpected(response: Response): Promise<never> {
   if (response.status === 429) {
     // The daily budget of the address, or the rate limiting rule of Cloudflare.
     const body = (await response.json().catch(() => ({}))) as { data?: { reason?: unknown } };
-    throw body.data?.reason === "daily-budget" ? new SyncQuotaError() : new SyncBusyError();
+    const reason = body.data?.reason;
+    if (reason === "daily-budget" || reason === "server-budget") {
+      const retryAfter = Number(response.headers.get("Retry-After"));
+      throw new SyncQuotaError(reason === "server-budget" ? "server" : "address", Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : 60 * 60);
+    }
+    throw new SyncBusyError();
   }
   throw new SyncNetworkError(`Le serveur de synchronisation a répondu par une erreur (${response.status}).`);
 }
