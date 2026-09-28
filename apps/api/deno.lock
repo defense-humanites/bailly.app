@@ -3,14 +3,14 @@
   "specifiers": {
     "jsr:@db/sqlite@0.13": "0.13.0",
     "jsr:@denosaurs/plug@1": "1.1.0",
-    "jsr:@hono/hono@^4.13.8": "4.13.8",
+    "jsr:@hono/hono@^4.13.9": "4.13.9",
     "jsr:@humanities/bailly-search-key@0.2": "0.2.0",
-    "jsr:@humanities/greek-conversion@1.0.0-beta.5": "1.0.0-beta.5",
+    "jsr:@humanities/greek-conversion@1.0.0-beta.8": "1.0.0-beta.8",
     "jsr:@libmorpheus/deno@~0.4.2": "0.4.2",
     "jsr:@std/assert@^1.0.19": "1.0.19",
-    "jsr:@std/async@^1.5.0": "1.5.0",
+    "jsr:@std/async@^1.5.1": "1.5.1",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
-    "jsr:@std/data-structures@^1.1.2": "1.1.2",
+    "jsr:@std/data-structures@^1.1.3": "1.1.3",
     "jsr:@std/encoding@1": "1.0.11",
     "jsr:@std/fmt@1": "1.0.10",
     "jsr:@std/fs@1": "1.0.24",
@@ -21,8 +21,8 @@
     "jsr:@std/path@1.0": "1.0.9",
     "jsr:@std/path@^1.1.5": "1.1.6",
     "jsr:@std/path@^1.1.6": "1.1.6",
-    "jsr:@std/streams@^1.1.2": "1.1.2",
-    "jsr:@std/testing@^1.0.20": "1.0.20"
+    "jsr:@std/streams@^1.2.0": "1.2.0",
+    "jsr:@std/testing@^1.0.21": "1.0.21"
   },
   "jsr": {
     "@db/sqlite@0.13.0": {
@@ -41,14 +41,14 @@
         "jsr:@std/path@1"
       ]
     },
-    "@hono/hono@4.13.8": {
-      "integrity": "bbb566d9ebb81e74c0d7eeff1f9221ba9f3fda6f1832e5ca66cbddcecb2f7fec"
+    "@hono/hono@4.13.9": {
+      "integrity": "74c83a71556490dc3752c3b308b6c85befd9dcdd37ed903a873142a29e5a67f4"
     },
     "@humanities/bailly-search-key@0.2.0": {
       "integrity": "d605f6a5f14638cf2b829b71ce4dd2770c749374068dba0c37b08c54ea2460c7"
     },
-    "@humanities/greek-conversion@1.0.0-beta.5": {
-      "integrity": "ab83df8e59ce28b43f911fa82243230217a790da957f2c7aa97b5de23ed1317d"
+    "@humanities/greek-conversion@1.0.0-beta.8": {
+      "integrity": "4fd6851553bf31790bbdad75c1ceb0d7b352555d7fafaf79fb666a14b4fa2574"
     },
     "@libmorpheus/deno@0.4.2": {
       "integrity": "5accb96e62f5c56632c29e4de553908485a08449ba2e16a8d06409fd75923982"
@@ -59,14 +59,14 @@
         "jsr:@std/internal@^1.0.12"
       ]
     },
-    "@std/async@1.5.0": {
-      "integrity": "4c1f22d287a17ad7d8643b1952bc5a4d21e5d8b68dc8c20d8268eecc69096e82"
+    "@std/async@1.5.1": {
+      "integrity": "c82455dc70cab29a0adf3ac8075db934785bffdd3902af5afcf25d21a74cfd86"
     },
     "@std/bytes@1.0.6": {
       "integrity": "f6ac6adbd8ccd99314045f5703e23af0a68d7f7e58364b47d2c7f408aeb5820a"
     },
-    "@std/data-structures@1.1.2": {
-      "integrity": "2471377c9e0051f9ec34e57d0ebd0ad133a5a889677446ec6ba9938e4e102918"
+    "@std/data-structures@1.1.3": {
+      "integrity": "a5ec67199e79ee5b29123474d93fa9a47701ec08a4ef3bd1b623a36476306c5b"
     },
     "@std/encoding@1.0.11": {
       "integrity": "e7cef2f0b3153bccc17431e7c864a1de03a4b6d9647389c43e08aaa775d37385"
@@ -93,14 +93,14 @@
         "jsr:@std/internal@^1.0.14"
       ]
     },
-    "@std/streams@1.1.2": {
-      "integrity": "0249bf9b78a999f57032ca4d8e7ccaa57579090242640b35ddc948fbb745d3af",
+    "@std/streams@1.2.0": {
+      "integrity": "256b934254778f2bf45f5713b934209ff29e9b4b7fd4ec095219966813758c5f",
       "dependencies": [
         "jsr:@std/bytes"
       ]
     },
-    "@std/testing@1.0.20": {
-      "integrity": "21380ed438672762e4ec549cbf4fe41c5b68f5598773a30b64abe7375513e721",
+    "@std/testing@1.0.21": {
+      "integrity": "a0d14b2519005242821565091127c7d6fa96ca1b330e84e9249afcd602ee764f",
       "dependencies": [
         "jsr:@std/assert",
         "jsr:@std/async",
@@ -114,13 +114,13 @@
   "workspace": {
     "dependencies": [
       "jsr:@db/sqlite@0.13",
-      "jsr:@hono/hono@^4.13.8",
+      "jsr:@hono/hono@^4.13.9",
       "jsr:@humanities/bailly-search-key@0.2",
-      "jsr:@humanities/greek-conversion@1.0.0-beta.5",
+      "jsr:@humanities/greek-conversion@1.0.0-beta.8",
       "jsr:@libmorpheus/deno@~0.4.2",
       "jsr:@std/assert@^1.0.19",
-      "jsr:@std/streams@^1.1.2",
-      "jsr:@std/testing@^1.0.20"
+      "jsr:@std/streams@^1.2.0",
+      "jsr:@std/testing@^1.0.21"
     ]
   }
 }
