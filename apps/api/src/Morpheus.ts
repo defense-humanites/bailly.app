@@ -87,6 +87,16 @@ export function buildBreathingVariants(word: string): string[] {
 }
 
 /**
+ * Whether a Greek word has a rough breathing on its initial vowel, or on the second
+ * vowel of an initial diphthong (e.g. ἁνα, οὑμός, Ἁ…).
+ */
+export function hasInitialRoughBreathing(word: string): boolean {
+  const [first = "", second = ""] = word.normalize("NFD")
+    .match(/\p{L}\p{M}*/gu) ?? [];
+  return first.includes(ROUGH_BREATHING) || second.includes(ROUGH_BREATHING);
+}
+
+/**
  * Capitalizes the first letter of a Greek word, keeping its diacritics on it (a plain
  * `toUpperCase()` would turn an iota subscript into a capital iota: ᾧ → ὯΙ).
  */
@@ -236,6 +246,14 @@ export class Morpheus {
       ? [graveToAcute(greekStr)]
       : buildBreathingVariants(removeAccents(greekStr));
 
+    // A rough breathing that the user did not type is a guess of the API (cf.
+    // above). Morpheus may read such a form as a crasis (article or relative +
+    // word), e.g. ἁνα as ἃ + ἔνα (late Ionic accusative of εἷς): two guesses in a
+    // row, which almost only produce noise. These crasis readings are dropped;
+    // those of a typed breathing, or with a smooth breathing (ὦγαθε), are kept.
+    const guessedRough = breathingForms.length > 1 &&
+      !hasInitialRoughBreathing(greekStr);
+
     const forms = [
       ...new Set(
         caseSensitive
@@ -244,18 +262,30 @@ export class Morpheus {
       )
     ];
 
-    const betaCodes = forms.map((form) =>
-      convert(form, "greek", "beta-code", { preset: "perseus" })
-    );
+    const analyses: MorpheusAnalysis[] = [];
+
+    // One form at a time: a failure (e.g. more than 25 analyses, which libmorpheus
+    // reports as an internal error) only loses the analyses of this form.
+    for (const form of forms) {
+      const betaCode = convert(form, "greek", "beta-code", { preset: "perseus" });
+      const dropCrasis = guessedRough && hasInitialRoughBreathing(form);
+
+      try {
+        const formAnalyses = await this.#context().analyze(betaCode, morpheusOptions);
+        analyses.push(
+          ...(dropCrasis
+            ? formAnalyses.filter((analysis) => !analysis.crasis)
+            : formAnalyses)
+        );
+      } catch (error) {
+        console.error(`libmorpheus call failed for '${betaCode}':`, error);
+      }
+    }
 
     try {
-      const analyses: MorpheusAnalysis[] = [];
-      for (const betaCode of betaCodes) {
-        analyses.push(...await this.#context().analyze(betaCode, morpheusOptions));
-      }
       return this.#formatMorpheusResponse(analyses, greekStr);
     } catch (error) {
-      console.error("libmorpheus call failed:", error);
+      console.error("Morpheus response formatting failed:", error);
       return {};
     }
   }

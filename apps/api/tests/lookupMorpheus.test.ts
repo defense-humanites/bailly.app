@@ -105,3 +105,49 @@ test("GET /lookup/ων: entries matched by prefix only are not exact", async () 
   assertEquals(prefixOnly.isExact, false);
   assertEquals(prefixOnly.isMorpheus, false);
 });
+
+/*
+ * Crasis readings of a guessed rough breathing. Without diacritics, both breathings
+ * are tried (cf. above); Morpheus may read the rough one as a crasis, e.g. ἁνα as
+ * ἃ + ἔνα (late Ionic accusative of εἷς), or ἁγειρω as ἃ + ἐγείρω. These readings
+ * are dropped, unless the rough breathing was typed; the other crases are kept.
+ */
+const allURIs = (entries: LookupEntry[]): string[] => entries.map((entry) => entry.uri);
+
+const crasisCases: [string, string[], string[]][] = [
+  // [query, Morpheus URIs expected, URIs that must be absent]
+  ["ανα", ["anê"], ["heis"]],
+  ["αγειρω", [], ["egeirô"]],
+  ["αφιημι", [], ["ephiêmi"]],
+  // Crases with a smooth breathing (ὦ ἀγαθέ) or found otherwise (οὑμός).
+  ["ωγαθε", ["agathos"], []],
+  ["ουμος", ["emos"], []],
+  // A typed rough breathing keeps its crasis readings.
+  ["ἁνα", ["heis"], []]
+];
+
+for (const [q, expected, absent] of crasisCases) {
+  test(`GET /lookup/${q}: crasis readings`, async () => {
+    const entries = await lookup(q);
+    assertIncludes(morpheusURIs(entries), expected, q);
+    for (const uri of absent) {
+      assert(!allURIs(entries).includes(uri), `${q}: ${uri} should not be found`);
+    }
+  });
+}
+
+/*
+ * libmorpheus fails on a form with more than 25 analyses (internal error): e.g. Ἰω
+ * (`*)iw`) or ἁπιλλω (`a(pillw`). The forms are analyzed one at a time, so that such
+ * a failure only loses the analyses of this form, not those of the others.
+ */
+const failureCases: [string, string[]][] = [
+  ["ιω", ["eimi_(1)", "hiêmi"]],
+  ["απιλλω", ["apeileô-ô"]]
+];
+
+for (const [q, expected] of failureCases) {
+  test(`GET /lookup/${q}: a failing form does not lose the others`, async () => {
+    assertIncludes(morpheusURIs(await lookup(q)), expected, q);
+  });
+}
