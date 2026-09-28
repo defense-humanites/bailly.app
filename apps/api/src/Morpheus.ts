@@ -19,24 +19,39 @@ type MorpheusLookupOptions = Pick<
   "caseSensitive" | "diacriticSensitive"
 >;
 
+/**
+ * The two words of a crasis, in Greek (e.g. κἀγώ: `{ first: "καί", second: "ἐγώ" }`;
+ * ὦγαθε: `{ first: "ὦ", second: "ἀγαθέ" }`). `second` is the form analyzed by
+ * Morpheus, whose lemma is the key of the analysis.
+ */
+export type Crasis = {
+  first: string;
+  second: string;
+};
+
 /** Morphological data exposed by the API (a subset of a Morpheus analysis). */
-export type Morphology = Pick<
-  MorpheusAnalysis,
-  | "partOfSpeech"
-  | "dialects"
-  | "geographicRegions"
-  | "person"
-  | "grammaticalNumber"
-  | "genders"
-  | "grammaticalCases"
-  | "tense"
-  | "mood"
-  | "voices"
-  | "degree"
-  | "preverb"
-  | "augment"
-  | "morphFlags"
->;
+export type Morphology =
+  & Pick<
+    MorpheusAnalysis,
+    | "partOfSpeech"
+    | "dialects"
+    | "geographicRegions"
+    | "person"
+    | "grammaticalNumber"
+    | "genders"
+    | "grammaticalCases"
+    | "tense"
+    | "mood"
+    | "voices"
+    | "degree"
+    | "preverb"
+    | "augment"
+    | "morphFlags"
+  >
+  & {
+    /** Only for a crasis reading. */
+    crasis?: Crasis;
+  };
 
 /**
  * Analyses grouped by key (e.g. "lemma|stem"). `T` is a full Morpheus analysis by
@@ -84,6 +99,27 @@ export function buildBreathingVariants(word: string): string[] {
     return [withBreathing(SMOOTH_BREATHING), withBreathing(ROUGH_BREATHING)];
   }
   return [word];
+}
+
+/**
+ * Converts a Beta Code word of Morpheus to Greek, without its quantity marks, in NFC
+ * (as the dictionary data): `convert()` gives the acute as an oxia (e.g. U+1F73),
+ * which NFC turns into a tonos (U+03AD).
+ */
+function betaCodeToGreek(betaCode: string): string {
+  return convert(betaCode.replace(/[_^]/g, ""), "beta-code", "greek").normalize("NFC");
+}
+
+/** The two words of a crasis reading, in Greek; `undefined` for another reading. */
+export function getCrasis(
+  { crasis, workword }: Pick<MorpheusAnalysis, "crasis" | "workword">
+): Crasis | undefined {
+  if (!crasis) return undefined;
+
+  return {
+    first: betaCodeToGreek(crasis),
+    second: betaCodeToGreek(workword)
+  };
 }
 
 /**
@@ -304,7 +340,9 @@ export class Morpheus {
       degree: analysis.degree,
       dialects: analysis.dialects.toSorted(),
       geographicRegions: analysis.geographicRegions.toSorted(),
-      morphFlags: analysis.morphFlags.toSorted()
+      morphFlags: analysis.morphFlags.toSorted(),
+      // A crasis reading is distinct from a direct reading with the same grammar.
+      crasis: getCrasis(analysis) ?? null
     });
   }
 

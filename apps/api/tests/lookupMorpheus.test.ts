@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "@std/assert";
+import { assert, assertEquals, equal } from "@std/assert";
 import { app } from "../src/index.ts";
 import { Morpheus } from "../src/Morpheus.ts";
 
@@ -151,3 +151,61 @@ for (const [q, expected] of failureCases) {
     assertIncludes(morpheusURIs(await lookup(q)), expected, q);
   });
 }
+
+/*
+ * Crasis readings are exposed in the morphology (`morphology=true`): `crasis` gives
+ * the two words, in Greek (e.g. ὦγαθε: ὦ + ἀγαθέ), so that the front end can tell
+ * them apart. The other readings have no `crasis`.
+ */
+type Crasis = { first: string; second: string };
+type MorphologyEntry = LookupEntry & {
+  morphology?: Record<string, { partOfSpeech: string; crasis?: Crasis }[]>;
+};
+
+const readings = async (q: string, uri: string) => {
+  const response = await app.request(
+    `/lookup/${encodeURIComponent(q)}?fields=uri&morphology=true`
+  );
+  const entries: MorphologyEntry[] = (await response.json()).data.entries;
+  const entry = entries.find((entry) => entry.uri === uri);
+  assert(entry?.morphology, `${q}: ${uri} should have a morphology`);
+  return Object.values(entry.morphology).flat();
+};
+
+const crasisExposedCases: [string, string, Crasis][] = [
+  // [query, entry URI, expected crasis]
+  ["ωγαθε", "agathos", { first: "ὦ", second: "ἀγαθέ" }],
+  ["ουμος", "emos", { first: "ὅ", second: "ἐμός" }],
+  // A consonant: the coronis must be typed.
+  ["κἀγω", "egô", { first: "καί", second: "ἐγώ" }],
+  // Quantity marks of Morpheus (ἄλλᾱ) are removed.
+  ["τἀλλα", "allos", { first: "τά", second: "ἄλλα" }],
+  // A typed rough breathing keeps its crasis readings.
+  ["ἁνα", "heis", { first: "ἅ", second: "ἔνα" }]
+];
+
+for (const [q, uri, crasis] of crasisExposedCases) {
+  test(`GET /lookup/${q}?morphology=true: crasis of ${uri} exposed`, async () => {
+    const crases = (await readings(q, uri)).map((reading) => reading.crasis);
+    assert(
+      crases.some((value) => value && equal(value, crasis)),
+      `${q}: ${JSON.stringify(crasis)} missing from ${JSON.stringify(crases)}`
+    );
+  });
+}
+
+test("GET /lookup/ανα?morphology=true: no crasis for a direct reading", async () => {
+  for (const reading of await readings("ανα", "ana_(1)")) {
+    assert(!("crasis" in reading), JSON.stringify(reading));
+  }
+});
+
+test("GET /lookup/ἁνα?morphology=true: a crasis and a direct reading kept apart", async () => {
+  const anaReadings = await readings("ἁνα", "ana_(1)");
+  assert(anaReadings.some((reading) => !reading.crasis));
+  assert(
+    anaReadings.some((reading) =>
+      reading.crasis && equal(reading.crasis, { first: "ὁ", second: "ἀνά" })
+    )
+  );
+});

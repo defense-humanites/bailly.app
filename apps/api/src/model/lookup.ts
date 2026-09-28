@@ -11,6 +11,7 @@ import type {
 } from "../definitions.ts";
 import { SpecialChar } from "../enums.ts";
 import {
+  getCrasis,
   Morpheus,
   type MorpheusAnalysis,
   type MorpheusResponse,
@@ -76,8 +77,12 @@ function getMorphology({
   degree,
   preverb,
   augment,
-  morphFlags
+  morphFlags,
+  crasis,
+  workword
 }: MorpheusAnalysis): Morphology {
+  const crasisWords = getCrasis({ crasis, workword });
+
   return {
     partOfSpeech,
     dialects,
@@ -92,7 +97,10 @@ function getMorphology({
     degree,
     preverb,
     augment,
-    morphFlags
+    morphFlags,
+    // Only for a crasis reading (e.g. ὦγαθε: ὦ + ἀγαθέ), so that the front end can
+    // tell it apart.
+    ...(crasisWords && { crasis: crasisWords })
   };
 }
 
