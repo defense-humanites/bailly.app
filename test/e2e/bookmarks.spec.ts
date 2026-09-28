@@ -86,6 +86,20 @@ test.describe("bookmarks page", () => {
     await expect(group.getByText("Pour l'examen")).toHaveCount(0);
   });
 
+  test("a long name: on one line in the edit mode, the card keeping its height", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    const group = card(page, "Vocabulaire homérique");
+    const height = () => group.evaluate(element => element.getBoundingClientRect().height);
+    const before = await height();
+
+    // Without a description: « Ajouter une description » does not rewrap the name.
+    await page.getByRole("button", { name: "Modifier l'étiquette « Vocabulaire homérique et tragique »" }).click();
+    const name = group.getByRole("textbox", { name: "Nom de l'étiquette" });
+    await expect(name).toHaveValue("Vocabulaire homérique et tragique");
+    expect(await name.evaluate(element => element.getBoundingClientRect().height)).toBe(32);
+    expect(await height()).toBe(before);
+  });
+
   test("removing a favorite", async ({ page }) => {
     await page.getByRole("button", { name: "Modifier les favoris" }).click();
     await page.getByRole("button", { name: "Retirer « λόγος » des favoris" }).click();
@@ -142,7 +156,7 @@ test.describe("bookmarks page on a touch screen", () => {
     await seedBookmarks(page, { tags: [{ name: "Homère", color: "Blue", entries: [anax, menis] }] });
     const edit = page.getByRole("button", { name: "Modifier l'étiquette « Homère »" });
     await expect(edit.locator("..")).toHaveCSS("opacity", "1");
-    const columns = await card(page, "Homère").locator(".grid").evaluate(element => getComputedStyle(element).gridTemplateColumns.split(" ").length);
+    const columns = await card(page, "Homère").locator("[data-slot=body] .grid").evaluate(element => getComputedStyle(element).gridTemplateColumns.split(" ").length);
     expect(columns).toBe(1);
     await edit.tap();
     await page.getByRole("button", { name: "Retirer « ἄναξ » de l'étiquette « Homère »" }).tap();

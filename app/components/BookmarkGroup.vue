@@ -29,7 +29,7 @@
   }>();
 
   const bookmarkGroup = useTemplateRef("bookmark-group");
-  const tagNameInput = useTemplateRef<HTMLTextAreaElement>("tag-name-input");
+  const tagNameInput = useTemplateRef<HTMLInputElement>("tag-name-input");
   const descriptionInput = useTemplateRef<HTMLTextAreaElement>("description-input");
 
   /**
@@ -54,17 +54,9 @@
    */
   const descriptionLeft = computed(() => IdbTags.descriptionMaxLength - Array.from(tagDescription.value).length);
 
-  // The fields grow with their text, as the name and the description they
-  // replace (wrapped alike): the card keeps its size in the edit mode.
-  useTextareaAutosize({ element: tagNameInput, input: tagName });
+  // The description field grows with its text, as the description it
+  // replaces (wrapped alike): the card keeps its size in the edit mode.
   useTextareaAutosize({ element: descriptionInput, input: tagDescription });
-
-  /**
-   * Keeps the name on one line (a pasted text may have line breaks).
-   */
-  const onNameInput = (): void => {
-    if (/[\r\n]/.test(tagName.value)) tagName.value = tagName.value.replace(/\s*[\r\n]+\s*/g, " ");
-  };
   /**
    * The editable tag color.
    */
@@ -271,13 +263,32 @@
     -->
     <template #header>
       <div class="flex min-h-8 w-full items-start gap-3">
-        <div
-          class="flex min-w-0 grow items-start text-tag-600"
-        >
+        <!--
+          The name and its field share one cell: in edit mode, the name stays
+          in the layout, invisible, so that the card keeps its height (a long
+          name gives way to a field on one line, with some room under it).
+        -->
+        <div class="grid min-w-0 grow text-tag-600">
+          <!-- Display tag data -->
+          <!--
+            In edit mode, « Ajouter une description » widens the actions: the
+            hidden name spreads under them, to keep its wrapping.
+          -->
+          <div
+            class="col-start-1 row-start-1 flex min-w-0 items-start"
+            :class="{ 'invisible': editableEditMode, '-me-8': editableEditMode && !showsDescriptionField }"
+          >
+            <UIcon
+              :name="icon"
+              class="mx-2 mt-1 size-6 shrink-0"
+            />
+            <span class="ml-2 min-w-0 grow py-0.5 pe-2 text-xl/7 font-bold wrap-break-word md:py-0 md:text-2xl/8">{{ tag.name }}</span>
+          </div>
+
           <!-- Edit tag data -->
           <div
             v-show="editableEditMode"
-            class="contents"
+            class="col-start-1 row-start-1 flex min-w-0 items-start"
           >
             <TagColorPicker
               :selected="IdbTags.isColorKey(tagColor) ? tagColor : undefined"
@@ -301,32 +312,16 @@
               </template>
             </TagColorPicker>
 
-            <!--
-              A field that wraps as the name it replaces (same width, text and
-              spacing), on one line only (Enter validates).
-            -->
-            <textarea
+            <!-- A field on one line (Enter validates), in the name's text. -->
+            <input
               ref="tag-name-input"
               v-model="tagName"
-              rows="1"
+              type="text"
               aria-label="Nom de l'étiquette"
               :maxlength="IdbTags.nameMaxLength"
-              class="min-w-0 grow resize-none overflow-hidden rounded-r-2xl bg-white/60 px-2 py-0.5 text-xl/7 font-bold md:py-0 md:text-2xl/8 wrap-break-word text-tag-600 hover:bg-white/90 focus:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300"
+              class="h-8 min-w-0 grow rounded-r-full bg-white/60 px-2 text-xl font-bold text-tag-600 hover:bg-white/90 focus:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300 md:text-2xl"
               :class="{ 'animate-shake': isTagNameErrored }"
-              @input="onNameInput"
-            />
-          </div>
-
-          <!-- Display tag data -->
-          <div
-            v-show="!editableEditMode"
-            class="contents"
-          >
-            <UIcon
-              :name="icon"
-              class="mx-2 mt-1 size-6 shrink-0"
-            />
-            <span class="ml-2 min-w-0 grow px-0 py-0.5 pe-2 text-xl/7 font-bold md:py-0 md:text-2xl/8 wrap-break-word">{{ tagName }}</span>
+            >
           </div>
         </div>
 
