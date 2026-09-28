@@ -56,6 +56,36 @@ test.describe("bookmarks page", () => {
     await expect.poll(async () => await bookmarksState(page)).toMatchObject({ tagged: 0 });
   });
 
+  test("a description: added in the edit mode, shown under the name, the card keeping its size", async ({ page }) => {
+    const group = card(page, "Vocabulaire homérique");
+    const edit = page.getByRole("button", { name: "Modifier l'étiquette « Vocabulaire homérique et tragique »" });
+    const height = () => group.evaluate(element => element.getBoundingClientRect().height);
+
+    // Without a description: nothing is shown, and a button adds one.
+    await edit.click();
+    await group.getByRole("button", { name: "Ajouter une description" }).click();
+    const field = group.getByRole("textbox", { name: "Description de l'étiquette" });
+    await expect(field).toBeFocused();
+    await field.fill("Pour l'examen");
+    await field.press("Shift+Enter"); // A line break.
+    await field.pressSequentially("de mardi.");
+    await field.press("Enter"); // Validates.
+    await page.keyboard.press("Escape");
+    await expect(group.getByText(/Pour l'examen\s+de mardi\./)).toBeVisible();
+    await expect(group.getByRole("button", { name: "Ajouter une description" })).toHaveCount(0);
+
+    // The edit mode keeps the size of the card (the fields replace the texts).
+    const before = await height();
+    await edit.click();
+    await expect(field).toHaveValue("Pour l'examen\nde mardi.");
+    expect(await height()).toBe(before);
+
+    // Emptied: the description goes.
+    await field.fill("");
+    await page.keyboard.press("Escape");
+    await expect(group.getByText("Pour l'examen")).toHaveCount(0);
+  });
+
   test("removing a favorite", async ({ page }) => {
     await page.getByRole("button", { name: "Modifier les favoris" }).click();
     await page.getByRole("button", { name: "Retirer « λόγος » des favoris" }).click();

@@ -8,7 +8,7 @@
     /**
      * The tag that the bookmark group represents.
      */
-    tag: Pick<IdbTagWithKey, "key" | "name"> & { color: ColorKey };
+    tag: Pick<IdbTagWithKey, "key" | "name"> & Partial<Pick<IdbTagWithKey, "description">> & { color: ColorKey };
     /**
      * The entries that are part of the group.
      */
@@ -29,7 +29,8 @@
   }>();
 
   const bookmarkGroup = useTemplateRef("bookmark-group");
-  const tagNameInput = useTemplateRef("tag-name-input");
+  const tagNameInput = useTemplateRef<HTMLTextAreaElement>("tag-name-input");
+  const descriptionInput = useTemplateRef<HTMLTextAreaElement>("description-input");
 
   /**
    * The editable tag name.
@@ -39,6 +40,31 @@
    * A boolean representing the state of the tag name input.
    */
   const isTagNameErrored = ref<boolean>(false);
+  /**
+   * The editable tag description.
+   */
+  const tagDescription = ref<string>(props.tag.description ?? "");
+  /**
+   * Whether the description field is shown in edit mode without a stored
+   * description (after « Ajouter une description »).
+   */
+  const isAddingDescription = ref<boolean>(false);
+  /**
+   * The characters left in the description, shown near the limit.
+   */
+  const descriptionLeft = computed(() => IdbTags.descriptionMaxLength - Array.from(tagDescription.value).length);
+
+  // The fields grow with their text, as the name and the description they
+  // replace (wrapped alike): the card keeps its size in the edit mode.
+  useTextareaAutosize({ element: tagNameInput, input: tagName });
+  useTextareaAutosize({ element: descriptionInput, input: tagDescription });
+
+  /**
+   * Keeps the name on one line (a pasted text may have line breaks).
+   */
+  const onNameInput = (): void => {
+    if (/[\r\n]/.test(tagName.value)) tagName.value = tagName.value.replace(/\s*[\r\n]+\s*/g, " ");
+  };
   /**
    * The editable tag color.
    */
@@ -69,6 +95,9 @@
   watch(() => props.tag.color, (color) => {
     tagColor.value = color;
   });
+  watch(() => props.tag.description, (description) => {
+    tagDescription.value = description ?? "";
+  });
 
   /**
    * Updates the tag properties.
@@ -76,16 +105,22 @@
   const onUpdateTag = async (): Promise<void> => {
     isTagNameErrored.value = false;
 
-    if (tagName.value === props.tag.name && tagColor.value === props.tag.color) return;
+    if (
+      tagName.value === props.tag.name
+      && tagColor.value === props.tag.color
+      && tagDescription.value.trim() === (props.tag.description ?? "")
+    ) return;
 
     const response = await bookmarksStore.updateTag(props.tag.key, {
       name: tagName.value,
+      description: tagDescription.value,
       color: IdbTags.isColorKey(tagColor.value) ? tagColor.value : undefined,
     });
 
     if (response.state === "error") {
       isTagNameErrored.value = true;
       tagName.value = props.tag.name;
+      tagDescription.value = props.tag.description ?? "";
       tagColor.value = props.tag.color;
     }
   };
@@ -145,8 +180,25 @@
 
   const exitEditMode = (): void => {
     editMode.value = false;
+    isAddingDescription.value = false;
     void onUpdateTag();
   };
+
+  /**
+   * Shows the description field (the tag has none yet), and focuses it.
+   */
+  const addDescription = async (): Promise<void> => {
+    isAddingDescription.value = true;
+    await nextTick();
+    descriptionInput.value?.focus();
+  };
+
+  /**
+   * Whether the description field is shown (in edit mode).
+   */
+  const showsDescriptionField = computed(
+    (): boolean => editableEditMode.value && (Boolean(props.tag.description) || isAddingDescription.value),
+  );
 
   const toggleEditMode = (): void => {
     if (editMode.value) exitEditMode();
@@ -175,9 +227,18 @@
     // Process shortcuts only if the edit mode is set and no overlay is open.
     if (!editMode.value || isOverlayOpen.value) return;
 
-    // Process the tag name input if it's active, otherwise exit the edit mode.
-    const input = tagNameInput.value?.inputRef as HTMLInputElement | undefined;
-    if (input && input === document.activeElement) {
+    // Process the tag name input or the description field if one is active
+    // (Shift+Enter goes to the line in the description), otherwise exit the
+    // edit mode.
+    const input = tagNameInput.value;
+    const field = descriptionInput.value;
+    if (field && field === document.activeElement) {
+      if (event.key === "Enter" && event.shiftKey) return;
+      event.preventDefault();
+      field.blur();
+      void onUpdateTag();
+    } else if (input && input === document.activeElement) {
+      event.preventDefault();
       input.blur();
       void onUpdateTag();
     } else if (event.key === "Escape" || !(event.target as Element | null)?.closest("button, a")) {
@@ -199,7 +260,7 @@
     variant="bookmarkGroup"
     :ui="{
       root: 'bg-tag-200/50 border-tag-300/50',
-      header: 'flex justify-between !px-3 pb-0',
+      header: 'flex flex-col !px-3 pb-0',
       body: '@container !p-3 text-default',
     }"
   >
@@ -234,24 +295,25 @@
                   color="neutral"
                   :class="trigger.class"
                   :ui="{
-                    base: `rounded-l-full rounded-r-none ${isTagColorPopoverOpen ? 'bg-white/90 hover:bg-white/90 active:bg-white/90' : 'bg-white/60 hover:bg-white/90 active:bg-white/90'}`,
+                    base: `h-8 w-10 justify-center rounded-l-full rounded-r-none ${isTagColorPopoverOpen ? 'bg-white/90 hover:bg-white/90 active:bg-white/90' : 'bg-white/60 hover:bg-white/90 active:bg-white/90'}`,
                   }"
                 />
               </template>
             </TagColorPicker>
 
-            <UInput
+            <!--
+              A field that wraps as the name it replaces (same width, text and
+              spacing), on one line only (Enter validates).
+            -->
+            <textarea
               ref="tag-name-input"
               v-model="tagName"
+              rows="1"
               aria-label="Nom de l'étiquette"
               :maxlength="IdbTags.nameMaxLength"
-              size="xl"
-              variant="none"
-              class="min-w-0 grow"
+              class="min-w-0 grow resize-none overflow-hidden rounded-r-2xl bg-white/60 px-2 py-0.5 text-xl/7 font-bold wrap-break-word text-tag-600 hover:bg-white/90 focus:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300"
               :class="{ 'animate-shake': isTagNameErrored }"
-              :ui="{
-                base: `shadow-none px-2 py-1 text-2xl font-bold rounded-l-none rounded-r-full bg-white/60 hover:bg-white/90 focus:bg-white/90 text-tag-600`,
-              }"
+              @input="onNameInput"
             />
           </div>
 
@@ -264,7 +326,7 @@
               :name="icon"
               class="mx-2 mt-1 size-6 shrink-0"
             />
-            <span class="ml-2 min-w-0 text-2xl font-bold wrap-break-word">{{ tagName }}</span>
+            <span class="ml-2 min-w-0 grow px-0 py-0.5 pe-2 text-xl/7 font-bold wrap-break-word">{{ tagName }}</span>
           </div>
         </div>
 
@@ -274,10 +336,24 @@
           transparent, not hidden) and always on a touch screen (which has no
           hover).
         -->
+        <!--
+          Their place is reserved for two buttons (the edit mode adds the
+          deletion): the name wraps alike in both modes.
+        -->
         <span
-          class="flex h-8 items-center gap-3"
+          class="flex h-8 min-w-[4.75rem] shrink-0 items-center justify-end gap-3"
           :class="editMode ? '' : 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100'"
         >
+          <UButton
+            v-if="editableEditMode && !showsDescriptionField"
+            icon="i-lucide-text"
+            size="sm"
+            variant="subtle"
+            color="neutral"
+            aria-label="Ajouter une description"
+            :ui="{ base: 'bg-white/50 hover:bg-white/90 active:bg-white/75 ring-tag-300/50 text-tag-600/75 hover:text-tag-600' }"
+            @click="addDescription"
+          />
           <UButton
             v-if="editableEditMode"
             icon="i-lucide-trash-2"
@@ -320,6 +396,37 @@
             />
           </template>
         </UModal>
+      </div>
+
+      <!--
+        The description, under the name and aligned with it; in edit mode, a
+        field with the same text, spacing and size (text, never HTML).
+      -->
+      <p
+        v-if="tagDescription && !showsDescriptionField"
+        class="ms-10 mt-1 px-2 py-1 text-sm/5 whitespace-pre-line wrap-break-word text-tag-600/80"
+        v-text="tagDescription"
+      />
+      <div
+        v-else-if="showsDescriptionField"
+        class="relative ms-10 mt-1"
+      >
+        <textarea
+          ref="description-input"
+          v-model="tagDescription"
+          rows="1"
+          :maxlength="IdbTags.descriptionMaxLength"
+          aria-label="Description de l'étiquette"
+          :aria-description="`${IdbTags.descriptionMaxLength} caractères au plus ; Maj+Entrée pour aller à la ligne`"
+          placeholder="Description"
+          class="block w-full resize-none overflow-hidden rounded-lg bg-white/60 px-2 py-1 text-sm/5 text-tag-600 placeholder:text-tag-600/50 hover:bg-white/90 focus:bg-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300"
+          @blur="onUpdateTag"
+        />
+        <span
+          v-if="descriptionLeft < 30"
+          class="pointer-events-none absolute end-2 bottom-1 rounded bg-white/90 px-1 text-xs text-tag-600/80 tabular-nums"
+          aria-hidden="true"
+        >{{ descriptionLeft }}</span>
       </div>
     </template>
 
