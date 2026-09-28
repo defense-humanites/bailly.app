@@ -72,6 +72,36 @@ export class IdbTags {
   }
 
   /**
+   * The longest description of a tag, in characters (a short paragraph).
+   */
+  static readonly descriptionMaxLength = 300;
+
+  /**
+   * A description within the limit, cut if longer (e.g. from another device
+   * or a file; cf. `transfer.ts`).
+   */
+  static clampDescription(description: string): string {
+    const characters = Array.from(description.trim());
+    return characters.length > IdbTags.descriptionMaxLength
+      ? characters.slice(0, IdbTags.descriptionMaxLength).join("").trimEnd()
+      : characters.join("");
+  }
+
+  /**
+   * Validates and normalizes a tag description.
+   * @returns The trimmed description, or `undefined` if none was given.
+   * @throws {IdbError} If it is too long.
+   */
+  static #validateDescription(description: unknown): string | undefined {
+    if (typeof description !== "string") return undefined;
+    const trimmed = description.trim();
+    if (Array.from(trimmed).length > IdbTags.descriptionMaxLength) {
+      throw new IdbError(`La description d'une étiquette ne peut dépasser ${IdbTags.descriptionMaxLength} caractères.`);
+    }
+    return trimmed;
+  }
+
+  /**
    * Validates and normalizes a tag name.
    * @throws {IdbError} If the name is empty or reserved.
    */
@@ -119,6 +149,7 @@ export class IdbTags {
   static async add(data: IdbTagCreation): Promise<IdbResult<IdbTagWithKey>> {
     return attempt(async () => {
       const name = this.#validateName(data.name);
+      const description = this.#validateDescription(data.description) ?? "";
       // Pick the color before the transaction: awaiting anything else than
       // IndexedDB requests would commit it.
       const color = IdbTags.isColorKey(data.color) ? data.color : await this.pickColor();
@@ -138,7 +169,7 @@ export class IdbTags {
       const tag: TagRecord = {
         key: randomUuid(),
         name,
-        description: data.description?.trim() ?? "",
+        description,
         color,
         createdAt: stamp,
         updatedAt: stamp,
@@ -162,6 +193,7 @@ export class IdbTags {
   ): Promise<IdbResult<IdbTagWithKey>> {
     return attempt(async () => {
       const name = this.#validateName(data.name);
+      const description = this.#validateDescription(data.description);
 
       const db = await Idb.getIndexedDB();
       const tx = db.transaction([IdbStore.Tags, IdbStore.Meta], "readwrite");
@@ -178,7 +210,7 @@ export class IdbTags {
       const tag: TagRecord = {
         ...storedTag,
         name,
-        description: data.description?.trim() ?? storedTag.description,
+        description: description ?? storedTag.description,
         color: IdbTags.isColorKey(data.color) ? data.color : storedTag.color,
         updatedAt: await Idb.stamp(tx.objectStore(IdbStore.Meta)),
       };

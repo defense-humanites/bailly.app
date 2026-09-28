@@ -130,7 +130,9 @@ function validateTag(value: unknown, now: number): TagRecord | null {
   return {
     key: value.key,
     name,
-    description: isText(value.description) ? value.description : "",
+    // Cut to the limit, as every device does alike (e.g. written by a later
+    // version with a higher limit).
+    description: isText(value.description) ? IdbTags.clampDescription(value.description) : "",
     // A color unknown to this version of the application (e.g. added since):
     // the tag is kept, with a color it knows.
     color: IdbTags.isColorKey(value.color) ? value.color : IdbTags.colorKeys[0]!,

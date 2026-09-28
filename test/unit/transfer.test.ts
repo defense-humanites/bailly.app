@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { formatStamp } from "../../app/idb/clock";
+import { IdbTags } from "../../app/idb";
 import { emptyState, withoutTombstones, type BookmarksState } from "../../app/idb/merge";
 import {
   BOOKMARKS_FILE_FORMAT,
@@ -120,4 +121,14 @@ test("a locker has no excerpts; an exported file keeps them, for its reader", ()
   const excerpts = new Map([["logos", "λόγος parole"]]);
   expect(toBookmarksFile(state, { tombstones: true }).state.starred[0]).not.toHaveProperty("excerpt");
   expect(toBookmarksFile(state, { excerpts }).state.starred[0]).toMatchObject({ excerpt: "λόγος parole" });
+});
+
+test("a description beyond the limit is cut", () => {
+  const long = "λόγος ".repeat(100);
+  const validated = validateState({
+    tags: [{ key: "t", name: "Homère", description: long, color: "Blue", createdAt: stamp(), updatedAt: stamp() }],
+    tagged: [],
+    starred: [],
+  });
+  expect(Array.from(validated.tags[0]!.description)).toHaveLength(IdbTags.descriptionMaxLength - 1); // The last space trimmed.
 });

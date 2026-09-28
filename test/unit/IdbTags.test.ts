@@ -214,3 +214,20 @@ test("Reorder rejects duplicate keys", async () => {
 
   expect(await IdbTags.reorder([a.key, b.key, a.key])).toSatisfy(error);
 });
+
+test("the description of a tag is limited", async () => {
+  const max = IdbTags.descriptionMaxLength;
+  // Counted in characters (a Greek letter with accents is one character).
+  const longest = "ἄ".repeat(max);
+  const tag = unwrap(await IdbTags.add({ name: "Homère", description: ` ${longest} ` }));
+  expect(tag.description).toBe(longest);
+
+  expect(await IdbTags.add({ name: "Platon", description: `${longest}x` })).toEqual({
+    state: "error",
+    message: `La description d'une étiquette ne peut dépasser ${max} caractères.`,
+  });
+  expect(await IdbTags.update(tag.key, { name: "Homère", description: `${longest}x` })).toSatisfy(error);
+  expect((await IdbTags.getAll())[0]?.description).toBe(longest);
+
+  expect(IdbTags.clampDescription(`${longest} et plus`)).toBe(longest);
+});
