@@ -258,7 +258,7 @@ async function writeMigratedData(transaction: UpgradeTransaction, legacy: Legacy
     const createdAt = stamp();
     const record: TagRecord = {
       key: randomUuid(),
-      name: value.name,
+      name: IdbTags.clampName(value.name),
       description: typeof value.description === "string" ? IdbTags.clampDescription(value.description) : "",
       // A color that is not valid anymore gets the one an import or a
       // synchronization would give it (cf. `transfer.ts`), so that the tag

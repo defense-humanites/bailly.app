@@ -72,19 +72,37 @@ export class IdbTags {
   }
 
   /**
+   * The longest name of a tag, in characters (Antoine's choice): about two
+   * lines of a card on a large screen, the user being free to use them.
+   */
+  static readonly nameMaxLength = 75;
+
+  /**
    * The longest description of a tag, in characters (a short paragraph).
    */
   static readonly descriptionMaxLength = 300;
 
   /**
-   * A description within the limit, cut if longer (e.g. from another device
-   * or a file; cf. `transfer.ts`).
+   * A text within a limit (in characters), cut if longer (e.g. from another
+   * device or a file; cf. `transfer.ts`), alike on every device.
+   */
+  static clamp(text: string, maxLength: number): string {
+    const characters = Array.from(text.trim());
+    return characters.length > maxLength ? characters.slice(0, maxLength).join("").trimEnd() : characters.join("");
+  }
+
+  /**
+   * A description within the limit (cf. `clamp`).
    */
   static clampDescription(description: string): string {
-    const characters = Array.from(description.trim());
-    return characters.length > IdbTags.descriptionMaxLength
-      ? characters.slice(0, IdbTags.descriptionMaxLength).join("").trimEnd()
-      : characters.join("");
+    return IdbTags.clamp(description, IdbTags.descriptionMaxLength);
+  }
+
+  /**
+   * A name within the limit (cf. `clamp`).
+   */
+  static clampName(name: string): string {
+    return IdbTags.clamp(name, IdbTags.nameMaxLength);
   }
 
   /**
@@ -103,13 +121,17 @@ export class IdbTags {
 
   /**
    * Validates and normalizes a tag name.
-   * @throws {IdbError} If the name is empty or reserved.
+   * @throws {IdbError} If the name is empty, too long or reserved.
    */
   static #validateName(name: unknown): string {
     const trimmed = typeof name === "string" ? name.trim() : "";
 
     if (!trimmed.length) {
       throw new IdbError("Une étiquette doit être nommée.");
+    }
+
+    if (Array.from(trimmed).length > IdbTags.nameMaxLength) {
+      throw new IdbError(`Le nom d'une étiquette ne peut dépasser ${IdbTags.nameMaxLength} caractères.`);
     }
 
     if (comparableTagName(trimmed) === "favoris") {

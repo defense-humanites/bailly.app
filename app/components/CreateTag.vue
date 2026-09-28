@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { IdbTags } from "~/idb";
+
   const bookmarksStore = useBookmarksStore();
   const showButtonLabels = useButtonLabels();
   const { newTagColor } = storeToRefs(bookmarksStore);
@@ -44,6 +46,7 @@
     size="2xl"
     placeholder="Nouvelle étiquette"
     aria-label="Nom de la nouvelle étiquette"
+    :maxlength="IdbTags.nameMaxLength"
     :class="{ 'animate-shake': isNewTagNameErrored }"
     :ui="{ base: 'pe-10 xl:pe-28', leading: 'ps-1.5', trailing: 'pe-1.5' }"
     @keydown.enter="createTag"

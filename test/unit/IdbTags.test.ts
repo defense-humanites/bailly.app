@@ -231,3 +231,17 @@ test("the description of a tag is limited", async () => {
 
   expect(IdbTags.clampDescription(`${longest} et plus`)).toBe(longest);
 });
+
+test("the name of a tag is limited", async () => {
+  const max = IdbTags.nameMaxLength;
+  const longest = "Ἀ".repeat(max);
+  const tag = unwrap(await IdbTags.add({ name: longest }));
+  expect(tag.name).toBe(longest);
+
+  expect(await IdbTags.add({ name: `${longest}x` })).toEqual({
+    state: "error",
+    message: `Le nom d'une étiquette ne peut dépasser ${max} caractères.`,
+  });
+  expect(await IdbTags.update(tag.key, { name: `${longest}x` })).toSatisfy(error);
+  expect(IdbTags.clampName(`  ${longest} et plus`)).toBe(longest);
+});

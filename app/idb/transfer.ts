@@ -124,7 +124,8 @@ function validateTag(value: unknown, now: number): TagRecord | null {
   const common = versioned(value, now);
   if (!common || !isText(value.name, { required: !common.deleted }) || !isValidStamp(value.createdAt, now)) return null;
 
-  const name = value.name.trim();
+  // Cut to the limit, as every device does alike.
+  const name = IdbTags.clampName(value.name);
   if (!common.deleted && comparableTagName(name) === "favoris") return null;
 
   return {

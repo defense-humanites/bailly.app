@@ -244,6 +244,7 @@
               ref="tag-name-input"
               v-model="tagName"
               aria-label="Nom de l'étiquette"
+              :maxlength="IdbTags.nameMaxLength"
               size="xl"
               variant="none"
               class="min-w-0 grow"

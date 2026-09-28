@@ -132,3 +132,12 @@ test("a description beyond the limit is cut", () => {
   });
   expect(Array.from(validated.tags[0]!.description)).toHaveLength(IdbTags.descriptionMaxLength - 1); // The last space trimmed.
 });
+
+test("a name beyond the limit is cut", () => {
+  const validated = validateState({
+    tags: [{ key: "t", name: "Les Géorgiques de Virgile, livre IV : Aristée, Protée, puis Orphée et Eurydice aux Enfers", color: "Blue", createdAt: stamp(), updatedAt: stamp() }],
+    tagged: [],
+    starred: [],
+  });
+  expect(validated.tags[0]!.name).toBe("Les Géorgiques de Virgile, livre IV : Aristée, Protée, puis Orphée et Euryd");
+});
