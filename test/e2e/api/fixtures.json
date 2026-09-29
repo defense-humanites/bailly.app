@@ -541,6 +541,44 @@
    }
   }
  },
+ "/entry/Polemôn?fields=word,uri,excerpt,htmlDefinition&siblings=true&siblingsFields=word,uri,excerpt": {
+  "data": {
+   "$query": {
+    "fields": [
+     "word",
+     "uri",
+     "excerpt",
+     "htmlDefinition"
+    ],
+    "siblings": true,
+    "siblingsFields": [
+     "word",
+     "uri",
+     "excerpt"
+    ],
+    "q": "Polemôn"
+   },
+   "version": "2023-02-28",
+   "entry": {
+    "word": "Πολέμων",
+    "uri": "Polemôn",
+    "excerpt": "Πολέμων, ωνος (ὁ) Polémon : 1 philosophe de l’Académie, disciple de Xénocratès, Plut. Adul. ab am. 32, etc. || 2 autres, Dém. 43, 22 Baiter-Sauppe, e…",
+    "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">Πολέμων,</span></span> <span class=\"gens\">ωνος</span>\n(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>) Polémon :\n<div class=\"pp\"><span class=\"ppa\">1</span> <span class=\"ital\">philosophe de l’Académie, disciple de Xénocratès,</span>\n<span class=\"aut\">Plut.</span> <span class=\"oeuv\">Adul. ab\nam.</span> <span class=\"refch\">32,</span> <span class=\"ital\">etc.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> <span class=\"ital\">autres,</span> <span class=\"aut\">Dém.</span> <span class=\"refch\">43, 22 Baiter-Sauppe,</span> <span class=\"ital\">etc. ;</span> <span class=\"aut\">Anth.</span> <span class=\"refch\">5, 218,</span> <span class=\"ital\">etc.</span></div>\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/polemos\">πόλεμος</a></span>.</div>\n"
+   },
+   "siblings": {
+    "previous": {
+     "word": "πολεμόω-ῶ",
+     "uri": "polemoô-ô",
+     "excerpt": "πολεμόω-ῶ, faire ennemi, rendre hostile ; acc. Jos. Macc. 4, 21 ; au pass. être rendu ennemi, Thc. 1, 36 et 57 || Moy. se faire un ennemi de, acc. Th…"
+    },
+    "next": {
+     "word": "Πολεμώνειος",
+     "uri": "Polemôneios",
+     "excerpt": "Πολεμώνειος, ος, ον, de Polémon, Cic. Acad. 4, 43. Étym. v. le préc. "
+    }
+   }
+  }
+ },
  "/entry/poleô-ô?fields=word,uri,excerpt,htmlDefinition": {
   "data": {
    "$query": {
@@ -884,6 +922,31 @@
      "uri": "polus",
      "isExact": true,
      "isMorpheus": true
+    }
+   ]
+  }
+ },
+ "/lookup/\"Πολέμων\"?caseSensitive=true&diacriticSensitive=true&fields=uri&inputMode=greek&limit=30&skipMorpheus=false": {
+  "data": {
+   "$query": {
+    "fields": [
+     "uri"
+    ],
+    "inputMode": "greek",
+    "skipMorpheus": false,
+    "limit": 30,
+    "caseSensitive": true,
+    "diacriticSensitive": true,
+    "q": "\"Πολέμων\""
+   },
+   "version": "2023-02-28",
+   "count": 1,
+   "countAll": 1,
+   "entries": [
+    {
+     "uri": "Polemôn",
+     "isExact": true,
+     "isMorpheus": false
     }
    ]
   }

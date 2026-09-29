@@ -13,6 +13,11 @@ test.describe("former search links", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText("λόγος");
   });
 
+  test("a link from gaffiot.fr: a proper noun, with its case and diacritics", async ({ page }) => {
+    await page.goto(path("Πολέμων"));
+    await expect(page).toHaveURL(new RegExp(`/${encodeURIComponent("Polemôn")}$`));
+  });
+
   test("a form without its diacritics, too", async ({ page }) => {
     await page.goto(path("ανηρ"));
     await expect(page).toHaveURL(new RegExp(`/${encodeURIComponent("anêr")}$`));
