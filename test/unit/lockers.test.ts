@@ -250,8 +250,8 @@ test("blobs", () => {
   expect(isValidBlob("AbC-_09")).toBe(true);
   expect(isValidBlob("")).toBe(false);
   expect(isValidBlob("a+b")).toBe(false);
-  expect(isValidBlob("a".repeat(500_000))).toBe(true);
-  expect(isValidBlob("a".repeat(500_001))).toBe(false);
+  expect(isValidBlob("a".repeat(300_000))).toBe(true);
+  expect(isValidBlob("a".repeat(300_001))).toBe(false);
 });
 
 test("the purges have indexes", async () => {
