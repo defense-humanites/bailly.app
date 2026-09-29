@@ -140,22 +140,30 @@
       after.entries > before.entries ? plural(after.entries - before.entries, "entrée") : "",
     ].filter(Boolean);
 
+    // Synchronized, the imported bookmarks also go to the other devices.
+    const synchronized = added.length && syncStore.enabled ? " Ils seront aussi envoyés à vos autres appareils." : "";
+
     toast.add({
       title: "Signets importés",
-      description: added.length ? `Ajout : ${added.join(" et ")}.` : "Tous les signets de ce fichier étaient déjà là.",
+      description: added.length ? `Ajout : ${added.join(" et ")}.${synchronized}` : "Tous les signets de ce fichier étaient déjà là.",
       icon: "i-lucide-circle-check",
       color: "success",
     });
   };
 
+  const syncStore = useSyncStore();
+  const showButtonLabels = useButtonLabels();
+
   const items: DropdownMenuItem[] = [
     {
       label: "Exporter les signets",
+      description: "Un fichier de sauvegarde de tous vos signets.",
       icon: "i-lucide-download",
       onSelect: () => void exportBookmarks(),
     },
     {
       label: "Importer des signets",
+      description: "Ajoute les signets d'un fichier, sans rien supprimer.",
       icon: "i-lucide-upload",
       onSelect: () => {
         fileInput.value?.click();
@@ -170,18 +178,21 @@
       :items="items"
       :content="{ align: 'end' }"
     >
-      <UTooltip text="Sauvegarde des signets">
+      <!--
+        Icon only below `xl`, as the other actions of the page (the label
+        stays for screen readers, and shows in the tooltip).
+      -->
+      <UTooltip
+        text="Fichier"
+        :disabled="showButtonLabels"
+      >
         <UButton
+          label="Fichier"
+          icon="i-lucide-archive"
           size="2xl"
           variant="subtle"
-          aria-label="Sauvegarde des signets"
-          class="px-2.5"
-        >
-          <UIcon
-            name="i-lucide-ellipsis"
-            class="size-6"
-          />
-        </UButton>
+          :ui="{ base: 'max-xl:px-2.5', label: 'max-xl:sr-only' }"
+        />
       </UTooltip>
     </UDropdownMenu>
 

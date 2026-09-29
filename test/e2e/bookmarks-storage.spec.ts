@@ -69,7 +69,7 @@ test("export, then import on another device (menu of the bookmarks page)", async
   await goto("/signets", { waitUntil: "hydration" });
   await seedBookmarks(page, { starred: [logos], tags: [{ name: "Homère", color: "Blue", entries: [logos] }] });
 
-  await page.getByRole("button", { name: "Sauvegarde des signets" }).click();
+  await page.getByRole("button", { name: "Fichier" }).click();
   const [download] = await Promise.all([
     page.waitForEvent("download"),
     page.getByRole("menuitem", { name: "Exporter les signets" }).click(),
@@ -84,7 +84,7 @@ test("export, then import on another device (menu of the bookmarks page)", async
   await other.goto(new URL("/signets", baseURL).href);
   await waitForHydration(other);
 
-  await other.getByRole("button", { name: "Sauvegarde des signets" }).click();
+  await other.getByRole("button", { name: "Fichier" }).click();
   const [chooser] = await Promise.all([
     other.waitForEvent("filechooser"),
     other.getByRole("menuitem", { name: "Importer des signets" }).click(),
@@ -95,7 +95,7 @@ test("export, then import on another device (menu of the bookmarks page)", async
   expect(await bookmarksState(other)).toEqual({ tags: ["Homère"], tagged: 1, starred: 1 });
 
   // Importing again adds nothing.
-  await other.getByRole("button", { name: "Sauvegarde des signets" }).click();
+  await other.getByRole("button", { name: "Fichier" }).click();
   const [again] = await Promise.all([
     other.waitForEvent("filechooser"),
     other.getByRole("menuitem", { name: "Importer des signets" }).click(),
@@ -109,7 +109,7 @@ test("an import restores the bookmarks deleted since the export", async ({ page,
   await goto("/signets", { waitUntil: "hydration" });
   await seedBookmarks(page, { starred: [logos], tags: [{ name: "Homère", color: "Blue", entries: [logos] }] });
 
-  await page.getByRole("button", { name: "Sauvegarde des signets" }).click();
+  await page.getByRole("button", { name: "Fichier" }).click();
   const [download] = await Promise.all([
     page.waitForEvent("download"),
     page.getByRole("menuitem", { name: "Exporter les signets" }).click(),
@@ -129,7 +129,7 @@ test("an import restores the bookmarks deleted since the export", async ({ page,
   });
   await expect.poll(() => bookmarksState(page)).toEqual({ tags: [], tagged: 0, starred: 0 });
 
-  await page.getByRole("button", { name: "Sauvegarde des signets" }).click();
+  await page.getByRole("button", { name: "Fichier" }).click();
   const [chooser] = await Promise.all([
     page.waitForEvent("filechooser"),
     page.getByRole("menuitem", { name: "Importer des signets" }).click(),
@@ -159,7 +159,7 @@ test("an import beyond the limits asks first, then leaves out what does not fit"
     },
   };
 
-  await page.getByRole("button", { name: "Sauvegarde des signets" }).click();
+  await page.getByRole("button", { name: "Fichier" }).click();
   const [chooser] = await Promise.all([
     page.waitForEvent("filechooser"),
     page.getByRole("menuitem", { name: "Importer des signets" }).click(),
