@@ -690,8 +690,14 @@
           label="J'ai déjà une clé"
           icon="i-lucide-key-round"
           color="secondary"
-          class="justify-center max-sm:w-full sm:me-auto"
+          class="justify-center max-sm:w-full"
           @click="view = 'join'"
+        />
+        <!-- "ou": two ways, far enough apart not to touch one for the other. -->
+        <USeparator
+          label="ou"
+          class="max-sm:my-3 sm:mx-2 sm:flex-1"
+          :ui="{ label: 'text-muted' }"
         />
         <UButton
           label="Activer la synchronisation"
