@@ -1,9 +1,12 @@
 export default defineAppConfig({
   ui: {
+    // The palette « Grèce classique » (cf. `assets/css/theme.css`).
     colors: {
-      primary: "hot-cinnamon",
-      secondary: "domino",
-      neutral: "gray",
+      primary: "aegean",
+      secondary: "terracotta",
+      info: "aegean",
+      warning: "gold",
+      neutral: "marble",
     },
     /*
      * Rounded buttons (pills), except the ghost ones, used in lists and
@@ -73,7 +76,7 @@ export default defineAppConfig({
       variants: {
         variant: {
           solid: {
-            root: "bg-default ring ring-default -bg-linear-45 from-0% from-primary-50/50 to-25% to-white",
+            root: "bg-default ring ring-default",
           },
           bookmarkGroup: {
             root: "border border-neutral-400/25 bg-neutral-400/15 backdrop-blur-[2px]",

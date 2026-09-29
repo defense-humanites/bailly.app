@@ -1,6 +1,74 @@
+/*
+ * The roles of the colors (the palette « Grèce classique », cf. `theme.css`
+ * and `app.config.ts`): Nuxt UI's semantic variables, set on the marble
+ * (light) or the black glaze (dark), and the application's own. Contrasts
+ * (WCAG) are given against the page background (`--app-page-bg`); the text
+ * reaches 4.5:1 at least, except the dimmed one (placeholders, hints).
+ * Unlayered: they override Nuxt UI's (in the `theme` layer).
+ */
 :root {
-  --ui-primary: var(--ui-color-primary-600);
-  --ui-text: var(--ui-color-neutral-900);
+  --ui-primary: var(--ui-color-primary-700); /* 7.7:1 */
+  --ui-secondary: var(--ui-color-secondary-600); /* 5:1 */
+  --ui-warning: var(--ui-color-warning-600); /* 4:1 */
+
+  --ui-text-dimmed: var(--ui-color-neutral-600); /* 4:1 */
+  --ui-text-muted: var(--ui-color-neutral-700); /* 6:1 */
+  --ui-text-toned: var(--ui-color-neutral-800);
+  --ui-text: var(--ui-color-neutral-900); /* 13:1 */
+  --ui-text-highlighted: var(--ui-color-neutral-950);
+  --ui-text-inverted: var(--ui-color-neutral-50);
+
+  --ui-bg: var(--ui-color-neutral-50);
+  --ui-bg-muted: var(--ui-color-neutral-100);
+  --ui-bg-elevated: var(--ui-color-neutral-100);
+  --ui-bg-accented: var(--ui-color-neutral-200);
+  --ui-bg-inverted: var(--ui-color-neutral-900);
+
+  --ui-border: var(--ui-color-neutral-200);
+  --ui-border-muted: var(--ui-color-neutral-200);
+  --ui-border-accented: var(--ui-color-neutral-300);
+  --ui-border-inverted: var(--ui-color-neutral-900);
+
+  /* The page (the cards, panels and fields are on `--ui-bg`, lighter). */
+  --app-page-bg: var(--ui-color-neutral-100);
+  /* The page's topographic motif (cf. `layers/base.css`). */
+  --app-motif: color-mix(in srgb, var(--ui-color-neutral-400) 35%, transparent);
+  /* The sticky bars (header, compact bar of an entry, reader's bar). */
+  --app-bar-bg: color-mix(in srgb, var(--ui-color-neutral-50) 95%, transparent);
+  /* The favorites (the star). */
+  --app-favorite: var(--color-gold-400);
+}
+
+.dark {
+  --ui-primary: var(--ui-color-primary-300); /* 8.4:1 */
+  --ui-secondary: var(--ui-color-secondary-400); /* 5.8:1 */
+  --ui-warning: var(--ui-color-warning-400);
+
+  --ui-text-dimmed: var(--ui-color-neutral-500); /* 6:1 */
+  --ui-text-muted: var(--ui-color-neutral-400); /* 8.9:1 */
+  --ui-text-toned: var(--ui-color-neutral-300);
+  --ui-text: var(--ui-color-neutral-200); /* 14:1 */
+  --ui-text-highlighted: var(--ui-color-neutral-50);
+  --ui-text-inverted: var(--ui-color-neutral-900);
+
+  --ui-bg: var(--ui-color-neutral-900);
+  --ui-bg-muted: var(--ui-color-neutral-800);
+  --ui-bg-elevated: var(--ui-color-neutral-800);
+  --ui-bg-accented: var(--ui-color-neutral-700);
+  --ui-bg-inverted: var(--ui-color-neutral-100);
+
+  --ui-border: var(--ui-color-neutral-800);
+  --ui-border-muted: var(--ui-color-neutral-800);
+  --ui-border-accented: var(--ui-color-neutral-700);
+  --ui-border-inverted: var(--ui-color-neutral-100);
+
+  --app-page-bg: var(--color-vernis);
+  --app-motif: color-mix(in srgb, var(--ui-color-neutral-700) 35%, transparent);
+  --app-bar-bg: color-mix(in srgb, var(--color-vernis) 95%, transparent);
+  --app-favorite: var(--color-gold-300);
+}
+
+:root {
 
   /*
    * The narrowest width the application is laid out for (320px at the

@@ -73,7 +73,7 @@
 <template>
   <UFieldGroup
     orientation="horizontal"
-    class="border border-neutral-200 rounded-lg [&>button]:rounded-lg shadow-xs"
+    class="border border-default rounded-lg [&>button]:rounded-lg shadow-xs"
   >
     <!--
       The other tags: a toggle button for each, whose icon, in the tag's
@@ -161,8 +161,8 @@
       :icon="starred ? 'i-bailly-star-filled' : 'i-lucide-star'"
       color="neutral"
       variant="ghost"
-      :class="starred ? 'text-primary-400' : 'hover:text-primary-400'"
-      :ui="{ base: 'border-l border-neutral-200' }"
+      :class="starred ? 'text-favorite' : 'hover:text-favorite'"
+      :ui="{ base: 'border-l border-default' }"
       @click="toggleStar"
     />
   </UFieldGroup>

@@ -155,7 +155,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           :key="feature.title"
         >
           <UCard class="h-full">
-            <div class="mb-3 flex size-10 items-center justify-center rounded-full bg-primary-50 text-primary">
+            <div class="mb-3 flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
               <UIcon
                 :name="feature.icon"
                 class="size-5"
@@ -198,13 +198,13 @@ mort d'un homme qu'on lance (du haut d'un rocher).
             aria-hidden="true"
             class="contents"
           >
-            <div class="absolute top-20 -bottom-12 left-10 border-s-2 border-dashed border-primary-300 md:hidden" />
-            <div class="absolute top-56 bottom-0 left-28 hidden border-s-2 border-dashed border-primary-300 md:block" />
-            <div class="absolute top-full right-1/2 left-28 hidden h-12 rounded-bl-3xl border-b-2 border-s-2 border-dashed border-primary-300 md:block" />
-            <div class="absolute top-[calc(100%+3rem-2px)] right-28 left-1/2 hidden h-12 rounded-tr-3xl border-e-2 border-t-2 border-dashed border-primary-300 md:block" />
+            <div class="absolute top-20 -bottom-12 left-10 border-s-2 border-dashed border-primary/40 md:hidden" />
+            <div class="absolute top-56 bottom-0 left-28 hidden border-s-2 border-dashed border-primary/40 md:block" />
+            <div class="absolute top-full right-1/2 left-28 hidden h-12 rounded-bl-3xl border-b-2 border-s-2 border-dashed border-primary/40 md:block" />
+            <div class="absolute top-[calc(100%+3rem-2px)] right-28 left-1/2 hidden h-12 rounded-tr-3xl border-e-2 border-t-2 border-dashed border-primary/40 md:block" />
           </div>
           <div class="relative size-20 shrink-0 md:size-56">
-            <div class="relative size-full overflow-hidden rounded-full bg-white shadow-2xl ring-4 ring-primary-50 md:ring-8">
+            <div class="relative size-full overflow-hidden rounded-full bg-white shadow-2xl ring-4 ring-primary/10 md:ring-8">
               <img
                 src="/images/bailly-1935-rhiptos.webp"
                 width="480"
@@ -213,7 +213,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                 class="size-full"
               >
             </div>
-            <span class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-white shadow-md md:px-3 md:py-1 md:text-sm">
+            <span class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-inverted shadow-md md:px-3 md:py-1 md:text-sm">
               1894 – 1935
             </span>
           </div>
@@ -239,15 +239,15 @@ mort d'un homme qu'on lance (du haut d'un rocher).
             aria-hidden="true"
             class="contents"
           >
-            <div class="absolute top-20 -bottom-12 left-10 border-s-2 border-dashed border-primary-300 md:hidden" />
-            <div class="absolute top-56 right-28 bottom-0 hidden border-e-2 border-dashed border-primary-300 md:block" />
-            <div class="absolute top-full right-28 left-1/2 hidden h-12 rounded-br-3xl border-e-2 border-b-2 border-dashed border-primary-300 md:block" />
-            <div class="absolute top-[calc(100%+3rem-2px)] right-1/2 left-28 hidden h-12 rounded-tl-3xl border-s-2 border-t-2 border-dashed border-primary-300 md:block" />
+            <div class="absolute top-20 -bottom-12 left-10 border-s-2 border-dashed border-primary/40 md:hidden" />
+            <div class="absolute top-56 right-28 bottom-0 hidden border-e-2 border-dashed border-primary/40 md:block" />
+            <div class="absolute top-full right-28 left-1/2 hidden h-12 rounded-br-3xl border-e-2 border-b-2 border-dashed border-primary/40 md:block" />
+            <div class="absolute top-[calc(100%+3rem-2px)] right-1/2 left-28 hidden h-12 rounded-tl-3xl border-s-2 border-t-2 border-dashed border-primary/40 md:block" />
           </div>
           <div class="relative size-20 shrink-0 md:size-56">
             <div
               aria-hidden="true"
-              class="flex size-full items-center justify-center overflow-hidden rounded-full bg-white shadow-2xl ring-4 ring-primary-50 md:ring-8"
+              class="flex size-full items-center justify-center overflow-hidden rounded-full bg-default shadow-2xl ring-4 ring-primary/10 md:ring-8"
             >
               <!-- eslint-disable vue/no-v-html -- A constant of this page. -->
               <div
@@ -256,7 +256,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
               />
               <!-- eslint-enable vue/no-v-html -->
             </div>
-            <span class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-white shadow-md md:px-3 md:py-1 md:text-sm">
+            <span class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-inverted shadow-md md:px-3 md:py-1 md:text-sm">
               2020
             </span>
           </div>
@@ -303,10 +303,10 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           <div class="relative size-20 shrink-0 md:size-56">
             <div
               aria-hidden="true"
-              class="flex size-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary-100 to-white shadow-2xl ring-4 ring-primary-50 md:ring-8"
+              class="flex size-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary/15 to-(--ui-bg) shadow-2xl ring-4 ring-primary/10 md:ring-8"
             >
               <div class="w-[11.2rem] shrink-0 space-y-1.5 max-md:scale-[0.36]">
-                <div class="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm shadow-xs ring-1 ring-default">
+                <div class="flex items-center gap-1.5 rounded-full bg-default px-3 py-1.5 text-sm shadow-xs ring-1 ring-default">
                   <UIcon
                     name="i-lucide-search"
                     class="size-3.5 text-muted"
@@ -314,12 +314,12 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                   <span class="font-serif">ῥιπτ</span>
                   <span class="ms-auto rounded-full bg-elevated px-1.5 text-[0.625rem] text-muted">4</span>
                 </div>
-                <div class="rounded-md bg-white p-2 ring-1 ring-default">
+                <div class="rounded-md bg-default p-2 ring-1 ring-default">
                   <div class="flex items-center gap-1.5">
                     <span class="font-serif text-sm font-bold">ῥιπτός</span>
                     <UIcon
                       name="i-bailly-star-filled"
-                      class="ms-auto size-3.5 text-primary-400"
+                      class="ms-auto size-3.5 text-favorite"
                     />
                   </div>
                   <p class="line-clamp-2 font-serif text-xs text-muted">
@@ -328,7 +328,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                 </div>
               </div>
             </div>
-            <span class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-white shadow-md md:px-3 md:py-1 md:text-sm">
+            <span class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-inverted shadow-md md:px-3 md:py-1 md:text-sm">
               Aujourd'hui
             </span>
           </div>
@@ -437,7 +437,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
       </ul>
     </section>
 
-    <section class="my-10 rounded-2xl bg-linear-to-br from-primary-100 to-primary-50 p-6 md:p-10">
+    <section class="my-10 rounded-2xl bg-linear-to-br from-secondary/15 to-secondary/5 p-6 md:p-10">
       <h2 class="font-serif text-2xl font-bold md:text-3xl">
         Un dictionnaire libre, porté par une association
       </h2>

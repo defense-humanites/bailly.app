@@ -44,7 +44,7 @@
     <template v-if="starred">
       <UIcon
         name="i-bailly-star-filled"
-        class="size-4 text-primary-400"
+        class="size-4 text-favorite"
       />
       <span class="sr-only">(favori)</span>
     </template>

@@ -71,7 +71,7 @@
   <UPopover
     v-model:open="open"
     :arrow="{ rounded: true, width: 16, height: 8 }"
-    :ui="{ content: 'z-99 p-3', arrow: 'fill-white' }"
+    :ui="{ content: 'z-99 p-3', arrow: 'fill-(--ui-bg)' }"
   >
     <!--
       The trigger must carry `data-tag-color="color"` for `class` to apply,

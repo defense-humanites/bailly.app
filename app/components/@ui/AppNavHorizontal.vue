@@ -69,8 +69,8 @@
   -->
   <header
     ref="header"
-    class="sticky z-[99] border-b bg-white/95 bg-radial-[at_50%_0%] from-white/50 from-75% to-primary-50/75 to-100% backdrop-blur-sm transition-[top,border-color] duration-300 ease-out motion-reduce:transition-none md:top-0 md:h-14 md:px-safe-6 md:transition-[border-color]"
-    :class="[titleRowShown ? 'top-0' : '-top-12', scrolled ? 'border-black/10' : 'border-transparent']"
+    class="sticky z-[99] border-b bg-bar backdrop-blur-sm transition-[top,border-color] duration-300 ease-out motion-reduce:transition-none md:top-0 md:h-14 md:px-safe-6 md:transition-[border-color]"
+    :class="[titleRowShown ? 'top-0' : '-top-12', scrolled ? 'border-default' : 'border-transparent']"
   >
     <nav
       class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 max-md:px-safe-4 md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:pb-0"
@@ -85,7 +85,7 @@
       <UNavigationMenu
         aria-label="Accueil"
         :items="[{ label: 'Bailly.app', to: '/', active: false }]"
-        :ui="{ item: 'md:py-0', link: 'py-1.5 md:py-0.5 font-serif text-xl font-normal tracking-wider text-black hover:text-black' }"
+        :ui="{ item: 'md:py-0', link: 'py-1.5 md:py-0.5 font-serif text-xl font-normal tracking-wider text-highlighted hover:text-highlighted' }"
       />
       <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:max-w-(--reading-width) md:justify-self-center lg:justify-self-start" />
       <UNavigationMenu

@@ -1,27 +1,63 @@
 @theme static {
-  --color-hot-cinnamon-50: oklch(98.25% 0.02 89.35);
-  --color-hot-cinnamon-100: oklch(94.83% 0.05 88.81);
-  --color-hot-cinnamon-200: oklch(89.89% 0.1 89.39);
-  --color-hot-cinnamon-300: oklch(83.87% 0.14 84.12);
-  --color-hot-cinnamon-400: oklch(78.7% 0.15 75.78);
-  --color-hot-cinnamon-500: oklch(72.05% 0.16 62.22);
-  --color-hot-cinnamon-600: oklch(62.64% 0.16 51.88);
-  --color-hot-cinnamon-700: oklch(52.68% 0.14 43.99);
-  --color-hot-cinnamon-800: oklch(45.17% 0.12 41.12);
-  --color-hot-cinnamon-900: oklch(39.46% 0.1 39.86);
-  --color-hot-cinnamon-950: oklch(26.71% 0.07 39.61);
+  /*
+   * The palette « Grèce classique » (after the fresco of the Tomb of the
+   * Diver, Paestum): the marble of the temples (warm neutrals: backgrounds,
+   * text, borders), the blue of the Aegean and of the Egyptian blue of the
+   * pediments (the main color: links, main actions, focus), the terracotta
+   * of Attic pottery (the accent: calls to action, details), the gold of the
+   * offerings (favorites, highlights, warnings), and the black glaze of the
+   * vases (the dark theme's background). Roles: cf. `app.config.ts`
+   * (`ui.colors`) and `root.css`.
+   */
+  --color-marble-50: #fbfaf6;
+  --color-marble-100: #f5f2ea;
+  --color-marble-200: #e9e4d6;
+  --color-marble-300: #d9d2bf;
+  --color-marble-400: #bfb69f;
+  --color-marble-500: #a0967d;
+  --color-marble-600: #7f765f;
+  --color-marble-700: #625b4b;
+  --color-marble-800: #443f35;
+  --color-marble-900: #2b2823;
+  --color-marble-950: #1a1815;
 
-  --color-domino-50: oklch(97.31% 0.005 91.45);
-  --color-domino-100: oklch(92.28% 0.01 84.58);
-  --color-domino-200: oklch(84.42% 0.02 84.59);
-  --color-domino-300: oklch(74.43% 0.04 79.6);
-  --color-domino-400: oklch(65.5% 0.05 74.77);
-  --color-domino-500: oklch(60.09% 0.05 70.18);
-  --color-domino-600: oklch(52.06% 0.04 61.28);
-  --color-domino-700: oklch(44.91% 0.03 53.34);
-  --color-domino-800: oklch(40.69% 0.03 45.23);
-  --color-domino-900: oklch(37.56% 0.02 38.06);
-  --color-domino-950: oklch(25.43% 0.02 37.34);
+  --color-aegean-50: #eef5fb;
+  --color-aegean-100: #d9e9f6;
+  --color-aegean-200: #b5d3ed;
+  --color-aegean-300: #86b6e0;
+  --color-aegean-400: #5594cf;
+  --color-aegean-500: #2f77bb;
+  --color-aegean-600: #1f5fa0;
+  --color-aegean-700: #1a4d82;
+  --color-aegean-800: #173f68;
+  --color-aegean-900: #143453;
+  --color-aegean-950: #0d2238;
+
+  --color-terracotta-50: #fcf3ed;
+  --color-terracotta-100: #f8e1d2;
+  --color-terracotta-200: #f0c0a3;
+  --color-terracotta-300: #e79a6f;
+  --color-terracotta-400: #dc7643;
+  --color-terracotta-500: #c8592b;
+  --color-terracotta-600: #b14522;
+  --color-terracotta-700: #933520;
+  --color-terracotta-800: #782e21;
+  --color-terracotta-900: #63291f;
+  --color-terracotta-950: #36130e;
+
+  --color-gold-50: #fbf7e9;
+  --color-gold-100: #f5ebc5;
+  --color-gold-200: #edd98f;
+  --color-gold-300: #e3c258;
+  --color-gold-400: #d6aa34;
+  --color-gold-500: #bc8f22;
+  --color-gold-600: #96701b;
+  --color-gold-700: #745419;
+  --color-gold-800: #60441b;
+  --color-gold-900: #52391b;
+  --color-gold-950: #2f1e0c;
+
+  --color-vernis: #1a1613;
 
   --font-sans: Inter, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", IFAOGrec;
@@ -63,4 +99,14 @@
       transform: translate3d(4px, 0, 0);
     }
   }
+}
+
+/*
+ * The application's color roles (cf. root.css), as utilities: `bg-page`,
+ * `bg-bar`, `text-favorite`…
+ */
+@theme inline {
+  --color-page: var(--app-page-bg);
+  --color-bar: var(--app-bar-bg);
+  --color-favorite: var(--app-favorite);
 }

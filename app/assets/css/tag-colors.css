@@ -140,15 +140,16 @@
     --tag-900: var(--color-teal-900);
   }
 
+  /* The gold of the palette (cf. theme.css), as the favorites. */
   [data-tag-color="Yellow"] {
-    --tag-100: var(--color-yellow-100);
-    --tag-200: var(--color-yellow-200);
-    --tag-300: var(--color-yellow-300);
-    --tag-400: var(--color-yellow-400);
-    --tag-500: var(--color-yellow-500);
-    --tag-600: var(--color-yellow-600);
-    --tag-700: var(--color-yellow-700);
-    --tag-800: var(--color-yellow-800);
-    --tag-900: var(--color-yellow-900);
+    --tag-100: var(--color-gold-100);
+    --tag-200: var(--color-gold-200);
+    --tag-300: var(--color-gold-300);
+    --tag-400: var(--color-gold-400);
+    --tag-500: var(--color-gold-500);
+    --tag-600: var(--color-gold-600);
+    --tag-700: var(--color-gold-700);
+    --tag-800: var(--color-gold-800);
+    --tag-900: var(--color-gold-900);
   }
 }

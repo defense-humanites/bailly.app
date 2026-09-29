@@ -95,8 +95,7 @@
 
   .secta {
     @apply font-semibold;
-    @apply text-primary-700;
-    @apply dark:text-primary-200;
+    @apply text-primary;
   }
 
   .sect,
@@ -107,10 +106,11 @@
     @apply mt-3;
   }
 
+  /* The etymologies, in terracotta (7.3:1 on the marble). */
   .etymor,
   .etymrev {
-    @apply text-primary-700;
-    @apply dark:text-primary-200;
+    @apply text-secondary-700;
+    @apply dark:text-secondary-300;
   }
 
   .etiqetymor,

@@ -32,7 +32,7 @@
 
     <section
       aria-labelledby="en-bref"
-      class="rounded-lg bg-primary-50/60 p-4 ring-1 ring-primary-100 md:p-6"
+      class="rounded-lg bg-primary/5 p-4 ring-1 ring-primary/15 md:p-6"
     >
       <h2
         id="en-bref"

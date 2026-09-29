@@ -418,7 +418,7 @@
           <div class="grid gap-4 sm:grid-cols-2">
             <button
               type="button"
-              class="flex items-start gap-3 rounded-lg bg-primary-50 p-4 text-start ring-1 ring-primary-200 transition-colors hover:bg-primary-100 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-75"
+              class="flex items-start gap-3 rounded-lg bg-primary/10 p-4 text-start ring-1 ring-primary/25 transition-colors hover:bg-primary/15 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-75"
               :disabled="busy"
               @click="enable"
             >
@@ -435,7 +435,7 @@
             </button>
             <button
               type="button"
-              class="flex items-start gap-3 rounded-lg bg-secondary-50 p-4 text-start ring-1 ring-secondary-200 transition-colors hover:bg-secondary-100 focus-visible:outline-2 focus-visible:outline-secondary disabled:opacity-75"
+              class="flex items-start gap-3 rounded-lg bg-secondary/10 p-4 text-start ring-1 ring-secondary/25 transition-colors hover:bg-secondary/15 focus-visible:outline-2 focus-visible:outline-secondary disabled:opacity-75"
               :disabled="busy"
               @click="view = 'join'"
             >

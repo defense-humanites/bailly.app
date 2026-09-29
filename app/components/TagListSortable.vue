@@ -81,7 +81,7 @@
     <li
       v-for="(tag, index) in sortableTags"
       :key="tag.key"
-      class="px-3 py-1.5 flex items-center hover:bg-neutral-100 rounded-lg text-lg font-semibold cursor-default"
+      class="px-3 py-1.5 flex items-center hover:bg-elevated rounded-lg text-lg font-semibold cursor-default"
     >
       <UIcon
         name="i-lucide-grip-vertical"
