@@ -41,7 +41,7 @@ test("suggestions", () => {
 
 test("errors are explained", () => {
   const words = secretToWords(secret);
-  expect(() => wordsToSecret(words.slice(0, 11))).toThrow("La clé compte 12 mots (11 saisis).");
+  expect(() => wordsToSecret(words.slice(0, 11))).toThrow("La clé compte douze mots (11 saisis).");
   expect(() => wordsToSecret([...words.slice(0, 11), "zzzz"])).toThrow("Le mot n° 12 (« zzzz ») n'est pas dans la liste.");
 
   // A wrong word, detected by the checksum.

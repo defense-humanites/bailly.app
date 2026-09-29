@@ -42,14 +42,14 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await expect(page.getByRole("button", { name: "Télécharger le kit de récupération" })).toBeVisible();
   await page.getByRole("tab", { name: "Ajouter un appareil" }).click();
   await page.getByRole("button", { name: "Afficher la clé" }).click();
-  const keyWords = page.getByRole("list", { name: "Les 12 mots de la clé" }).locator("li > span:last-child");
+  const keyWords = page.getByRole("list", { name: "Les douze mots de la clé" }).locator("li > span:last-child");
   await expect(keyWords).toHaveCount(12);
   const words = await keyWords.allInnerTexts();
   await expect(page.getByRole("img", { name: "QR code de la clé" }).locator("svg")).toBeVisible();
 
   // A click on the words copies them.
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
-  await page.getByRole("list", { name: "Les 12 mots de la clé" }).click();
+  await page.getByRole("list", { name: "Les douze mots de la clé" }).click();
   await expect(page.getByText("Clé copiée", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(words.join(" "));
   await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
@@ -374,7 +374,7 @@ test("enabling a key again brings back the online bookmarks deleted meanwhile", 
   await expect(page.getByRole("button", { name: "Télécharger le kit de récupération" })).toBeVisible();
   await page.getByRole("tab", { name: "Ajouter un appareil" }).click();
   await page.getByRole("button", { name: "Afficher la clé" }).click();
-  const keyWords = page.getByRole("list", { name: "Les 12 mots de la clé" }).locator("li > span:last-child");
+  const keyWords = page.getByRole("list", { name: "Les douze mots de la clé" }).locator("li > span:last-child");
   await expect(keyWords).toHaveCount(12);
   const words = await keyWords.allInnerTexts();
   const link = await syncLink(page);

@@ -75,7 +75,7 @@ export function splitWords(text: string): string[] {
  */
 export function wordsToSecret(words: string[]): Uint8Array<ArrayBuffer> {
   if (words.length !== SYNC_KEY_WORD_COUNT) {
-    throw new SyncKeyError(`La clé compte ${SYNC_KEY_WORD_COUNT} mots (${words.length} saisis).`);
+    throw new SyncKeyError(`La clé compte douze mots (${words.length} saisis).`);
   }
 
   const resolved = words.map((word, i) => {
@@ -87,6 +87,6 @@ export function wordsToSecret(words: string[]): Uint8Array<ArrayBuffer> {
   try {
     return new Uint8Array(mnemonicToEntropy(resolved.join(" "), wordlist));
   } catch {
-    throw new SyncKeyError(`Ces ${SYNC_KEY_WORD_COUNT} mots ne forment pas une clé valide : vérifiez-les.`);
+    throw new SyncKeyError("Ces douze mots ne forment pas une clé valide : vérifiez-les.");
   }
 }

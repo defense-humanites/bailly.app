@@ -35,14 +35,6 @@
   const busy = ref(false);
 
   /**
-   * The name suggested for the key in a password manager.
-   * @remarks The key is not saved there by the page: the browsers only save
-   * what the user types in a login form (Chrome's `PasswordCredential` does
-   * not prompt reliably either). The user copies the words instead.
-   */
-  const CREDENTIAL_NAME = "Bailly.app (synchronisation des signets)";
-
-  /**
    * Whether the key is shown from the state of the synchronization (to add a
    * device), rather than right after enabling it (to keep it first).
    */
@@ -208,7 +200,7 @@
       "",
       "Pour retrouver vos signets sur un autre appareil : ouvrez Bailly.app, page",
       "« Signets », bouton « Synchronisation » > « J'ai déjà une clé », puis",
-      "saisissez ces 12 mots dans l'ordre.",
+      "saisissez ces douze mots dans l'ordre.",
       ...(link.value ? ["", "Ou ouvrez ce lien sur l'autre appareil :", link.value] : []),
       "",
       "Gardez ce document en lieu sûr : qui possède ces mots peut lire et",
@@ -415,7 +407,7 @@
             Retrouvez vos signets sur tous vos appareils (ordinateur, téléphone…), sans créer de compte.
           </p>
           <p>
-            Une <strong>clé de 12 mots</strong> relie vos appareils. Vos signets sont chiffrés sur l'appareil
+            Une <strong>clé de douze mots</strong> relie vos appareils. Vos signets sont chiffrés sur l'appareil
             avant d'être envoyés : sans la clé, personne ne peut les lire, pas même Bailly.app.
           </p>
           <p class="text-muted">
@@ -450,7 +442,7 @@
             @submit.prevent="join"
           >
             <UFormField
-              :label="`Les ${SYNC_KEY_WORD_COUNT} mots de votre clé`"
+              label="Les douze mots de votre clé"
               help="Dans l'ordre, séparés par des espaces. Accents et majuscules sont facultatifs ; les 4 premières lettres de chaque mot suffisent."
               :error="joinError ?? actionError ?? (unknownWord ? `« ${unknownWord} » n'est pas un mot de la liste.` : undefined)"
             >
@@ -490,7 +482,7 @@
           <!-- Add a device: the QR code and the words, on the screen -->
           <template v-if="keyTab === 'device'">
             <p>
-              Sur votre autre appareil, scannez ce QR code avec l'appareil photo, ou saisissez les 12 mots
+              Sur votre autre appareil, scannez ce QR code avec l'appareil photo, ou saisissez les douze mots
               (« Synchronisation » > « J'ai déjà une clé »).
             </p>
             <!-- Hidden until asked: whoever sees the words can read and change the bookmarks. -->
@@ -525,7 +517,7 @@
               <div class="relative">
                 <ol
                   class="grid cursor-pointer grid-cols-2 gap-x-4 gap-y-1.5 rounded-md bg-elevated p-3 pe-12 font-medium transition-colors hover:bg-accented/60 sm:grid-cols-3"
-                  aria-label="Les 12 mots de la clé"
+                  aria-label="Les douze mots de la clé"
                   title="Copier les mots"
                   @click="copyWords"
                 >
@@ -554,7 +546,7 @@
           <!-- Keep the key: without showing it on the screen -->
           <template v-else>
             <p>
-              Votre clé est une suite de <strong>12 mots</strong>, à garder dans l'ordre. Conservez-la
+              Votre clé est une suite de <strong>douze mots</strong>, à garder dans l'ordre. Conservez-la
               <strong>hors du navigateur</strong> : elle permet de retrouver vos signets si ce navigateur les
               efface, et d'activer la synchronisation sur vos autres appareils.
             </p>
@@ -567,7 +559,7 @@
                 @click="downloadRecoveryKit"
               />
               <UButton
-                :label="copied ? 'Clé copiée' : 'Copier la clé (12 mots)'"
+                :label="copied ? 'Clé copiée' : 'Copier la clé'"
                 :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
                 variant="outline"
                 block
@@ -582,10 +574,6 @@
                 @click="shareWords"
               />
             </div>
-            <p class="text-muted">
-              Pour la garder dans votre gestionnaire de mots de passe, copiez la clé et collez-la dans une
-              nouvelle entrée (identifiant : « {{ CREDENTIAL_NAME }} »).
-            </p>
           </template>
 
           <p class="flex gap-2 border-t border-default pt-4 text-muted">
@@ -693,15 +681,22 @@
       v-if="supported"
       #footer
     >
+      <!--
+        The two ways in, apart and as visible: a new key, or the key of
+        another device.
+      -->
       <template v-if="view === 'intro'">
         <UButton
           label="J'ai déjà une clé"
-          variant="outline"
+          icon="i-lucide-key-round"
+          color="secondary"
+          class="justify-center max-sm:w-full sm:me-auto"
           @click="view = 'join'"
         />
         <UButton
           label="Activer la synchronisation"
           icon="i-lucide-refresh-cw"
+          class="justify-center max-sm:w-full"
           :loading="busy"
           @click="enable"
         />
