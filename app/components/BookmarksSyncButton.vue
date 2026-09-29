@@ -132,13 +132,11 @@
         @click="openSync"
       >
         <template #leading>
-          <!-- The leading slot gets no gap before the label: added from `xl`. -->
           <UChip
             :show="needsAttention"
             color="warning"
             size="md"
             inset
-            class="xl:me-1.5"
           >
             <UIcon
               :name="icon"

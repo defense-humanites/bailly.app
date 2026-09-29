@@ -21,11 +21,13 @@ export default defineAppConfig({
           ghost: { base: "rounded-md" },
         },
         size: {
+          // A gap rather than margins around the icons: a label hidden (e.g.
+          // `sr-only`) then leaves a square (round) button.
           "2xl": {
-            base: "px-3.5 py-2.5 text-base",
-            leadingIcon: "size-6 mr-1.5",
+            base: "px-3.5 py-2.5 text-base gap-1.5",
+            leadingIcon: "size-6",
             leadingAvatarSize: "xs",
-            trailingIcon: "size-6 ml-1.5",
+            trailingIcon: "size-6",
           },
         },
       },
