@@ -234,7 +234,8 @@ export async function chargeBudget(
   const key = address ? addressKey(address) : null;
   if (address && !key && !unreadableWarned) {
     unreadableWarned = true;
-    console.warn(`The address of a client is not an IP address (${address}): check the header of the proxy (NUXT_SYNC_ADDRESS_HEADER).`);
+    // Without the value: the logs keep no address.
+    console.warn("The address of a client is not an IP address: check the header of the proxy (NUXT_SYNC_ADDRESS_HEADER).");
   }
   const maxBytes = max(limits.bytes);
   const maxCreations = max(limits.creations);
