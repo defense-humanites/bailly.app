@@ -48,9 +48,42 @@
    */
   const keyFromStatus = ref(false);
 
-  const showKey = async (fromStatus = false): Promise<void> => {
+  /**
+   * Whether the words (and the QR code) are shown: from the state of the
+   * synchronization, only once asked (someone may see the screen, e.g. a
+   * shared computer); right after enabling it, at once.
+   */
+  const keyRevealed = ref(true);
+
+  /**
+   * The two uses of the key: adding a device (the QR code and the words,
+   * shown on the screen) and keeping it (the recovery kit, a copy: without
+   * showing it).
+   */
+  type KeyTab = "device" | "save";
+  const keyTab = ref<KeyTab>("save");
+  // Keeping the key comes first (the first step, after enabling); the labels
+  // are short enough for one line on mobile.
+  const keyTabs = [
+    { label: "Sauvegarder", value: "save" },
+    { label: "Ajouter un appareil", value: "device" },
+  ];
+
+  /**
+   * Shows the key: right after enabling the synchronization, to keep it
+   * first; from its state, to add a device or keep it.
+   */
+  // Leaving a tab hides the key again: shown only while asked for.
+  watch(keyTab, () => {
+    keyRevealed.value = false;
+  });
+
+  const showKey = async (fromStatus = false, tab: KeyTab = "save"): Promise<void> => {
     words.value = await syncStore.words();
     keyFromStatus.value = fromStatus;
+    keyTab.value = tab;
+    await nextTick();
+    keyRevealed.value = !fromStatus;
     view.value = "key";
   };
 
@@ -265,6 +298,33 @@
   });
 
   /**
+   * The outcome of a synchronization asked by the user, shown on its button:
+   * running (at least a moment, even when it is quick), then done or failed
+   * for a moment.
+   */
+  const manualSync = ref<"idle" | "running" | "done" | "failed">("idle");
+  let manualSyncTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const syncNow = async (): Promise<void> => {
+    clearTimeout(manualSyncTimer);
+    manualSync.value = "running";
+    const [ok] = await Promise.all([
+      syncStore.sync({ force: true }),
+      new Promise((resolve) => {
+        setTimeout(resolve, 600);
+      }),
+    ]);
+    manualSync.value = ok ? "done" : "failed";
+    manualSyncTimer = setTimeout(() => {
+      manualSync.value = "idle";
+    }, 2_000);
+  };
+
+  onBeforeUnmount(() => {
+    clearTimeout(manualSyncTimer);
+  });
+
+  /**
    * What stopping the synchronization concerns: this device only, or every
    * device (the bookmarks are then deleted from the server).
    */
@@ -279,7 +339,7 @@
     {
       value: "everywhere",
       label: "Sur tous vos appareils",
-      description: "Vos signets sont supprimés du serveur, et la synchronisation s'arrête sur tous vos appareils. Chacun d'eux garde ses signets.",
+      description: "Vos signets sont supprimés du serveur, et la synchronisation s'arrête sur tous vos appareils. Chacun d'eux garde ses signets. Utile aussi si quelqu'un a pu voir votre clé : réactivez ensuite la synchronisation, avec une nouvelle clé.",
     },
   ];
 
@@ -418,74 +478,125 @@
           />
         </template>
 
-        <!-- The key -->
+        <!-- The key: to add a device, or to keep it -->
         <template v-else-if="view === 'key'">
-          <p>
-            Conservez cette clé <strong>hors du navigateur</strong> : elle permet d'activer la synchronisation
-            sur vos autres appareils, et de retrouver vos signets si ce navigateur les efface.
-          </p>
-          <!-- A click on the words copies them (the button, for the keyboard). -->
-          <div class="relative">
-            <ol
-              class="grid cursor-pointer grid-cols-2 gap-x-4 gap-y-1.5 rounded-md bg-elevated p-3 pe-12 font-medium transition-colors hover:bg-accented/60 sm:grid-cols-3"
-              aria-label="Les 12 mots de la clé"
-              title="Copier les mots"
-              @click="copyWords"
-            >
-              <li
-                v-for="(word, i) in words"
-                :key="i"
-                class="flex gap-1.5"
-              >
-                <span class="w-5 text-right text-muted tabular-nums">{{ i + 1 }}.</span>
-                <span>{{ word }}</span>
-              </li>
-            </ol>
-            <UButton
-              :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
-              :aria-label="copied ? 'Mots copiés' : 'Copier les mots'"
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              class="absolute end-1.5 top-1.5"
-              @click="copyWords"
-            />
-          </div>
+          <UTabs
+            v-model="keyTab"
+            :items="keyTabs"
+            :content="false"
+            class="w-full"
+          />
 
-          <div class="flex items-center gap-4">
-            <!-- eslint-disable vue/no-v-html -- A generated SVG. -->
-            <div
-              class="size-28 shrink-0 overflow-hidden rounded-md"
-              role="img"
-              aria-label="QR code de la clé"
-              v-html="qrCode"
-            />
-            <!-- eslint-enable vue/no-v-html -->
-            <p class="text-muted">
-              Sur votre téléphone, scannez ce code avec l'appareil photo : la synchronisation s'y activera.
+          <!-- Add a device: the QR code and the words, on the screen -->
+          <template v-if="keyTab === 'device'">
+            <p>
+              Sur votre autre appareil, scannez ce QR code avec l'appareil photo, ou saisissez les 12 mots
+              (« Synchronisation » > « J'ai déjà une clé »).
             </p>
-          </div>
+            <!-- Hidden until asked: whoever sees the words can read and change the bookmarks. -->
+            <div
+              v-if="!keyRevealed"
+              class="flex flex-col items-center gap-3 rounded-md bg-elevated p-6 text-center"
+            >
+              <UIcon
+                name="i-lucide-eye-off"
+                class="size-8 text-muted"
+              />
+              <p>
+                Qui voit ces mots peut lire et modifier vos signets.<br>
+                Ne les affichez pas si quelqu'un peut voir votre écran.
+              </p>
+              <UButton
+                label="Afficher la clé"
+                icon="i-lucide-eye"
+                @click="keyRevealed = true"
+              />
+            </div>
+            <template v-else>
+              <!-- eslint-disable vue/no-v-html -- A generated SVG. -->
+              <div
+                class="mx-auto size-40 overflow-hidden rounded-md"
+                role="img"
+                aria-label="QR code de la clé"
+                v-html="qrCode"
+              />
+              <!-- eslint-enable vue/no-v-html -->
+              <!-- A click on the words copies them (the button, for the keyboard). -->
+              <div class="relative">
+                <ol
+                  class="grid cursor-pointer grid-cols-2 gap-x-4 gap-y-1.5 rounded-md bg-elevated p-3 pe-12 font-medium transition-colors hover:bg-accented/60 sm:grid-cols-3"
+                  aria-label="Les 12 mots de la clé"
+                  title="Copier les mots"
+                  @click="copyWords"
+                >
+                  <li
+                    v-for="(word, i) in words"
+                    :key="i"
+                    class="flex gap-1.5"
+                  >
+                    <span class="w-5 text-right text-muted tabular-nums">{{ i + 1 }}.</span>
+                    <span>{{ word }}</span>
+                  </li>
+                </ol>
+                <UButton
+                  :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
+                  :aria-label="copied ? 'Mots copiés' : 'Copier les mots'"
+                  color="neutral"
+                  variant="ghost"
+                  size="sm"
+                  class="absolute end-1.5 top-1.5"
+                  @click="copyWords"
+                />
+              </div>
+            </template>
+          </template>
 
-          <div class="flex flex-col gap-2">
-            <UButton
-              label="Télécharger le kit de récupération"
-              icon="i-lucide-file-down"
-              variant="outline"
-              block
-              @click="downloadRecoveryKit"
+          <!-- Keep the key: without showing it on the screen -->
+          <template v-else>
+            <p>
+              Votre clé est une suite de <strong>12 mots</strong>, à garder dans l'ordre. Conservez-la
+              <strong>hors du navigateur</strong> : elle permet de retrouver vos signets si ce navigateur les
+              efface, et d'activer la synchronisation sur vos autres appareils.
+            </p>
+            <div class="flex flex-col gap-2">
+              <UButton
+                label="Télécharger le kit de récupération"
+                icon="i-lucide-file-down"
+                variant="outline"
+                block
+                @click="downloadRecoveryKit"
+              />
+              <UButton
+                :label="copied ? 'Clé copiée' : 'Copier la clé (12 mots)'"
+                :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
+                variant="outline"
+                block
+                @click="copyWords"
+              />
+              <UButton
+                v-if="canShare"
+                label="Partager"
+                icon="i-lucide-share"
+                variant="outline"
+                block
+                @click="shareWords"
+              />
+            </div>
+            <p class="text-muted">
+              Pour la garder dans votre gestionnaire de mots de passe, copiez la clé et collez-la dans une
+              nouvelle entrée (identifiant : « {{ CREDENTIAL_NAME }} »).
+            </p>
+          </template>
+
+          <p class="flex gap-2 border-t border-default pt-4 text-muted">
+            <UIcon
+              name="i-lucide-shield-alert"
+              class="mt-0.5 size-4 shrink-0"
             />
-            <UButton
-              v-if="canShare"
-              label="Partager"
-              icon="i-lucide-share"
-              variant="outline"
-              block
-              @click="shareWords"
-            />
-          </div>
-          <p class="text-muted">
-            Pour la garder dans votre gestionnaire de mots de passe, copiez les mots et collez-les dans une
-            nouvelle entrée (identifiant : « {{ CREDENTIAL_NAME }} »).
+            <span>
+              Quelqu'un a pu voir votre clé ? Arrêtez la synchronisation sur tous vos appareils, puis
+              réactivez-la : une nouvelle clé sera créée.
+            </span>
           </p>
         </template>
 
@@ -509,16 +620,22 @@
                 </template>
               </p>
             </div>
-            <UTooltip text="Synchroniser maintenant">
+            <UTooltip :text="manualSync === 'done' ? 'Synchronisé' : 'Synchroniser maintenant'">
               <UButton
-                icon="i-lucide-refresh-cw"
+                :icon="manualSync === 'done' ? 'i-lucide-check' : manualSync === 'failed' ? 'i-lucide-circle-alert' : 'i-lucide-refresh-cw'"
                 aria-label="Synchroniser maintenant"
-                color="neutral"
+                :color="manualSync === 'done' ? 'success' : manualSync === 'failed' ? 'warning' : 'neutral'"
                 variant="ghost"
-                :disabled="status === 'syncing'"
-                @click="syncStore.sync({ force: true })"
+                :loading="manualSync === 'running'"
+                :disabled="status === 'syncing' && manualSync !== 'running'"
+                @click="syncNow"
               />
             </UTooltip>
+            <!-- The outcome, for screen readers. -->
+            <span
+              class="sr-only"
+              role="status"
+            >{{ manualSync === "done" ? "Signets synchronisés." : manualSync === "failed" ? "La synchronisation n'a pas abouti." : "" }}</span>
           </div>
           <UAlert
             v-if="status === 'error' && error"
@@ -538,6 +655,7 @@
           />
           <p class="text-muted">
             Pour retrouver vos signets sur un autre appareil (téléphone, tablette…), ajoutez-le avec votre clé.
+            Pensez aussi à la sauvegarder hors du navigateur.
           </p>
         </template>
 
@@ -641,9 +759,9 @@
           @click="view = 'stop'"
         />
         <UButton
-          label="Ajouter un appareil"
-          icon="i-lucide-smartphone"
-          @click="showKey(true)"
+          label="Ma clé"
+          icon="i-lucide-key-round"
+          @click="showKey(true, 'device')"
         />
       </template>
 

@@ -38,6 +38,10 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await seedBookmarks(page, { starred: [logos], tags: [{ name: "Homère", color: "Blue", entries: [logos] }] });
   await openSync(page);
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  // The key is kept first; the words and the QR code are in the other tab.
+  await expect(page.getByRole("button", { name: "Télécharger le kit de récupération" })).toBeVisible();
+  await page.getByRole("tab", { name: "Ajouter un appareil" }).click();
+  await page.getByRole("button", { name: "Afficher la clé" }).click();
   const keyWords = page.getByRole("list", { name: "Les 12 mots de la clé" }).locator("li > span:last-child");
   await expect(keyWords).toHaveCount(12);
   const words = await keyWords.allInnerTexts();
@@ -133,7 +137,7 @@ test("a failed first synchronization is reported, and leaves the device as it wa
   await goto("/signets", { waitUntil: "hydration" });
   await openSync(page);
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
-  await expect(page.getByRole("list", { name: "Les 12 mots de la clé" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Télécharger le kit de récupération" })).toBeVisible();
   const link = await syncLink(page);
 
   // The phone reaches the server once (the key exists), then loses it.
@@ -153,7 +157,7 @@ test("a key whose online bookmarks the server emptied: joining explains it", asy
   await goto("/signets", { waitUntil: "hydration" });
   await openSync(page);
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
-  await expect(page.getByRole("list", { name: "Les 12 mots de la clé" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Télécharger le kit de récupération" })).toBeVisible();
   const link = await syncLink(page);
 
   // The locker is found emptied (as after 18 months without access), and
@@ -366,6 +370,10 @@ test("enabling a key again brings back the online bookmarks deleted meanwhile", 
   await seedBookmarks(page, { starred: [logos, psuche] });
   await openSync(page);
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  // The key is kept first; the words and the QR code are in the other tab.
+  await expect(page.getByRole("button", { name: "Télécharger le kit de récupération" })).toBeVisible();
+  await page.getByRole("tab", { name: "Ajouter un appareil" }).click();
+  await page.getByRole("button", { name: "Afficher la clé" }).click();
   const keyWords = page.getByRole("list", { name: "Les 12 mots de la clé" }).locator("li > span:last-child");
   await expect(keyWords).toHaveCount(12);
   const words = await keyWords.allInnerTexts();
