@@ -187,16 +187,22 @@ mort d'un homme qu'on lance (du haut d'un rocher).
         présente. Suivez l'entrée ῥιπτός de l'un à l'autre.
       </p>
 
-      <ol class="mt-10 space-y-12">
-        <li class="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-center">
-          <img
-            src="/images/bailly-1935-rhiptos.webp"
-            width="884"
-            height="174"
-            alt="L'entrée ῥιπτός dans l'édition de 1935 (fac-similé)."
-            class="w-full rounded-lg bg-white p-2 shadow-lg ring-1 ring-default"
-          >
-          <div>
+      <!--
+        Each work in a bubble, on the left then on the right (from `md`; also
+        alternating on mobile, above the text).
+      -->
+      <ol class="mt-10 space-y-14">
+        <li class="group flex flex-col gap-6 md:flex-row md:items-center md:gap-12 md:even:flex-row-reverse">
+          <div class="relative size-44 shrink-0 overflow-hidden rounded-full bg-white shadow-2xl ring-8 ring-primary-50 group-even:self-end md:size-56 md:group-even:self-auto">
+            <img
+              src="/images/bailly-1935-rhiptos.webp"
+              width="480"
+              height="480"
+              alt="L'entrée ῥιπτός dans l'édition de 1935 (fac-similé)."
+              class="size-full"
+            >
+          </div>
+          <div class="min-w-0 flex-1">
             <p class="text-sm font-semibold text-primary">
               1894 – 1935
             </p>
@@ -215,19 +221,19 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           </div>
         </li>
 
-        <li class="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-center">
+        <li class="group flex flex-col gap-6 md:flex-row md:items-center md:gap-12 md:even:flex-row-reverse">
           <div
             aria-hidden="true"
-            class="rounded-lg bg-white p-4 shadow-lg ring-1 ring-default"
+            class="flex size-44 shrink-0 items-center justify-center rounded-full bg-white shadow-2xl ring-8 ring-primary-50 group-even:self-end md:size-56 md:group-even:self-auto"
           >
             <!-- eslint-disable vue/no-v-html -- A constant of this page. -->
             <div
-              class="definition text-justify [--reading-font-size:1rem] [--reading-font-weight:400]"
+              class="definition w-[74%] font-serif [--reading-font-size:0.8125rem] [--reading-font-weight:400] md:[--reading-font-size:1rem]"
               v-html="rhiptos"
             />
             <!-- eslint-enable vue/no-v-html -->
           </div>
-          <div>
+          <div class="min-w-0 flex-1">
             <p class="text-sm font-semibold text-primary">
               2020
             </p>
@@ -269,33 +275,35 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           </div>
         </li>
 
-        <li class="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-center">
+        <li class="group flex flex-col gap-6 md:flex-row md:items-center md:gap-12 md:even:flex-row-reverse">
           <div
             aria-hidden="true"
-            class="space-y-2 rounded-lg bg-linear-to-br from-primary-50 to-white p-4 shadow-lg ring-1 ring-default"
+            class="flex size-44 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary-100 to-white shadow-2xl ring-8 ring-primary-50 group-even:self-end md:size-56 md:group-even:self-auto"
           >
-            <div class="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-xs ring-1 ring-default">
-              <UIcon
-                name="i-lucide-search"
-                class="size-4 text-muted"
-              />
-              <span class="font-serif">ῥιπτ</span>
-              <span class="ms-auto rounded-full bg-elevated px-2 text-xs text-muted">4</span>
-            </div>
-            <div class="rounded-md bg-white p-3 ring-1 ring-default">
-              <div class="flex items-center gap-2">
-                <span class="font-serif font-bold">ῥιπτός</span>
+            <div class="w-[80%] space-y-1.5">
+              <div class="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm shadow-xs ring-1 ring-default">
                 <UIcon
-                  name="i-bailly-star-filled"
-                  class="ms-auto size-4 text-primary-400"
+                  name="i-lucide-search"
+                  class="size-3.5 text-muted"
                 />
+                <span class="font-serif">ῥιπτ</span>
+                <span class="ms-auto rounded-full bg-elevated px-1.5 text-[0.625rem] text-muted">4</span>
               </div>
-              <p class="line-clamp-2 font-serif text-sm text-muted">
-                ή, όν, jeté, lancé : μόρος, Soph. Tr. 357, mort d'un homme qu'on lance (du haut d'un rocher).
-              </p>
+              <div class="rounded-md bg-white p-2 ring-1 ring-default">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-serif text-sm font-bold">ῥιπτός</span>
+                  <UIcon
+                    name="i-bailly-star-filled"
+                    class="ms-auto size-3.5 text-primary-400"
+                  />
+                </div>
+                <p class="line-clamp-2 font-serif text-xs text-muted">
+                  ή, όν, jeté, lancé : μόρος, Soph. Tr. 357, mort d'un homme qu'on lance…
+                </p>
+              </div>
             </div>
           </div>
-          <div>
+          <div class="min-w-0 flex-1">
             <p class="text-sm font-semibold text-primary">
               Aujourd'hui
             </p>
