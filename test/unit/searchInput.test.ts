@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { InputMode } from "../../app/enums";
-import { convertSearchInput, hasWildcards, isLemmatizable, normalizeSearchGreek, toLookupQuery, toPositionedQuery, toSearchGreek, toSearchQuery } from "../../app/utils/searchInput";
+import { normalizeSearchGreek } from "../../shared/utils/searchGreek";
+import { convertSearchInput, hasWildcards, isLemmatizable, toLookupQuery, toPositionedQuery, toSearchGreek, toSearchQuery } from "../../app/utils/searchInput";
 
 /**
  * Types the input one character at a time, as in the search bar.
