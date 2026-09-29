@@ -410,8 +410,53 @@
             Une <strong>clé de douze mots</strong> relie vos appareils. Vos signets sont chiffrés sur l'appareil
             avant d'être envoyés : sans la clé, personne ne peut les lire, pas même Bailly.app.
           </p>
-          <p class="text-muted">
-            La copie en ligne est effacée après 18 mois sans aucune synchronisation.
+
+          <!--
+            The two ways in, as tiles: each explains itself, and is large and
+            apart enough not to be touched for the other.
+          -->
+          <div class="grid gap-4 sm:grid-cols-2">
+            <button
+              type="button"
+              class="flex items-start gap-3 rounded-lg bg-primary-50 p-4 text-start ring-1 ring-primary-200 transition-colors hover:bg-primary-100 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-75"
+              :disabled="busy"
+              @click="enable"
+            >
+              <UIcon
+                :name="busy ? 'i-lucide-loader-circle' : 'i-lucide-cloud-upload'"
+                class="mt-0.5 size-6 shrink-0 text-primary"
+                :class="{ 'animate-spin': busy }"
+              />
+              <span>
+                <span class="block font-semibold text-highlighted">Activer la synchronisation</span>
+                <span class="mt-1 block text-muted">Première fois : une clé est créée pour cet appareil et vos
+                  autres appareils.</span>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="flex items-start gap-3 rounded-lg bg-secondary-50 p-4 text-start ring-1 ring-secondary-200 transition-colors hover:bg-secondary-100 focus-visible:outline-2 focus-visible:outline-secondary disabled:opacity-75"
+              :disabled="busy"
+              @click="view = 'join'"
+            >
+              <UIcon
+                name="i-lucide-key-round"
+                class="mt-0.5 size-6 shrink-0 text-secondary"
+              />
+              <span>
+                <span class="block font-semibold text-highlighted">J'ai déjà une clé</span>
+                <span class="mt-1 block text-muted">Déjà activée sur un autre appareil : saisissez sa clé ou
+                  scannez son QR code.</span>
+              </span>
+            </button>
+          </div>
+
+          <p class="flex gap-2 text-muted">
+            <UIcon
+              name="i-lucide-calendar-clock"
+              class="mt-0.5 size-4 shrink-0"
+            />
+            <span>La copie en ligne est effacée après 18 mois sans aucune synchronisation.</span>
           </p>
         </template>
 
@@ -678,37 +723,10 @@
     </template>
 
     <template
-      v-if="supported"
+      v-if="supported && view !== 'intro'"
       #footer
     >
-      <!--
-        The two ways in, apart and as visible: a new key, or the key of
-        another device.
-      -->
-      <template v-if="view === 'intro'">
-        <UButton
-          label="J'ai déjà une clé"
-          icon="i-lucide-key-round"
-          color="secondary"
-          class="justify-center max-sm:w-full"
-          @click="view = 'join'"
-        />
-        <!-- "ou": two ways, far enough apart not to touch one for the other. -->
-        <USeparator
-          label="ou"
-          class="max-sm:my-3 sm:mx-2 sm:flex-1"
-          :ui="{ label: 'text-muted' }"
-        />
-        <UButton
-          label="Activer la synchronisation"
-          icon="i-lucide-refresh-cw"
-          class="justify-center max-sm:w-full"
-          :loading="busy"
-          @click="enable"
-        />
-      </template>
-
-      <template v-else-if="view === 'join'">
+      <template v-if="view === 'join'">
         <UButton
           :label="linkKey ? 'Annuler' : 'Retour'"
           color="neutral"
