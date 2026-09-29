@@ -33,7 +33,7 @@
           (the labels stay for screen readers and show in tooltips; cf.
           `useButtonLabels`).
         -->
-        <aside class="flex items-center gap-x-3 xl:gap-x-6">
+        <aside class="flex items-center gap-x-3 max-md:flex-wrap max-md:gap-y-3 xl:gap-x-6">
           <!-- Order tags -->
           <UModal
             title="Arranger les étiquettes"
@@ -59,10 +59,13 @@
             </template>
           </UModal>
 
+          <!-- Synchronization (its state, and its window) -->
+          <BookmarksSyncButton />
+
           <!-- Export, import -->
           <BookmarksMenu />
 
-          <CreateTag class="min-w-0 grow md:w-80 md:grow-0 xl:w-96" />
+          <CreateTag class="min-w-0 grow max-md:basis-full md:w-80 md:grow-0 xl:w-96" />
         </aside>
       </header>
 

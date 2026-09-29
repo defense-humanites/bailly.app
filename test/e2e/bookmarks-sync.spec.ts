@@ -21,8 +21,7 @@ async function newDevice(browser: Browser, baseURL: string | undefined, path = "
 }
 
 const openSync = async (page: Page) => {
-  await page.getByRole("button", { name: "Sauvegarde des signets" }).click();
-  await page.getByRole("menuitem", { name: /^Synchronis/ }).click();
+  await page.getByRole("button", { name: /^Synchronisation/ }).click();
 };
 
 const syncLink = (page: Page) => page.evaluate(() => {
@@ -101,8 +100,11 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   // The laptop deletes the bookmarks online: the phone stops synchronizing,
   // and keeps its bookmarks.
   await openSync(page);
-  await page.getByRole("button", { name: "Supprimer les signets en ligne" }).click();
-  await page.getByRole("button", { name: "Supprimer", exact: true }).click();
+  await page.getByRole("button", { name: "Arrêter la synchronisation…" }).click();
+  await page.getByRole("radio", { name: /^Sur tous vos appareils/ }).click();
+  await page.getByRole("button", { name: "Continuer…" }).click();
+  await expect(page.getByText("sans retour possible")).toBeVisible();
+  await page.getByRole("button", { name: "Supprimer définitivement" }).click();
   await expect(page.getByText("Signets supprimés du serveur", { exact: true })).toBeVisible();
 
   await phone.reload();
@@ -285,7 +287,7 @@ test("a synchronization beyond the limits waits until the device makes room", as
   // Back online, the phone does not merge (101 favorites), and says why.
   await phone.unroute("**/api/sync/**");
   expect(await syncNow(phone)).toBe(false);
-  await expect(phone.getByRole("button", { name: /la synchronisation demande votre attention/ })).toBeVisible();
+  await expect(phone.getByRole("button", { name: /demande votre attention/ })).toBeVisible();
   await openSync(phone);
   await expect(phone.getByText(/les favoris compteraient 101 entrées \(100 au plus\) : retirez-en au moins 1 parmi celles qui ne sont que sur cet appareil \(« λόγος »\)\. La synchronisation reprendra ensuite\.$/)).toBeVisible();
   expect((await bookmarksState(phone)).starred).toBe(100);
@@ -297,7 +299,7 @@ test("a synchronization beyond the limits waits until the device makes room", as
     const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { unstarEntry: (uri: string) => Promise<unknown> };
     await store.unstarEntry("logos");
   });
-  await expect(phone.getByRole("button", { name: /la synchronisation demande votre attention/ })).toHaveCount(0, { timeout: 15_000 });
+  await expect(phone.getByRole("button", { name: /demande votre attention/ })).toHaveCount(0, { timeout: 15_000 });
   await expect.poll(async () => (await bookmarksState(phone)).starred).toBe(100);
   await page.reload();
   await waitForHydration(page);
@@ -375,9 +377,9 @@ test("enabling a key again brings back the online bookmarks deleted meanwhile", 
   await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
 
   // The phone disables the synchronization, then deletes a favorite.
-  await phone.getByRole("button", { name: "Désactiver" }).click();
+  await phone.getByRole("button", { name: "Arrêter la synchronisation…" }).click();
   await expect(phone.getByText("même ceux que vous y auriez supprimés entre-temps")).toBeVisible();
-  await phone.getByRole("button", { name: "Désactiver" }).click();
+  await phone.getByRole("button", { name: "Désactiver sur cet appareil" }).click();
   await expect(phone.getByText("Synchronisation désactivée sur cet appareil", { exact: true })).toBeVisible();
   await phone.evaluate(async () => {
     const root = document.querySelector("#__nuxt") as AppRoot;

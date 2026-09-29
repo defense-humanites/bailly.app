@@ -2,7 +2,6 @@
   import type { DropdownMenuItem } from "@nuxt/ui";
   import type { SkippedRecords } from "~/idb";
   import { bookmarksFileName } from "~/idb/transfer";
-  import { fromBase64url } from "~/sync/base64url";
 
   /**
    * The largest file accepted for an import (an export of the maximum number
@@ -149,55 +148,7 @@
     });
   };
 
-  const syncStore = useSyncStore();
-  const { enabled: syncEnabled, status: syncStatus } = storeToRefs(syncStore);
-
-  /**
-   * Whether the synchronization failed (e.g. the limits would be exceeded:
-   * the user has to make room).
-   */
-  const syncNeedsAttention = computed(() => syncEnabled.value && syncStatus.value === "error");
-
-  const isSyncOpen = ref(false);
-  /**
-   * The key of a link (`/signets#sync=…`), to join the synchronization.
-   */
-  const linkSecret = ref<Uint8Array<ArrayBuffer> | null>(null);
-
-  const route = useRoute();
-
-  /**
-   * Opens the synchronization window with the key of a link, when the page
-   * loads or when its fragment changes (a link opened in the same tab).
-   */
-  const readLink = (hash: string): void => {
-    const match = /^#sync=([\w-]{22})$/.exec(hash);
-    if (!match) return;
-    try {
-      linkSecret.value = fromBase64url(match[1]!);
-      isSyncOpen.value = true;
-    } catch {
-      // An invalid link: ignored.
-    }
-    // The key does not stay in the address (history, shared links).
-    void navigateTo({ hash: "" }, { replace: true });
-  };
-
-  onMounted(() => {
-    readLink(route.hash);
-  });
-  watch(() => route.hash, readLink);
-
-  /**
-   * Whether the synchronization window has been opened.
-   */
-  const syncRequested = ref(false);
-
-  watch(isSyncOpen, (isOpen) => {
-    if (isOpen) syncRequested.value = true;
-  });
-
-  const items = computed((): DropdownMenuItem[] => [
+  const items: DropdownMenuItem[] = [
     {
       label: "Exporter les signets",
       icon: "i-lucide-download",
@@ -210,17 +161,7 @@
         fileInput.value?.click();
       },
     },
-    { type: "separator" },
-    {
-      label: syncEnabled.value ? "Synchronisation activée" : "Synchroniser…",
-      icon: syncEnabled.value && syncStatus.value === "error" ? "i-lucide-cloud-off" : syncEnabled.value ? "i-lucide-cloud-check" : "i-lucide-refresh-cw",
-      onSelect: () => {
-        // The key of a link only counts when the link is opened.
-        linkSecret.value = null;
-        isSyncOpen.value = true;
-      },
-    },
-  ]);
+  ];
 </script>
 
 <template>
@@ -229,34 +170,20 @@
       :items="items"
       :content="{ align: 'end' }"
     >
-      <UTooltip :text="syncNeedsAttention ? 'Sauvegarde des signets : la synchronisation demande votre attention' : 'Sauvegarde des signets'">
+      <UTooltip text="Sauvegarde des signets">
         <UButton
           size="2xl"
           variant="subtle"
-          :aria-label="syncNeedsAttention ? 'Sauvegarde des signets (la synchronisation demande votre attention)' : 'Sauvegarde des signets'"
+          aria-label="Sauvegarde des signets"
           class="px-2.5"
         >
-          <UChip
-            :show="syncNeedsAttention"
-            color="warning"
-            size="md"
-            inset
-          >
-            <UIcon
-              name="i-lucide-ellipsis"
-              class="size-6"
-            />
-          </UChip>
+          <UIcon
+            name="i-lucide-ellipsis"
+            class="size-6"
+          />
         </UButton>
       </UTooltip>
     </UDropdownMenu>
-
-    <!-- Loaded when first opened (with the QR code generator). -->
-    <LazyBookmarksSync
-      v-if="syncRequested"
-      v-model:open="isSyncOpen"
-      :link-secret="linkSecret"
-    />
 
     <UModal
       v-model:open="isImportConfirmOpen"

@@ -10,7 +10,7 @@
     linkSecret?: Uint8Array<ArrayBuffer> | null;
   }>();
 
-  type View = "intro" | "join" | "key" | "status" | "disable" | "delete";
+  type View = "intro" | "join" | "key" | "status" | "stop" | "delete";
 
   /**
    * The number of words of a key (cf. `~/sync/key`, loaded only to join: it
@@ -42,8 +42,15 @@
    */
   const CREDENTIAL_NAME = "Bailly.app (synchronisation des signets)";
 
-  const showKey = async (): Promise<void> => {
+  /**
+   * Whether the key is shown from the state of the synchronization (to add a
+   * device), rather than right after enabling it (to keep it first).
+   */
+  const keyFromStatus = ref(false);
+
+  const showKey = async (fromStatus = false): Promise<void> => {
     words.value = await syncStore.words();
+    keyFromStatus.value = fromStatus;
     view.value = "key";
   };
 
@@ -52,7 +59,7 @@
     join: "Rejoindre la synchronisation",
     key: "Votre clé de synchronisation",
     status: "Synchronisation des signets",
-    disable: "Désactiver la synchronisation sur cet appareil ?",
+    stop: "Arrêter la synchronisation ?",
     delete: "Supprimer les signets en ligne ?",
   };
 
@@ -167,8 +174,8 @@
       numberedWords(),
       "",
       "Pour retrouver vos signets sur un autre appareil : ouvrez Bailly.app, page",
-      "« Signets », menu « Sauvegarde des signets » > « Synchroniser… » >",
-      "« J'ai déjà une clé », puis saisissez ces 12 mots dans l'ordre.",
+      "« Signets », bouton « Synchronisation » > « J'ai déjà une clé », puis",
+      "saisissez ces 12 mots dans l'ordre.",
       ...(link.value ? ["", "Ou ouvrez ce lien sur l'autre appareil :", link.value] : []),
       "",
       "Gardez ce document en lieu sûr : qui possède ces mots peut lire et",
@@ -220,9 +227,70 @@
 
   /* Status. */
 
-  const lastSync = computed(() => (lastSyncedAt.value
-    ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short" }).format(lastSyncedAt.value)
-    : null));
+  const now = useNow({ interval: 30_000 });
+  const relativeTime = new Intl.RelativeTimeFormat("fr-FR", { numeric: "auto" });
+
+  /**
+   * When the latest synchronization happened, e.g. « il y a 5 minutes » (the
+   * date beyond a day), updated as time goes by.
+   */
+  const lastSync = computed((): string | null => {
+    if (!lastSyncedAt.value) return null;
+    const minutes = Math.round((now.value.getTime() - lastSyncedAt.value) / 60_000);
+    if (minutes < 1) return "à l'instant";
+    if (minutes < 60) return relativeTime.format(-minutes, "minute");
+    if (minutes < 24 * 60) return relativeTime.format(-Math.round(minutes / 60), "hour");
+    return `le ${new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short" }).format(lastSyncedAt.value)}`;
+  });
+
+  /**
+   * Whether a synchronization has been running for a moment: the short ones
+   * (most of them) don't change the state shown.
+   */
+  const syncingShown = ref(false);
+  let syncingTimer: ReturnType<typeof setTimeout> | undefined;
+  watch(status, (value) => {
+    clearTimeout(syncingTimer);
+    if (value === "syncing") {
+      syncingTimer = setTimeout(() => {
+        syncingShown.value = true;
+      }, 400);
+    } else {
+      syncingShown.value = false;
+    }
+  });
+
+  onBeforeUnmount(() => {
+    clearTimeout(syncingTimer);
+  });
+
+  /**
+   * What stopping the synchronization concerns: this device only, or every
+   * device (the bookmarks are then deleted from the server).
+   */
+  const stopScope = ref<"device" | "everywhere">("device");
+
+  const stopItems = [
+    {
+      value: "device",
+      label: "Sur cet appareil seulement",
+      description: "Vos signets restent sur cet appareil, et en ligne pour vos autres appareils. Pour réactiver la synchronisation, il faudra la clé : les signets en ligne seront alors rétablis sur cet appareil, même ceux que vous y auriez supprimés entre-temps.",
+    },
+    {
+      value: "everywhere",
+      label: "Sur tous vos appareils",
+      description: "Vos signets sont supprimés du serveur, et la synchronisation s'arrête sur tous vos appareils. Chacun d'eux garde ses signets.",
+    },
+  ];
+
+  /**
+   * Stops the synchronization on this device; for every device, a second
+   * confirmation is asked first (the online copy is deleted).
+   */
+  const stop = (): void => {
+    if (stopScope.value === "device") void disable();
+    else view.value = "delete";
+  };
 
   const disable = () => run(async () => {
     await syncStore.disable();
@@ -238,6 +306,7 @@
     joinError.value = null;
     actionError.value = null;
     linkKey.value = props.linkSecret ?? null;
+    stopScope.value = "device";
     view.value = linkKey.value ? "join" : enabled.value ? "status" : "intro";
   }, { immediate: true });
 
@@ -422,20 +491,35 @@
 
         <!-- Enabled -->
         <template v-else-if="view === 'status'">
-          <p class="flex items-center gap-2">
+          <!-- The state; a synchronization can be run at once (they are automatic). -->
+          <div class="flex items-center gap-3 rounded-md bg-elevated p-3">
             <UIcon
-              :name="status === 'syncing' ? 'i-lucide-refresh-cw' : status === 'error' ? 'i-lucide-cloud-off' : 'i-lucide-cloud-check'"
-              class="size-5 shrink-0"
-              :class="[status === 'syncing' && 'animate-spin', status === 'error' ? 'text-warning' : 'text-success']"
+              :name="syncingShown ? 'i-lucide-refresh-cw' : status === 'error' ? 'i-lucide-cloud-off' : 'i-lucide-cloud-check'"
+              class="size-6 shrink-0"
+              :class="[syncingShown && 'animate-spin motion-reduce:animate-none', status === 'error' ? 'text-warning' : 'text-success']"
             />
-            <span>
-              Synchronisation activée sur cet appareil.
-              <span
-                v-if="lastSync"
-                class="text-muted"
-              >Dernière synchronisation : {{ lastSync }}.</span>
-            </span>
-          </p>
+            <div class="min-w-0 grow">
+              <p class="font-semibold">
+                {{ syncingShown ? "Synchronisation en cours…" : status === "error" ? "Synchronisation en attente" : "Signets à jour" }}
+              </p>
+              <p class="text-muted">
+                Synchronisation activée sur cet appareil.
+                <template v-if="lastSync">
+                  Dernière synchronisation : {{ lastSync }}.
+                </template>
+              </p>
+            </div>
+            <UTooltip text="Synchroniser maintenant">
+              <UButton
+                icon="i-lucide-refresh-cw"
+                aria-label="Synchroniser maintenant"
+                color="neutral"
+                variant="ghost"
+                :disabled="status === 'syncing'"
+                @click="syncStore.sync({ force: true })"
+              />
+            </UTooltip>
+          </div>
           <UAlert
             v-if="status === 'error' && error"
             color="warning"
@@ -452,16 +536,22 @@
             :title="`L'horloge de cet appareil semble ${clockSkew > 0 ? 'en retard' : 'en avance'} de ${clockGap}.`"
             description="Réglez sa date et son heure : sinon, ses changements ou ceux de vos autres appareils pourraient être ignorés."
           />
+          <p class="text-muted">
+            Pour retrouver vos signets sur un autre appareil (téléphone, tablette…), ajoutez-le avec votre clé.
+          </p>
         </template>
 
-        <template v-else-if="view === 'disable'">
-          <p>
-            Vos signets restent sur cet appareil, et en ligne pour vos autres appareils. Pour réactiver la
-            synchronisation, il faudra la clé : les signets en ligne seront alors rétablis sur cet appareil,
-            même ceux que vous y auriez supprimés entre-temps.
-          </p>
+        <!-- Stop: on this device only, or everywhere -->
+        <template v-else-if="view === 'stop'">
+          <URadioGroup
+            v-model="stopScope"
+            :items="stopItems"
+            variant="card"
+            legend="Arrêter la synchronisation"
+            :ui="{ legend: 'sr-only', fieldset: 'gap-2' }"
+          />
           <UAlert
-            v-if="status === 'error'"
+            v-if="stopScope === 'device' && status === 'error'"
             color="warning"
             variant="subtle"
             icon="i-lucide-cloud-off"
@@ -470,11 +560,13 @@
           />
         </template>
 
+        <!-- Stop everywhere: the second confirmation -->
         <template v-else-if="view === 'delete'">
-          <p>
-            Vos signets seront supprimés du serveur et la synchronisation s'arrêtera sur tous vos appareils.
-            Chacun d'eux garde ses signets.
-          </p>
+          <ul class="list-disc space-y-1.5 ps-5">
+            <li>La copie en ligne de vos signets sera effacée, sans retour possible.</li>
+            <li>La synchronisation s'arrêtera sur tous vos appareils, et cette clé ne pourra plus servir.</li>
+            <li>Chaque appareil garde ses signets.</li>
+          </ul>
         </template>
       </div>
     </template>
@@ -533,39 +625,29 @@
 
       <template v-else-if="view === 'key'">
         <UButton
-          label="J'ai conservé ma clé"
+          :label="keyFromStatus ? 'Retour' : 'J\'ai conservé ma clé'"
+          :color="keyFromStatus ? 'neutral' : 'primary'"
+          :variant="keyFromStatus ? 'outline' : 'solid'"
           @click="view = 'status'"
         />
       </template>
 
       <template v-else-if="view === 'status'">
         <UButton
-          label="Supprimer les signets en ligne"
-          color="error"
+          label="Arrêter la synchronisation…"
+          color="neutral"
           variant="ghost"
           class="me-auto"
-          @click="view = 'delete'"
+          @click="view = 'stop'"
         />
         <UButton
-          label="Désactiver"
-          color="neutral"
-          variant="outline"
-          @click="view = 'disable'"
-        />
-        <UButton
-          label="Afficher ma clé"
-          variant="outline"
-          @click="showKey"
-        />
-        <UButton
-          label="Synchroniser"
-          icon="i-lucide-refresh-cw"
-          :loading="status === 'syncing'"
-          @click="syncStore.sync({ force: true })"
+          label="Ajouter un appareil"
+          icon="i-lucide-smartphone"
+          @click="showKey(true)"
         />
       </template>
 
-      <template v-else-if="view === 'disable'">
+      <template v-else-if="view === 'stop'">
         <UButton
           label="Annuler"
           color="neutral"
@@ -573,24 +655,29 @@
           @click="view = 'status'"
         />
         <UButton
-          label="Désactiver"
+          :label="stopScope === 'device' ? 'Désactiver sur cet appareil' : 'Continuer…'"
           :loading="busy"
-          @click="disable"
+          @click="stop"
         />
       </template>
 
+      <!--
+        The deletion is not where "Continuer…" was: a double click can't
+        confirm it.
+      -->
       <template v-else-if="view === 'delete'">
         <UButton
-          label="Annuler"
-          color="neutral"
-          variant="outline"
-          @click="view = 'status'"
-        />
-        <UButton
-          label="Supprimer"
+          label="Supprimer définitivement"
           color="error"
+          class="me-auto"
           :loading="busy"
           @click="deleteRemote"
+        />
+        <UButton
+          label="Retour"
+          color="neutral"
+          variant="outline"
+          @click="view = 'stop'"
         />
       </template>
     </template>
