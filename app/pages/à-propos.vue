@@ -138,8 +138,26 @@
           <strong>Adresses IP.</strong> Pour limiter les abus, notre serveur compte
           chaque jour les envois de synchronisation de chaque adresse IP. Il ne garde
           pas l'adresse elle-même, mais un pseudonyme (une empreinte renouvelée chaque
-          jour), effacé après deux jours. Nos journaux techniques ne contiennent ni
-          adresse IP ni adresse des pages consultées.
+          jour), effacé après deux jours. Les journaux techniques de l'application ne
+          contiennent ni adresse IP ni adresse des pages consultées.
+        </p>
+
+        <p>
+          <strong>Recherches.</strong> Les recherches et les entrées du dictionnaire
+          sont servies par notre API, qui ne conserve rien de vos recherches en
+          dehors de ses journaux techniques (pouvant contenir votre adresse IP et
+          les adresses demandées), effacés après vingt-quatre heures.
+        </p>
+
+        <p>
+          <strong>Mesure d'audience.</strong> La fréquentation du site est mesurée par
+          <a
+            target="_blank"
+            rel="noopener"
+            href="https://www.simpleanalytics.com/"
+          >Simple Analytics</a>, un service sans cookie qui, selon ses engagements, ne
+          collecte aucune donnée personnelle et ne permet pas d'identifier les
+          visiteurs.
         </p>
 
         <p>
@@ -158,6 +176,15 @@
           don est celui de PayPal, qui traite vos informations selon sa propre
           politique de confidentialité. Bailly.app n'a jamais accès à vos
           coordonnées bancaires.
+        </p>
+
+        <p>
+          <strong>Contact.</strong> Pour toute question sur vos données, ou pour
+          exercer vos droits (accès, rectification, effacement), écrivez à
+          <a href="mailto:contact@bailly.app">contact@bailly.app</a>. Comme nous ne
+          pouvons relier aucune copie en ligne à une personne, l'effacement de vos
+          signets en ligne se fait depuis la fenêtre de synchronisation, avec votre
+          clé.
         </p>
       </section>
     </article>
