@@ -154,10 +154,16 @@
           <a
             target="_blank"
             rel="noopener"
-            href="https://www.simpleanalytics.com/"
-          >Simple Analytics</a>, un service sans cookie qui, selon ses engagements, ne
-          collecte aucune donnée personnelle et ne permet pas d'identifier les
-          visiteurs.
+            href="https://docs.simpleanalytics.com/what-we-collect"
+          >Simple Analytics</a>, qui ne dépose aucun cookie et n'utilise aucune
+          technique équivalente (stockage local, empreinte du navigateur). Votre
+          adresse IP n'est ni conservée ni enregistrée. Simple Analytics ne relève
+          que des informations générales&nbsp;: la page consultée (sans ses
+          paramètres), la page d'où vous venez, la langue, la taille de l'écran, le
+          navigateur et le système sans leur version précise, le temps passé sur la
+          page et son défilement, et le pays, déduit du fuseau horaire. Ses serveurs sont aux Pays-Bas, et le réglage
+          «&nbsp;Ne pas suivre&nbsp;» (<em>Do Not Track</em>) de votre navigateur
+          est respecté.
         </p>
 
         <p>

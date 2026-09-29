@@ -126,6 +126,11 @@ test.describe("header menu", () => {
   });
 });
 
+test("the audience measurement is loaded on the production host only", async ({ page, goto }) => {
+  await goto("/", { waitUntil: "hydration" });
+  await expect(page.locator("script[src*='simpleanalytics']")).toHaveCount(0);
+});
+
 test("the application is at least 20rem wide", async ({ page, goto }) => {
   await page.setViewportSize({ width: 300, height: 700 });
   await goto("/logos", { waitUntil: "hydration" });

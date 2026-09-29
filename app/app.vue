@@ -19,7 +19,17 @@
   const readingSize = preference("readingSize");
   const readingWeight = preference("readingWeight");
 
+  /**
+   * The audience measurement (Simple Analytics: no cookie, no IP address
+   * kept), on the production host only (cf. `analyticsHost`).
+   */
+  const { analyticsHost } = useRuntimeConfig().public;
+  const analytics = analyticsHost !== "" && useRequestURL().hostname === analyticsHost;
+
   useHead({
+    script: analytics
+      ? [{ src: "https://scripts.simpleanalyticscdn.com/latest.js", async: true, tagPosition: "bodyClose" }]
+      : [],
     titleTemplate: (title) => {
       return title ? title : "Bailly.app — Dictionnaire grec-français en ligne";
     },
