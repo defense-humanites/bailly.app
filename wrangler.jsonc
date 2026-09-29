@@ -16,5 +16,12 @@
       "database_name": "bailly-bookmarks-sync-preview",
       "database_id": "f02a3b96-f99d-4b35-9cb2-4407a6bebffc"
     }
-  ]
+  ],
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": false,
+      "persist": true
+    }
+  }
 }
