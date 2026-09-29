@@ -3,7 +3,7 @@
     <section class="my-6 sm:my-12 flex flex-col gap-2 lg:gap-4 xl:gap-6">
       <NuxtLink to="/soutenir">
         <UBadge
-          class="rounded-full bg-secondary/10 hover:bg-secondary/15 text-secondary transition-colors"
+          class="rounded-full bg-primary/10 hover:bg-primary/15 text-primary transition-colors"
           size="lg"
           variant="soft"
         >❤️ Nous soutenir</UBadge>

@@ -2,9 +2,10 @@
   /*
    * The palette « Grèce classique » (after the fresco of the Tomb of the
    * Diver, Paestum): the marble of the temples (warm neutrals: backgrounds,
-   * text, borders), the blue of the Aegean and of the Egyptian blue of the
-   * pediments (the main color: links, main actions, focus), the terracotta
-   * of Attic pottery (the accent: calls to action, details), the gold of the
+   * text, borders), the terracotta of Attic pottery (the main color, the
+   * Greek identity: links, main actions, focus), the blue of the Aegean and
+   * of the Egyptian blue of the pediments (a color of differentiation, e.g.
+   * the etymologies, the ways into the synchronization), the gold of the
    * offerings (favorites, highlights, warnings), and the black glaze of the
    * vases (the dark theme's background). Roles: cf. `app.config.ts`
    * (`ui.colors`) and `root.css`.

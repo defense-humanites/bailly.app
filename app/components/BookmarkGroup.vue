@@ -251,7 +251,9 @@
     :data-tag-color="tagColor"
     variant="bookmarkGroup"
     :ui="{
-      root: 'bg-tag-200/50 border-tag-300/50',
+      // The tint of the tag, opaque (mixed with the page's background, as it
+      // was seen through): the page's motif no longer shows under the text.
+      root: 'bg-[color-mix(in_srgb,var(--tag-200)_50%,var(--app-page-bg))] border-tag-300/50',
       header: 'flex flex-col !px-3 pb-0',
       body: '@container !p-3 text-default',
     }"

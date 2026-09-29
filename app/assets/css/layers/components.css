@@ -106,7 +106,7 @@
     @apply mt-3;
   }
 
-  /* The etymologies, in terracotta (7.3:1 on the marble). */
+  /* The etymologies, in blue: set apart from the text (7.7:1 on the marble). */
   .etymor,
   .etymrev {
     @apply text-secondary-700;

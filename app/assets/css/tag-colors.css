@@ -152,4 +152,142 @@
     --tag-800: var(--color-gold-800);
     --tag-900: var(--color-gold-900);
   }
+
+  /*
+   * Dark theme: the scales are reversed (100 ↔ 900, 200 ↔ 800…), so that the
+   * same classes give a light text on a dark tint (e.g. the cards: text
+   * `tag-600` → 400, background `tag-200/50` → 800 at 50 %, 4.8:1 at least).
+   */
+
+  .dark [data-tag-color="Blue"] {
+    --tag-100: var(--color-blue-900);
+    --tag-200: var(--color-blue-800);
+    --tag-300: var(--color-blue-700);
+    --tag-400: var(--color-blue-600);
+    --tag-500: var(--color-blue-500);
+    --tag-600: var(--color-blue-400);
+    --tag-700: var(--color-blue-300);
+    --tag-800: var(--color-blue-200);
+    --tag-900: var(--color-blue-100);
+  }
+
+  .dark [data-tag-color="Green"] {
+    --tag-100: var(--color-green-900);
+    --tag-200: var(--color-green-800);
+    --tag-300: var(--color-green-700);
+    --tag-400: var(--color-green-600);
+    --tag-500: var(--color-green-500);
+    --tag-600: var(--color-green-400);
+    --tag-700: var(--color-green-300);
+    --tag-800: var(--color-green-200);
+    --tag-900: var(--color-green-100);
+  }
+
+  .dark [data-tag-color="Lime"] {
+    --tag-100: var(--color-lime-900);
+    --tag-200: var(--color-lime-800);
+    --tag-300: var(--color-lime-700);
+    --tag-400: var(--color-lime-600);
+    --tag-500: var(--color-lime-500);
+    --tag-600: var(--color-lime-400);
+    --tag-700: var(--color-lime-300);
+    --tag-800: var(--color-lime-200);
+    --tag-900: var(--color-lime-100);
+  }
+
+  .dark [data-tag-color="Orange"] {
+    --tag-100: var(--color-orange-900);
+    --tag-200: var(--color-orange-800);
+    --tag-300: var(--color-orange-700);
+    --tag-400: var(--color-orange-600);
+    --tag-500: var(--color-orange-500);
+    --tag-600: var(--color-orange-400);
+    --tag-700: var(--color-orange-300);
+    --tag-800: var(--color-orange-200);
+    --tag-900: var(--color-orange-100);
+  }
+
+  .dark [data-tag-color="Purple"] {
+    --tag-100: var(--color-violet-900);
+    --tag-200: var(--color-violet-800);
+    --tag-300: var(--color-violet-700);
+    --tag-400: var(--color-violet-600);
+    --tag-500: var(--color-violet-500);
+    --tag-600: var(--color-violet-400);
+    --tag-700: var(--color-violet-300);
+    --tag-800: var(--color-violet-200);
+    --tag-900: var(--color-violet-100);
+  }
+
+  .dark [data-tag-color="Red"] {
+    --tag-100: var(--color-rose-900);
+    --tag-200: var(--color-rose-800);
+    --tag-300: var(--color-rose-700);
+    --tag-400: var(--color-rose-600);
+    --tag-500: var(--color-rose-500);
+    --tag-600: var(--color-rose-400);
+    --tag-700: var(--color-rose-300);
+    --tag-800: var(--color-rose-200);
+    --tag-900: var(--color-rose-100);
+  }
+
+  .dark [data-tag-color="Rose"] {
+    --tag-100: var(--color-pink-900);
+    --tag-200: var(--color-pink-800);
+    --tag-300: var(--color-pink-700);
+    --tag-400: var(--color-pink-600);
+    --tag-500: var(--color-pink-500);
+    --tag-600: var(--color-pink-400);
+    --tag-700: var(--color-pink-300);
+    --tag-800: var(--color-pink-200);
+    --tag-900: var(--color-pink-100);
+  }
+
+  .dark [data-tag-color="Sky"] {
+    --tag-100: var(--color-sky-900);
+    --tag-200: var(--color-sky-800);
+    --tag-300: var(--color-sky-700);
+    --tag-400: var(--color-sky-600);
+    --tag-500: var(--color-sky-500);
+    --tag-600: var(--color-sky-400);
+    --tag-700: var(--color-sky-300);
+    --tag-800: var(--color-sky-200);
+    --tag-900: var(--color-sky-100);
+  }
+
+  .dark [data-tag-color="Slate"] {
+    --tag-100: var(--color-slate-900);
+    --tag-200: var(--color-slate-800);
+    --tag-300: var(--color-slate-700);
+    --tag-400: var(--color-slate-600);
+    --tag-500: var(--color-slate-500);
+    --tag-600: var(--color-slate-400);
+    --tag-700: var(--color-slate-300);
+    --tag-800: var(--color-slate-200);
+    --tag-900: var(--color-slate-100);
+  }
+
+  .dark [data-tag-color="Teal"] {
+    --tag-100: var(--color-teal-900);
+    --tag-200: var(--color-teal-800);
+    --tag-300: var(--color-teal-700);
+    --tag-400: var(--color-teal-600);
+    --tag-500: var(--color-teal-500);
+    --tag-600: var(--color-teal-400);
+    --tag-700: var(--color-teal-300);
+    --tag-800: var(--color-teal-200);
+    --tag-900: var(--color-teal-100);
+  }
+
+  .dark [data-tag-color="Yellow"] {
+    --tag-100: var(--color-gold-900);
+    --tag-200: var(--color-gold-800);
+    --tag-300: var(--color-gold-700);
+    --tag-400: var(--color-gold-600);
+    --tag-500: var(--color-gold-500);
+    --tag-600: var(--color-gold-400);
+    --tag-700: var(--color-gold-300);
+    --tag-800: var(--color-gold-200);
+    --tag-900: var(--color-gold-100);
+  }
 }

@@ -7,8 +7,8 @@
  * Unlayered: they override Nuxt UI's (in the `theme` layer).
  */
 :root {
-  --ui-primary: var(--ui-color-primary-700); /* 7.7:1 */
-  --ui-secondary: var(--ui-color-secondary-600); /* 5:1 */
+  --ui-primary: var(--ui-color-primary-600); /* 5:1 (white on it: 5.6:1) */
+  --ui-secondary: var(--ui-color-secondary-700); /* 7.7:1 */
   --ui-warning: var(--ui-color-warning-600); /* 4:1 */
 
   --ui-text-dimmed: var(--ui-color-neutral-600); /* 4:1 */
@@ -40,8 +40,8 @@
 }
 
 .dark {
-  --ui-primary: var(--ui-color-primary-300); /* 8.4:1 */
-  --ui-secondary: var(--ui-color-secondary-400); /* 5.8:1 */
+  --ui-primary: var(--ui-color-primary-400); /* 5.8:1 */
+  --ui-secondary: var(--ui-color-secondary-300); /* 8.4:1 */
   --ui-warning: var(--ui-color-warning-400);
 
   --ui-text-dimmed: var(--ui-color-neutral-500); /* 6:1 */

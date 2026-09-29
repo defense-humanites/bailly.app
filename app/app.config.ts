@@ -2,8 +2,8 @@ export default defineAppConfig({
   ui: {
     // The palette « Grèce classique » (cf. `assets/css/theme.css`).
     colors: {
-      primary: "aegean",
-      secondary: "terracotta",
+      primary: "terracotta",
+      secondary: "aegean",
       info: "aegean",
       warning: "gold",
       neutral: "marble",

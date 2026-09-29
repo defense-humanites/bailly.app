@@ -437,7 +437,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
       </ul>
     </section>
 
-    <section class="my-10 rounded-2xl bg-linear-to-br from-secondary/15 to-secondary/5 p-6 md:p-10">
+    <section class="my-10 rounded-2xl bg-linear-to-br from-primary/15 to-primary/5 p-6 md:p-10">
       <h2 class="font-serif text-2xl font-bold md:text-3xl">
         Un dictionnaire libre, porté par une association
       </h2>
