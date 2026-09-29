@@ -11,9 +11,9 @@ test.describe("about page", () => {
       "L'application Bailly.app",
     ]);
     // The errors of the text go to the team of the edition, the others to us.
-    await expect(lineage.getByRole("link", { name: "Signaler une erreur dans le texte" }))
+    await expect(lineage.getByRole("link", { name: "Signaler une erreur" }))
       .toHaveAttribute("href", /^mailto:numerisation\.gaffiot@hotmail\.fr\?subject=/);
-    await expect(lineage.getByRole("link", { name: "Signaler un problème de l'application" }))
+    await expect(lineage.getByRole("link", { name: "Signaler un problème" }))
       .toHaveAttribute("href", "mailto:contact@bailly.app");
   });
 
