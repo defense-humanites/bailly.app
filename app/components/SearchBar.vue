@@ -167,6 +167,12 @@
     (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
   };
 
+  // Another component may ask for the focus (e.g. the about page's "Search a
+  // word" button).
+  watch(useSearchFocus().request, () => {
+    (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
+  });
+
   // The results' Greek may be transliterated (a preference).
   const greek = useGreek();
 

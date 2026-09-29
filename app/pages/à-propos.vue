@@ -1,198 +1,441 @@
 <script setup lang="ts">
-  import Mentions from "~/components/pages/à-propos/mentions.vue";
-
-  definePageMeta({
-    layout: false,
-  });
-
   useSeoMeta({
     title: "À propos",
-    description: "Apprenez-en davantage sur le Bailly en ligne, un dictionnaire de référence numérisé.",
+    description: "Le dictionnaire grec–français d'Anatole Bailly, dans l'édition révisée Bailly 2020 Hugo Chávez : une application libre et gratuite pour le consulter.",
   });
+
+  const searchFocus = useSearchFocus();
+
+  /**
+   * Key figures of the Bailly 2020 Hugo Chávez edition (after its notice).
+   */
+  const figures = [
+    { value: "107 809", label: "entrées" },
+    { value: "327 936", label: "références" },
+    { value: "1 325", label: "auteurs cités" },
+  ];
+
+  const features = [
+    {
+      icon: "i-lucide-search",
+      title: "Cherchez comme vous écrivez",
+      text: "En grec, en beta code ou en translittération : tapez logos ou λόγος, les résultats s'affichent dès la première lettre.",
+    },
+    {
+      icon: "i-lucide-sparkles",
+      title: "Les formes fléchies aussi",
+      text: "ἦλθον vous mène à ἔρχομαι : l'analyseur morphologique Morpheus retrouve le lemme d'une forme conjuguée ou déclinée.",
+    },
+    {
+      icon: "i-lucide-bookmark",
+      title: "Vos signets, sur tous vos appareils",
+      text: "Classez vos entrées par étiquettes, et synchronisez-les, chiffrées, sans créer de compte.",
+    },
+    {
+      icon: "i-lucide-book-open",
+      title: "Une lecture à votre main",
+      text: "Quatre polices, quatre tailles de texte, et la translittération du grec si vous le souhaitez.",
+    },
+  ];
+
+  /**
+   * The entry ῥιπτός, as the 2020 edition gives it (cf. its scan from 1935).
+   */
+  const rhiptos = `<span class="entreea"><span class="grec">ῥιπτός,</span></span> <span class="des">ή, όν,</span> jeté,
+lancé : <span class="grec">μόρος</span>, <span class="aut">Soph.</span> <span class="oeuv">Tr.</span> <span class="refch">357,</span>
+mort d'un homme qu'on lance (du haut d'un rocher).
+<div class="etymor"><span class="etiqetymor">Étym.</span> <span class="ital">vb. de</span> <span class="grec">ῥίπτω</span>.</div>`;
+
+  /**
+   * The errors of the text go to the team of the 2020 edition, with the entry
+   * and the version (as its notice asks).
+   */
+  const reportTextError = `mailto:numerisation.gaffiot@hotmail.fr?subject=${encodeURIComponent("Bailly 2020 Chávez : erreur dans l'entrée …")}`;
+
+  const resources = [
+    { title: "Préface d'Anatole Bailly", href: "/documents/préface-anatole-bailly.pdf" },
+    { title: "Abréviations et signes usuels", href: "/documents/abréviations-signes-usuels.pdf" },
+    { title: "Liste des auteurs et des ouvrages", href: "/documents/liste-auteurs-ouvrages.pdf" },
+    { title: "Mesures", href: "/documents/mesures.pdf" },
+    { title: "Notice de l'édition 2020", href: "/documents/notice-édition-2020.pdf" },
+  ];
+
+  type Link = { label: string; href: string };
+
+  const credits: { title: string; authors: string; licence: string; links: Link[]; note?: string }[] = [
+    {
+      title: "Application Bailly.app",
+      authors: "Antoine Boquet & Benjamin Georges",
+      licence: "GNU Affero General Public License (AGPL-3.0-or-later)",
+      links: [
+        { label: "Licence", href: "/COPYING" },
+        { label: "Code source", href: "https://github.com/antoineboquet/bailly.app" },
+      ],
+    },
+    {
+      title: "Bailly 2020 Hugo Chávez",
+      authors: "Gérard Gréco, André Charbonnet, Mark De Wilde, Bernard Maréchal et al.",
+      licence: "Creative Commons Attribution – Pas d'Utilisation Commerciale – Pas de Modification (CC BY-NC-ND 4.0)",
+      links: [
+        { label: "Licence", href: "https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" },
+        { label: "Source", href: "http://gerardgreco.free.fr/spip.php?article24" },
+      ],
+      note: "Version des données : 28 février 2023.",
+    },
+    {
+      title: "Analyseur morphologique Morpheus",
+      authors: "Gregory Crane et al., pour l'université Tufts",
+      licence: "Creative Commons Attribution-ShareAlike 3.0 United States (CC BY-SA 3.0 US)",
+      links: [
+        { label: "Licence", href: "https://creativecommons.org/licenses/by-sa/3.0/us/deed.en" },
+        { label: "Code source", href: "https://github.com/PerseusDL/morpheus" },
+      ],
+    },
+  ];
 </script>
 
 <template>
-  <NuxtLayout
-    name="default"
-    no-margin
-  >
-    <header
-      class="relative flex h-1/3 justify-center bg-white shadow-2xl after:absolute after:inset-0 after:z-0 after:bg-[url('/bailly-illustration.webp')] after:bg-[length:200vw] after:bg-center after:md:bg-[length:150vw] after:xl:bg-[length:125vw] after:2xl:bg-cover dark:bg-neutral-900 dark:shadow-black/50 after:dark:opacity-50 after:dark:invert"
-    >
-      <img
-        class="absolute -bottom-20 z-10 size-40 animate-rise drop-shadow-2xl [animation-duration:_.75s] xl:-bottom-24 xl:size-48"
-        src="/favicon/favicon.svg"
-        alt="Logo"
-      >
-    </header>
-
-    <article class="m-auto mt-20 max-w-screen-md p-6 lg:py-12 xl:mt-24">
-      <header class="mb-6 text-center">
-        <h1 class="text-3xl font-bold xl:text-4xl">
-          À propos d'un dictionnaire<br>
-          de référence numérisé
-        </h1>
-      </header>
-
-      <section
-        class="space-y-3 rounded-lg border border-secondary-100 bg-white p-3 font-serif text-xl shadow-xl md:p-6 lg:space-y-6 dark:border-neutral-700/50 dark:bg-neutral-800 dark:shadow-neutral-950"
-      >
-        <Mentions
-          class="rounded-lg bg-secondary-50 p-3 text-lg leading-tight text-secondary-900 dark:bg-neutral-900 dark:text-secondary-400"
+  <div class="mx-auto max-w-(--header-max-width) px-4 md:px-6">
+    <section class="flex flex-col items-center py-12 text-center md:py-20">
+      <p class="mb-3 text-sm font-semibold tracking-widest text-primary uppercase">
+        Bailly.app
+      </p>
+      <h1 class="max-w-3xl font-serif text-4xl leading-tight font-bold text-balance md:text-5xl">
+        Le dictionnaire grec–français d'Anatole&nbsp;Bailly, à portée de recherche
+      </h1>
+      <p class="mt-5 max-w-2xl text-lg text-pretty text-muted md:text-xl">
+        Le texte révisé du <em>Bailly 2020 Hugo&nbsp;Chávez</em>, dans une application libre et
+        gratuite, pensée pour la lecture et la recherche, sans compte ni publicité.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <UButton
+          size="xl"
+          icon="i-lucide-search"
+          label="Chercher un mot"
+          @click="searchFocus.focus()"
         />
+        <UButton
+          to="/soutenir"
+          size="xl"
+          color="neutral"
+          variant="outline"
+          icon="i-lucide-heart"
+          label="Nous soutenir"
+        />
+      </div>
+      <dl class="mt-12 grid w-full max-w-2xl grid-cols-3 gap-4 border-t border-default pt-6">
+        <div
+          v-for="figure in figures"
+          :key="figure.label"
+          class="flex flex-col-reverse"
+        >
+          <dt class="text-sm text-muted">
+            {{ figure.label }}
+          </dt>
+          <dd class="font-serif text-2xl font-bold md:text-3xl">
+            {{ figure.value }}
+          </dd>
+        </div>
+      </dl>
+    </section>
 
-        <p>
-          <strong>Le «&nbsp;Bailly.&nbsp;»</strong> Le dictionnaire d'Anatole Bailly
-          est un ouvrage de référence incontournable pour les hellénistes francophones.
-          Depuis sa parution initiale, en 1894, le «&nbsp;Bailly&nbsp;» a connu de
-          nombreuses rééditions témoignant de son succès. Le texte que nous proposons
-          ici est fondé sur la quatrième édition (1935), aujourd'hui passée dans le
-          domaine public. Celui-ci a fait l'objet de révisions substantielles, que
-          nous détaillons ci-dessous.
-        </p>
-
-        <p>
-          <strong>Numérisation et révision.</strong> Cette application doit avant tout
-          son existence au travail préalable de M. Gérard Gréco et de son équipe. En
-          effet, le <em>«&nbsp;Bailly 2020 Hugo Chávez&nbsp;»</em>, que nous
-          mettons à votre disposition, est le résultat d'une entreprise de
-          numérisation et de révision sans précédent du dictionnaire d'Anatole
-          Bailly. Il aura d'abord été nécessaire à M. Gréco et à son équipe de
-          procéder à la numérisation du texte (procédé de reconnaissance optique
-          des caractères ou <em>océrisation</em>), avant que de pouvoir
-          entreprendre une fastidieuse étape de correction manuelle. Le texte de
-          1935 n'étant pas exempt d'erreurs, un travail de correction, effectué à
-          partir d'ouvrages de référence, s'est ensuite imposé. Enfin, l'équipe de
-          M. Gréco a procédé à une mise à jour des étymologies et de la toponymie,
-          ainsi qu'à la normalisation des références. Pour de plus amples détails
-          au sujet de cette édition numérique, nous vous suggérons de vous
-          reporter à sa <a
-            href="/documents/notice-édition-2020.pdf"
-            target="_blank"
-          >notice</a>.
-        </p>
-
-        <p>
-          <strong>Autres éditions numériques.</strong> Vous trouverez sur la page du
-          projet de numérisation du «&nbsp;Bailly&nbsp;» une
-          <a
-            target="_blank"
-            rel="noopener"
-            href="http://gerardgreco.free.fr/spip.php?article24"
-          >édition PDF</a>
-          proposant une mise en page similaire à celle de l'ouvrage d'origine. Le
-          <a
-            target="_blank"
-            rel="noopener"
-            href="https://archive.org/details/BaillyDictionnaireGrecFrancais"
-          >fac-similé</a>
-          de l'édition de 1935 est par ailleurs disponible sur l'<em>Internet&nbsp;Archive</em>.
-        </p>
-      </section>
-
-      <!-- Raw text, to be laid out with the rest of the page. -->
-      <section
-        id="donnees"
-        class="mt-6 space-y-3 font-serif text-xl lg:space-y-6"
+    <section
+      aria-labelledby="atouts"
+      class="py-10 md:py-14"
+    >
+      <h2
+        id="atouts"
+        class="mb-8 text-2xl font-bold md:text-3xl"
       >
-        <h2 class="text-2xl font-bold">
-          Vos données
-        </h2>
+        Ce que l'application apporte au texte
+      </h2>
+      <ul class="grid gap-4 sm:grid-cols-2">
+        <li
+          v-for="feature in features"
+          :key="feature.title"
+        >
+          <UCard class="h-full">
+            <div class="mb-3 flex size-10 items-center justify-center rounded-full bg-primary-50 text-primary">
+              <UIcon
+                :name="feature.icon"
+                class="size-5"
+              />
+            </div>
+            <h3 class="font-semibold">
+              {{ feature.title }}
+            </h3>
+            <p class="mt-1 text-muted">
+              {{ feature.text }}
+            </p>
+          </UCard>
+        </li>
+      </ul>
+    </section>
 
-        <p>
-          <strong>Sur votre appareil.</strong> Vos signets (étiquettes et favoris) et
-          l'historique des entrées consultées sont enregistrés dans votre navigateur
-          (IndexedDB), sur votre appareil seulement, jusqu'à ce que vous les effaciez.
-          Certains navigateurs, Safari notamment, effacent d'eux-mêmes les données
-          d'un site qui n'a pas été visité depuis quelques jours&nbsp;: exportez vos
-          signets ou activez la synchronisation pour ne pas les perdre.
-        </p>
+    <section
+      aria-labelledby="origine"
+      class="py-10 md:py-14"
+    >
+      <h2
+        id="origine"
+        class="text-2xl font-bold md:text-3xl"
+      >
+        D'où vient le texte
+      </h2>
+      <p class="mt-2 max-w-2xl text-muted">
+        Trois ouvrages en un : le dictionnaire, son édition numérique, et l'application qui vous la
+        présente. Suivez l'entrée ῥιπτός de l'un à l'autre.
+      </p>
 
-        <p>
-          <strong>Paramètres.</strong> Vos paramètres (police, taille du texte,
-          translittération, préférences de recherche) sont gardés dans un cookie,
-          déposé seulement lorsque vous modifiez un réglage et conservé treize mois.
-          Notre serveur le lit pour afficher les pages avec vos réglages. Le thème et
-          l'état de l'interface (étiquette active, avis masqués) sont gardés dans le
-          stockage local de votre navigateur. Ces données ne contiennent aucun
-          identifiant et ne servent qu'au fonctionnement de l'application.
-        </p>
+      <ol class="mt-10 space-y-12">
+        <li class="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-center">
+          <img
+            src="/images/bailly-1935-rhiptos.webp"
+            width="884"
+            height="174"
+            alt="L'entrée ῥιπτός dans l'édition de 1935 (fac-similé)."
+            class="w-full rounded-lg bg-white p-2 shadow-lg ring-1 ring-default"
+          >
+          <div>
+            <p class="text-sm font-semibold text-primary">
+              1894 – 1935
+            </p>
+            <h3 class="mt-1 font-serif text-2xl font-bold">
+              Le dictionnaire d'Anatole Bailly
+            </h3>
+            <p class="mt-2 text-muted">
+              L'ouvrage de référence des hellénistes francophones, paru en 1894 et maintes fois
+              réédité. Le texte de sa quatrième édition (1935) est passé dans le domaine public ; son
+              <a
+                href="https://archive.org/details/BaillyDictionnaireGrecFrancais"
+                target="_blank"
+                rel="noopener"
+              >fac-similé</a> est disponible sur l'<em>Internet Archive</em>.
+            </p>
+          </div>
+        </li>
 
-        <p>
-          <strong>Synchronisation des signets.</strong> Si vous l'activez, vos signets
-          sont chiffrés sur votre appareil avant d'être envoyés, avec une clé de
-          douze mots que vous êtes seul à détenir. Aucun compte n'est nécessaire&nbsp;:
-          notre serveur ne garde qu'une copie chiffrée de vos signets, qu'il ne peut
-          pas lire, sans votre nom ni votre adresse électronique. Nous ne pouvons
-          donc pas non plus retrouver une clé perdue. La copie en ligne est effacée
-          après dix-huit mois sans aucune synchronisation (vos appareils gardent la
-          leur), et ce qu'il en reste (l'identifiant du casier et ses dates) est
-          supprimé après trois ans. Par mesure de protection contre les abus, un
-          casier créé parmi de nombreux autres depuis une même adresse, le même jour,
-          et jamais relu est effacé après trente jours&nbsp;; un usage ordinaire
-          n'est pas concerné. Vous pouvez aussi effacer vos signets en ligne à tout
-          moment, depuis la fenêtre de synchronisation.
-        </p>
+        <li class="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-center">
+          <div
+            aria-hidden="true"
+            class="rounded-lg bg-white p-4 shadow-lg ring-1 ring-default"
+          >
+            <!-- eslint-disable vue/no-v-html -- A constant of this page. -->
+            <div
+              class="definition text-justify [--reading-font-size:1rem] [--reading-font-weight:400]"
+              v-html="rhiptos"
+            />
+            <!-- eslint-enable vue/no-v-html -->
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-primary">
+              2020
+            </p>
+            <h3 class="mt-1 font-serif text-2xl font-bold">
+              L'édition numérique <em>Bailly 2020 Hugo&nbsp;Chávez</em>
+            </h3>
+            <p class="mt-2 text-muted">
+              Gérard Gréco et son équipe ont numérisé le texte, l'ont corrigé à la main d'après les
+              ouvrages de référence, puis ont mis à jour les étymologies et la toponymie, et normalisé
+              les références. C'est leur texte que vous lisez ici. Une
+              <a
+                href="http://gerardgreco.free.fr/spip.php?article24"
+                target="_blank"
+                rel="noopener"
+              >édition PDF</a>, mise en page comme l'ouvrage d'origine, est disponible sur le site du
+              projet.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <UButton
+                :to="reportTextError"
+                color="neutral"
+                variant="outline"
+                icon="i-lucide-flag"
+                label="Signaler une erreur dans le texte"
+              />
+              <UButton
+                to="/documents/notice-édition-2020.pdf"
+                target="_blank"
+                color="neutral"
+                variant="ghost"
+                icon="i-lucide-file-text"
+                label="Notice de l'édition"
+              />
+            </div>
+            <p class="mt-2 text-sm text-muted">
+              Les erreurs du texte se signalent à l'équipe de M.&nbsp;Gréco, en précisant l'entrée et la
+              version (Chávez).
+            </p>
+          </div>
+        </li>
 
-        <p>
-          <strong>Adresses IP.</strong> Pour limiter les abus, notre serveur compte
-          chaque jour les envois de synchronisation de chaque adresse IP. Il ne garde
-          pas l'adresse elle-même, mais un pseudonyme (une empreinte renouvelée chaque
-          jour), effacé après deux jours. Les journaux techniques de l'application ne
-          contiennent ni adresse IP ni adresse des pages consultées.
-        </p>
+        <li class="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-center">
+          <div
+            aria-hidden="true"
+            class="space-y-2 rounded-lg bg-linear-to-br from-primary-50 to-white p-4 shadow-lg ring-1 ring-default"
+          >
+            <div class="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-xs ring-1 ring-default">
+              <UIcon
+                name="i-lucide-search"
+                class="size-4 text-muted"
+              />
+              <span class="font-serif">ῥιπτ</span>
+              <span class="ms-auto rounded-full bg-elevated px-2 text-xs text-muted">4</span>
+            </div>
+            <div class="rounded-md bg-white p-3 ring-1 ring-default">
+              <div class="flex items-center gap-2">
+                <span class="font-serif font-bold">ῥιπτός</span>
+                <UIcon
+                  name="i-bailly-star-filled"
+                  class="ms-auto size-4 text-primary-400"
+                />
+              </div>
+              <p class="line-clamp-2 font-serif text-sm text-muted">
+                ή, όν, jeté, lancé : μόρος, Soph. Tr. 357, mort d'un homme qu'on lance (du haut d'un rocher).
+              </p>
+            </div>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-primary">
+              Aujourd'hui
+            </p>
+            <h3 class="mt-1 font-serif text-2xl font-bold">
+              L'application Bailly.app
+            </h3>
+            <p class="mt-2 text-muted">
+              Nous ne modifions pas le texte : nous le rendons consultable, avec la recherche,
+              l'analyse des formes fléchies, les signets et les réglages de lecture. L'application est
+              un logiciel libre.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <UButton
+                to="mailto:contact@bailly.app"
+                color="neutral"
+                variant="outline"
+                icon="i-lucide-message-circle"
+                label="Signaler un problème de l'application"
+              />
+              <UButton
+                to="https://github.com/antoineboquet/bailly.app"
+                target="_blank"
+                color="neutral"
+                variant="ghost"
+                icon="i-lucide-code"
+                label="Code source"
+              />
+            </div>
+          </div>
+        </li>
+      </ol>
+    </section>
 
-        <p>
-          <strong>Recherches.</strong> Les recherches et les entrées du dictionnaire
-          sont servies par notre API, qui ne conserve rien de vos recherches en
-          dehors de ses journaux techniques (pouvant contenir votre adresse IP et
-          les adresses demandées), effacés après vingt-quatre heures.
-        </p>
-
-        <p>
-          <strong>Mesure d'audience.</strong> La fréquentation du site est mesurée par
-          <a
+    <section
+      aria-labelledby="ressources"
+      class="py-10 md:py-14"
+    >
+      <h2
+        id="ressources"
+        class="mb-6 text-2xl font-bold md:text-3xl"
+      >
+        Ressources
+      </h2>
+      <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <li
+          v-for="resource in resources"
+          :key="resource.href"
+        >
+          <UButton
+            :to="resource.href"
             target="_blank"
-            rel="noopener"
-            href="https://docs.simpleanalytics.com/what-we-collect"
-          >Simple Analytics</a>, qui ne dépose aucun cookie et n'utilise aucune
-          technique équivalente (stockage local, empreinte du navigateur). Votre
-          adresse IP n'est ni conservée ni enregistrée. Simple Analytics ne relève
-          que des informations générales&nbsp;: la page consultée (sans ses
-          paramètres), la page d'où vous venez, la langue, la taille de l'écran, le
-          navigateur et le système sans leur version précise, le temps passé sur la
-          page et son défilement, et le pays, déduit du fuseau horaire. Ses serveurs sont aux Pays-Bas, et le réglage
-          «&nbsp;Ne pas suivre&nbsp;» (<em>Do Not Track</em>) de votre navigateur
-          est respecté.
-        </p>
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-file-text"
+            trailing-icon="i-lucide-arrow-up-right"
+            :label="resource.title"
+            class="w-full"
+            :ui="{ trailingIcon: 'ms-auto' }"
+          />
+        </li>
+      </ul>
+    </section>
 
-        <p>
-          <strong>Hébergement.</strong> L'application est hébergée par Cloudflare, qui
-          achemine les requêtes et protège le site contre les abus&nbsp;; à ce titre,
-          Cloudflare traite votre adresse IP, selon sa
-          <a
-            target="_blank"
-            rel="noopener"
-            href="https://www.cloudflare.com/privacypolicy/"
-          >politique de confidentialité</a>.
-        </p>
+    <section
+      aria-labelledby="credits"
+      class="py-10 md:py-14"
+    >
+      <h2
+        id="credits"
+        class="mb-6 text-2xl font-bold md:text-3xl"
+      >
+        Crédits et licences
+      </h2>
+      <ul class="grid gap-4 lg:grid-cols-3">
+        <li
+          v-for="credit in credits"
+          :key="credit.title"
+          class="rounded-lg bg-elevated/50 p-4 text-sm"
+        >
+          <h3 class="font-semibold">
+            {{ credit.title }}
+          </h3>
+          <p class="mt-1">
+            {{ credit.authors }}
+          </p>
+          <p class="mt-1 text-muted">
+            {{ credit.licence }}
+          </p>
+          <p
+            v-if="credit.note"
+            class="mt-1 text-muted"
+          >
+            {{ credit.note }}
+          </p>
+          <p class="mt-2 flex gap-4">
+            <a
+              v-for="link in credit.links"
+              :key="link.href"
+              :href="link.href"
+              target="_blank"
+              rel="noopener"
+            >{{ link.label }}</a>
+          </p>
+        </li>
+      </ul>
+    </section>
 
-        <p>
-          <strong>Dons.</strong> Les dons passent par PayPal&nbsp;: le formulaire de
-          don est celui de PayPal, qui traite vos informations selon sa propre
-          politique de confidentialité. Bailly.app n'a jamais accès à vos
-          coordonnées bancaires.
-        </p>
+    <section class="my-10 rounded-2xl bg-linear-to-br from-primary-100 to-primary-50 p-6 md:p-10">
+      <h2 class="font-serif text-2xl font-bold md:text-3xl">
+        Un dictionnaire libre, porté par une association
+      </h2>
+      <p class="mt-2 max-w-2xl text-muted">
+        Bailly.app est gratuit et le restera. Vos dons couvrent l'hébergement et le temps consacré à
+        l'application.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <UButton
+          to="/soutenir"
+          size="lg"
+          icon="i-lucide-heart"
+          label="Nous soutenir"
+        />
+        <UButton
+          to="mailto:contact@bailly.app"
+          size="lg"
+          color="neutral"
+          variant="outline"
+          icon="i-lucide-mail"
+          label="Nous écrire"
+        />
+      </div>
+    </section>
 
-        <p>
-          <strong>Contact.</strong> Pour toute question sur vos données, ou pour
-          exercer vos droits (accès, rectification, effacement), écrivez à
-          <a href="mailto:contact@bailly.app">contact@bailly.app</a>. Comme nous ne
-          pouvons relier aucune copie en ligne à une personne, l'effacement de vos
-          signets en ligne se fait depuis la fenêtre de synchronisation, avec votre
-          clé.
-        </p>
-      </section>
-    </article>
-  </NuxtLayout>
+    <p class="pb-10 text-sm text-muted">
+      <UIcon
+        name="i-lucide-shield-check"
+        class="me-1 inline size-4 align-[-0.125em]"
+      />
+      Ce que l'application garde de vos données, et où :
+      <NuxtLink to="/confidentialite">confidentialité</NuxtLink>.
+    </p>
+  </div>
 </template>

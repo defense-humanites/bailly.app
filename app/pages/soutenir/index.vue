@@ -46,7 +46,7 @@
       <p>
         Le don se fait par PayPal, avec un compte PayPal ou une carte bancaire,
         dans une fenêtre sécurisée : vos coordonnées bancaires ne nous sont
-        jamais communiquées.
+        jamais communiquées (voir <NuxtLink to="/confidentialite">vos données</NuxtLink>).
       </p>
     </UCard>
 
