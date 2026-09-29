@@ -145,7 +145,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
     >
       <h2
         id="atouts"
-        class="mb-8 text-2xl font-bold md:text-3xl"
+        class="mb-8 text-center text-2xl font-bold md:text-3xl"
       >
         Ce que l'application apporte au texte
       </h2>
@@ -178,11 +178,11 @@ mort d'un homme qu'on lance (du haut d'un rocher).
     >
       <h2
         id="origine"
-        class="text-2xl font-bold md:text-3xl"
+        class="text-center text-2xl font-bold md:text-3xl"
       >
         D'où vient le texte
       </h2>
-      <p class="mt-2 max-w-2xl text-muted">
+      <p class="mx-auto mt-2 max-w-2xl text-center text-muted">
         Trois ouvrages en un : le dictionnaire, son édition numérique, et l'application qui vous la
         présente. Suivez l'entrée ῥιπτός de l'un à l'autre.
       </p>
@@ -191,7 +191,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
         A timeline: each work in a bubble, dated, on the left then on the right,
         joined by a winding path (from `md`); on mobile, a rail on the left.
       -->
-      <ol class="mt-10 space-y-12 md:max-w-4xl md:space-y-24">
+      <ol class="mt-10 space-y-12 md:mx-auto md:max-w-4xl md:space-y-24">
         <li class="relative grid grid-cols-[5rem_minmax(0,1fr)] gap-x-4 md:flex md:items-start md:gap-12 md:even:flex-row-reverse">
           <!-- The line to the next work (mobile: a rail; from `md`: a winding path). -->
           <div
@@ -369,7 +369,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
     >
       <h2
         id="ressources"
-        class="mb-6 text-2xl font-bold md:text-3xl"
+        class="mb-6 text-center text-2xl font-bold md:text-3xl"
       >
         Ressources
       </h2>
@@ -399,7 +399,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
     >
       <h2
         id="credits"
-        class="mb-6 text-2xl font-bold md:text-3xl"
+        class="mb-6 text-center text-2xl font-bold md:text-3xl"
       >
         Crédits et licences
       </h2>

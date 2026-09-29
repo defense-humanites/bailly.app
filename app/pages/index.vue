@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto items-center px-6 sm:px-12 lg:flex lg:h-full lg:max-w-screen-lg lg:px-24 lg:pb-3 xl:px-0">
+  <div class="mx-auto items-center px-6 sm:px-12 lg:flex lg:min-h-[calc(100dvh-(var(--spacing)*14))] lg:max-w-screen-lg lg:px-24 lg:pb-3 xl:px-0">
     <section class="my-6 sm:my-12 flex flex-col gap-2 lg:gap-4 xl:gap-6">
       <NuxtLink to="/soutenir">
         <UBadge
