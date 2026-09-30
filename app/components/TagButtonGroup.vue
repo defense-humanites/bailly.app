@@ -155,11 +155,16 @@
                   v-if="tag.key === currentTag?.key"
                   #trailing
                 >
+                  <!--
+                    In the tag's colors (lightest tint, its text color): it
+                    stays distinct from the row's hover background.
+                  -->
                   <UBadge
                     label="active"
                     color="neutral"
                     variant="soft"
                     size="sm"
+                    class="bg-tag-100 text-tag-text ring ring-inset ring-tag-300/60"
                   />
                 </template>
               </UButton>
