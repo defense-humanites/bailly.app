@@ -91,6 +91,14 @@ export default defineNuxtConfig({
       analyticsHost: "bailly.app",
     },
   },
+  /**
+   * The preferences page was called « Paramètres » (until 30 September
+   * 2026): its former address redirects to it, permanently. (The rules
+   * match the decoded path.)
+   */
+  routeRules: {
+    "/paramètres": { redirect: { to: encodeURI("/préférences"), statusCode: 301 } },
+  },
   devServer: { port: 4321 },
   compatibilityDate: "2025-07-15",
   nitro: {

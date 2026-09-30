@@ -6,7 +6,7 @@
   import type { ReadingSize } from "~/utils/preferences";
 
   useSeoMeta({
-    title: "Paramètres",
+    title: "Préférences",
     description: "Réglez l'affichage des entrées et la recherche selon vos préférences.",
   });
 
@@ -94,7 +94,7 @@
   <div class="px-4 py-6 md:px-6 lg:py-12">
     <div class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 lg:max-w-(--header-max-width) lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr_auto]">
       <h1 class="text-3xl leading-normal font-bold lg:col-span-2">
-        Paramètres
+        Préférences
       </h1>
 
       <UCard
@@ -252,12 +252,12 @@
       <!-- A dangerous action: at the end, apart from the settings, confirmed. -->
       <UModal
         v-model:open="isResetConfirmationOpen"
-        title="Réinitialiser les paramètres ?"
-        description="Le thème, la lecture et les préférences de recherche retrouveront leurs valeurs par défaut."
+        title="Réinitialiser les préférences ?"
+        description="Le thème, la lecture et la recherche retrouveront leurs réglages par défaut."
         :ui="{ footer: 'justify-end' }"
       >
         <UButton
-          label="Réinitialiser les paramètres"
+          label="Réinitialiser les préférences"
           icon="i-lucide-rotate-ccw"
           color="error"
           variant="ghost"

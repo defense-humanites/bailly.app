@@ -5,7 +5,7 @@ const GREEK = /[Ͱ-Ͽἀ-῿]/u;
 
 test.describe("transliterated Greek", () => {
   test.beforeEach(async ({ page, goto }) => {
-    await goto("/paramètres", { waitUntil: "hydration" });
+    await goto("/préférences", { waitUntil: "hydration" });
     await page.getByRole("switch", { name: "Grec translittéré" }).click();
     await expect(page.getByRole("figure", { name: "Aperçu" })).toContainText("opso·manēs");
   });

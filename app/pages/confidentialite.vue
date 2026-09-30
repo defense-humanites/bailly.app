@@ -69,8 +69,8 @@
       </p>
 
       <p>
-        <strong>Paramètres.</strong> Vos paramètres (police, taille du texte,
-        translittération, préférences de recherche) sont gardés dans un cookie,
+        <strong>Préférences.</strong> Vos préférences (police, taille du texte,
+        translittération, recherche) sont gardées dans un cookie,
         déposé seulement lorsque vous modifiez un réglage et conservé treize mois.
         Notre serveur le lit pour afficher les pages avec vos réglages. Le thème et
         l'état de l'interface (étiquette active, avis masqués) sont gardés dans le

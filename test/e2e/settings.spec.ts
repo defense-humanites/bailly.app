@@ -1,10 +1,18 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
 
 test.describe("settings", () => {
+  test("the former address, « /paramètres », redirects to the preferences", async ({ page }) => {
+    const response = await page.request.get("/paramètres", { maxRedirects: 0 });
+    expect(response.status()).toBe(301);
+    await page.goto("/paramètres");
+    await expect(page).toHaveURL(/\/pr%C3%A9f%C3%A9rences$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Préférences");
+  });
+
   test("compact: all the settings at once on a desktop screen", async ({ page, goto }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await goto("/paramètres", { waitUntil: "hydration" });
-    const reset = page.getByRole("button", { name: "Réinitialiser les paramètres" });
+    await goto("/préférences", { waitUntil: "hydration" });
+    const reset = page.getByRole("button", { name: "Réinitialiser les préférences" });
     await expect(reset).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(800);
   });
@@ -15,7 +23,7 @@ test.describe("settings", () => {
       return { left: Math.round(left), right: Math.round(right), top: Math.round(top) };
     });
     await page.setViewportSize({ width: 1280, height: 900 });
-    await goto("/paramètres", { waitUntil: "hydration" });
+    await goto("/préférences", { waitUntil: "hydration" });
     const nav = await extent("header > nav");
     const general = await extent("[aria-labelledby=settings-general]");
     const reading = await extent("[aria-labelledby=settings-reading]");
@@ -32,12 +40,12 @@ test.describe("settings", () => {
 
   test("no horizontal scroll on mobile", async ({ page, goto }) => {
     await page.setViewportSize({ width: 320, height: 700 });
-    await goto("/paramètres", { waitUntil: "hydration" });
+    await goto("/préférences", { waitUntil: "hydration" });
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBe(0);
   });
 
   test("reading: the text's size and weight, previewed, rendered by the server", async ({ page, goto, context }) => {
-    await goto("/paramètres", { waitUntil: "hydration" });
+    await goto("/préférences", { waitUntil: "hydration" });
     const preview = page.getByRole("figure", { name: "Aperçu" });
     await expect(preview).toHaveCSS("font-size", "15.5px");
     await expect(preview).toHaveCSS("font-weight", "400");
@@ -54,12 +62,12 @@ test.describe("settings", () => {
     await expect(page.locator("main .definition").first()).toHaveCSS("font-size", "18.5px");
 
     // Reset: the defaults, and no cookie anymore.
-    await goto("/paramètres", { waitUntil: "hydration" });
+    await goto("/préférences", { waitUntil: "hydration" });
     // Confirmed first: cancelling keeps the settings.
-    await page.getByRole("button", { name: "Réinitialiser les paramètres" }).click();
+    await page.getByRole("button", { name: "Réinitialiser les préférences" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Annuler" }).click();
     await expect(preview).toHaveCSS("font-size", "18.5px");
-    await page.getByRole("button", { name: "Réinitialiser les paramètres" }).click();
+    await page.getByRole("button", { name: "Réinitialiser les préférences" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Réinitialiser", exact: true }).click();
     await expect(page.getByRole("dialog")).toBeHidden();
     await expect(preview).toHaveCSS("font-size", "15.5px");
@@ -70,7 +78,7 @@ test.describe("settings", () => {
     await goto("/logos", { waitUntil: "hydration" });
     await expect(page.locator("link[rel=preload][as=font]")).toHaveAttribute("href", /^\/_nuxt\/Brill-Roman\.subset\.[\w-]+\.woff2$/);
 
-    await goto("/paramètres", { waitUntil: "hydration" });
+    await goto("/préférences", { waitUntil: "hydration" });
     await page.getByRole("combobox", { name: "Police" }).click();
     await page.getByRole("option", { name: "GFS Didot" }).click();
     const preview = page.getByRole("figure", { name: "Aperçu" });
@@ -92,7 +100,7 @@ test.describe("settings", () => {
   });
 
   test("search: shared with the search options", async ({ page, goto }) => {
-    await goto("/paramètres", { waitUntil: "hydration" });
+    await goto("/préférences", { waitUntil: "hydration" });
     await page.getByText("Translittération", { exact: true }).click();
     await expect(page.locator("header input[role=combobox]")).toHaveAttribute("placeholder", "anazētéō…");
     await page.getByRole("switch", { name: "Formes fléchies" }).click();

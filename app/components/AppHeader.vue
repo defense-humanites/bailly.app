@@ -9,9 +9,9 @@
       to: "/signets",
     },
     {
-      label: "Paramètres",
+      label: "Préférences",
       icon: "i-lucide-sliders-horizontal",
-      to: encodeURI("/paramètres"),
+      to: encodeURI("/préférences"),
     },
     {
       label: "À propos",
