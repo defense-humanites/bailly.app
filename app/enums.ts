@@ -31,7 +31,7 @@ export const colorNames: Record<ColorKey, string> = {
   Rose: "rose",
   Sky: "bleu ciel",
   Slate: "gris ardoise",
-  Teal: "bleu canard",
+  Teal: "turquoise",
   Yellow: "jaune",
 };
 

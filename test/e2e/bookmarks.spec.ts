@@ -69,14 +69,14 @@ test.describe("bookmarks page", () => {
 
     // The next hue; the name follows the focus; Enter picks it.
     await page.keyboard.press("ArrowRight");
-    await expect(picker.getByRole("option", { name: "bleu canard" })).toBeFocused();
-    await expect(page.getByText("Bleu canard", { exact: true })).toBeVisible();
+    await expect(picker.getByRole("option", { name: "turquoise" })).toBeFocused();
+    await expect(page.getByText("Turquoise", { exact: true })).toBeVisible();
     await page.keyboard.press("ArrowDown");
     await expect(picker.getByRole("option", { name: "gris ardoise" })).toBeFocused();
     await page.keyboard.press("ArrowUp");
     await page.keyboard.press("Enter");
     await expect(picker).toBeHidden();
-    const picked = page.getByRole("button", { name: "Couleur de l'étiquette : bleu canard" });
+    const picked = page.getByRole("button", { name: "Couleur de l'étiquette : turquoise" });
     await expect(picked).toBeFocused();
     await expect(picked).toHaveAttribute("data-tag-color", "Teal");
   });
