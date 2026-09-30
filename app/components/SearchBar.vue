@@ -476,12 +476,14 @@
             @click="resetOptions"
           />
         </p>
+        <!-- In the primary color, as the sparkles marking these results. -->
         <UAlert
           v-if="hasMorpheusResults && !morpheusWarningDismissed"
           class="m-1.5 w-auto shrink-0"
           icon="i-lucide-sparkles"
-          color="neutral"
+          color="primary"
           variant="soft"
+          :ui="{ description: 'text-default opacity-100' }"
           description="Les résultats issus de l'analyse morphologique, signalés par une icône scintillante, peuvent être lacunaires. Gardez l'esprit critique !"
           close
           @update:open="morpheusWarningDismissed = true"
