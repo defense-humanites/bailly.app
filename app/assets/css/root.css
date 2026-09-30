@@ -31,8 +31,6 @@
 
   /* The page (the cards, panels and fields are on `--ui-bg`, lighter). */
   --app-page-bg: var(--ui-color-neutral-100);
-  /* The page's topographic motif (cf. `layers/base.css`). */
-  --app-motif: color-mix(in srgb, var(--ui-color-neutral-400) 35%, transparent);
   /* The sticky bars (header, compact bar of an entry, reader's bar). */
   --app-bar-bg: color-mix(in srgb, var(--ui-color-neutral-50) 95%, transparent);
   /* The favorites (the star). */
@@ -63,7 +61,6 @@
   --ui-border-inverted: var(--ui-color-neutral-100);
 
   --app-page-bg: var(--color-vernis);
-  --app-motif: color-mix(in srgb, var(--ui-color-neutral-700) 35%, transparent);
   --app-bar-bg: color-mix(in srgb, var(--color-vernis) 95%, transparent);
   --app-favorite: var(--color-gold-300);
 }
