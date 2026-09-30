@@ -155,7 +155,7 @@
  */
 :root {
   --reading-font-size: 0.96875rem;
-  --reading-font-weight: 700;
+  --reading-font-weight: 400;
 }
 
 :root[data-reading-size="small"] {
@@ -170,8 +170,8 @@
   --reading-font-size: 1.15625rem;
 }
 
-:root[data-reading-weight="normal"] {
-  --reading-font-weight: 400;
+:root[data-reading-weight="bold"] {
+  --reading-font-weight: 700;
 }
 
 :root[data-header-title-row] {

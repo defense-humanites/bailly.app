@@ -40,12 +40,12 @@ test.describe("settings", () => {
     await goto("/paramètres", { waitUntil: "hydration" });
     const preview = page.getByRole("figure", { name: "Aperçu" });
     await expect(preview).toHaveCSS("font-size", "15.5px");
-    await expect(preview).toHaveCSS("font-weight", "700");
+    await expect(preview).toHaveCSS("font-weight", "400");
 
     await page.getByRole("radio", { name: "Très grande" }).click({ force: true });
-    await page.getByText("Normale", { exact: true }).nth(1).click();
+    await page.getByText("Appuyée", { exact: true }).click();
     await expect(preview).toHaveCSS("font-size", "18.5px");
-    await expect(preview).toHaveCSS("font-weight", "400");
+    await expect(preview).toHaveCSS("font-weight", "700");
 
     // The entry pages are rendered with them.
     const html = await page.evaluate(async () => (await fetch("/logos")).text());
@@ -68,7 +68,7 @@ test.describe("settings", () => {
 
   test("reading: the font, preloaded, and only its faces downloaded", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
-    await expect(page.locator("link[rel=preload][as=font]")).toHaveAttribute("href", /^\/_nuxt\/Brill-Bold\.subset\.[\w-]+\.woff2$/);
+    await expect(page.locator("link[rel=preload][as=font]")).toHaveAttribute("href", /^\/_nuxt\/Brill-Roman\.subset\.[\w-]+\.woff2$/);
 
     await goto("/paramètres", { waitUntil: "hydration" });
     await page.getByRole("combobox", { name: "Police" }).click();
@@ -78,7 +78,7 @@ test.describe("settings", () => {
 
     const html = await page.evaluate(async () => (await fetch("/logos")).text());
     expect(html).toMatch(/<html[^>]*data-reading-font="didot"/);
-    expect(html).toMatch(/href="\/_nuxt\/GFS_Didot-Bold\.[\w-]+\.woff2"/);
+    expect(html).toMatch(/href="\/_nuxt\/GFS_Didot-Roman\.[\w-]+\.woff2"/);
 
     // The faces requested by the page.
     await goto("/logos", { waitUntil: "hydration" });

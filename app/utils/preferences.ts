@@ -33,7 +33,7 @@ export const DEFAULT_PREFERENCES: Readonly<Preferences> = {
   transliterateGreek: false,
   readingFont: "brill",
   readingSize: "normal",
-  readingWeight: "bold",
+  readingWeight: "normal",
   inputMode: InputMode.BetaCode,
   inflectedForms: true,
 };
