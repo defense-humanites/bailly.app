@@ -5,8 +5,12 @@ import { Color, colorNames } from "../../app/enums";
 // Tests run from the project root.
 const css = readFileSync("app/assets/css/tag-colors.css", "utf8");
 
+// The palettes that replace Tailwind's in the theme (cf. `theme.css`).
+const THEME_PALETTES: Record<string, string> = { yellow: "gold" };
+
 test("each color key maps to its palette in tag-colors.css", () => {
-  for (const [key, palette] of Object.entries(Color)) {
+  for (const [key, value] of Object.entries(Color)) {
+    const palette = THEME_PALETTES[value] ?? value;
     const rule = new RegExp(`\\[data-tag-color="${key}"\\]\\s*\\{([^}]*)\\}`).exec(css)?.[1];
     expect(rule, key).toBeDefined();
     for (const shade of [100, 200, 300, 400, 500, 600, 700, 800, 900]) {
