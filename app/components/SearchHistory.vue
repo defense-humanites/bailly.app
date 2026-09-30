@@ -149,6 +149,7 @@
               color="neutral"
               variant="ghost"
               size="sm"
+              class="rounded-md"
               @click="confirmingClear = false"
             />
             <UButton
@@ -156,6 +157,7 @@
               color="error"
               variant="soft"
               size="sm"
+              class="rounded-md"
               @click="clear"
             />
           </template>
@@ -166,6 +168,7 @@
             color="neutral"
             variant="ghost"
             size="sm"
+            class="rounded-md"
             @click="confirmingClear = true"
           />
         </footer>

@@ -9,9 +9,11 @@ export default defineAppConfig({
       neutral: "marble",
     },
     /*
-     * Rounded buttons (pills), except the ghost ones, used in lists and
-     * toolbars. Only the solid buttons (main actions) have a drop shadow and a
-     * semibold text; the outline ones a slight shadow; the others none.
+     * Rounded buttons (pills). The items of a panel (a popover's list and its
+     * footer actions) have moderately rounded corners instead, set where they
+     * are (`rounded-md`, as the menus' items). Only the solid buttons (main
+     * actions) have a drop shadow and a semibold text; the outline ones a
+     * slight shadow; the others none.
      */
     button: {
       slots: {
@@ -21,7 +23,6 @@ export default defineAppConfig({
         variant: {
           solid: { base: "shadow-lg shadow-black/10 font-semibold" },
           outline: { base: "shadow-xs" },
-          ghost: { base: "rounded-md" },
         },
         size: {
           // A gap rather than margins around the icons: a label hidden (e.g.

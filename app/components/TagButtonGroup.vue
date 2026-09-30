@@ -78,11 +78,14 @@
     <!--
       The other tags: a toggle button for each, whose icon, in the tag's
       color, is filled when the entry has the tag (as the current tag's
-      button), and a link to the bookmarks page, where the tags are managed.
+      button), and a link to the bookmarks page, where the tags are managed
+      (with the bookmarks' icon, as in the header menu). The items of a panel
+      have moderately rounded corners (`rounded-md`), as the history's and the
+      menus' items, rather than the buttons' pill shape.
     -->
     <UPopover :content="popoverContent">
       <UButton
-        icon="i-lucide-circle-ellipsis"
+        icon="i-lucide-tags"
         color="neutral"
         variant="ghost"
         class="data-[state=open]:bg-elevated"
@@ -112,7 +115,7 @@
                 :data-tag-color="tag.color"
                 color="neutral"
                 variant="ghost"
-                class="w-full"
+                class="w-full rounded-md hover:bg-elevated/50"
                 :ui="{ leadingIcon: 'text-tag-text' }"
                 @click="setTagged(tag.key, !entryTagKeys.has(tag.key))"
               />
@@ -129,11 +132,11 @@
             <UButton
               to="/signets"
               label="Gérer les étiquettes"
-              icon="i-lucide-tags"
+              icon="i-lucide-bookmark"
               color="neutral"
               variant="ghost"
               size="sm"
-              class="w-full"
+              class="w-full rounded-md"
             />
           </footer>
         </div>
