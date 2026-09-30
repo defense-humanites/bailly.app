@@ -62,3 +62,13 @@ export function maxStamp(...stamps: (Stamp | undefined)[]): Stamp | undefined {
 export function stampTime(stamp: Stamp): number {
   return parseStamp(stamp)?.time ?? Number.NaN;
 }
+
+/**
+ * Compares two records by their stamp, the latest first (e.g. the entries of
+ * a tag, the latest added first: a live entry's stamp is that of its
+ * addition, as nothing else changes it).
+ */
+export function latestFirst(a: { updatedAt: Stamp }, b: { updatedAt: Stamp }): number {
+  if (a.updatedAt === b.updatedAt) return 0;
+  return a.updatedAt > b.updatedAt ? -1 : 1;
+}

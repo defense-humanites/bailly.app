@@ -188,7 +188,7 @@ test.describe("bookmarks page", () => {
 });
 
 test.describe("bookmarks page, long groups", () => {
-  // Alphabetical (Greek collation), as the store sorts them.
+  // Added in this order: shown the latest first.
   const words = ["ἀγών", "βίος", "γένος", "δίκη", "ἔργον", "ζῷον", "ἦθος", "θεός", "ἵππος", "κόσμος"];
   const entry = (word: string, i: number) => ({ word, uri: `test-${i}`, excerpt: `${word}, exemple (${i})` });
 
@@ -211,7 +211,7 @@ test.describe("bookmarks page, long groups", () => {
     const links = card(page, "Dix").getByRole("link");
     const toggle = card(page, "Dix").getByRole("button", { name: "Voir les 4 autres" });
     await expect(links).toHaveCount(6);
-    await expect(links.first()).toContainText("ἀγών");
+    await expect(links.first()).toContainText("κόσμος");
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     const listId = await toggle.getAttribute("aria-controls");
     await expect(card(page, "Dix").locator(`[id="${listId}"]`)).toHaveCount(1);
@@ -221,7 +221,7 @@ test.describe("bookmarks page, long groups", () => {
     await page.keyboard.press("Enter");
     await expect(links).toHaveCount(10);
     await expect(links.nth(6)).toBeFocused();
-    await expect(links.nth(6)).toContainText("ἦθος");
+    await expect(links.nth(6)).toContainText("δίκη");
     const collapse = card(page, "Dix").getByRole("button", { name: "Réduire" });
     await expect(collapse).toHaveAttribute("aria-expanded", "true");
 

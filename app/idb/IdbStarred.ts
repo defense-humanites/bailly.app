@@ -7,6 +7,7 @@ import {
   type IdbEntryCreation,
   type IdbResult,
 } from "./Idb";
+import { latestFirst } from "./clock";
 import { entryTombstone, type StarredRecord } from "./merge";
 
 /**
@@ -38,7 +39,7 @@ export class IdbStarred {
 
   /**
    * Gets all the starred entries.
-   * @returns An array of entries.
+   * @returns An array of entries, the latest added first.
    */
   static async getAll(): Promise<IdbEntry[]> {
     const db = await Idb.getIndexedDB();
@@ -48,7 +49,10 @@ export class IdbStarred {
       Idb.readExcerpts(tx.objectStore(IdbStore.Excerpts)),
     ]);
     await tx.done;
-    return records.filter(record => !record.deleted).map(record => toEntry(record, excerpts.get(record.uri)));
+    return records
+      .filter(record => !record.deleted)
+      .sort(latestFirst)
+      .map(record => toEntry(record, excerpts.get(record.uri)));
   }
 
   /**

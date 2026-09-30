@@ -22,14 +22,6 @@ import { parseBookmarksFile, toBookmarksFile, type BookmarksFile } from "~/idb/t
 import type { ApiExcerptsData, ApiResponse } from "#shared/types/api";
 import { MAX_EXCERPTS_URIS, toApiQuery } from "#shared/utils/api";
 
-const collator = new Intl.Collator("grc");
-
-/**
- * Sorts entries alphabetically (Greek collation).
- */
-const sortEntries = <T extends IdbEntry>(entries: T[]): T[] =>
-  entries.sort((a, b) => collator.compare(a.word, b.word));
-
 /**
  * A store for bookmarks-related data (favorites, tags and tagged entries).
  * @remarks The store is the source of truth for the components: it mirrors
@@ -181,7 +173,8 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   }
 
   async function fetchTaggedEntries(): Promise<void> {
-    taggedEntries.value = sortEntries(await IdbTaggedEntry.getAll());
+    // The latest added first (as the favorites).
+    taggedEntries.value = await IdbTaggedEntry.getAll();
   }
 
   async function refreshNewTagColor(): Promise<void> {

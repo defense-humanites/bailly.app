@@ -7,6 +7,7 @@ import {
   type IdbResult,
   type IdbTagged,
 } from "./Idb";
+import { latestFirst } from "./clock";
 import { entryTombstone, type TaggedRecord, type TagKey } from "./merge";
 
 /**
@@ -108,7 +109,7 @@ export class IdbTaggedEntry {
 
   /**
    * Gets all the tagged entries (of the existing tags).
-   * @returns An array of entries with their tag key.
+   * @returns An array of entries with their tag key, the latest added first.
    */
   static async getAll(): Promise<IdbTagged[]> {
     const db = await Idb.getIndexedDB();
@@ -123,6 +124,7 @@ export class IdbTaggedEntry {
     const liveTags = new Set(tags.filter(tag => !tag.deleted).map(tag => tag.key));
     return records
       .filter(record => !record.deleted && liveTags.has(record.tagKey))
+      .sort(latestFirst)
       .map(record => toTagged(record, excerpts.get(record.uri)));
   }
 }

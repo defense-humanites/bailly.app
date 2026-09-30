@@ -65,6 +65,12 @@ test("Get tagged entries", async () => {
   expect(await IdbTaggedEntry.get("unknown", banquetTagKey)).toBe(null);
 
   expect(await IdbTaggedEntry.getAll()).toHaveLength(3);
+  // The latest added first.
+  expect((await IdbTaggedEntry.getAll()).map(entry => [entry.uri, entry.tagKey])).toEqual([
+    [entries.rhinokeros.uri, theeteteTagKey],
+    [entries.alopex.uri, banquetTagKey],
+    [entries.rhinokeros.uri, banquetTagKey],
+  ]);
 
   await IdbTaggedEntry.remove(entries.rhinokeros.uri, banquetTagKey);
   expect(await IdbTaggedEntry.getAll()).toHaveLength(2);
