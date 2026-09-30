@@ -34,7 +34,7 @@
  */
 
 /*
- * Inter Variable font, subset (cf. `scripts/subset-inter.sh`).
+ * Inter Variable font, subset (cf. `scripts/subset-fonts.sh`).
  */
 
 @font-face {
@@ -54,7 +54,7 @@
 }
 
 /*
- * Brill font.
+ * Brill font, subset (cf. `scripts/subset-fonts.sh`).
  *   Using `font-display: block;`, so as not to show the fallback font (of
  *   other proportions) while it loads.
  */
@@ -67,7 +67,7 @@
   ascent-override: 74.18%;
   descent-override: 18.47%;
   line-gap-override: 0%;
-  src: url("../fonts/Brill/Brill-Roman.woff2") format("woff2");
+  src: url("../fonts/Brill/Brill-Roman.subset.woff2") format("woff2");
 }
 
 @font-face {
@@ -78,7 +78,7 @@
   ascent-override: 74.18%;
   descent-override: 18.47%;
   line-gap-override: 0%;
-  src: url("../fonts/Brill/Brill-Bold.woff2") format("woff2");
+  src: url("../fonts/Brill/Brill-Bold.subset.woff2") format("woff2");
 }
 
 @font-face {
@@ -90,7 +90,7 @@
   ascent-override: 74.18%;
   descent-override: 18.47%;
   line-gap-override: 0%;
-  src: url("../fonts/Brill/Brill-Italic.woff2") format("woff2");
+  src: url("../fonts/Brill/Brill-Italic.subset.woff2") format("woff2");
 }
 
 @font-face {
@@ -102,7 +102,7 @@
   ascent-override: 74.18%;
   descent-override: 18.47%;
   line-gap-override: 0%;
-  src: url("../fonts/Brill/Brill-BoldItalic.woff2") format("woff2");
+  src: url("../fonts/Brill/Brill-BoldItalic.subset.woff2") format("woff2");
 }
 
 /*

@@ -59,8 +59,8 @@ droits, pour rendre les caractères les plus spécifiques. Les fontes
 [GFS Neohellenic](https://www.greekfontsociety-gfs.gr/typefaces/20th_21st_century)
 (Greek Font Society), proposées comme alternatives à Brill, et la fonte
 d'interface [Inter](https://rsms.me/inter/) (Rasmus Andersson) sont
-distribuées sous licence _SIL Open Font License 1.1_ ; Inter y est servie en
-sous-ensemble (`scripts/subset-inter.sh`).
+distribuées sous licence _SIL Open Font License 1.1_. Brill et Inter sont
+servies en sous-ensembles (`scripts/subset-fonts.sh`).
 
 Les fichiers des fontes, accompagnés de leurs licences, se trouvent dans
 `app/assets/fonts/`.

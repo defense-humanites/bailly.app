@@ -1,5 +1,5 @@
-import brillBold from "~/assets/fonts/Brill/Brill-Bold.woff2";
-import brillRoman from "~/assets/fonts/Brill/Brill-Roman.woff2";
+import brillBold from "~/assets/fonts/Brill/Brill-Bold.subset.woff2";
+import brillRoman from "~/assets/fonts/Brill/Brill-Roman.subset.woff2";
 import didotBold from "~/assets/fonts/GFS_Didot/GFS_Didot-Bold.woff2";
 import didotRoman from "~/assets/fonts/GFS_Didot/GFS_Didot-Roman.woff2";
 import neohellenicBold from "~/assets/fonts/GFS_NeoHellenic/GFS_NeoHellenic-Bold.woff2";
