@@ -96,7 +96,7 @@
       variant="outline"
       size="lg"
       icon="i-lucide-history"
-      class="relative w-12 shrink-0 justify-center before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-(--ui-border-accented) data-[state=open]:bg-elevated group-has-[input:focus-visible]/search:ring-primary"
+      class="relative w-12 shrink-0 justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border-accented) data-[state=open]:bg-elevated group-has-[input:focus-visible]/search:ring-primary"
       aria-label="Entrées consultées récemment"
     />
 

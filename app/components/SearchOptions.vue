@@ -53,13 +53,14 @@
       A dot on the button when an option isn't the default one; a background
       while the panel is open. When the input
       has the focus, the button's ring takes its color, except on the left
-      edge (a pseudo-element): the divider stays neutral.
+      edge (a pseudo-element): the divider stays neutral. It stops 1px short
+      of the top and bottom edges (`inset-y-px`), not to cut the ring there.
     -->
     <UButton
       color="neutral"
       variant="outline"
       size="lg"
-      class="relative w-12 shrink-0 justify-center before:absolute before:inset-y-0 before:start-0 before:w-px before:bg-(--ui-border-accented) data-[state=open]:bg-elevated group-has-[input:focus-visible]/search:ring-primary"
+      class="relative w-12 shrink-0 justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border-accented) data-[state=open]:bg-elevated group-has-[input:focus-visible]/search:ring-primary"
       aria-label="Options de recherche"
     >
       <UChip
