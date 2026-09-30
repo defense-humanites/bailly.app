@@ -97,7 +97,8 @@
   A color among the tags' ten, as swatches in the order of the color wheel.
   Picking one closes the popover: the swatches are thus the options of a list
   box (a radio group would pick at each arrow key), one tab stop, the arrows
-  moving between them. All share the colors' identity shade (500); the
+  moving between them. All share the colors' identity shade (500), at the
+  size of the search options' buttons (24 px, smaller than the trigger); the
   selected one has a ring and a check, so that it does not rely on the color
   only. The name of the color pointed at, focused or selected is written under
   them (close hues, e.g. teal and sky, are hard to tell apart).
@@ -141,8 +142,8 @@
           :aria-label="colorNames[colorKey]"
           :aria-selected="colorKey === current"
           :tabindex="colorKey === (focused ?? current) ? 0 : -1"
-          class="flex size-9 cursor-pointer items-center justify-center rounded-full bg-tag-500 transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-[5px] focus-visible:outline-(--ui-text-highlighted) motion-reduce:transition-none"
-          :class="{ 'ring-2 ring-tag-500 ring-offset-2 ring-offset-(--ui-bg)': colorKey === current }"
+          class="flex size-6 cursor-pointer items-center justify-center rounded-full bg-tag-500 transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--ui-text-highlighted) motion-reduce:transition-none"
+          :class="{ 'ring-2 ring-tag-500 ring-offset-1 ring-offset-(--ui-bg)': colorKey === current }"
           @click="pick(colorKey)"
           @focus="focused = colorKey"
           @blur="focused = undefined"
@@ -151,7 +152,7 @@
           <UIcon
             v-if="colorKey === current"
             name="i-lucide-check"
-            class="size-5 text-tag-900"
+            class="size-4 text-white dark:text-tag-900"
           />
         </button>
       </div>
