@@ -1362,6 +1362,237 @@
    ]
   }
  },
+ "/lookup/λογο?diacriticSensitive=false&fields=word,uri,excerpt&inputMode=greek&limit=30&skipMorpheus=false": {
+  "data": {
+   "$query": {
+    "limit": 30,
+    "fields": [
+     "word",
+     "uri",
+     "excerpt"
+    ],
+    "inputMode": "greek",
+    "diacriticSensitive": false,
+    "skipMorpheus": false,
+    "q": "λογο"
+   },
+   "version": "2023-02-28",
+   "count": 30,
+   "countAll": 35,
+   "entries": [
+    {
+     "word": "λογογραφεύς",
+     "uri": "logographeus",
+     "excerpt": "λογο·γραφεύς, έως (ὁ) [ᾰ] qui écrit des discours pour autrui, DH. Din. 11 ; cf. λογογράφος.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογογραφέω-ῶ",
+     "uri": "logographeô-ô",
+     "excerpt": "λογογραφέω-ῶ [ᾰ] écrire des discours pour autrui, Plut. Dem. 6, Dem. c. Cic. 3. Étym. λογογραφεύς. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογογράφημα",
+     "uri": "logographêma",
+     "excerpt": "λογογράφημα, ατος (τὸ) [ᾰφ] composition en prose, Rhét. (W. 3, 571). Étym. λογογραφέω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογογραφία",
+     "uri": "logographia",
+     "excerpt": "λογογραφία, ας (ἡ) [ᾰφ] 1 composition en prose ; particul. composition d’un discours, Plat. Phædr. 257e, 258b || 2 composition d’un discours pour aut…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογογραφικός",
+     "uri": "logographikos",
+     "excerpt": "λογογραφικός, ή, όν [ᾰ] qui concerne la composition en prose, particul. d’un discours, Plat. Phædr. 264b. Étym. λογογράφος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογογράφος",
+     "uri": "logographos",
+     "excerpt": "λογο·γράφος, ου (ὁ) [ᾰ] I qui écrit en prose, d’où : 1 prosateur, en gén. Arstt. Rhet. 2, 11, 7 ; DH. Comp. 16, 1 || 2 logographe, historien en prose…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοδαιδαλία",
+     "uri": "logodaidalia",
+     "excerpt": "λογοδαιδαλία, ας (ἡ) [δᾰλ] art délicat d’un discours, Aus. Ep. 14, 26. Étym. λογοδαίδαλος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοδαίδαλος",
+     "uri": "logodaidalos",
+     "excerpt": "λογο·δαίδαλος, ου (ὁ) [ᾰ] habile artisan de discours, Plat. Phædr. 266c. Étym. λ. δαίδαλος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογόδειπνον",
+     "uri": "logodeipnon",
+     "excerpt": "λογό·δειπνον, ου (τὸ) banquet littéraire, Ath. 1b. Étym. λ. δεῖπνον. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοδιάρροια",
+     "uri": "logodiarrhoia",
+     "excerpt": "λογο·διάρροια, ας (ἡ) flux de paroles, Ath. 22e, 159d.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοείδεια",
+     "uri": "logoeideia",
+     "excerpt": "λογοείδεια, ας (ἡ) ressemblance avec la prose, caractère prosaïque d’un écrit, DH. Comp. 26. Étym. λογοειδής. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοειδής",
+     "uri": "logoeidês",
+     "excerpt": "λογο·ειδής, ής, ές : 1 qui ressemble à la prose, prosaïque, Plut. Metr. 1, d’où τὸ λ. DL. 7, 60, prose || 2 oratoire, éloquent, Philstr. V. Ap. 1, 19…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοθεσία",
+     "uri": "logothesia",
+     "excerpt": "λογο·θεσία, ας (ἡ) disposition des mots, arrangement du discours, Biton p. 105, 15. Étym. λ. θετός. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοθετέω-ῶ",
+     "uri": "logotheteô-ô",
+     "excerpt": "λογο·θετέω-ῶ, faire rendre compte : τινα, Es. 406 Halm, à qqn. Étym. cf. le préc. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοθήρας",
+     "uri": "logothêras",
+     "excerpt": "λογο·θήρας, ου (ὁ) [ᾱ] qui va à la chasse des mots, Phil. 3, 685. Étym. λ. θηράω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοϊατρεία",
+     "uri": "logoiatreia",
+     "excerpt": "λογο·ϊατρεία, ας (ἡ) [ᾱτ] art de guérir avec des paroles, Phil. 1, 526. Étym. λ. ἰατρός. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοκλοπεία",
+     "uri": "logoklopeia",
+     "excerpt": "λογο·κλοπεία, ας (ἡ) vol d’un discours ou d’un écrit, plagiat, DL. 8, 54. Étym. λ. κλοπεύς. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογολέσχης",
+     "uri": "logoleschês",
+     "excerpt": "λογο·λέσχης, ου (ὁ) bavard, Anth. 11, 140.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογομανέω-ῶ",
+     "uri": "logomaneô-ô",
+     "excerpt": "λογο·μανέω-ῶ [ᾰ] être passionné pour l’éloquence ou la science, Chion. Ep. 15. Étym. λ. μαίνομαι. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογομαχέω-ῶ",
+     "uri": "logomacheô-ô",
+     "excerpt": "λογο·μαχέω-ῶ [ᾰ] se battre en paroles, disputer, se quereller, NT. 2 Tim. 2, 14. Étym. λόγος, μάχομαι. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογομαχία",
+     "uri": "logomachia",
+     "excerpt": "λογομαχία, ας (ἡ) [μᾰ] combat en paroles, dispute, querelle, NT. 1 Tim. 6, 4. Étym. cf. le préc. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογόμιμος",
+     "uri": "logomimos",
+     "excerpt": "λογό·μιμος, ου (ὁ) [ῑ] bouffon qui contrefait le langage de qqn, Ath. 19c. Étym. λ. μιμέομαι. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογονεχόντως",
+     "uri": "logonechontôs",
+     "excerpt": "λογον·εχόντως, adv. avec prudence ou réflexion, Isocr. 152a. Étym. accus. de λόγος, ἔχων ; cf. νουνεχόντως. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοποιέω-ῶ",
+     "uri": "logopoieô-ô",
+     "excerpt": "λογοποιέω-ῶ, inventer des histoires, particul. : 1 imaginer des fictions poétiques, Xén. Cyr. 2, 2, 13 ; Plat. Rsp. 378d || 2 inventer ou répandre de…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοποίημα",
+     "uri": "logopoiêma",
+     "excerpt": "λογοποίημα, ατος (τὸ) fable, fiction poétique, Antiph. (Ath. 224c). Étym. λογοποιέω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοποιΐα",
+     "uri": "logopoiia",
+     "excerpt": "λογοποιΐα, ας (ἡ) 1 habileté à imaginer, imagination, Th. Char. 9 || 2 conte, fable, Char. 3, 2 || 3 prière, Symm. Ps. 101, 1. Étym. λογοποιός. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοποιϊκή",
+     "uri": "logopoiikê",
+     "excerpt": "λογοποιϊκή, ῆς (ἡ) (s. e. τέχνη) l’art de composer un discours, Plat. Euthyd. 289c. Étym. λογοποιός. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοποιός",
+     "uri": "logopoios",
+     "excerpt": "λογο·ποιός, ός, όν : I qui compose des discours pour autrui, Plat. Phædr. 257c, Euthyd. 289d (cf. λογογράφος) || II qui écrit en prose, prosateur, pa…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λογοπώλης",
+     "uri": "logopôlês",
+     "excerpt": "λογο·πώλης, ου (ὁ) marchand de paroles, Philstr. p. 526 ; Phil. 1, 526. Étym. λ. πωλέω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "λόγος",
+     "uri": "logos",
+     "excerpt": "λόγος, ου (ὁ) A parole : I la parole, en gén. : ἔργα λόγου μέζω, Hdt. 2, 35, actions au-dessus de ce qu’on en pourrait dire ; λόγου κρεῖσσον, Thc. 2,…",
+     "isExact": false,
+     "isMorpheus": false
+    }
+   ]
+  }
+ },
  "/lookup/λογος?diacriticSensitive=false&fields=word,uri,excerpt&inputMode=greek&limit=30&skipMorpheus=false": {
   "data": {
    "$query": {
@@ -1615,6 +1846,247 @@
      "word": "ἀφρηλόγος",
      "uri": "aphrêlogos",
      "excerpt": "ἀφρη·λόγος, ος, ον, qui amasse de l’écume, Anth. 6, 101. Étym. ἀφρός, λέγω. ",
+     "isExact": false,
+     "isMorpheus": false
+    }
+   ]
+  }
+ },
+ "/lookup/οι?diacriticSensitive=false&fields=word,uri,excerpt&inputMode=greek&limit=30&skipMorpheus=false": {
+  "data": {
+   "$query": {
+    "limit": 30,
+    "fields": [
+     "word",
+     "uri",
+     "excerpt"
+    ],
+    "inputMode": "greek",
+    "diacriticSensitive": false,
+    "skipMorpheus": false,
+    "q": "οι"
+   },
+   "version": "2023-02-28",
+   "count": 30,
+   "countAll": 528,
+   "entries": [
+    {
+     "word": "οἴ",
+     "uri": "oi_(1)",
+     "excerpt": "οἴ, interj. marquant la douleur, rar. la joie ou l’admiration, ah ! I abs. Eschl. Pers. 1045, 1053, etc. || II d’ord. : 1 avec un pron. : au nom. : ο…",
+     "isExact": true,
+     "isMorpheus": false
+    },
+    {
+     "word": "ὀΐ",
+     "uri": "oi_(2)",
+     "excerpt": "ὀΐ, interj. c. le préc. par jeu de mots avec ὄϊ, dat. d’ὄϊς, Ar. Pax 741.",
+     "isExact": true,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἱ",
+     "uri": "hoi_(1)",
+     "excerpt": "οἱ, ou dev. une enclit. οἵ masc. de l’art. ὁ, ἡ, τό.",
+     "isExact": true,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἵ",
+     "uri": "hoi_(2)",
+     "excerpt": "οἵ, nom. plur. masc. de ὅς, ἥ, ὅ, ou de ὅ pron. démonstr. ou pour οἱ dev. une enclit.",
+     "isExact": true,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἷ",
+     "uri": "hoi_(3)",
+     "excerpt": "",
+     "children": [
+      {
+       "word": "οἷ",
+       "uri": "hoi_(3)#1",
+       "excerpt": "οἷ, v. οὗ."
+      },
+      {
+       "word": "οἷ",
+       "uri": "hoi_(3)#2",
+       "excerpt": "οἷ, adv. relat. 1 où, avec mouv. Soph. El. 8, Ant. 228, etc. ; Plat. Parm. 127c || 2 jusqu’à quel point, Plat. Rsp. 403c, etc. ; οἷ ἀτιμίας, Soph. El…"
+      }
+     ],
+     "isExact": true,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἷ’",
+     "uri": "hoi_(4)",
+     "excerpt": "οἷ’, élis. p. οἷα, plur. neutre de οἷος.",
+     "isExact": true,
+     "isMorpheus": false
+    },
+    {
+     "word": "ἕ",
+     "uri": "he",
+     "excerpt": "ἕ pour *ϝε : I acc. enclit. du pron. pers. de la 3e pers. (οὗ) lui || II pron. démonstr. : 1 acc. sg. masc. lui, Il. 3, 408 ; Od. 4, 355, etc. ; fém.…",
+     "isExact": true,
+     "isMorpheus": true
+    },
+    {
+     "word": "ὁ",
+     "uri": "ho_(1)",
+     "excerpt": "ὁ, ἡ, τό (gén. τοῦ, τῆς, τοῦ ; dat. τῷ, τῇ, τῷ ; acc. τόν, τήν, τό ; plur. nom. οἱ, αἱ, τά ; gén. τῶν pour les trois genres ; dat. τοῖς, ταῖς, τοῖς ;…",
+     "isExact": true,
+     "isMorpheus": true
+    },
+    {
+     "word": "ὅς",
+     "uri": "hos",
+     "excerpt": "",
+     "children": [
+      {
+       "word": "ὅς",
+       "uri": "hos#1",
+       "excerpt": "ὅς, ἥ, ὅ, gén. οὗ, ἧς, οὗ, etc. A primit. pron. démonstr. celui-ci, celle-ci, ceci, d’où au sens d’un pron. pers. il, elle : ὃς γὰρ δεύτατος ἦλθεν, O…"
+      },
+      {
+       "word": "ὅς",
+       "uri": "hos#2",
+       "excerpt": "ὅς, ἥ, ὅν (non ὅ, voy. Il. 1, 609 ; 21, 305 ; Od. 11, 515) pron. possess. c. ἑός ; 1 d’ord. de la 3e pers. son, sa, ses, dans Hom. sans article et av…"
+      }
+     ],
+     "isExact": true,
+     "isMorpheus": true
+    },
+    {
+     "word": "οἵα",
+     "uri": "hoia",
+     "excerpt": "οἵα, fém. sg. d’οἷος.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Οἰαγρίδης",
+     "uri": "Oiagridês",
+     "excerpt": "Οἰαγρίδης, ου (ὁ) le fils d’Œagros (Orphée) Nic. Th. 462. Étym. patr. d’Οἴαγρος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Οἰαγρίς",
+     "uri": "Oiagris",
+     "excerpt": "Οἰαγρίς, ίδος, adj. f. d’Œagros : κῶραι Οἰαγρίδες, Mosch. 3, 17, les jeunes filles d’Œagros, c. à d. les Muses. Étym. Οἴαγρος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Οἴαγρος",
+     "uri": "Oiagros",
+     "excerpt": "Οἴ·αγρος, ου (ὁ) Œagros, h. Ar. Vesp. 589 ; A. Rh. 1, 25. Étym. οἶς, ἄγριος ; cf. ὄναγρος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἰαδόν",
+     "uri": "oiadon",
+     "excerpt": "οἰαδόν [ᾰ] adv. solitairement, Nic. Th. 148. Étym. οἶος, -δον ; cf. μοναδόν. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἷαι αἱ μεγάλαι ἢ οἷαι",
+     "uri": "hoiai_hai_megalai_ê_hoiai",
+     "excerpt": "οἷαι αἱ μεγάλαι ἢ οἷαι, titre d’un poème perdu d’Hésiode, où étaient énumérées les nymphes dont la mention commençait toujours par ἢ οἵη.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἰακηδόν",
+     "uri": "oiakêdon",
+     "excerpt": "οἰακηδόν [ᾱ] adv. à la façon d’un gouvernail, Dysc. Adv. p. 619, 9. Étym. οἴαξ, -δόν. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἰακίζω",
+     "uri": "oiakizô",
+     "excerpt": "οἰακίζω [ᾱ] gouverner, diriger, Hdt. 1, 171 ; Pol. 3, 43, 4 ; 8, 8, 2 ; Str. 828 ; fig. Arstt. Nic. 10, 1 ; DS. 18, 59 || E Act. seul. part. prés. Hé…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἰάκισμα",
+     "uri": "oiakisma",
+     "excerpt": "οἰάκισμα, ατος (τὸ) [ᾱκ] maniement du gouvernail, d’où, fig. gouvernement, Diodot. (DL. 9, 12). Étym. οἰακίζω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἰακονομέω-ῶ",
+     "uri": "oiakonomeô-ô",
+     "excerpt": "οἰακονομέω-ῶ [ᾱ] diriger le gouvernail, Phil. Étym. οἰακονόμος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἰακονόμος",
+     "uri": "oiakonomos",
+     "excerpt": "οἰακο·νόμος, ος, ον [ᾱ] qui dirige le gouvernail, pilote, Eschl. Pr. 149. Étym. οἴαξ, νέμω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἰακοστροφέω-ῶ",
+     "uri": "oiakostropheô-ô",
+     "excerpt": "οἰακοστροφέω-ῶ [ᾱ] diriger (propr. faire tourner) le gouvernail, Eschl. Pers. 767. Étym. οἰακοστρόφος. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἰακοστρόφος",
+     "uri": "oiakostrophos",
+     "excerpt": "οἰακο·στρόφος, ος, ον [ᾱ] qui dirige (propr. qui fait tourner) le gouvernail, Pd. I. 3, 89 ; Eschl. Sept. 62 ; Eur. Med. 523. Étym. οἴαξ, στρέφω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἰακοφόρος",
+     "uri": "oiakophoros",
+     "excerpt": "οἰακο·φόρος, ion. οἰηκο·φόρος, ος, ον [ᾱ] qui porte le gouvernail, Syn. 324d. Étym. οἴαξ, φέρω. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἰάκωσις",
+     "uri": "oiakôsis",
+     "excerpt": "οἰάκωσις, εως (ἡ) [ᾰ] action de manier le gouvernail, Aqu. Job 37, 12. Étym. *οἰακόω de οἴαξ. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Οἰάνθεια",
+     "uri": "Oiantheia",
+     "excerpt": "Οἰάνθεια, ας (ἡ) Œantheia (auj. ruines près de Tolofóna, de Glyfáđa ou, sel. d’autres, de Galaxíđi) v. des Locriens Ozoles, Pol. 4, 57, 2.",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Οἰανθεῖς",
+     "uri": "Oiantheis",
+     "excerpt": "Οἰανθεῖς, έων (οἱ) habitants d’Œantheia, Thc. 3, 101. Étym. v. le préc. ",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "οἴαξ",
+     "uri": "oiax",
+     "excerpt": "οἴαξ, ακος (ὁ) [ᾱκ] 1 barre ou timon de gouvernail, Plat. Pol. 272e, etc. ; p. ext. gouvernail, Eschl. Ag. 663, etc. ; Plat. 1 Alc. 117c, etc. ; fig.…",
+     "isExact": false,
+     "isMorpheus": false
+    },
+    {
+     "word": "Οἴαξ",
+     "uri": "Oiax",
+     "excerpt": "Οἴαξ, ακος (ὁ) Œax, fils de Nauplios, Eur. Or. 432.",
      "isExact": false,
      "isMorpheus": false
     }

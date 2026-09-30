@@ -27,6 +27,8 @@
     isMorpheus?: boolean;
     /** The entry's URI (for its tags). */
     uri?: string;
+    /** Whether the entry is a homonym, under its common headword. */
+    nested?: boolean;
   };
 
   const { query, result, resultQuery, status, pending } = useEntrySearch();
@@ -181,9 +183,9 @@
 
   const toItem = (
     entry: Pick<LookupEntry<SearchField>, SearchField> & { isMorpheus?: boolean },
-    className?: string,
+    nested = false,
   ): ResultItem => ({
-    class: className,
+    nested,
     label: entry.excerpt,
     parts: splitExcerpt(entry.word, entry.excerpt),
     text: query.value,
@@ -208,8 +210,8 @@
           uri: entry.uri,
           onSelect: () => void navigateTo(entryRoute(entry.uri)),
         },
-        // The homonyms are indented under their headword.
-        ...entry.children.map(child => toItem(child, "ps-5")),
+        // The homonyms are indented under their headword (cf. `ui.item`).
+        ...entry.children.map(child => toItem(child, true)),
       ]
       : [toItem(entry)];
 
@@ -394,7 +396,10 @@
         root: 'has-focus-visible:z-auto',
         base: 'shadow-xs text-base/6 focus-visible:outline-transparent',
         content: contentClass,
-        item: 'items-start',
+        // The homonyms' indent comes from their label (`data-nested`), not from
+        // an item class: the input menu reuses its items by position without
+        // updating their class, which then stuck to the next results.
+        item: 'items-start has-[[data-nested]]:ps-5',
         itemLabel: 'whitespace-normal line-clamp-2',
         itemTrailingIcon: 'hidden',
         label: 'text-xs uppercase tracking-wide text-muted',
@@ -487,6 +492,7 @@
         <span
           v-if="item.parts"
           class="font-serif text-xs/6"
+          :data-nested="item.nested || undefined"
         ><span class="font-semibold">{{ greek.text(item.parts.word) }}</span>{{ greek.text(item.parts.rest) }}</span>
         <template v-else>
           {{ greek.text(item.label) }}

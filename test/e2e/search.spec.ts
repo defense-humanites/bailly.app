@@ -43,6 +43,20 @@ test.describe("search bar", () => {
     expect(Math.abs(list[1] - bar[1])).toBeLessThan(1);
   });
 
+  test("indents the homonyms only, also after another search", async ({ page }) => {
+    const indents = () => searchResults(page).getByRole("option").evaluateAll(options =>
+      options.slice(0, 12).map(option => getComputedStyle(option).paddingInlineStart));
+    // οἷ and ὅς: homonyms under their headword, from the 6th result.
+    await searchInput(page).fill("οι");
+    await expect(searchResults(page).getByRole("option").first()).toBeVisible();
+    expect((await indents()).filter(indent => indent !== "8px").length).toBeGreaterThan(0);
+    // The next results (without homonyms at the top) don't inherit their
+    // indent by their position.
+    await searchInput(page).fill("λογο");
+    await expect(searchResults(page).getByRole("option").first()).toContainText("λογογραφεύς");
+    expect(new Set(await indents())).toEqual(new Set(["8px"]));
+  });
+
   test("replaces the magnifier with a clear button", async ({ page }) => {
     const clear = page.getByRole("button", { name: /Effacer/ });
     await expect(clear).toHaveCount(0);
