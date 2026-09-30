@@ -29,6 +29,15 @@ test("nextStamp follows the clock, never goes backwards, and exceeds the latest 
   expect(nextStamp(maxStamp(third, remote), "a", 1200) > remote).toBe(true);
 });
 
+test("nextStamp: a full counter carries into the next millisecond", () => {
+  const full = formatStamp({ time: 5000, counter: 36 ** 4 - 1, node: "b" });
+  expect(full).toBe("0000000005000-zzzz-b");
+  const next = nextStamp(full, "a", 1000);
+  expect(isStamp(next)).toBe(true);
+  expect(next > full).toBe(true);
+  expect(parseStamp(next)).toEqual({ time: 5001, counter: 0, node: "a" });
+});
+
 test("maxStamp", () => {
   expect(maxStamp()).toBeUndefined();
   expect(maxStamp(undefined, "0000000000002-0000-a", "0000000000001-0000-b")).toBe("0000000000002-0000-a");

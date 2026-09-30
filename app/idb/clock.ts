@@ -13,6 +13,11 @@ const STAMP_PATTERN = /^(\d{13})-([0-9a-z]{4})-([0-9a-z]+)$/;
 
 type ParsedStamp = { time: number; counter: number; node: string };
 
+/**
+ * The greatest counter of a stamp (`zzzz`).
+ */
+const MAX_COUNTER = 36 ** 4 - 1;
+
 export function formatStamp({ time, counter, node }: ParsedStamp): Stamp {
   return `${String(time).padStart(13, "0")}-${counter.toString(36).padStart(4, "0")}-${node}`;
 }
@@ -42,6 +47,9 @@ export function isStamp(value: unknown): value is Stamp {
 export function nextStamp(last: Stamp | undefined, node: string, now: number = Date.now()): Stamp {
   const previous = parseStamp(last);
   if (!previous || now > previous.time) return formatStamp({ time: now, counter: 0, node });
+  // The counter full (4 digits): the next millisecond, so that the stamp
+  // stays valid (e.g. after a stamp observed with the greatest counter).
+  if (previous.counter >= MAX_COUNTER) return formatStamp({ time: previous.time + 1, counter: 0, node });
   return formatStamp({ time: previous.time, counter: previous.counter + 1, node });
 }
 
