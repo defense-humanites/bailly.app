@@ -15,7 +15,10 @@
 #   scholarly publishing. Its subset keeps the Latin scripts (with the
 #   extended blocks, for transliterations), the Greek, Coptic, the ancient
 #   Greek numbers and musical notation, the combining diacritics, the
-#   punctuation and the symbols; it drops Cyrillic, the phonetic extensions,
+#   punctuation and the symbols, and the Cyrillic р and с (U+0440, U+0441),
+#   which the dictionary uses by mistake (14 times: probably for a Latin p or
+#   c, or a Greek ρ or ϲ; to correct in the data); it drops Cyrillic otherwise,
+#   the phonetic extensions,
 #   the medievalist Latin blocks, the enclosed alphanumerics and the
 #   mathematical alphabets. Brill has no character in the private use area:
 #   the dictionary's are drawn by IFAOGrec, for which they were encoded. Only
@@ -45,7 +48,7 @@ for face in Roman Italic; do
   subset "$FONTS/Inter_Variable/Inter_Variable-$face" "$INTER" --layout-features='*'
 done
 
-BRILL="U+0000-036F,U+0370-03FF,U+1DC0-1DFF,U+1E00-1EFF,U+1F00-1FFF,U+2000-20FF,U+2100-218F,U+2190-23FF,U+25A0-27BF,U+2C80-2CFF,U+2E00-2E7F,U+FB00-FB06,U+FEFF,U+FFFD,U+10100-1018F,U+1D200-1D24F"
+BRILL="U+0000-036F,U+0370-03FF,U+0440-0441,U+1DC0-1DFF,U+1E00-1EFF,U+1F00-1FFF,U+2000-20FF,U+2100-218F,U+2190-23FF,U+25A0-27BF,U+2C80-2CFF,U+2E00-2E7F,U+FB00-FB06,U+FEFF,U+FFFD,U+10100-1018F,U+1D200-1D24F"
 for face in Roman Italic Bold BoldItalic; do
   subset "$FONTS/Brill/Brill-$face" "$BRILL" --layout-features+=smcp,c2sc,tnum,lnum,case
 done
