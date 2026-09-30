@@ -54,9 +54,8 @@
     <!-- Color picker -->
     <template #leading>
       <TagColorPicker
-        :selected="newTagColor"
+        v-model="newTagColor"
         label="Couleur de la nouvelle étiquette"
-        @pick-color="(colorKey) => (newTagColor = colorKey)"
       />
     </template>
 

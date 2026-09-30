@@ -134,7 +134,8 @@
     }
   };
 
-  const onPickColor = (colorKey: ColorKey): void => {
+  const onPickColor = (colorKey: ColorKey | undefined): void => {
+    if (!colorKey) return;
     tagColor.value = colorKey;
     void onUpdateTag();
   };
@@ -293,20 +294,18 @@
             class="col-start-1 row-start-1 flex min-w-0 items-start"
           >
             <TagColorPicker
-              :selected="IdbTags.isColorKey(tagColor) ? tagColor : undefined"
+              v-model:open="isTagColorPopoverOpen"
+              :model-value="IdbTags.isColorKey(tagColor) ? tagColor : undefined"
               label="Couleur de l'étiquette"
-              @popover-state="(isOpen) => (isTagColorPopoverOpen = isOpen)"
-              @pick-color="onPickColor"
+              @update:model-value="onPickColor"
             >
-              <template #trigger="trigger">
+              <template #trigger="{ icon: triggerIcon, attrs }">
                 <UButton
-                  :icon="trigger.icon"
-                  :data-tag-color="trigger.color"
-                  :aria-label="trigger.label"
+                  v-bind="attrs"
+                  :icon="triggerIcon"
                   size="xl"
                   variant="ghost"
                   color="neutral"
-                  :class="trigger.class"
                   :ui="{
                     base: `h-8 w-10 justify-center rounded-l-full rounded-r-none ${isTagColorPopoverOpen ? 'bg-default/90 hover:bg-default/90 active:bg-default/90' : 'bg-default/60 hover:bg-default/90 active:bg-default/90'}`,
                   }"

@@ -56,6 +56,31 @@ test.describe("bookmarks page", () => {
     await expect.poll(async () => await bookmarksState(page)).toMatchObject({ tagged: 0 });
   });
 
+  test("a tag's color, picked with the keyboard: the selected one focused, the arrows, its name shown", async ({ page }) => {
+    await page.getByRole("button", { name: "Modifier l'étiquette « Vide »" }).click();
+    const trigger = page.getByRole("button", { name: "Couleur de l'étiquette : vert" });
+    await trigger.focus();
+    await page.keyboard.press("Enter");
+    const picker = page.getByRole("listbox", { name: "Couleur de l'étiquette" });
+    await expect(picker.getByRole("option")).toHaveCount(10);
+    await expect(picker.getByRole("option", { name: "vert", exact: true })).toBeFocused();
+    await expect(picker.getByRole("option", { selected: true })).toHaveAccessibleName("vert");
+    await expect(page.getByText("Vert", { exact: true })).toBeVisible();
+
+    // The next hue; the name follows the focus; Enter picks it.
+    await page.keyboard.press("ArrowRight");
+    await expect(picker.getByRole("option", { name: "bleu canard" })).toBeFocused();
+    await expect(page.getByText("Bleu canard", { exact: true })).toBeVisible();
+    await page.keyboard.press("ArrowDown");
+    await expect(picker.getByRole("option", { name: "gris ardoise" })).toBeFocused();
+    await page.keyboard.press("ArrowUp");
+    await page.keyboard.press("Enter");
+    await expect(picker).toBeHidden();
+    const picked = page.getByRole("button", { name: "Couleur de l'étiquette : bleu canard" });
+    await expect(picked).toBeFocused();
+    await expect(picked).toHaveAttribute("data-tag-color", "Teal");
+  });
+
   test("a description: added in the edit mode, shown under the name, the card keeping its size", async ({ page }) => {
     const group = card(page, "Vocabulaire homérique");
     const edit = page.getByRole("button", { name: "Modifier l'étiquette « Vocabulaire homérique et tragique »" });

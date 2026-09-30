@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 import { Color, colorNames } from "../../app/enums";
+import { IdbTags } from "../../app/idb";
 
 // Tests run from the project root.
 const css = readFileSync("app/assets/css/tag-colors.css", "utf8");
@@ -23,4 +24,8 @@ test("each color key has a French name", () => {
   for (const key of Object.keys(Color) as (keyof typeof Color)[]) {
     expect(colorNames[key], key).toMatch(/^\p{Ll}[\p{L} ]*$/u);
   }
+});
+
+test("the color picker's order lists every tag color once", () => {
+  expect([...IdbTags.colorKeysByHue].sort()).toEqual([...IdbTags.colorKeys].sort());
 });

@@ -43,6 +43,15 @@ export class IdbTags {
   ) as TagColorKey[];
 
   /**
+   * The tag colors in the order of the color wheel, the neutral last: the
+   * order of the color picker (`TagColorPicker`), where neighbors are close
+   * hues.
+   */
+  static readonly colorKeysByHue: readonly TagColorKey[] = [
+    "Red", "Orange", "Lime", "Green", "Teal", "Sky", "Blue", "Purple", "Rose", "Slate",
+  ];
+
+  /**
    * Checks that a value is a valid tag color key (at runtime, values may come
    * from outdated or corrupted data).
    */
