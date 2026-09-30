@@ -187,6 +187,53 @@ test.describe("bookmarks page", () => {
   });
 });
 
+test.describe("bookmarks page, long groups", () => {
+  // Alphabetical (Greek collation), as the store sorts them.
+  const words = ["ἀγών", "βίος", "γένος", "δίκη", "ἔργον", "ζῷον", "ἦθος", "θεός", "ἵππος", "κόσμος"];
+  const entry = (word: string, i: number) => ({ word, uri: `test-${i}`, excerpt: `${word}, exemple (${i})` });
+
+  test.beforeEach(async ({ page, goto }) => {
+    await goto("/signets", { waitUntil: "hydration" });
+    await seedBookmarks(page, {
+      tags: [
+        { name: "Huit", color: "Green", entries: words.slice(0, 8).map(entry) },
+        { name: "Dix", color: "Sky", entries: words.map(entry) },
+      ],
+    });
+    await expect(card(page, "Dix")).toBeVisible();
+  });
+
+  test("from nine entries, the first six, then a button reveals the others", async ({ page }) => {
+    // Eight: all shown, no button.
+    await expect(card(page, "Huit").getByRole("link")).toHaveCount(8);
+    await expect(card(page, "Huit").getByRole("button", { name: /^Voir/ })).toHaveCount(0);
+
+    const links = card(page, "Dix").getByRole("link");
+    const toggle = card(page, "Dix").getByRole("button", { name: "Voir les 4 autres" });
+    await expect(links).toHaveCount(6);
+    await expect(links.first()).toContainText("ἀγών");
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    const listId = await toggle.getAttribute("aria-controls");
+    await expect(card(page, "Dix").locator(`[id="${listId}"]`)).toHaveCount(1);
+
+    // From the keyboard: the focus goes to the first entry revealed.
+    await toggle.focus();
+    await page.keyboard.press("Enter");
+    await expect(links).toHaveCount(10);
+    await expect(links.nth(6)).toBeFocused();
+    await expect(links.nth(6)).toContainText("ἦθος");
+    const collapse = card(page, "Dix").getByRole("button", { name: "Réduire" });
+    await expect(collapse).toHaveAttribute("aria-expanded", "true");
+
+    // Collapsed with the mouse, after scrolling past the card's top: the
+    // button is brought back into view, under the header.
+    await collapse.scrollIntoViewIfNeeded();
+    await collapse.click();
+    await expect(links).toHaveCount(6);
+    await expect(toggle).toBeInViewport();
+  });
+});
+
 test.describe("bookmarks page on a touch screen", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 

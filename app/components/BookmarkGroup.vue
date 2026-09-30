@@ -241,6 +241,50 @@
     }
   });
 
+  /**
+   * A long group is collapsed: it shows its first `COLLAPSED_COUNT` entries
+   * (three rows on two columns), and a button reveals the others. Only from
+   * `COLLAPSE_FROM` entries, so that the button always hides a few (not one
+   * or two, which would take hardly more room than the button itself).
+   * @remarks The cards keep a bounded height: on a grid (without masonry),
+   * a row of cards takes the height of the highest one.
+   */
+  const COLLAPSED_COUNT = 6;
+  const COLLAPSE_FROM = 9;
+  const collapsible = computed((): boolean => props.entries.length >= COLLAPSE_FROM);
+  /**
+   * Whether all the entries of a collapsible group are shown (for the visit:
+   * in memory only).
+   */
+  const expanded = ref<boolean>(false);
+  const shownEntries = computed((): IdbEntry[] =>
+    collapsible.value && !expanded.value ? props.entries.slice(0, COLLAPSED_COUNT) : props.entries,
+  );
+  const hiddenCount = computed((): number => props.entries.length - COLLAPSED_COUNT);
+
+  const entryList = useTemplateRef<HTMLElement>("entry-list");
+  const entryListId = useId();
+  const expandToggle = useTemplateRef<{ $el: HTMLElement }>("expand-toggle");
+
+  /**
+   * Shows or hides the entries beyond the first ones. Once expanded from the
+   * keyboard, the focus goes to the first entry revealed (where the button
+   * was); once collapsed, the button is brought back into view if it went
+   * above it (the card shrank under the reader).
+   */
+  const toggleExpanded = async (event: MouseEvent): Promise<void> => {
+    expanded.value = !expanded.value;
+    await nextTick();
+    if (expanded.value) {
+      // `detail` is 0 for a click from the keyboard (Enter, Space).
+      if (event.detail === 0) {
+        entryList.value?.children.item(COLLAPSED_COUNT)?.querySelector("a")?.focus({ preventScroll: true });
+      }
+    } else {
+      expandToggle.value?.$el.scrollIntoView({ block: "nearest" });
+    }
+  };
+
   // Greek may be transliterated (a preference).
   const greek = useGreek();
 </script>
@@ -440,9 +484,13 @@
     </template>
     <template v-else>
       <!-- Two columns when the card is wide enough (not on mobile). -->
-      <div class="grid grid-cols-1 gap-3 @sm:grid-cols-2">
+      <div
+        :id="entryListId"
+        ref="entry-list"
+        class="grid grid-cols-1 gap-3 @sm:grid-cols-2"
+      >
         <div
-          v-for="entry in entries"
+          v-for="entry in shownEntries"
           :key="entry.uri"
           class="group/item relative"
         >
@@ -469,6 +517,25 @@
           />
         </div>
       </div>
+      <!--
+        Under the entries, on the width of the list, in the tag's colors (as
+        the card's other buttons), rounded as the entries' cards. It clears the header when brought back
+        into view.
+      -->
+      <UButton
+        v-if="collapsible"
+        ref="expand-toggle"
+        :label="expanded ? 'Réduire' : `Voir les ${hiddenCount} autres`"
+        :trailing-icon="expanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+        :aria-expanded="expanded"
+        :aria-controls="entryListId"
+        variant="subtle"
+        color="neutral"
+        block
+        class="mt-3 scroll-mt-[calc(var(--header-bottom)+0.75rem)]"
+        :ui="{ base: 'rounded-lg bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
+        @click="toggleExpanded"
+      />
     </template>
   </UCard>
 </template>
