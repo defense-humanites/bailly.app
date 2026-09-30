@@ -454,7 +454,7 @@
       <template #content-top>
         <p
           v-if="(!defaultOptions || wildcards) && toSearchQuery(query)"
-          class="flex items-center gap-2 px-2.5 pt-2 text-xs text-muted"
+          class="flex shrink-0 items-center gap-2 px-2.5 pt-2 text-xs text-muted"
         >
           <UIcon
             name="i-lucide-list-filter"
@@ -473,7 +473,7 @@
         </p>
         <UAlert
           v-if="hasMorpheusResults && !morpheusWarningDismissed"
-          class="m-1.5 w-auto"
+          class="m-1.5 w-auto shrink-0"
           icon="i-lucide-sparkles"
           color="neutral"
           variant="soft"
@@ -518,7 +518,7 @@
       <template #content-bottom>
         <p
           v-if="hasMoreResults"
-          class="p-2 text-center text-sm text-muted border-t border-default"
+          class="shrink-0 border-t border-default p-2 text-center text-sm text-muted"
         >
           Précisez votre recherche pour voir les {{ result?.countAll }} résultats.
         </p>
