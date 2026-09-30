@@ -14,16 +14,19 @@
 <template>
   <div class="px-4 py-6 md:px-6 lg:py-12">
     <!--
-      As wide as the header at most, with the same side margins (cf.
-      `--header-*`): the content lines up with the header's title and menu.
+      As the preferences page: on one column (below `lg`), as wide as the
+      reading column, with the title above the actions (the field then takes
+      the room left); on two, as wide as the header at most, with the same
+      side margins (cf. `--header-*`), the content lining up with the
+      header's title and menu.
       Where supported, the cards are laid out in lanes (masonry: each card
       goes, in order, into the shortest column), otherwise on a grid.
     -->
     <section
-      class="mx-auto grid max-w-(--header-max-width) grid-cols-1 items-start gap-6 supports-[display:grid-lanes]:[display:grid-lanes] lg:grid-cols-2"
+      class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 supports-[display:grid-lanes]:[display:grid-lanes] lg:max-w-(--header-max-width) lg:grid-cols-2"
       :aria-busy="!initialized"
     >
-      <header class="col-span-full flex gap-6 max-md:flex-col md:items-center xl:mb-6">
+      <header class="col-span-full flex gap-6 max-lg:flex-col lg:items-center xl:mb-6">
         <h1 class="grow font-sans text-3xl font-bold leading-normal">
           Mes signets
         </h1>
@@ -65,7 +68,7 @@
           <!-- Export, import -->
           <BookmarksMenu />
 
-          <CreateTag class="min-w-0 grow max-md:basis-full md:w-80 md:grow-0 xl:w-96" />
+          <CreateTag class="min-w-0 grow max-md:basis-full lg:w-80 lg:grow-0 xl:w-96" />
         </aside>
       </header>
 
