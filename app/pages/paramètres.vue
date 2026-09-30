@@ -41,10 +41,10 @@
   ];
 
   const letterSizes: Record<ReadingSize, string> = {
-    small: "text-sm",
-    normal: "text-base",
-    large: "text-lg",
-    larger: "text-xl",
+    small: "text-[0.6875rem]",
+    normal: "text-[0.78125rem]",
+    large: "text-sm",
+    larger: "text-[0.96875rem]",
   };
 
   const readingWeightItems: RadioGroupItem[] = [
@@ -183,7 +183,7 @@
           >
             <template #label="{ item }">
               <span
-                class="font-serif leading-none"
+                class="font-serif leading-5"
                 :class="letterSizes[item.value as ReadingSize]"
                 aria-hidden="true"
               >A</span>

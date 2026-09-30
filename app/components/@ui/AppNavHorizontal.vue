@@ -85,7 +85,7 @@
       <UNavigationMenu
         aria-label="Accueil"
         :items="[{ label: 'Bailly.app', to: '/', active: false }]"
-        :ui="{ item: 'md:py-0', link: 'py-1.5 md:py-0.5 font-serif text-xl font-normal tracking-wider text-highlighted hover:text-highlighted' }"
+        :ui="{ item: 'md:py-0', link: 'py-1.5 md:py-0.5 font-serif text-base/7 font-normal tracking-wider text-highlighted hover:text-highlighted' }"
       />
       <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:max-w-(--reading-width) md:justify-self-center lg:justify-self-start" />
       <UNavigationMenu

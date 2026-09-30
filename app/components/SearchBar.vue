@@ -482,7 +482,7 @@
       <template #item-label="{ item }">
         <span
           v-if="item.parts"
-          class="font-serif text-base"
+          class="font-serif text-xs/6"
         ><span class="font-semibold">{{ greek.text(item.parts.word) }}</span>{{ greek.text(item.parts.rest) }}</span>
         <template v-else>
           {{ greek.text(item.label) }}

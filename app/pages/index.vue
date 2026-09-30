@@ -8,10 +8,10 @@
           variant="soft"
         >❤️ Nous soutenir</UBadge>
       </NuxtLink>
-      <h1 class="font-serif text-3xl font-bold xl:text-4xl">
+      <h1 class="font-serif text-2xl/9 font-bold xl:text-[1.75rem]/10">
         Consultez le dictionnaire<br>grec&ndash;français d'Anatole&nbsp;Bailly
       </h1>
-      <p class="font-serif text-xl xl:text-2xl">
+      <p class="font-serif text-base/7 xl:text-lg/8">
         Dans l'édition Bailly 2020 Hugo&nbsp;Chávez (<a href="/à-propos">à&nbsp;propos</a>).
       </p>
     </section>

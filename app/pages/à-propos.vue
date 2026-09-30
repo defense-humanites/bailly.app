@@ -100,7 +100,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
       <p class="mb-3 text-sm font-semibold tracking-widest text-primary uppercase">
         Bailly.app
       </p>
-      <h1 class="max-w-3xl font-serif text-4xl leading-tight font-bold text-balance md:text-5xl">
+      <h1 class="max-w-3xl font-serif text-[1.75rem]/[2.8125rem] font-bold text-balance md:text-4xl/[3.75rem]">
         Le dictionnaire grec–français d'Anatole&nbsp;Bailly, à portée de recherche
       </h1>
       <p class="mt-5 max-w-2xl text-lg text-pretty text-muted md:text-xl">
@@ -132,7 +132,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           <dt class="text-sm text-muted">
             {{ figure.label }}
           </dt>
-          <dd class="font-serif text-2xl font-bold md:text-3xl">
+          <dd class="font-serif text-lg/8 font-bold md:text-2xl/9">
             {{ figure.value }}
           </dd>
         </div>
@@ -218,7 +218,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
             </span>
           </div>
           <div class="min-w-0 flex-1 md:pt-6">
-            <h3 class="font-serif text-2xl font-bold">
+            <h3 class="font-serif text-lg/8 font-bold">
               Le dictionnaire d'Anatole Bailly
             </h3>
             <p class="mt-2 text-muted">
@@ -251,7 +251,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
             >
               <!-- eslint-disable vue/no-v-html -- A constant of this page. -->
               <div
-                class="definition w-[10.4rem] shrink-0 font-serif [--reading-font-size:1rem] [--reading-font-weight:400] max-md:scale-[0.36]"
+                class="definition w-[10.4rem] shrink-0 font-serif [--reading-font-size:0.75rem] [--reading-font-weight:400] max-md:scale-[0.36]"
                 v-html="rhiptos"
               />
               <!-- eslint-enable vue/no-v-html -->
@@ -261,7 +261,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
             </span>
           </div>
           <div class="min-w-0 flex-1 md:pt-6">
-            <h3 class="font-serif text-2xl font-bold">
+            <h3 class="font-serif text-lg/8 font-bold">
               L'édition numérique <em>Bailly 2020 Hugo&nbsp;Chávez</em>
             </h3>
             <p class="mt-2 text-muted">
@@ -311,18 +311,18 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                     name="i-lucide-search"
                     class="size-3.5 text-muted"
                   />
-                  <span class="font-serif">ῥιπτ</span>
+                  <span class="font-serif text-[0.6875rem]/5">ῥιπτ</span>
                   <span class="ms-auto rounded-full bg-elevated px-1.5 text-[0.625rem] text-muted">4</span>
                 </div>
                 <div class="rounded-md bg-default p-2 ring-1 ring-default">
                   <div class="flex items-center gap-1.5">
-                    <span class="font-serif text-sm font-bold">ῥιπτός</span>
+                    <span class="font-serif text-[0.6875rem]/5 font-bold">ῥιπτός</span>
                     <UIcon
                       name="i-bailly-star-filled"
                       class="ms-auto size-3.5 text-favorite"
                     />
                   </div>
-                  <p class="line-clamp-2 font-serif text-xs text-muted">
+                  <p class="line-clamp-2 font-serif text-[0.5625rem]/4 text-muted">
                     ή, όν, jeté, lancé : μόρος, Soph. Tr. 357, mort d'un homme qu'on lance…
                   </p>
                 </div>
@@ -333,7 +333,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
             </span>
           </div>
           <div class="min-w-0 flex-1 md:pt-6">
-            <h3 class="font-serif text-2xl font-bold">
+            <h3 class="font-serif text-lg/8 font-bold">
               L'application Bailly.app
             </h3>
             <p class="mt-2 text-muted">
@@ -438,7 +438,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
     </section>
 
     <section class="my-10 rounded-2xl bg-linear-to-br from-primary/15 to-primary/5 p-6 md:p-10">
-      <h2 class="font-serif text-2xl font-bold md:text-3xl">
+      <h2 class="font-serif text-lg/8 font-bold md:text-2xl/9">
         Un dictionnaire libre, porté par une association
       </h2>
       <p class="mt-2 max-w-2xl text-muted">

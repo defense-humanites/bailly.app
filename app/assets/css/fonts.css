@@ -1,4 +1,33 @@
 /*
+ * The fonts' sizes are normalized on Inter, the interface's font: each serif
+ * font (and IFAOGrec, their fallback) is scaled (`size-adjust`) so that its
+ * lowercase letters, Greek and Latin (mean of α ε ι κ ν ο π σ τ υ ω and
+ * a c e m n o r s u v x z), are as high as Inter's: `1rem` of Brill looks as
+ * large as `1rem` of Inter, and the reading fonts are interchangeable at the
+ * same size (Brill, very small, used to need 1.25rem). The ratios were
+ * measured on the fonts' outlines (fontTools):
+ *
+ *   Brill 1.306, Gentium Plus 1.176, GFS Didot 1.179, GFS Neohellenic 1.387,
+ *   IFAOGrec 1.204.
+ *
+ * Their vertical metrics are also set to Inter's (ascent 0.96875 em, descent
+ * 0.24121 em, no line gap, divided by the scale, as `size-adjust` also scales
+ * the overrides): a serif word in an Inter line (or the reverse) then sits
+ * on the same baseline without making the line taller, the text is centered
+ * like Inter's (buttons, bars), and the line boxes are the same on every
+ * system (the fonts' own metrics are disparate: Brill's descent, Didot's
+ * `hhea` table…). The glyphs themselves overflow these metrics a little
+ * (accented capitals, descenders), without consequence as long as the line
+ * height leaves room for them (from about 1.4 with `overflow: hidden`).
+ *
+ * Support: `size-adjust`, Chrome 92, Firefox 92, Safari 17; the overrides,
+ * Chrome 87, Firefox 89, not yet Safari (implemented in WebKit in August
+ * 2026): Safari keeps the fonts' own metrics, scaled (a mixed line can be a
+ * pixel or two taller, as before this normalization). An older Safari (16 and
+ * before) ignores `size-adjust` too: the serif fonts are then smaller.
+ */
+
+/*
  * Inter Variable font.
  */
 
@@ -20,13 +49,18 @@
 
 /*
  * Brill font.
- *   Using `font-display: block;` because of the uncommon sizing.
+ *   Using `font-display: block;`, so as not to show the fallback font (of
+ *   other proportions) while it loads.
  */
 
 @font-face {
   font-family: Brill;
   font-weight: normal;
   font-display: block;
+  size-adjust: 130.6%;
+  ascent-override: 74.18%;
+  descent-override: 18.47%;
+  line-gap-override: 0%;
   src: url("/fonts/Brill-Roman.woff2") format("woff2");
 }
 
@@ -34,6 +68,10 @@
   font-family: Brill;
   font-weight: bold;
   font-display: block;
+  size-adjust: 130.6%;
+  ascent-override: 74.18%;
+  descent-override: 18.47%;
+  line-gap-override: 0%;
   src: url("/fonts/Brill-Bold.woff2") format("woff2");
 }
 
@@ -42,6 +80,10 @@
   font-weight: normal;
   font-style: italic;
   font-display: block;
+  size-adjust: 130.6%;
+  ascent-override: 74.18%;
+  descent-override: 18.47%;
+  line-gap-override: 0%;
   src: url("/fonts/Brill-Italic.woff2") format("woff2");
 }
 
@@ -50,6 +92,10 @@
   font-weight: bold;
   font-style: italic;
   font-display: block;
+  size-adjust: 130.6%;
+  ascent-override: 74.18%;
+  descent-override: 18.47%;
+  line-gap-override: 0%;
   src: url("/fonts/Brill-BoldItalic.woff2") format("woff2");
 }
 
@@ -77,6 +123,10 @@
   font-weight: normal;
   font-style: normal;
   font-display: block;
+  size-adjust: 117.6%;
+  ascent-override: 82.38%;
+  descent-override: 20.51%;
+  line-gap-override: 0%;
   src: url("/fonts/Gentium_Plus/GentiumPlus-Regular.ttf") format("truetype");
 }
 
@@ -85,6 +135,10 @@
   font-weight: bold;
   font-style: normal;
   font-display: block;
+  size-adjust: 117.6%;
+  ascent-override: 82.38%;
+  descent-override: 20.51%;
+  line-gap-override: 0%;
   src: url("/fonts/Gentium_Plus/GentiumPlus-Bold.ttf") format("truetype");
 }
 
@@ -93,6 +147,10 @@
   font-weight: normal;
   font-style: italic;
   font-display: block;
+  size-adjust: 117.6%;
+  ascent-override: 82.38%;
+  descent-override: 20.51%;
+  line-gap-override: 0%;
   src: url("/fonts/Gentium_Plus/GentiumPlus-Italic.ttf") format("truetype");
 }
 
@@ -101,6 +159,10 @@
   font-weight: bold;
   font-style: italic;
   font-display: block;
+  size-adjust: 117.6%;
+  ascent-override: 82.38%;
+  descent-override: 20.51%;
+  line-gap-override: 0%;
   src: url("/fonts/Gentium_Plus/GentiumPlus-BoldItalic.ttf") format("truetype");
 }
 
@@ -109,6 +171,10 @@
   font-weight: normal;
   font-style: normal;
   font-display: block;
+  size-adjust: 117.9%;
+  ascent-override: 82.17%;
+  descent-override: 20.46%;
+  line-gap-override: 0%;
   src: url("/fonts/GFS_Didot/GFSDidot.otf") format("opentype");
 }
 
@@ -117,6 +183,10 @@
   font-weight: bold;
   font-style: normal;
   font-display: block;
+  size-adjust: 117.9%;
+  ascent-override: 82.17%;
+  descent-override: 20.46%;
+  line-gap-override: 0%;
   src: url("/fonts/GFS_Didot/GFSDidotBold.otf") format("opentype");
 }
 
@@ -125,6 +195,10 @@
   font-weight: normal;
   font-style: italic;
   font-display: block;
+  size-adjust: 117.9%;
+  ascent-override: 82.17%;
+  descent-override: 20.46%;
+  line-gap-override: 0%;
   src: url("/fonts/GFS_Didot/GFSDidotItalic.otf") format("opentype");
 }
 
@@ -133,6 +207,10 @@
   font-weight: bold;
   font-style: italic;
   font-display: block;
+  size-adjust: 117.9%;
+  ascent-override: 82.17%;
+  descent-override: 20.46%;
+  line-gap-override: 0%;
   src: url("/fonts/GFS_Didot/GFSDidotBoldItalic.otf") format("opentype");
 }
 
@@ -141,6 +219,10 @@
   font-weight: normal;
   font-style: normal;
   font-display: block;
+  size-adjust: 138.7%;
+  ascent-override: 69.84%;
+  descent-override: 17.39%;
+  line-gap-override: 0%;
   src: url("/fonts/GFS_NeoHellenic/GFSNeohellenic.otf") format("opentype");
 }
 
@@ -149,6 +231,10 @@
   font-weight: bold;
   font-style: normal;
   font-display: block;
+  size-adjust: 138.7%;
+  ascent-override: 69.84%;
+  descent-override: 17.39%;
+  line-gap-override: 0%;
   src: url("/fonts/GFS_NeoHellenic/GFSNeohellenicBold.otf") format("opentype");
 }
 
@@ -157,6 +243,10 @@
   font-weight: normal;
   font-style: italic;
   font-display: block;
+  size-adjust: 138.7%;
+  ascent-override: 69.84%;
+  descent-override: 17.39%;
+  line-gap-override: 0%;
   src: url("/fonts/GFS_NeoHellenic/GFSNeohellenicIt.otf") format("opentype");
 }
 
@@ -165,6 +255,10 @@
   font-weight: bold;
   font-style: italic;
   font-display: block;
+  size-adjust: 138.7%;
+  ascent-override: 69.84%;
+  descent-override: 17.39%;
+  line-gap-override: 0%;
   src: url("/fonts/GFS_NeoHellenic/GFSNeohellenicBoldIt.otf") format("opentype");
 }
 
@@ -178,6 +272,10 @@
   font-family: IFAOGrec;
   font-weight: normal;
   font-display: swap;
+  size-adjust: 120.4%;
+  ascent-override: 80.46%;
+  descent-override: 20.03%;
+  line-gap-override: 0%;
   src: url("/fonts/IFAOGrec.woff2") format("woff2");
   unicode-range: U+0370-03FF, U+1F00-1FFF, U+0300-036F, U+E000-F8FF;
 }
@@ -186,6 +284,10 @@
   font-family: IFAOGrec;
   font-weight: bold;
   font-display: swap;
+  size-adjust: 120.4%;
+  ascent-override: 80.46%;
+  descent-override: 20.03%;
+  line-gap-override: 0%;
   src: url("/fonts/IFAOGrecBold.woff2") format("woff2");
   unicode-range: U+0370-03FF, U+1F00-1FFF, U+0300-036F, U+E000-F8FF;
 }

@@ -57,7 +57,7 @@
 
     <section
       aria-label="En détail"
-      class="space-y-4 font-serif text-lg"
+      class="space-y-4 font-serif text-sm/7"
     >
       <p>
         <strong>Sur votre appareil.</strong> Vos signets (étiquettes et favoris) et

@@ -73,11 +73,11 @@
    * any text content, as the former `content: url(…)` rule did. As its (empty)
    * text line is at its top, a baseline alignment would hang it below the
    * text: it is centered on the text's middle instead. Its size follows the
-   * reading size (1.8 times the text size: 36 px for 20 px).
+   * reading size (about 2.3 times the text size: 36 px for 15.5 px).
    */
   .flechea {
     display: inline-block;
-    width: calc(var(--reading-font-size) * 1.8);
+    width: calc(var(--reading-font-size) * 2.32);
     aspect-ratio: 66 / 24;
     vertical-align: middle;
     font-size: 0;
@@ -124,7 +124,8 @@
   .definition {
     font-size: var(--reading-font-size);
     font-weight: var(--reading-font-weight);
-    line-height: 1.4;
+    /* The former 1.4 of Brill (cf. `fonts.css`): 28 px for the normal size. */
+    line-height: 1.8;
   }
 
   /*

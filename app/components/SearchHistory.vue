@@ -128,7 +128,7 @@
               :to="link.to"
               class="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm outline-none hover:bg-elevated/50 focus-visible:bg-elevated"
             >
-              <span class="line-clamp-2 grow font-serif text-base"><span class="font-semibold">{{ greek.text(link.word) }}</span>{{ greek.text(link.rest) }}</span>
+              <span class="line-clamp-2 grow font-serif text-xs/6"><span class="font-semibold">{{ greek.text(link.word) }}</span>{{ greek.text(link.rest) }}</span>
               <EntryBookmarkIndicator
                 :uri="link.uri"
                 class="mt-1"

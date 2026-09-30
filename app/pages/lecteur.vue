@@ -93,7 +93,7 @@
   <div>
     <header class="mb-6">
       <template v-if="form">
-        <h1 class="font-serif text-3xl font-bold">
+        <h1 class="font-serif text-2xl/9 font-bold">
           {{ greek.text(form) }}
         </h1>
         <p class="mt-1 text-muted">
@@ -149,7 +149,7 @@
         :aria-current="currentId === id ? 'true' : undefined"
         :color="currentId === id ? 'primary' : 'neutral'"
         :variant="currentId === id ? 'subtle' : 'outline'"
-        class="shrink-0 font-serif text-base"
+        class="shrink-0 font-serif text-xs/6"
       />
     </nav>
 
@@ -164,7 +164,7 @@
         <header class="mb-4 flex items-center gap-3">
           <h2
             :id="`${id}-titre`"
-            class="font-serif text-2xl font-bold"
+            class="font-serif text-lg/8 font-bold"
           >
             {{ greek.text(entry.word) }}
           </h2>

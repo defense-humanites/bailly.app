@@ -32,7 +32,7 @@
       Nous soutenir
     </h1>
 
-    <UCard :ui="{ body: 'space-y-4 font-serif text-lg' }">
+    <UCard :ui="{ body: 'space-y-4 font-serif text-sm/7' }">
       <p>
         Bailly.app est gratuit, sans publicité, et le restera. L'application est
         développée bénévolement ; ses frais, eux, sont bien réels.

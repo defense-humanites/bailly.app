@@ -149,7 +149,7 @@
         :ui="{
           root: '[&>div]:w-full',
           item: '[&:not(:has(h1))]:flex-1 [&:has(h1)]:grow',
-          link: 'font-serif font-bold text-xl',
+          link: 'font-serif font-bold text-base/7',
           linkLabel: 'grow',
         }"
         :items="items"

@@ -15,10 +15,10 @@
     <h1 class="text-3xl leading-normal font-bold">
       Don annulé
     </h1>
-    <p class="font-serif text-lg">
+    <p class="font-serif text-sm/7">
       Votre don n'a pas été effectué : aucun montant n'a été prélevé.
     </p>
-    <p class="font-serif text-lg">
+    <p class="font-serif text-sm/7">
       Vous pouvez aussi nous aider autrement : en nous signalant une erreur dans
       une entrée, ou en parlant de Bailly.app autour de vous.
     </p>

@@ -153,23 +153,25 @@
 
 /*
  * The entries' text (cf. `.definition`), set in the settings (cf.
- * `utils/preferences.ts`). Brill has a normal and a bold face only.
+ * `utils/preferences.ts`). Brill has a normal and a bold face only. The
+ * sizes are those of the fonts normalized on Inter (cf. `fonts.css`): 15.5 px
+ * look like the former 20 px of Brill.
  */
 :root {
-  --reading-font-size: 1.25rem;
+  --reading-font-size: 0.96875rem;
   --reading-font-weight: 700;
 }
 
 :root[data-reading-size="small"] {
-  --reading-font-size: 1.125rem;
+  --reading-font-size: 0.875rem;
 }
 
 :root[data-reading-size="large"] {
-  --reading-font-size: 1.375rem;
+  --reading-font-size: 1.0625rem;
 }
 
 :root[data-reading-size="larger"] {
-  --reading-font-size: 1.5rem;
+  --reading-font-size: 1.15625rem;
 }
 
 :root[data-reading-weight="normal"] {

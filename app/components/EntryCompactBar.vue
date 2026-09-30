@@ -43,7 +43,7 @@
         class="size-8 shrink-0"
       />
       <span
-        class="min-w-0 grow truncate text-center font-serif font-bold"
+        class="min-w-0 grow truncate text-center font-serif text-xs/6 font-bold"
         :lang="greek.lang.value"
       >{{ word }}</span>
       <UButton

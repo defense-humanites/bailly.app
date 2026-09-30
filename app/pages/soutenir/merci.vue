@@ -16,7 +16,7 @@
     <h1 class="text-3xl leading-normal font-bold">
       Merci pour votre don !
     </h1>
-    <p class="font-serif text-lg">
+    <p class="font-serif text-sm/7">
       Votre soutien fait vivre le Bailly en ligne. PayPal vous a envoyé un reçu
       par courriel.
     </p>

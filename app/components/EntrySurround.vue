@@ -61,12 +61,12 @@
         {{ link.direction === "next" ? "Entrée suivante" : "Entrée précédente" }}
       </span>
       <span
-        class="mt-1 block truncate font-serif text-lg font-bold text-highlighted"
+        class="mt-1 block truncate font-serif text-sm/7 font-bold text-highlighted"
         :lang="greek.lang.value"
       >{{ greek.text(link.word) }}</span>
       <span
         v-if="link.rest"
-        class="line-clamp-2 font-serif text-sm text-muted"
+        class="line-clamp-2 font-serif text-xs/5 text-muted"
       >{{ greek.text(link.rest) }}</span>
     </ULink>
   </nav>
