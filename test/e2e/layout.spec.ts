@@ -48,7 +48,7 @@ for (const width of [320, 390, 768, 900, 1000, 1024, 1279, 1280, 1440, 1920]) {
       }
     });
 
-    test("entry column: centered below lg, then exactly under the search bar", async ({ page, goto }) => {
+    test("entry column: centered, under the search bar, which overhangs it evenly", async ({ page, goto }) => {
       await goto("/logos", { waitUntil: "hydration" });
       const bar = await xExtent(page, "header .group\\/search");
       const column = await xExtent(page, "main > div > div");
@@ -56,15 +56,13 @@ for (const width of [320, 390, 768, 900, 1000, 1024, 1279, 1280, 1440, 1920]) {
       expect(column[1] - column[0]).toBeLessThanOrEqual(592.5);
       if (width < 1024) {
         expect(Math.abs((column[0] + column[1]) / 2 - width / 2)).toBeLessThan(1);
-        // From md, the bar is centered above the column (as wide as it once
-        // there is room for it).
-        if (width >= 768) {
-          expect(Math.abs((bar[0] + bar[1]) / 2 - width / 2)).toBeLessThan(1);
-          if (bar[1] - bar[0] > 591.5) expect(Math.abs(column[0] - bar[0])).toBeLessThan(1);
-        }
-      } else {
-        expect(Math.abs(column[0] - bar[0])).toBeLessThan(1);
-        expect(Math.abs(column[1] - bar[1])).toBeLessThan(1);
+      }
+      // From md, the bar is centered above the column, overhanging it on
+      // both sides once there is room for it (by 3rem at most).
+      if (width >= 768) {
+        expect(Math.abs((bar[0] + bar[1]) / 2 - (column[0] + column[1]) / 2)).toBeLessThan(1);
+        if (width >= 1000) expect(bar[1] - bar[0]).toBeGreaterThan(column[1] - column[0]);
+        expect(bar[1] - bar[0]).toBeLessThanOrEqual(688.5);
       }
     });
   });
@@ -86,7 +84,7 @@ test("the header is anchored, its border shown once the page is scrolled", async
   expect(await state()).toMatchObject({ top: 0, left: 0, right: 1280 });
 });
 
-test("from md, the search bar widens up to the reading width, and never narrows", async ({ page, goto }) => {
+test("from md, the search bar widens up to the reading width and its overhangs, and never narrows", async ({ page, goto }) => {
   await page.setViewportSize({ width: 768, height: 800 });
   await goto("/logos", { waitUntil: "hydration" });
   let previous = 0;
@@ -94,10 +92,10 @@ test("from md, the search bar widens up to the reading width, and never narrows"
     await page.setViewportSize({ width, height: 800 });
     const [left, right] = await xExtent(page, "header .group\\/search");
     expect(right - left).toBeGreaterThanOrEqual(previous - 0.5);
-    expect(right - left).toBeLessThanOrEqual(592.5);
+    expect(right - left).toBeLessThanOrEqual(688.5);
     previous = right - left;
   }
-  expect(previous).toBeCloseTo(592, 0);
+  expect(previous).toBeCloseTo(688, 0);
 });
 
 test.describe("header menu", () => {

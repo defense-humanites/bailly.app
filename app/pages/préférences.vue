@@ -92,7 +92,7 @@
 -->
 <template>
   <div class="px-4 py-6 md:px-6 lg:py-12">
-    <div class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 lg:max-w-(--header-max-width) lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr_auto]">
+    <div class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 lg:max-w-(--content-max-width) lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr_auto]">
       <h1 class="text-3xl leading-normal font-bold lg:col-span-2">
         Préférences
       </h1>

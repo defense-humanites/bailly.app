@@ -16,14 +16,13 @@
     <!--
       As the preferences page: on one column (below `lg`), as wide as the
       reading column, with the title above the actions (the field then takes
-      the room left); on two, as wide as the header at most, with the same
-      side margins (cf. `--header-*`), the content lining up with the
-      header's title and menu.
+      the room left); on two, `--content-max-width` at most (the header, wider
+      by the search bar's overhangs, steps out of its edges).
       Where supported, the cards are laid out in lanes (masonry: each card
       goes, in order, into the shortest column), otherwise on a grid.
     -->
     <section
-      class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 supports-[display:grid-lanes]:[display:grid-lanes] lg:max-w-(--header-max-width) lg:grid-cols-2"
+      class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 supports-[display:grid-lanes]:[display:grid-lanes] lg:max-w-(--content-max-width) lg:grid-cols-2"
       :aria-busy="!initialized"
     >
       <header class="col-span-full flex gap-6 max-lg:flex-col lg:items-center xl:mb-6">

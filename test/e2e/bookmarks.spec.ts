@@ -161,7 +161,7 @@ test.describe("bookmarks page", () => {
     await expect(actions).toHaveCSS("opacity", "1");
   });
 
-  test("aligned with the header", async ({ page }) => {
+  test("centered under the header, which steps out of it evenly", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     const { content, inner } = await page.evaluate(() => {
       const edges = (element: Element) => {
@@ -174,8 +174,9 @@ test.describe("bookmarks page", () => {
       };
       return { content: edges(document.querySelector("main section")!), inner: edges(document.querySelector("header > nav")!) };
     });
-    expect(Math.abs(content.left - inner.left)).toBeLessThan(1);
-    expect(Math.abs(content.right - inner.right)).toBeLessThan(1);
+    // The header steps out of the content by the search bar's overhangs (3rem).
+    expect(Math.abs(content.left - inner.left - 48)).toBeLessThan(1);
+    expect(Math.abs(inner.right - content.right - 48)).toBeLessThan(1);
   });
 
   // Where supported (e.g. Safari), the cards are laid out in lanes.

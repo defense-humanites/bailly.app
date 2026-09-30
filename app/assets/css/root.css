@@ -95,17 +95,31 @@
    * `grid-cols-header` utility), shared with the single-column layout, whose
    * column thus lies under the search bar: fixed tracks for the title and the
    * menu (a little wider than their content; to adjust if it changes), the
-   * search bar taking the space left, up to `--reading-width`. The header's
-   * maximum width is the one that leaves exactly this width to the bar once
-   * the menu shows its labels (`xl`).
+   * search bar taking the space left, up to `--search-width`.
+   *
+   * The search bar (and its results) is wider than the content under it,
+   * overhanging it on both sides (`--search-overhang`): a less rigid layout,
+   * the results spilling a little over the entries' cards. The contents keep
+   * their width: the two-column pages are at most `--content-max-width` wide,
+   * the width that leaves exactly `--reading-width` to the bar once the menu
+   * shows its labels (`xl`); the header is wider by the overhangs, its title
+   * and menu stepping out of the contents' edges.
    */
   --header-title-width: 6.75rem; /* A menu link (padding included). */
   --header-menu-width-labels: 20.5rem; /* Icons and labels. */
   --header-gap-wide: 3rem;
-  --header-max-width: calc(
+  --search-overhang: 3rem;
+  --content-max-width: calc(
     var(--header-title-width) + var(--reading-width) + var(--header-menu-width-labels)
     + 2 * var(--header-gap-wide)
   );
+  --header-max-width: calc(var(--content-max-width) + 2 * var(--search-overhang));
+  /*
+   * Below `lg`, the bar is capped at the width it has when `lg` starts (the
+   * header's tracks and gaps widen there, 60px more than the reading width at
+   * 1024px): it never narrows as the window widens.
+   */
+  --search-width: calc(var(--reading-width) + 3.75rem);
   --header-menu-width: 7.5rem; /* Icons only. */
   --header-gap: 2rem;
 
@@ -119,6 +133,7 @@
   @variant lg {
     --header-gap: var(--header-gap-wide);
     --header-title-track: var(--header-title-width);
+    --search-width: calc(var(--reading-width) + 2 * var(--search-overhang));
   }
 
   @variant xl {

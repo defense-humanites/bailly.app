@@ -17,7 +17,7 @@ test.describe("settings", () => {
     expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(800);
   });
 
-  test("two columns from lg, aligned with the header; one below", async ({ page, goto }) => {
+  test("two columns from lg, centered under the header; one below", async ({ page, goto }) => {
     const extent = (selector: string) => page.locator(selector).first().evaluate((element) => {
       const { left, right, top } = element.getBoundingClientRect();
       return { left: Math.round(left), right: Math.round(right), top: Math.round(top) };
@@ -28,8 +28,9 @@ test.describe("settings", () => {
     const general = await extent("[aria-labelledby=settings-general]");
     const reading = await extent("[aria-labelledby=settings-reading]");
     const search = await extent("[aria-labelledby=settings-search]");
-    expect(general.left).toBe(nav.left);
-    expect(reading.right).toBe(nav.right);
+    // The header steps out of the content by the search bar's overhangs (3rem).
+    expect(general.left).toBe(nav.left + 48);
+    expect(reading.right).toBe(nav.right - 48);
     expect(reading.top).toBe(general.top);
     expect(search.left).toBe(general.left);
 

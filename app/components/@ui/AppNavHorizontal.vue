@@ -62,7 +62,8 @@
     top, whose content is at most `--header-max-width` wide, on a grid shared
     with the single-column layout (whose column thus lies under the search
     bar): fixed tracks for the title and the menu, the search bar taking the
-    space left up to the reading width (cf. `grid-cols-header`).
+    space left up to `--search-width`, a little wider than the column under it
+    (cf. `grid-cols-header` and `--search-overhang`).
     The header is anchored (top and sides), on an almost opaque background:
     the content doesn't show around it. Its bottom border only appears once
     the content scrolls under it.
@@ -87,7 +88,7 @@
         :items="[{ label: 'Bailly.app', to: '/', active: false }]"
         :ui="{ item: 'md:py-0', link: 'py-1.5 md:py-0.5 font-serif text-base/7 font-normal tracking-wider text-highlighted hover:text-highlighted' }"
       />
-      <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:max-w-(--reading-width) md:justify-self-center lg:justify-self-start" />
+      <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:max-w-(--search-width) md:justify-self-center lg:justify-self-start" />
       <UNavigationMenu
         class="md:col-start-3 md:row-start-1 md:justify-self-end"
         :items="menuItems"

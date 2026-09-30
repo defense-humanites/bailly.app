@@ -95,7 +95,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
 </script>
 
 <template>
-  <div class="mx-auto max-w-(--header-max-width) px-4 md:px-6">
+  <div class="mx-auto max-w-(--content-max-width) px-4 md:px-6">
     <section class="flex flex-col items-center py-12 text-center md:py-20">
       <p class="mb-3 text-sm font-semibold tracking-widest text-primary uppercase">
         Bailly.app
