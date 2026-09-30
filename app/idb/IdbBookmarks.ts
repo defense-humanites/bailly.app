@@ -75,7 +75,8 @@ export class IdbBookmarks {
    */
   static async join(remote: BookmarksState): Promise<IdbResult<MergeOutcome>> {
     return IdbBookmarks.#mergeInto(
-      async (local, meta) => joinRecords(local, remote, await Idb.stamp(meta)),
+      // Brought back as changes made now: after the stamps of the locker.
+      async (local, meta) => joinRecords(local, remote, await Idb.stamp(meta, latestStamp(remote))),
       { forgetDeletions: true },
     );
   }
@@ -91,7 +92,10 @@ export class IdbBookmarks {
     const result = await IdbBookmarks.#mergeInto(async (local, meta) => {
       const fitted = fitImport(local, imported, Idb.config);
       skipped = fitted.skipped;
-      return restoreRecords(local, fitted.state, await Idb.stamp(meta));
+      // Brought back as changes made now: after the stamps of the file's
+      // records (not of its tombstones, which a restore ignores: they would
+      // move this device's clock for nothing).
+      return restoreRecords(local, fitted.state, await Idb.stamp(meta, latestStamp(withoutTombstones(fitted.state))));
     });
     return result.state === "success" ? { ...result, data: { ...result.data, skipped } } : result;
   }

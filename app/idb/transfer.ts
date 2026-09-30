@@ -154,18 +154,28 @@ function validateEntry(value: Record<string, unknown>, deleted: boolean): { uri:
   return { uri: value.uri, word: value.word };
 }
 
+/**
+ * The stamp of an entry's addition, if valid and before its latest change (cf.
+ * `TaggedRecord.addedAt`); otherwise none, its `updatedAt` standing for it.
+ * Not on a tombstone.
+ */
+function validateAddedAt(value: Record<string, unknown>, common: { updatedAt: string; deleted?: true }, now: number): { addedAt?: string } {
+  const { addedAt } = value;
+  return !common.deleted && isValidStamp(addedAt, now) && addedAt < common.updatedAt ? { addedAt } : {};
+}
+
 function validateTagged(value: unknown, now: number): TaggedRecord | null {
   if (!isObject(value) || !isText(value.tagKey, { required: true })) return null;
   const common = versioned(value, now);
   const entry = common && validateEntry(value, Boolean(common.deleted));
-  return common && entry ? { tagKey: value.tagKey, ...entry, ...common } : null;
+  return common && entry ? { tagKey: value.tagKey, ...entry, ...validateAddedAt(value, common, now), ...common } : null;
 }
 
 function validateStarred(value: unknown, now: number): StarredRecord | null {
   if (!isObject(value)) return null;
   const common = versioned(value, now);
   const entry = common && validateEntry(value, Boolean(common.deleted));
-  return common && entry ? { ...entry, ...common } : null;
+  return common && entry ? { ...entry, ...validateAddedAt(value, common, now), ...common } : null;
 }
 
 function validateOrder(value: unknown, now: number): TagOrder | null {

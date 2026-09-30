@@ -42,6 +42,9 @@ test("Get starred entries", async () => {
   expect(await IdbStarred.getAll()).toHaveLength(1);
   await IdbStarred.add(entries.alopex);
   expect(await IdbStarred.getAll()).toHaveLength(2);
-  // The latest added first.
+  // The latest added first; added again, first.
   expect((await IdbStarred.getAll()).map(entry => entry.uri)).toEqual([entries.alopex.uri, entries.rhinokeros.uri]);
+  await IdbStarred.remove(entries.rhinokeros.uri);
+  await IdbStarred.add(entries.rhinokeros);
+  expect((await IdbStarred.getAll()).map(entry => entry.uri)).toEqual([entries.rhinokeros.uri, entries.alopex.uri]);
 });

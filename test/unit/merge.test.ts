@@ -5,11 +5,13 @@ import {
   comparableTagName,
   compact,
   emptyState,
+  entryTombstone,
   fitImport,
   limitExcesses,
   mergeStates,
   normalize,
   joinRecords,
+  latestAddedFirst,
   orderTags,
   restoreRecords,
   type BookmarksState,
@@ -51,6 +53,7 @@ const taggedArb: fc.Arbitrary<TaggedRecord> = fc
     tagKey: tagKeyArb,
     uri: uriArb,
     word: fc.constant("λόγος"),
+    addedAt: fc.option(stampArb, { nil: undefined }),
     updatedAt: stampArb,
     deleted: deletedArb,
   })
@@ -60,6 +63,7 @@ const starredArb: fc.Arbitrary<StarredRecord> = fc
   .record({
     uri: uriArb,
     word: fc.constant("λόγος"),
+    addedAt: fc.option(stampArb, { nil: undefined }),
     updatedAt: stampArb,
     deleted: deletedArb,
   })
@@ -163,7 +167,7 @@ describe("normalize", () => {
         { key: "t1", name: "Homère", description: "", color: "Blue", createdAt: stamp(1), updatedAt: stamp(1) },
       ],
       tagged: [
-        { tagKey: "t2", uri: "logos", word: "λόγος", updatedAt: stamp(3) },
+        { tagKey: "t2", uri: "logos", word: "λόγος", addedAt: stamp(2), updatedAt: stamp(3) },
         { tagKey: "t1", uri: "psyche", word: "ψυχή", updatedAt: stamp(4) },
       ],
       starred: [],
@@ -177,6 +181,8 @@ describe("normalize", () => {
     ]);
     const live = normalized.tagged.filter(record => !record.deleted);
     expect(live.map(record => [record.tagKey, record.uri])).toEqual([["t1", "logos"], ["t1", "psyche"]]);
+    // A moved entry keeps its addition.
+    expect(live[0]!.addedAt).toBe(stamp(2));
   });
 });
 
@@ -224,9 +230,11 @@ test("restoreRecords: what is missing or deleted comes back, later changes stay,
 
   const restored = restoreRecords(local, imported, stamp(20));
   expect(restored.starred).toEqual([
-    entry("deleted", 20), // Restored, after its deletion.
+    // Restored, after its deletion; its addition kept (without `addedAt`,
+    // its former `updatedAt`).
+    { ...entry("deleted", 20), addedAt: stamp(2) },
     entry("changed", 3), // As is: the later local version wins the merge.
-    entry("missing", 20),
+    { ...entry("missing", 20), addedAt: stamp(2) },
   ]);
 
   const merged = mergeStates(local, restored);
@@ -249,6 +257,52 @@ test("joinRecords: what exists online is not deleted by the joining device, onli
   const merged = mergeStates(local, joinRecords(local, remote, stamp(20)));
   expect(merged.starred.filter(record => !record.deleted).map(record => record.uri)).toEqual(["addedHere", "deletedHere", "online"]);
   expect(merged.starred.find(record => record.uri === "deletedHere")?.updatedAt).toBe(stamp(20));
+  // Brought back, not added again.
+  expect(merged.starred.find(record => record.uri === "deletedHere")?.addedAt).toBe(stamp(3));
+});
+
+test("an import restores the entries in their order of addition, among the local ones", () => {
+  const entry = (uri: string, added: number, updated = added): StarredRecord =>
+    ({ uri, word: uri, addedAt: stamp(added), updatedAt: stamp(updated) });
+  // On this device: one entry, added between those of the file.
+  const local: BookmarksState = { ...emptyState(), starred: [entry("here", 5)] };
+  const imported: BookmarksState = {
+    ...emptyState(),
+    starred: [entry("first", 1), entry("last", 9), entry("changed", 3, 7)],
+  };
+
+  const merged = mergeStates(local, restoreRecords(local, imported, stamp(20)));
+  const shown = [...merged.starred].sort(latestAddedFirst).map(record => record.uri);
+  expect(shown).toEqual(["last", "here", "changed", "first"]);
+  // All restored as changes made now (they supersede deletions elsewhere).
+  expect(merged.starred.filter(record => record.uri !== "here").every(record => record.updatedAt === stamp(20))).toBe(true);
+});
+
+test("joinRecords and restoreRecords keep the addition of the entries brought back (tags and favorites alike)", () => {
+  const tagged = (added: number | undefined, updated: number, deleted?: true): TaggedRecord =>
+    withoutUndefined({ tagKey: "t1", uri: "logos", word: deleted ? "" : "λόγος", addedAt: added === undefined ? undefined : stamp(added), updatedAt: stamp(updated), deleted });
+  const local: BookmarksState = { ...emptyState(), tagged: [tagged(undefined, 8, true)] };
+  const remote: BookmarksState = { ...emptyState(), tagged: [tagged(2, 6)] };
+
+  expect(joinRecords(local, remote, stamp(20)).tagged).toEqual([tagged(2, 20)]);
+  expect(restoreRecords(local, remote, stamp(20)).tagged).toEqual([tagged(2, 20)]);
+  // An addition that does not precede the change (not expected: the stamp
+  // follows the state brought back) is taken as made then: none kept.
+  expect(restoreRecords(local, { ...emptyState(), tagged: [tagged(30, 30)] }, stamp(20)).tagged).toEqual([tagged(undefined, 20)]);
+});
+
+test("a tombstone keeps neither the word nor the addition", () => {
+  const record: StarredRecord = { uri: "logos", word: "λόγος", addedAt: stamp(1), updatedAt: stamp(3) };
+  expect(entryTombstone(record, stamp(5))).toEqual({ uri: "logos", word: "", updatedAt: stamp(5), deleted: true });
+});
+
+test("latestAddedFirst: by the addition, else by the latest change", () => {
+  const records: StarredRecord[] = [
+    { uri: "a", word: "a", addedAt: stamp(1), updatedAt: stamp(10) },
+    { uri: "b", word: "b", updatedAt: stamp(5) },
+    { uri: "c", word: "c", addedAt: stamp(8), updatedAt: stamp(8) },
+  ];
+  expect([...records].sort(latestAddedFirst).map(record => record.uri)).toEqual(["c", "b", "a"]);
 });
 
 test("limitExcesses: the tags, the entries of each tag, and the favorites", () => {
@@ -327,4 +381,16 @@ test("fitImport: the local bookmarks stay, the new ones added first are imported
   // Restored, then merged: within the limits.
   const merged = normalize(mergeStates(local, restoreRecords(local, state, stamp(100))));
   expect(limitExcesses(merged, limits)).toEqual([]);
+});
+
+test("fitImport: among the new entries, those added first are imported (by their addition, not their latest change)", () => {
+  const entry = (uri: string, added: number, updated: number): StarredRecord =>
+    ({ uri, word: uri, addedAt: stamp(added), updatedAt: stamp(updated) });
+  const imported: BookmarksState = {
+    ...emptyState(),
+    starred: [entry("recent", 9, 9), entry("old", 1, 12)],
+  };
+  const { state, skipped } = fitImport(emptyState(), imported, { maxTags: 10, tagMaxItems: 1 });
+  expect(state.starred.map(record => record.uri)).toEqual(["old"]);
+  expect(skipped).toEqual({ tags: 0, entries: 1 });
 });

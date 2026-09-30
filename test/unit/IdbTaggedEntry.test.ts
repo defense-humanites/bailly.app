@@ -74,4 +74,8 @@ test("Get tagged entries", async () => {
 
   await IdbTaggedEntry.remove(entries.rhinokeros.uri, banquetTagKey);
   expect(await IdbTaggedEntry.getAll()).toHaveLength(2);
+
+  // Added again: as a new addition, first.
+  await IdbTaggedEntry.add(entries.rhinokeros, banquetTagKey);
+  expect((await IdbTaggedEntry.getAll())[0]).toMatchObject({ uri: entries.rhinokeros.uri, tagKey: banquetTagKey });
 });

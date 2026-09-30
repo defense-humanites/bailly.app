@@ -7,8 +7,7 @@ import {
   type IdbEntryCreation,
   type IdbResult,
 } from "./Idb";
-import { latestFirst } from "./clock";
-import { entryTombstone, type StarredRecord } from "./merge";
+import { entryTombstone, latestAddedFirst, type StarredRecord } from "./merge";
 
 /**
  * A favorite as shown, with its excerpt if known (cf. `IdbExcerpt`).
@@ -51,7 +50,7 @@ export class IdbStarred {
     await tx.done;
     return records
       .filter(record => !record.deleted)
-      .sort(latestFirst)
+      .sort(latestAddedFirst)
       .map(record => toEntry(record, excerpts.get(record.uri)));
   }
 
@@ -79,6 +78,7 @@ export class IdbStarred {
         throw new IdbError(`L'entrée ${data.word} a déjà été ajoutée aux favoris.`);
       }
 
+      // Its `updatedAt` is its addition (cf. `StarredRecord.addedAt`).
       await store.put({ uri: data.uri, word: data.word, updatedAt: await Idb.stamp(tx.objectStore(IdbStore.Meta)) });
       if (data.excerpt) await tx.objectStore(IdbStore.Excerpts).put({ uri: data.uri, excerpt: data.excerpt });
       await tx.done;

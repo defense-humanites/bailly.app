@@ -52,11 +52,29 @@ export type TaggedRecord = Versioned & {
   tagKey: TagKey;
   uri: string;
   word: string;
+  /**
+   * The stamp of the entry's addition (which orders the entries shown), when
+   * it precedes `updatedAt`: an entry brought back keeps it (cf.
+   * `restoreRecords`, `joinRecords`), whereas `updatedAt` moves. Absent
+   * otherwise, `updatedAt` standing for it (cf. `entryAddedAt`): an entry
+   * does not change once added, so that only a revival sets it (the stored
+   * and synchronized records stay as small as before).
+   */
+  addedAt?: Stamp;
 };
 
 export type StarredRecord = Versioned & {
   uri: string;
   word: string;
+  /**
+   * The stamp of the entry's addition (which orders the entries shown), when
+   * it precedes `updatedAt`: an entry brought back keeps it (cf.
+   * `restoreRecords`, `joinRecords`), whereas `updatedAt` moves. Absent
+   * otherwise, `updatedAt` standing for it (cf. `entryAddedAt`): an entry
+   * does not change once added, so that only a revival sets it (the stored
+   * and synchronized records stay as small as before).
+   */
+  addedAt?: Stamp;
 };
 
 export type TagOrder = {
@@ -88,15 +106,53 @@ export const tagTombstone = (tag: TagRecord, updatedAt: Stamp): TagRecord => ({
 });
 
 /**
+ * An entry without its `addedAt`.
+ */
+const withoutAddedAt = <T extends TaggedRecord | StarredRecord>({ addedAt: _addedAt, ...record }: T): T => record as T;
+
+/**
  * The tombstone of a favorite or of a tagged entry: only its identity is kept
- * (not its word), with the stamp of its deletion.
+ * (not its word, nor its addition), with the stamp of its deletion.
  */
 export const entryTombstone = <T extends TaggedRecord | StarredRecord>(record: T, updatedAt: Stamp): T => ({
-  ...record,
+  ...withoutAddedAt(record),
   word: "",
   updatedAt,
   deleted: true,
 });
+
+/**
+ * The stamp of an entry's addition (cf. `TaggedRecord.addedAt`).
+ */
+export const entryAddedAt = (record: TaggedRecord | StarredRecord): Stamp => record.addedAt ?? record.updatedAt;
+
+/**
+ * Compares two entries, the latest added first (the order in which they are
+ * shown).
+ */
+export function latestAddedFirst(a: TaggedRecord | StarredRecord, b: TaggedRecord | StarredRecord): number {
+  const [addedA, addedB] = [entryAddedAt(a), entryAddedAt(b)];
+  if (addedA === addedB) return 0;
+  return addedA > addedB ? -1 : 1;
+}
+
+/**
+ * A tag brought back as a change made now (`stamp`).
+ */
+const reviveTag = (tag: TagRecord, stamp: Stamp): TagRecord => ({ ...tag, updatedAt: stamp });
+
+/**
+ * An entry brought back as a change made now (`stamp`): it keeps the stamp
+ * of its addition (it is not added again), and so its place among the others.
+ * @remarks The addition cannot follow the change: `stamp` is issued after the
+ * stamps of the state brought back (cf. `IdbBookmarks.restore`, `join`), and
+ * an addition after it is taken as made then, all the same.
+ */
+const reviveEntry = <T extends TaggedRecord | StarredRecord>(record: T, stamp: Stamp): T => {
+  const addedAt = entryAddedAt(record);
+  const revived = { ...withoutAddedAt(record), updatedAt: stamp };
+  return addedAt < stamp ? { ...revived, addedAt } : revived;
+};
 
 /**
  * The identity of the records of each kind.
@@ -317,8 +373,10 @@ export function fitImport(
   imported: BookmarksState,
   { maxTags, tagMaxItems }: BookmarksLimits,
 ): { state: BookmarksState; skipped: SkippedRecords } {
-  const byAdded = <T extends Versioned & { uri: string }>(a: T, b: T): number =>
-    a.updatedAt !== b.updatedAt ? (a.updatedAt < b.updatedAt ? -1 : 1) : (a.uri < b.uri ? -1 : 1);
+  const byAdded = (a: TaggedRecord | StarredRecord, b: TaggedRecord | StarredRecord): number => {
+    const [addedA, addedB] = [entryAddedAt(a), entryAddedAt(b)];
+    return addedA !== addedB ? (addedA < addedB ? -1 : 1) : (a.uri < b.uri ? -1 : 1);
+  };
 
   // The tags once restored (the latest live version of each), by name.
   const tags = new Map<TagKey, TagRecord>();
@@ -347,7 +405,7 @@ export function fitImport(
    * The imported entries left out of a collection (a tag, or the
    * favorites): those beyond the room left by the local ones.
    */
-  const overflow = <T extends Versioned & { uri: string }>(localRecords: T[], importedRecords: T[]): Set<string> => {
+  const overflow = <T extends TaggedRecord | StarredRecord>(localRecords: T[], importedRecords: T[]): Set<string> => {
     const here = new Set(localRecords.filter(record => !record.deleted).map(record => record.uri));
     const seen = new Set<string>();
     const fresh = importedRecords
@@ -432,20 +490,25 @@ export function withoutTombstones(state: BookmarksState): BookmarksState {
  * import never deletes anything).
  */
 export function restoreRecords(local: BookmarksState, imported: BookmarksState, stamp: Stamp): BookmarksState {
-  const restore = <T extends Versioned>(id: (record: T) => string, localRecords: T[], importedRecords: T[]): T[] => {
+  const restore = <T extends Versioned>(
+    id: (record: T) => string,
+    revive: (record: T, stamp: Stamp) => T,
+    localRecords: T[],
+    importedRecords: T[],
+  ): T[] => {
     const here = new Map(localRecords.map(record => [id(record), record]));
     return importedRecords
       .filter(record => !record.deleted)
       .map((record) => {
         const current = here.get(id(record));
-        return !current || current.deleted ? { ...record, updatedAt: stamp } : record;
+        return !current || current.deleted ? revive(record, stamp) : record;
       });
   };
 
   return {
-    tags: restore(recordId.tag, local.tags, imported.tags),
-    tagged: restore(recordId.tagged, local.tagged, imported.tagged),
-    starred: restore(recordId.starred, local.starred, imported.starred),
+    tags: restore(recordId.tag, reviveTag, local.tags, imported.tags),
+    tagged: restore(recordId.tagged, reviveEntry, local.tagged, imported.tagged),
+    starred: restore(recordId.starred, reviveEntry, local.starred, imported.starred),
     tagOrder: imported.tagOrder,
   };
 }
@@ -459,17 +522,22 @@ export function restoreRecords(local: BookmarksState, imported: BookmarksState, 
  * other devices apply, and the device's additions and later changes stay.
  */
 export function joinRecords(local: BookmarksState, remote: BookmarksState, stamp: Stamp): BookmarksState {
-  const rejoin = <T extends Versioned>(id: (record: T) => string, localRecords: T[], remoteRecords: T[]): T[] => {
+  const rejoin = <T extends Versioned>(
+    id: (record: T) => string,
+    revive: (record: T, stamp: Stamp) => T,
+    localRecords: T[],
+    remoteRecords: T[],
+  ): T[] => {
     const here = new Map(localRecords.map(record => [id(record), record]));
     return remoteRecords.map(record =>
-      !record.deleted && here.get(id(record))?.deleted ? { ...record, updatedAt: stamp } : record,
+      !record.deleted && here.get(id(record))?.deleted ? revive(record, stamp) : record,
     );
   };
 
   return {
-    tags: rejoin(recordId.tag, local.tags, remote.tags),
-    tagged: rejoin(recordId.tagged, local.tagged, remote.tagged),
-    starred: rejoin(recordId.starred, local.starred, remote.starred),
+    tags: rejoin(recordId.tag, reviveTag, local.tags, remote.tags),
+    tagged: rejoin(recordId.tagged, reviveEntry, local.tagged, remote.tagged),
+    starred: rejoin(recordId.starred, reviveEntry, local.starred, remote.starred),
     tagOrder: remote.tagOrder,
   };
 }

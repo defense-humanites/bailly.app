@@ -1,7 +1,7 @@
 import { openDB, type DBSchema, type IDBPDatabase, type IDBPObjectStore, type IDBPTransaction, type StoreNames } from "idb";
 import type { Entry, EntryData } from "#shared/types/api";
 import type { PartialExcept } from "~/types";
-import { nextStamp, type Stamp } from "./clock";
+import { maxStamp, nextStamp, type Stamp } from "./clock";
 import type { StarredRecord, TaggedRecord, TagKey, TagOrder, TagRecord } from "./merge";
 import { randomNodeId, randomUuid } from "./random";
 import { IdbTags, type TagColorKey } from "./IdbTags";
@@ -481,15 +481,17 @@ export class Idb {
    * Issues a stamp for a change made in the ongoing transaction (which must
    * include the `meta` store): the clock is kept in IndexedDB, so that the
    * tabs of a device share it.
+   * @param observed A stamp to follow (e.g. the latest of a state brought
+   * back, cf. `IdbBookmarks.restore`): the stamp issued is later.
    */
-  static async stamp(meta: IdbMetaStore): Promise<Stamp> {
+  static async stamp(meta: IdbMetaStore, observed?: Stamp): Promise<Stamp> {
     let node = await Idb.getMeta(meta, IdbMetaKey.Node);
     if (!node) {
       node = randomNodeId();
       await meta.put(node, IdbMetaKey.Node);
     }
 
-    const stamp = nextStamp(await Idb.getMeta(meta, IdbMetaKey.Clock), node);
+    const stamp = nextStamp(maxStamp(await Idb.getMeta(meta, IdbMetaKey.Clock), observed), node);
     await meta.put(stamp, IdbMetaKey.Clock);
     return stamp;
   }

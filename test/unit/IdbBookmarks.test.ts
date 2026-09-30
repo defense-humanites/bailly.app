@@ -118,6 +118,49 @@ test("restore brings back what an exported state contains, even deleted since", 
   expect(unwrap(await IdbBookmarks.restore(backup)).changed).toBe(false);
 });
 
+test("restore brings the entries back in their order of addition, after the stamps of the file", async () => {
+  // A file from a device whose clock is ahead (within the drift allowed).
+  const ahead = Date.now() + 60_000;
+  const backup: BookmarksState = {
+    tags: [],
+    tagged: [],
+    starred: [
+      { uri: entries.rhinokeros.uri, word: entries.rhinokeros.word, updatedAt: remoteStamp(ahead - 2) },
+      { uri: entries.alopex.uri, word: entries.alopex.word, updatedAt: remoteStamp(ahead - 1) },
+    ],
+    tagOrder: null,
+  };
+  // Deleted here in the meantime.
+  unwrap(await IdbStarred.add(entries.rhinokeros));
+  unwrap(await IdbStarred.remove(entries.rhinokeros.uri));
+  unwrap(await IdbStarred.add({ word: "foo", uri: "foo", excerpt: "foo" }));
+
+  unwrap(await IdbBookmarks.restore(backup));
+  // The latest added first: the file's order kept, the local entry older.
+  expect((await IdbStarred.getAll()).map(entry => entry.uri)).toEqual([entries.alopex.uri, entries.rhinokeros.uri, "foo"]);
+  const { starred } = await IdbBookmarks.getState();
+  for (const record of starred.filter(record => record.uri !== "foo")) {
+    expect(record.addedAt).toBeDefined();
+    expect(record.updatedAt > record.addedAt! && record.updatedAt > remoteStamp(ahead - 1)).toBe(true);
+  }
+});
+
+test("restore does not follow the stamps of the file's tombstones", async () => {
+  const farAhead = Date.now() + 60 * 60 * 1000;
+  unwrap(await IdbBookmarks.restore({
+    tags: [],
+    tagged: [],
+    starred: [
+      { uri: entries.alopex.uri, word: entries.alopex.word, updatedAt: remoteStamp(Date.now() - 1000) },
+      { uri: entries.rhinokeros.uri, word: "", updatedAt: remoteStamp(farAhead), deleted: true },
+    ],
+    tagOrder: null,
+  }));
+  const [restored] = (await IdbBookmarks.getState()).starred;
+  expect(restored!.uri).toBe(entries.alopex.uri);
+  expect(parseStamp(restored!.updatedAt)!.time).toBeLessThan(farAhead);
+});
+
 test("restore does not undo later changes, nor delete anything", async () => {
   const banquet = unwrap(await IdbTags.add(tags.banquet));
   const backup = await IdbBookmarks.getState();

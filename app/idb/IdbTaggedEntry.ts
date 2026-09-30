@@ -7,8 +7,7 @@ import {
   type IdbResult,
   type IdbTagged,
 } from "./Idb";
-import { latestFirst } from "./clock";
-import { entryTombstone, type TaggedRecord, type TagKey } from "./merge";
+import { entryTombstone, latestAddedFirst, type TaggedRecord, type TagKey } from "./merge";
 
 /**
  * A tagged entry as shown, with its excerpt if known (cf. `IdbExcerpt`).
@@ -57,6 +56,7 @@ export class IdbTaggedEntry {
       }
 
       const { excerpt, ...record } = taggedEntry;
+      // Its `updatedAt` is its addition (cf. `TaggedRecord.addedAt`).
       await store.put({ ...record, updatedAt: await Idb.stamp(tx.objectStore(IdbStore.Meta)) });
       if (excerpt) await tx.objectStore(IdbStore.Excerpts).put({ uri: record.uri, excerpt });
       await tx.done;
@@ -124,7 +124,7 @@ export class IdbTaggedEntry {
     const liveTags = new Set(tags.filter(tag => !tag.deleted).map(tag => tag.key));
     return records
       .filter(record => !record.deleted && liveTags.has(record.tagKey))
-      .sort(latestFirst)
+      .sort(latestAddedFirst)
       .map(record => toTagged(record, excerpts.get(record.uri)));
   }
 }

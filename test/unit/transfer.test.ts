@@ -101,6 +101,38 @@ test("records stamped too far in the future are left out", () => {
   expect(validated.tagOrder).toBeNull();
 });
 
+test("the stamp of an entry's addition: kept if valid, else its latest change stands for it", () => {
+  const validated = validateState({
+    tags: [],
+    tagged: [],
+    starred: [
+      { uri: "kept", word: "a", addedAt: stamp(now - 2 * day), updatedAt: stamp(now - day) },
+      { uri: "absent", word: "b", updatedAt: stamp(now - day) },
+      { uri: "invalid", word: "c", addedAt: "hier", updatedAt: stamp(now - day) },
+      { uri: "afterChange", word: "d", addedAt: stamp(now), updatedAt: stamp(now - day) },
+      // Equal: `updatedAt` stands for it (the canonical form).
+      { uri: "equal", word: "e", addedAt: stamp(now - day), updatedAt: stamp(now - day) },
+      // Before, from another device in the same millisecond.
+      { uri: "otherNode", word: "f", addedAt: formatStamp({ time: now - day, counter: 0, node: "a" }), updatedAt: formatStamp({ time: now - day, counter: 0, node: "b" }) },
+      { uri: "tombstone", word: "", addedAt: stamp(now - 2 * day), updatedAt: stamp(now - day), deleted: true },
+    ],
+    tagOrder: null,
+  }, now);
+
+  const addedAt = Object.fromEntries(validated.starred.map(record => [record.uri, record.addedAt]));
+  expect(addedAt).toEqual({
+    kept: stamp(now - 2 * day),
+    absent: undefined,
+    invalid: undefined,
+    afterChange: undefined,
+    equal: undefined,
+    otherNode: formatStamp({ time: now - day, counter: 0, node: "a" }),
+    tombstone: undefined,
+  });
+  // An exported file keeps it.
+  expect(parseBookmarksFile(JSON.stringify(toBookmarksFile(validated)), now).starred.find(record => record.uri === "kept")?.addedAt).toBe(stamp(now - 2 * day));
+});
+
 test("a tombstone may have neither name nor entry", () => {
   const validated = validateState({
     tags: [
