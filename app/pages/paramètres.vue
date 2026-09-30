@@ -58,9 +58,11 @@
   ];
 
   /**
-   * A short real entry (λογοτέχνης), to preview the reading settings.
+   * A short real entry (ὀψομανής), to preview the reading settings: long
+   * enough to take two lines on a desktop screen whatever the font, weight and
+   * size, so that the preview keeps its height when they change.
    */
-  const preview = linkDefinition("<span class=\"entreea\"><span class=\"grec\">λογο·τέχνης,</span></span> <span class=\"gens\">ου</span>\n<span class=\"art\">(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)</span> habile\nartisan de paroles, <span class=\"aut\">Rhét.</span> (<span class=\"refch\">W. 2, 90</span>).\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">λ. <a href=\"/technê\">τέχνη</a></span>.</div>\n", { links: false });
+  const preview = linkDefinition("<span class=\"entreea\"><span class=\"grec\">ὀψο·μανής,</span></span> <span class=\"des\">ής, ές</span>\n[<span class=\"grec\">ᾰ</span>] passionné pour la bonne chère,\ngourmet, <span class=\"aut\">Ath.</span> <span class=\"refpa\">464</span><span class=\"refpb\">e</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/opson\">ὄψον</a>, <a href=\"/mainomai\">μαίνομαι</a></span>.</div>\n", { links: false });
 
   /**
    * Resetting the settings is confirmed first (it can't be undone).

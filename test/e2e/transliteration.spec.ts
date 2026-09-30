@@ -7,7 +7,7 @@ test.describe("transliterated Greek", () => {
   test.beforeEach(async ({ page, goto }) => {
     await goto("/paramètres", { waitUntil: "hydration" });
     await page.getByRole("switch", { name: "Grec translittéré" }).click();
-    await expect(page.getByRole("figure", { name: "Aperçu" })).toContainText("logo·technēs");
+    await expect(page.getByRole("figure", { name: "Aperçu" })).toContainText("opso·manēs");
   });
 
   test("the entry page, rendered by the server", async ({ page, goto }) => {
