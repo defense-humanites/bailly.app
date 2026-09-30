@@ -68,28 +68,27 @@ test.describe("settings", () => {
 
   test("reading: the font, preloaded, and only its faces downloaded", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
-    await expect(page.locator("link[rel=preload][as=font]")).toHaveAttribute("href", "/fonts/Brill-Bold.woff2");
+    await expect(page.locator("link[rel=preload][as=font]")).toHaveAttribute("href", "/fonts/Brill/Brill-Bold.woff2");
 
     await goto("/paramètres", { waitUntil: "hydration" });
     await page.getByRole("combobox", { name: "Police" }).click();
-    await page.getByRole("option", { name: "Gentium Plus" }).click();
+    await page.getByRole("option", { name: "GFS Didot" }).click();
     const preview = page.getByRole("figure", { name: "Aperçu" });
-    await expect(preview).toHaveCSS("font-family", /^"Gentium Plus"/);
+    await expect(preview).toHaveCSS("font-family", /^"GFS Didot"/);
 
     const html = await page.evaluate(async () => (await fetch("/logos")).text());
-    expect(html).toMatch(/<html[^>]*data-reading-font="gentium"/);
-    expect(html).toContain("href=\"/fonts/Gentium_Plus/GentiumPlus-Bold.ttf\"");
+    expect(html).toMatch(/<html[^>]*data-reading-font="didot"/);
+    expect(html).toContain("href=\"/fonts/GFS_Didot/GFS_Didot-Bold.woff2\"");
 
-    // The faces requested by the page (loaded, or failed where the trial
-    // fonts aren't committed, e.g. in CI).
+    // The faces requested by the page.
     await goto("/logos", { waitUntil: "hydration" });
     const requested = await page.evaluate(async () => {
       await document.fonts.ready;
       return [...document.fonts].filter(face => face.status !== "unloaded").map(face => face.family.replace(/"/g, ""));
     });
-    expect(requested).toContain("Gentium Plus");
+    expect(requested).toContain("GFS Didot");
     expect(requested).not.toContain("Brill");
-    expect(requested).not.toContain("GFS Didot");
+    expect(requested).not.toContain("GFS Neohellenic");
   });
 
   test("search: shared with the search options", async ({ page, goto }) => {

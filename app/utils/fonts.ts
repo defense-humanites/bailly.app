@@ -9,28 +9,16 @@ import type { ReadingWeight } from "~/utils/preferences";
 export const READING_FONTS = {
   brill: {
     label: "Brill",
-    files: { normal: "/fonts/Brill-Roman.woff2", bold: "/fonts/Brill-Bold.woff2" },
-  },
-  gentium: {
-    label: "Gentium Plus",
-    files: { normal: "/fonts/Gentium_Plus/GentiumPlus-Regular.ttf", bold: "/fonts/Gentium_Plus/GentiumPlus-Bold.ttf" },
+    files: { normal: "/fonts/Brill/Brill-Roman.woff2", bold: "/fonts/Brill/Brill-Bold.woff2" },
   },
   didot: {
     label: "GFS Didot",
-    files: { normal: "/fonts/GFS_Didot/GFSDidot.otf", bold: "/fonts/GFS_Didot/GFSDidotBold.otf" },
+    files: { normal: "/fonts/GFS_Didot/GFS_Didot-Roman.woff2", bold: "/fonts/GFS_Didot/GFS_Didot-Bold.woff2" },
   },
   neohellenic: {
     label: "GFS Neohellenic",
-    files: { normal: "/fonts/GFS_NeoHellenic/GFSNeohellenic.otf", bold: "/fonts/GFS_NeoHellenic/GFSNeohellenicBold.otf" },
+    files: { normal: "/fonts/GFS_NeoHellenic/GFS_NeoHellenic-Roman.woff2", bold: "/fonts/GFS_NeoHellenic/GFS_NeoHellenic-Bold.woff2" },
   },
 } as const satisfies Record<string, { label: string; files: Record<ReadingWeight, string> }>;
 
 export type ReadingFont = keyof typeof READING_FONTS;
-
-/**
- * The MIME type of a font file, for its preload link.
- */
-export function fontType(file: string): string {
-  const extension = file.slice(file.lastIndexOf(".") + 1);
-  return { woff2: "font/woff2", ttf: "font/ttf", otf: "font/otf" }[extension] ?? "font/woff2";
-}

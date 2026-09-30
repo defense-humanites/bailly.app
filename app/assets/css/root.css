@@ -139,10 +139,6 @@
  * The serif font (entries, headwords…), chosen in the settings (cf.
  * `utils/fonts.ts`); Brill by default (cf. `theme.css`).
  */
-:root[data-reading-font="gentium"] {
-  --font-serif: "Gentium Plus", IFAOGrec, ui-serif, Georgia, serif;
-}
-
 :root[data-reading-font="didot"] {
   --font-serif: "GFS Didot", IFAOGrec, ui-serif, Georgia, serif;
 }
