@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import type { PopoverProps } from "@nuxt/ui";
-  import type { IdbEntry, TagKey } from "~/idb";
+  import type { CommandPaletteGroup, CommandPaletteItem, PopoverProps } from "@nuxt/ui";
+  import type { IdbEntry, IdbTag, TagKey } from "~/idb";
 
   const bookmarksStore = useBookmarksStore();
   const { currentTag, tags } = storeToRefs(bookmarksStore);
@@ -45,6 +45,40 @@
   ]);
 
   const entryTagKeys = computed(() => new Set(bookmarksStore.tagKeysOf(props.entry.uri)));
+
+  /**
+   * From this number of tags, a field filters them in the panel (below, they
+   * all show at once: about seven rows fit before it scrolls).
+   */
+  const FILTER_FROM = 8;
+  const filterable = computed((): boolean => tags.value.length >= FILTER_FROM);
+  /**
+   * The filter field: without the search bar's shape (a pill with a shadow,
+   * set for every `UInput` in app.config.ts).
+   */
+  const filterInput = { ui: { base: "rounded-none shadow-none" } };
+
+  type TagItem = CommandPaletteItem & { key: TagKey; color: IdbTag["color"] };
+
+  const tagItems = computed((): TagItem[] => panelTags.value.map(tag => ({ key: tag.key, label: tag.name, color: tag.color })));
+  const tagGroups = computed((): CommandPaletteGroup[] => [{ id: "tags", items: tagItems.value }]);
+
+  /**
+   * The options selected: the tags the entry has (compared by key, `by`).
+   */
+  const selectedItems = computed((): TagItem[] => tagItems.value.filter(item => entryTagKeys.value.has(item.key)));
+
+  /**
+   * The panel's selection changed (a single option at a time): adds the entry
+   * to the tag selected, or removes it from the tag unselected.
+   * @remarks With `multiple`, the value is the list of the options selected
+   * (Nuxt UI types it as a single one).
+   */
+  const onTagsChange = async (value: unknown): Promise<void> => {
+    const selected = new Set((value as TagItem[]).map(item => item.key));
+    for (const key of selected) if (!entryTagKeys.value.has(key)) await setTagged(key, true);
+    for (const key of entryTagKeys.value) if (!selected.has(key)) await setTagged(key, false);
+  };
 
   const setTagged = async (tagKey: TagKey, tagged: boolean): Promise<void> => {
     if (tagged) {
@@ -132,44 +166,62 @@
             Étiquettes
           </h2>
 
-          <ul
+          <!--
+            A list box of several choices (`UCommandPalette`, `multiple`):
+            an option per tag, selected when the entry has it (its icon then
+            filled, in the tag's color); a click, Enter or Space toggles it,
+            without changing the current tag nor the order. From
+            `FILTER_FROM` tags, a field filters them (ignoring case and
+            accents), the arrows moving in the list. The list box has no name
+            of its own (Reka's `ListboxContent` takes no attributes): the
+            dialog is named, and the heading above it names the list.
+          -->
+          <UCommandPalette
             v-if="panelTags.length"
-            class="max-h-72 overflow-y-auto"
+            :model-value="selectedItems"
+            :groups="tagGroups"
+            multiple
+            by="key"
+            highlight-on-hover
+            :input="filterable && filterInput"
+            placeholder="Filtrer les étiquettes"
+            :autofocus="filterable"
+            :fuse="{ resultLimit: 50, fuseOptions: { ignoreDiacritics: true } }"
+            :ui="{
+              input: '[&_input]:text-sm',
+              viewport: 'max-h-72 p-0',
+              item: 'rounded-md px-2 py-1.5 before:rounded-md data-highlighted:not-data-disabled:before:bg-elevated/50',
+              itemTrailingIcon: 'hidden',
+              empty: 'px-2 py-1.5 text-start text-sm',
+            }"
+            @update:model-value="onTagsChange"
           >
-            <li
-              v-for="tag in panelTags"
-              :key="tag.key"
-            >
-              <UButton
-                :label="tag.name"
-                :icon="entryTagKeys.has(tag.key) ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
-                :aria-pressed="entryTagKeys.has(tag.key)"
-                :data-tag-color="tag.color"
+            <template #item-leading="{ item }">
+              <UIcon
+                :name="entryTagKeys.has(item.key) ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
+                :data-tag-color="item.color"
+                class="size-5 shrink-0 text-tag-text"
+              />
+            </template>
+            <template #item-trailing="{ item }">
+              <!--
+                In the tag's colors (lightest tint, its text color): it stays
+                distinct from the row's hover background.
+              -->
+              <UBadge
+                v-if="item.key === currentTag?.key"
+                label="active"
                 color="neutral"
-                variant="ghost"
-                class="w-full rounded-md hover:bg-elevated/50"
-                :ui="{ leadingIcon: 'text-tag-text', label: 'grow text-start' }"
-                @click="setTagged(tag.key, !entryTagKeys.has(tag.key))"
-              >
-                <template
-                  v-if="tag.key === currentTag?.key"
-                  #trailing
-                >
-                  <!--
-                    In the tag's colors (lightest tint, its text color): it
-                    stays distinct from the row's hover background.
-                  -->
-                  <UBadge
-                    label="active"
-                    color="neutral"
-                    variant="soft"
-                    size="sm"
-                    class="bg-tag-100 text-tag-text ring ring-inset ring-tag-300/60"
-                  />
-                </template>
-              </UButton>
-            </li>
-          </ul>
+                variant="soft"
+                size="sm"
+                :data-tag-color="item.color"
+                class="bg-tag-100 text-tag-text ring ring-inset ring-tag-300/60"
+              />
+            </template>
+            <template #empty>
+              Aucune étiquette ne correspond.
+            </template>
+          </UCommandPalette>
           <p
             v-else
             class="px-2 py-1.5 text-sm text-muted"
