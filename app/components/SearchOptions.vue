@@ -131,6 +131,11 @@
 
         <USeparator />
 
+        <!-- The preferences, stored (also in the settings), unlike the options. -->
+        <p class="flex h-5 items-center text-xs font-semibold uppercase tracking-wide text-muted">
+          Préférences
+        </p>
+
         <USwitch
           v-model="inflectedForms"
           :label="inflectedFormsLabel"
