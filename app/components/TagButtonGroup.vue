@@ -27,18 +27,22 @@
   );
 
   /**
-   * The tags other than the current one, in the user's order: the entry can
-   * be added to (or removed from) them in a popover.
-   */
-  /**
    * The panel (a dialog) is named after its trigger by Reka
    * (`aria-labelledby`); the `aria-label` is a fallback, for the trigger's
    * id may differ between the server and the client (then the reference is
    * broken, and the dialog would have no name).
    */
-  const popoverContent = { "align": "start", "collisionPadding": 12, "aria-label": "Autres étiquettes" } as PopoverProps["content"];
+  const popoverContent = { "align": "start", "collisionPadding": 12, "aria-label": "Toutes les étiquettes" } as PopoverProps["content"];
 
-  const otherTags = computed(() => tags.value.filter(tag => tag.key !== currentTag.value?.key));
+  /**
+   * All the tags, the current one first (marked « active »), then the others
+   * in the user's order: the entry can be added to (or removed from) them in
+   * the popover, where the names show in full.
+   */
+  const panelTags = computed(() => [
+    ...tags.value.filter(tag => tag.key === currentTag.value?.key),
+    ...tags.value.filter(tag => tag.key !== currentTag.value?.key),
+  ]);
 
   const entryTagKeys = computed(() => new Set(bookmarksStore.tagKeysOf(props.entry.uri)));
 
@@ -76,12 +80,12 @@
     class="border border-default rounded-lg [&>button]:rounded-lg shadow-xs"
   >
     <!--
-      The other tags: a toggle button for each, whose icon, in the tag's
-      color, is filled when the entry has the tag (as the current tag's
-      button), and a link to the bookmarks page, where the tags are managed
-      (with the bookmarks' icon, as in the header menu). The items of a panel
-      have moderately rounded corners (`rounded-md`), as the history's and the
-      menus' items, rather than the buttons' pill shape.
+      All the tags, the current one first: a toggle button for each, whose
+      icon, in the tag's color, is filled when the entry has the tag (as the
+      current tag's button), and a link to the bookmarks page, where the tags
+      are managed (with the bookmarks' icon, as in the header menu). The items
+      of a panel have moderately rounded corners (`rounded-md`), as the
+      history's and the menus' items, rather than the buttons' pill shape.
     -->
     <UPopover :content="popoverContent">
       <UButton
@@ -89,7 +93,7 @@
         color="neutral"
         variant="ghost"
         class="data-[state=open]:bg-elevated"
-        aria-label="Autres étiquettes"
+        aria-label="Toutes les étiquettes"
       />
 
       <template #content>
@@ -97,15 +101,15 @@
           <h2
             class="px-2 pt-1.5 pb-1 text-xs uppercase tracking-wide text-muted"
           >
-            Autres étiquettes
+            Étiquettes
           </h2>
 
           <ul
-            v-if="otherTags.length"
+            v-if="panelTags.length"
             class="max-h-72 overflow-y-auto"
           >
             <li
-              v-for="tag in otherTags"
+              v-for="tag in panelTags"
               :key="tag.key"
             >
               <UButton
@@ -116,16 +120,28 @@
                 color="neutral"
                 variant="ghost"
                 class="w-full rounded-md hover:bg-elevated/50"
-                :ui="{ leadingIcon: 'text-tag-text' }"
+                :ui="{ leadingIcon: 'text-tag-text', label: 'grow text-start' }"
                 @click="setTagged(tag.key, !entryTagKeys.has(tag.key))"
-              />
+              >
+                <template
+                  v-if="tag.key === currentTag?.key"
+                  #trailing
+                >
+                  <UBadge
+                    label="active"
+                    color="neutral"
+                    variant="soft"
+                    size="sm"
+                  />
+                </template>
+              </UButton>
             </li>
           </ul>
           <p
             v-else
             class="px-2 py-1.5 text-sm text-muted"
           >
-            {{ tags.length ? "Aucune autre étiquette." : "Aucune étiquette pour l'instant." }}
+            Aucune étiquette pour l'instant.
           </p>
 
           <footer class="mt-1 border-t border-default px-1 pt-1">
@@ -143,30 +159,42 @@
       </template>
     </UPopover>
 
-    <!-- Toggle current tag -->
-    <UButton
+    <!--
+      The current tag, in one click (the most frequent action while reading):
+      the beginning of its name (more of it from `sm`), in full in the
+      tooltip, which says what a click does, and in the panel. Toggle buttons:
+      a constant name, the state in `aria-pressed`.
+    -->
+    <UTooltip
       v-if="currentTag"
-      :label="currentTag.name"
-      :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
-      :data-tag-color="currentTag.color"
-      :class="taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text'"
-      :ui="{
-        label:
-          'max-w-8 overflow-hidden whitespace-nowrap mask-r-from-50% mask-r-to-100% text-clip text-xs tracking-tighter',
-      }"
-      color="neutral"
-      variant="ghost"
-      @click="handleTagChange"
-    />
+      :text="taggedAsCurrent ? `Retirer de « ${currentTag.name} »` : `Ajouter à « ${currentTag.name} »`"
+    >
+      <UButton
+        :label="currentTag.name"
+        :aria-label="`Étiquette active : ${currentTag.name}`"
+        :aria-pressed="taggedAsCurrent"
+        :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
+        :data-tag-color="currentTag.color"
+        :class="taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text'"
+        :ui="{ label: 'max-w-12 truncate text-xs tracking-tight sm:max-w-24' }"
+        color="neutral"
+        variant="ghost"
+        @click="handleTagChange"
+      />
+    </UTooltip>
 
     <!-- Toggle star -->
-    <UButton
-      :icon="starred ? 'i-bailly-star-filled' : 'i-lucide-star'"
-      color="neutral"
-      variant="ghost"
-      :class="starred ? 'text-favorite' : 'hover:text-favorite'"
-      :ui="{ base: 'border-l border-default' }"
-      @click="toggleStar"
-    />
+    <UTooltip :text="starred ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+      <UButton
+        :icon="starred ? 'i-bailly-star-filled' : 'i-lucide-star'"
+        aria-label="Favori"
+        :aria-pressed="starred"
+        color="neutral"
+        variant="ghost"
+        :class="starred ? 'text-favorite' : 'hover:text-favorite'"
+        :ui="{ base: 'border-l border-default' }"
+        @click="toggleStar"
+      />
+    </UTooltip>
   </UFieldGroup>
 </template>
