@@ -7,8 +7,11 @@
   import { entryRoute } from "~/utils/entryUri";
   import { convertSearchInput, hasWildcards, toLookupQuery, toSearchGreek, toSearchQuery } from "~/utils/searchInput";
 
-  // (The input text is 16px on mobile, `max-md:text-base`: below, iOS Safari
-  // zooms in when the input gets the focus.)
+  // (The input text is 16px on every screen (`text-base/6`, and `fixed`: no
+  // `md:text-sm`): large enough to check the Greek diacritics as they are
+  // typed, and, on mobile, the size below which iOS Safari zooms in when the
+  // input gets the focus. The bar is thus 40px high, its buttons with it, in
+  // the 56px of the header.)
 
   type ResultItem = InputMenuItem & {
     /** The entry excerpt (or headword, for homonyms). */
@@ -379,6 +382,7 @@
       :placeholder="transliterating ? 'anazētéō…' : 'ἀναζητέω…'"
       :aria-label="`Rechercher une entrée (${transliterating ? 'translittération' : 'beta code'} ou grec)`"
       size="lg"
+      fixed
       autocapitalize="off"
       autocomplete="off"
       autocorrect="off"
@@ -388,7 +392,7 @@
       :content="{ align: 'start', collisionPadding: 12, reference: groupElement }"
       :ui="{
         root: 'has-focus-visible:z-auto',
-        base: 'shadow-xs max-md:text-base focus-visible:outline-transparent',
+        base: 'shadow-xs text-base/6 focus-visible:outline-transparent',
         content: contentClass,
         item: 'items-start',
         itemLabel: 'whitespace-normal line-clamp-2',
