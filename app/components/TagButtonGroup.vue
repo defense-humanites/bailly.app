@@ -32,7 +32,7 @@
    * id may differ between the server and the client (then the reference is
    * broken, and the dialog would have no name).
    */
-  const popoverContent = { "align": "start", "collisionPadding": 12, "aria-label": "Toutes les étiquettes" } as PopoverProps["content"];
+  const popoverContent = { "align": "end", "collisionPadding": 12, "aria-label": "Toutes les étiquettes" } as PopoverProps["content"];
 
   /**
    * All the tags, the current one first (marked « active »), then the others
@@ -80,12 +80,40 @@
     class="border border-default rounded-lg [&>button]:rounded-lg shadow-xs"
   >
     <!--
-      All the tags, the current one first: a toggle button for each, whose
-      icon, in the tag's color, is filled when the entry has the tag (as the
-      current tag's button), and a link to the bookmarks page, where the tags
-      are managed (with the bookmarks' icon, as in the header menu). The items
-      of a panel have moderately rounded corners (`rounded-md`), as the
-      history's and the menus' items, rather than the buttons' pill shape.
+      The current tag, in one click (the most frequent action while reading):
+      the beginning of its name (more of it from `sm`), in full in the
+      tooltip, which says what a click does, and in the panel. Toggle buttons:
+      a constant name, the state in `aria-pressed`.
+    -->
+    <UTooltip
+      v-if="currentTag"
+      :text="taggedAsCurrent ? `Retirer de « ${currentTag.name} »` : `Ajouter à « ${currentTag.name} »`"
+    >
+      <UButton
+        :label="currentTag.name"
+        :aria-label="`Étiquette active : ${currentTag.name}`"
+        :aria-pressed="taggedAsCurrent"
+        :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
+        :data-tag-color="currentTag.color"
+        :class="taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text'"
+        :ui="{ label: 'max-w-12 truncate text-xs tracking-tight sm:max-w-24' }"
+        color="neutral"
+        variant="ghost"
+        @click="handleTagChange"
+      />
+    </UTooltip>
+
+    <!--
+      After the current tag, as a split button (its action, then the choice
+      among all the tags): the two icon buttons stay in place at the
+      toolbar's end, whatever the length of the current tag's name; the panel
+      is aligned on its button's end. It lists all the tags, the current one
+      first: a toggle button for each, whose icon, in the tag's color, is
+      filled when the entry has the tag, and a link to the bookmarks page,
+      where the tags are managed (with the bookmarks' icon, as in the header
+      menu). The items of a panel have moderately rounded corners
+      (`rounded-md`), as the history's and the menus' items, rather than the
+      buttons' pill shape.
     -->
     <UPopover :content="popoverContent">
       <UButton
@@ -158,30 +186,6 @@
         </div>
       </template>
     </UPopover>
-
-    <!--
-      The current tag, in one click (the most frequent action while reading):
-      the beginning of its name (more of it from `sm`), in full in the
-      tooltip, which says what a click does, and in the panel. Toggle buttons:
-      a constant name, the state in `aria-pressed`.
-    -->
-    <UTooltip
-      v-if="currentTag"
-      :text="taggedAsCurrent ? `Retirer de « ${currentTag.name} »` : `Ajouter à « ${currentTag.name} »`"
-    >
-      <UButton
-        :label="currentTag.name"
-        :aria-label="`Étiquette active : ${currentTag.name}`"
-        :aria-pressed="taggedAsCurrent"
-        :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
-        :data-tag-color="currentTag.color"
-        :class="taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text'"
-        :ui="{ label: 'max-w-12 truncate text-xs tracking-tight sm:max-w-24' }"
-        color="neutral"
-        variant="ghost"
-        @click="handleTagChange"
-      />
-    </UTooltip>
 
     <!-- Toggle star -->
     <UTooltip :text="starred ? 'Retirer des favoris' : 'Ajouter aux favoris'">
