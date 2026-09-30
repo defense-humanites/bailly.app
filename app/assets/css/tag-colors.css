@@ -5,6 +5,12 @@
  *   itself and its descendants, through the `tag-*` colors: e.g.
  *   `bg-tag-200/50`, `hover:text-tag-700`. As these class names are static,
  *   they need no safelist.
+ *
+ *   `tag-text` is the tag's color for text and icons (`text-tag-text`): the
+ *   lightest shade readable on the tag's card (a 4.5:1 contrast at least, for
+ *   small text, on `tag-200` at 50 % over the page): 700 in the light theme,
+ *   800 for the paler hues (green, lime, orange, teal, whose 700 stays under
+ *   4.5:1); 600 in the dark theme (reversed scales, 4.7:1 at least).
  */
 
 @theme inline {
@@ -17,6 +23,7 @@
   --color-tag-700: var(--tag-700);
   --color-tag-800: var(--tag-800);
   --color-tag-900: var(--tag-900);
+  --color-tag-text: var(--tag-text);
 }
 
 @layer base {
@@ -30,6 +37,7 @@
     --tag-700: var(--color-blue-700);
     --tag-800: var(--color-blue-800);
     --tag-900: var(--color-blue-900);
+    --tag-text: var(--tag-700);
   }
 
   [data-tag-color="Green"] {
@@ -42,6 +50,7 @@
     --tag-700: var(--color-green-700);
     --tag-800: var(--color-green-800);
     --tag-900: var(--color-green-900);
+    --tag-text: var(--tag-800);
   }
 
   [data-tag-color="Lime"] {
@@ -54,6 +63,7 @@
     --tag-700: var(--color-lime-700);
     --tag-800: var(--color-lime-800);
     --tag-900: var(--color-lime-900);
+    --tag-text: var(--tag-800);
   }
 
   [data-tag-color="Orange"] {
@@ -66,6 +76,7 @@
     --tag-700: var(--color-orange-700);
     --tag-800: var(--color-orange-800);
     --tag-900: var(--color-orange-900);
+    --tag-text: var(--tag-800);
   }
 
   [data-tag-color="Purple"] {
@@ -78,6 +89,7 @@
     --tag-700: var(--color-violet-700);
     --tag-800: var(--color-violet-800);
     --tag-900: var(--color-violet-900);
+    --tag-text: var(--tag-700);
   }
 
   [data-tag-color="Red"] {
@@ -90,6 +102,7 @@
     --tag-700: var(--color-rose-700);
     --tag-800: var(--color-rose-800);
     --tag-900: var(--color-rose-900);
+    --tag-text: var(--tag-700);
   }
 
   [data-tag-color="Rose"] {
@@ -102,6 +115,7 @@
     --tag-700: var(--color-pink-700);
     --tag-800: var(--color-pink-800);
     --tag-900: var(--color-pink-900);
+    --tag-text: var(--tag-700);
   }
 
   [data-tag-color="Sky"] {
@@ -114,6 +128,7 @@
     --tag-700: var(--color-sky-700);
     --tag-800: var(--color-sky-800);
     --tag-900: var(--color-sky-900);
+    --tag-text: var(--tag-700);
   }
 
   [data-tag-color="Slate"] {
@@ -126,6 +141,7 @@
     --tag-700: var(--color-slate-700);
     --tag-800: var(--color-slate-800);
     --tag-900: var(--color-slate-900);
+    --tag-text: var(--tag-700);
   }
 
   [data-tag-color="Teal"] {
@@ -138,6 +154,7 @@
     --tag-700: var(--color-teal-700);
     --tag-800: var(--color-teal-800);
     --tag-900: var(--color-teal-900);
+    --tag-text: var(--tag-800);
   }
 
   /* The gold of the palette (cf. theme.css), as the favorites. */
@@ -151,6 +168,7 @@
     --tag-700: var(--color-gold-700);
     --tag-800: var(--color-gold-800);
     --tag-900: var(--color-gold-900);
+    --tag-text: var(--tag-700);
   }
 
   /*
@@ -289,5 +307,10 @@
     --tag-700: var(--color-gold-300);
     --tag-800: var(--color-gold-200);
     --tag-900: var(--color-gold-100);
+  }
+
+  /* Cf. `tag-text` above. */
+  .dark [data-tag-color] {
+    --tag-text: var(--tag-600);
   }
 }

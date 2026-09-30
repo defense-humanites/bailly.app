@@ -82,7 +82,7 @@
       :icon="icon"
       :color="selected"
       :label="triggerLabel"
-      class="text-tag-600"
+      class="text-tag-text"
     >
       <UButton
         :icon="icon"
@@ -90,7 +90,7 @@
         color="neutral"
         variant="outline"
         :data-tag-color="selected"
-        class="text-tag-600"
+        class="text-tag-text"
         :ui="{ base: 'shadow-none' }"
       />
     </slot>

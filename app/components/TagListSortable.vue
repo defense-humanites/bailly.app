@@ -89,7 +89,7 @@
       />
       <UIcon
         name="i-bailly-tag-filled"
-        class="mr-3 size-5 text-tag-600"
+        class="mr-3 size-5 text-tag-text"
         :data-tag-color="tag.color"
       />
       <span class="grow">{{ tag.name }}</span>

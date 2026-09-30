@@ -270,7 +270,7 @@
           in the layout, invisible, so that the card keeps its height (a long
           name gives way to a field on one line, with some room under it).
         -->
-        <div class="grid min-w-0 grow text-tag-600">
+        <div class="grid min-w-0 grow text-tag-text">
           <!-- Display tag data -->
           <!--
             In edit mode, « Ajouter une description » widens the actions: the
@@ -326,7 +326,7 @@
               type="text"
               aria-label="Nom de l'étiquette"
               :maxlength="IdbTags.nameMaxLength"
-              class="min-w-0 grow rounded-r-full bg-default/60 px-2 py-0.5 text-xl/7 font-bold text-tag-600 hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300 md:py-0 md:text-2xl/8"
+              class="min-w-0 grow rounded-r-full bg-default/60 px-2 py-0.5 text-xl/7 font-bold text-tag-text hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300 md:py-0 md:text-2xl/8"
               :class="{ 'animate-shake': isTagNameErrored }"
             >
           </div>
@@ -353,7 +353,7 @@
             variant="subtle"
             color="neutral"
             aria-label="Ajouter une description"
-            :ui="{ base: 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-600/75 hover:text-tag-600' }"
+            :ui="{ base: 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
             @click="addDescription"
           />
           <UButton
@@ -372,7 +372,7 @@
             color="neutral"
             :aria-label="`Modifier ${groupName}`"
             :aria-pressed="editMode"
-            :ui="{ base: editMode ? 'text-white bg-tag-400 hover:bg-tag-400 ring-tag-300/50' : 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-600/75 hover:text-tag-600' }"
+            :ui="{ base: editMode ? 'text-white bg-tag-400 hover:bg-tag-400 ring-tag-300/50' : 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
             @click="toggleEditMode"
           />
         </span>
@@ -406,7 +406,7 @@
       -->
       <p
         v-if="tagDescription && !showsDescriptionField"
-        class="ms-10 mt-1 px-2 py-1 text-sm/5 whitespace-pre-line wrap-break-word text-tag-600/80"
+        class="ms-10 mt-1 px-2 py-1 text-sm/5 whitespace-pre-line wrap-break-word text-tag-text"
         v-text="tagDescription"
       />
       <div
@@ -421,12 +421,12 @@
           aria-label="Description de l'étiquette"
           :aria-description="`${IdbTags.descriptionMaxLength} caractères au plus ; Maj+Entrée pour aller à la ligne`"
           placeholder="Description"
-          class="block w-full resize-none overflow-hidden rounded-lg bg-default/60 px-2 py-1 text-sm/5 text-tag-600 placeholder:text-tag-600/50 hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300"
+          class="block w-full resize-none overflow-hidden rounded-lg bg-default/60 px-2 py-1 text-sm/5 text-tag-text placeholder:text-tag-text/60 hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300"
           @blur="onUpdateTag"
         />
         <span
           v-if="descriptionLeft < 30"
-          class="pointer-events-none absolute end-2 bottom-1 rounded bg-default/90 px-1 text-xs text-tag-600/80 tabular-nums"
+          class="pointer-events-none absolute end-2 bottom-1 rounded bg-default/90 px-1 text-xs text-tag-text tabular-nums"
           aria-hidden="true"
         >{{ descriptionLeft }}</span>
       </div>
@@ -435,7 +435,7 @@
     <!-- Content -->
     <template v-if="!entries.length">
       <!-- Aligned with the name (as the description). -->
-      <p class="ms-12 font-semibold text-tag-600">
+      <p class="ms-12 font-semibold text-tag-text">
         <slot />
       </p>
     </template>
@@ -464,7 +464,7 @@
             link
             prefetch-on="visibility"
             :ui="{
-              root: 'bg-default/75 ring-tag-300/50 hover:ring-tag-400 text-tag-600 shadow-none',
+              root: 'bg-default/75 ring-tag-300/50 hover:ring-tag-400 text-tag-text shadow-none',
               entry: 'mx-3 my-1.5 line-clamp-4',
             }"
           />

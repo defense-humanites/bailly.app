@@ -66,7 +66,7 @@
         >
           <UIcon
             name="i-bailly-tag-filled"
-            class="size-4 text-tag-600"
+            class="size-4 text-tag-text"
             :data-tag-color="shownTag.color"
           />
         </UChip>

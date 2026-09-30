@@ -113,7 +113,7 @@
                 color="neutral"
                 variant="ghost"
                 class="w-full"
-                :ui="{ leadingIcon: 'text-tag-600' }"
+                :ui="{ leadingIcon: 'text-tag-text' }"
                 @click="setTagged(tag.key, !entryTagKeys.has(tag.key))"
               />
             </li>
@@ -146,7 +146,7 @@
       :label="currentTag.name"
       :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
       :data-tag-color="currentTag.color"
-      :class="taggedAsCurrent ? 'text-tag-600' : 'hover:text-tag-700'"
+      :class="taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text'"
       :ui="{
         label:
           'max-w-8 overflow-hidden whitespace-nowrap mask-r-from-50% mask-r-to-100% text-clip text-xs tracking-tighter',
