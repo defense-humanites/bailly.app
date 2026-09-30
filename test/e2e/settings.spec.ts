@@ -68,7 +68,7 @@ test.describe("settings", () => {
 
   test("reading: the font, preloaded, and only its faces downloaded", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
-    await expect(page.locator("link[rel=preload][as=font]")).toHaveAttribute("href", "/fonts/Brill/Brill-Bold.woff2");
+    await expect(page.locator("link[rel=preload][as=font]")).toHaveAttribute("href", /^\/_nuxt\/Brill-Bold\.[\w-]+\.woff2$/);
 
     await goto("/paramètres", { waitUntil: "hydration" });
     await page.getByRole("combobox", { name: "Police" }).click();
@@ -78,7 +78,7 @@ test.describe("settings", () => {
 
     const html = await page.evaluate(async () => (await fetch("/logos")).text());
     expect(html).toMatch(/<html[^>]*data-reading-font="didot"/);
-    expect(html).toContain("href=\"/fonts/GFS_Didot/GFS_Didot-Bold.woff2\"");
+    expect(html).toMatch(/href="\/_nuxt\/GFS_Didot-Bold\.[\w-]+\.woff2"/);
 
     // The faces requested by the page.
     await goto("/logos", { waitUntil: "hydration" });

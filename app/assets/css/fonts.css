@@ -27,7 +27,14 @@
  */
 
 /*
- * Inter Variable font.
+ * The font files are in `app/assets/fonts` (one folder per font, with its
+ * license): Vite serves them under `/_nuxt/`, their names versioned by their
+ * content (e.g. `Brill-Roman.Bx3Yt1Qq.woff2`), with a long cache (immutable):
+ * a font is only downloaded again when it changes.
+ */
+
+/*
+ * Inter Variable font, subset (cf. `scripts/subset-inter.sh`).
  */
 
 @font-face {
@@ -35,7 +42,7 @@
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url("/fonts/Inter_Variable/Inter_Variable-Roman.woff2") format("woff2");
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
 }
 
 @font-face {
@@ -43,7 +50,7 @@
   font-style: italic;
   font-weight: 100 900;
   font-display: swap;
-  src: url("/fonts/Inter_Variable/Inter_Variable-Italic.woff2") format("woff2");
+  src: url("../fonts/Inter_Variable/Inter_Variable-Italic.subset.woff2") format("woff2");
 }
 
 /*
@@ -60,7 +67,7 @@
   ascent-override: 74.18%;
   descent-override: 18.47%;
   line-gap-override: 0%;
-  src: url("/fonts/Brill/Brill-Roman.woff2") format("woff2");
+  src: url("../fonts/Brill/Brill-Roman.woff2") format("woff2");
 }
 
 @font-face {
@@ -71,7 +78,7 @@
   ascent-override: 74.18%;
   descent-override: 18.47%;
   line-gap-override: 0%;
-  src: url("/fonts/Brill/Brill-Bold.woff2") format("woff2");
+  src: url("../fonts/Brill/Brill-Bold.woff2") format("woff2");
 }
 
 @font-face {
@@ -83,7 +90,7 @@
   ascent-override: 74.18%;
   descent-override: 18.47%;
   line-gap-override: 0%;
-  src: url("/fonts/Brill/Brill-Italic.woff2") format("woff2");
+  src: url("../fonts/Brill/Brill-Italic.woff2") format("woff2");
 }
 
 @font-face {
@@ -95,7 +102,7 @@
   ascent-override: 74.18%;
   descent-override: 18.47%;
   line-gap-override: 0%;
-  src: url("/fonts/Brill/Brill-BoldItalic.woff2") format("woff2");
+  src: url("../fonts/Brill/Brill-BoldItalic.woff2") format("woff2");
 }
 
 /*
@@ -109,7 +116,7 @@
   font-family: BrillEpichoric;
   font-weight: normal;
   font-display: swap;
-  src: url("/fonts/Brill_Epichoric/BrillEpichoric.woff2") format("woff2");
+  src: url("../fonts/Brill_Epichoric/BrillEpichoric.woff2") format("woff2");
 }*/
 
 /*
@@ -127,7 +134,7 @@
   ascent-override: 82.17%;
   descent-override: 20.46%;
   line-gap-override: 0%;
-  src: url("/fonts/GFS_Didot/GFS_Didot-Roman.woff2") format("woff2");
+  src: url("../fonts/GFS_Didot/GFS_Didot-Roman.woff2") format("woff2");
 }
 
 @font-face {
@@ -139,7 +146,7 @@
   ascent-override: 82.17%;
   descent-override: 20.46%;
   line-gap-override: 0%;
-  src: url("/fonts/GFS_Didot/GFS_Didot-Bold.woff2") format("woff2");
+  src: url("../fonts/GFS_Didot/GFS_Didot-Bold.woff2") format("woff2");
 }
 
 @font-face {
@@ -151,7 +158,7 @@
   ascent-override: 82.17%;
   descent-override: 20.46%;
   line-gap-override: 0%;
-  src: url("/fonts/GFS_Didot/GFS_Didot-Italic.woff2") format("woff2");
+  src: url("../fonts/GFS_Didot/GFS_Didot-Italic.woff2") format("woff2");
 }
 
 @font-face {
@@ -163,7 +170,7 @@
   ascent-override: 82.17%;
   descent-override: 20.46%;
   line-gap-override: 0%;
-  src: url("/fonts/GFS_Didot/GFS_Didot-BoldItalic.woff2") format("woff2");
+  src: url("../fonts/GFS_Didot/GFS_Didot-BoldItalic.woff2") format("woff2");
 }
 
 @font-face {
@@ -175,7 +182,7 @@
   ascent-override: 69.84%;
   descent-override: 17.39%;
   line-gap-override: 0%;
-  src: url("/fonts/GFS_NeoHellenic/GFS_NeoHellenic-Roman.woff2") format("woff2");
+  src: url("../fonts/GFS_NeoHellenic/GFS_NeoHellenic-Roman.woff2") format("woff2");
 }
 
 @font-face {
@@ -187,7 +194,7 @@
   ascent-override: 69.84%;
   descent-override: 17.39%;
   line-gap-override: 0%;
-  src: url("/fonts/GFS_NeoHellenic/GFS_NeoHellenic-Bold.woff2") format("woff2");
+  src: url("../fonts/GFS_NeoHellenic/GFS_NeoHellenic-Bold.woff2") format("woff2");
 }
 
 @font-face {
@@ -199,7 +206,7 @@
   ascent-override: 69.84%;
   descent-override: 17.39%;
   line-gap-override: 0%;
-  src: url("/fonts/GFS_NeoHellenic/GFS_NeoHellenic-Italic.woff2") format("woff2");
+  src: url("../fonts/GFS_NeoHellenic/GFS_NeoHellenic-Italic.woff2") format("woff2");
 }
 
 @font-face {
@@ -211,7 +218,7 @@
   ascent-override: 69.84%;
   descent-override: 17.39%;
   line-gap-override: 0%;
-  src: url("/fonts/GFS_NeoHellenic/GFS_NeoHellenic-BoldItalic.woff2") format("woff2");
+  src: url("../fonts/GFS_NeoHellenic/GFS_NeoHellenic-BoldItalic.woff2") format("woff2");
 }
 
 /*
@@ -228,7 +235,7 @@
   ascent-override: 80.46%;
   descent-override: 20.03%;
   line-gap-override: 0%;
-  src: url("/fonts/IFAO_Grec/IFAO_Grec-Roman.woff2") format("woff2");
+  src: url("../fonts/IFAO_Grec/IFAO_Grec-Roman.woff2") format("woff2");
   unicode-range: U+0370-03FF, U+1F00-1FFF, U+0300-036F, U+E000-F8FF;
 }
 
@@ -240,6 +247,6 @@
   ascent-override: 80.46%;
   descent-override: 20.03%;
   line-gap-override: 0%;
-  src: url("/fonts/IFAO_Grec/IFAO_Grec-Bold.woff2") format("woff2");
+  src: url("../fonts/IFAO_Grec/IFAO_Grec-Bold.woff2") format("woff2");
   unicode-range: U+0370-03FF, U+1F00-1FFF, U+0300-036F, U+E000-F8FF;
 }

@@ -54,4 +54,13 @@ _[Brill Fonts End User License Agreement](https://brill.com/page/FontsEndUserLic
 ainsi que la fonte
 [IFAOGrec](https://www.ifao.egnet.net/publications/outils/polices/#grec)
 (Jean-Luc Fournet, Ralph Hancock & Adam Bülow-Jacobsen), qui est libre de tous
-droits, pour rendre les caractères les plus spécifiques.
+droits, pour rendre les caractères les plus spécifiques. Les fontes
+[GFS Didot](https://www.greekfontsociety-gfs.gr/typefaces/19th_century) et
+[GFS Neohellenic](https://www.greekfontsociety-gfs.gr/typefaces/20th_21st_century)
+(Greek Font Society), proposées comme alternatives à Brill, et la fonte
+d'interface [Inter](https://rsms.me/inter/) (Rasmus Andersson) sont
+distribuées sous licence _SIL Open Font License 1.1_ ; Inter y est servie en
+sous-ensemble (`scripts/subset-inter.sh`).
+
+Les fichiers des fontes, accompagnés de leurs licences, se trouvent dans
+`app/assets/fonts/`.
