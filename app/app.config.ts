@@ -13,8 +13,7 @@ export default defineAppConfig({
      * footer actions) have moderately rounded corners instead, set where they
      * are (`rounded-md`, as the menus' items). Only the solid buttons (main
      * actions) have a relief (`button-relief`, cf. components.css), a
-     * semibold text and a text in their own hue (its lightest shade, its
-     * darkest in the dark theme) rather than plain white or black; the
+     * semibold text, in a hue of the palette (cf. `compoundVariants`); the
      * outline ones a slight shadow; the others none.
      */
     button: {
@@ -40,16 +39,19 @@ export default defineAppConfig({
           },
         },
       },
-      // The text in the button's hue; pressed, the button darkens (rather
-      // than turning translucent, as on hover), with its relief sunk.
+      // The text in a hue of the palette rather than plain white or black:
+      // gold on terracotta (the cream gold, 4.7:1; in the dark theme, the
+      // darkest gold, 5.1:1), the Aegean blue in its light shade on the dark
+      // blue (5.6:1) and conversely (5.9:1). Pressed, the button darkens a
+      // little rather than turning translucent (as on hover).
       // Literal classes, for Tailwind to find them.
       compoundVariants: [
-        { color: "primary", variant: "solid", class: "text-(--ui-color-primary-50) dark:text-(--ui-color-primary-950) active:bg-primary active:brightness-90" },
-        { color: "secondary", variant: "solid", class: "text-(--ui-color-secondary-50) dark:text-(--ui-color-secondary-950) active:bg-secondary active:brightness-90" },
-        { color: "success", variant: "solid", class: "text-(--ui-color-success-50) dark:text-(--ui-color-success-950) active:bg-success active:brightness-90" },
-        { color: "info", variant: "solid", class: "text-(--ui-color-info-50) dark:text-(--ui-color-info-950) active:bg-info active:brightness-90" },
-        { color: "warning", variant: "solid", class: "text-(--ui-color-warning-50) dark:text-(--ui-color-warning-950) active:bg-warning active:brightness-90" },
-        { color: "error", variant: "solid", class: "text-(--ui-color-error-50) dark:text-(--ui-color-error-950) active:bg-error active:brightness-90" },
+        { color: "primary", variant: "solid", class: "text-(--ui-color-warning-100) dark:text-(--ui-color-warning-950) active:bg-primary active:brightness-95" },
+        { color: "secondary", variant: "solid", class: "text-(--ui-color-secondary-200) dark:text-(--ui-color-secondary-900) active:bg-secondary active:brightness-95" },
+        { color: "success", variant: "solid", class: "active:bg-success active:brightness-95" },
+        { color: "info", variant: "solid", class: "active:bg-info active:brightness-95" },
+        { color: "warning", variant: "solid", class: "active:bg-warning active:brightness-95" },
+        { color: "error", variant: "solid", class: "active:bg-error active:brightness-95" },
       ],
     },
     input: {
