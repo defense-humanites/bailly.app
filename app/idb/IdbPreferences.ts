@@ -11,9 +11,17 @@ import type { Preferences } from "~/utils/preferences";
  */
 export class IdbPreferences {
   /**
+   * The changes being recorded: a merge waits for them, so that a change
+   * made just before a synchronization is not overtaken by an older one
+   * received.
+   */
+  static #pending: Promise<unknown> = Promise.resolve();
+
+  /**
    * The records of the synchronizable preferences set on this device.
    */
   static async getRecords(): Promise<PreferenceRecord[]> {
+    await IdbPreferences.#pending;
     return (await Idb.readMeta(IdbMetaKey.Preferences)) ?? [];
   }
 
@@ -24,6 +32,13 @@ export class IdbPreferences {
    * @returns The records written.
    */
   static async record(values: Partial<Preferences>): Promise<PreferenceRecord[]> {
+    const recording = IdbPreferences.#write(values);
+    IdbPreferences.#pending = recording.catch(() => undefined);
+    return recording;
+  }
+
+  static async #write(values: Partial<Preferences>): Promise<PreferenceRecord[]> {
+    await IdbPreferences.#pending;
     const db = await Idb.getIndexedDB();
     const tx = db.transaction(IdbStore.Meta, "readwrite");
     const meta = tx.objectStore(IdbStore.Meta);
@@ -42,6 +57,7 @@ export class IdbPreferences {
    * @returns The merged records.
    */
   static async merge(received: PreferenceRecord[]): Promise<PreferenceRecord[]> {
+    await IdbPreferences.#pending;
     const db = await Idb.getIndexedDB();
     const tx = db.transaction(IdbStore.Meta, "readwrite");
     const meta = tx.objectStore(IdbStore.Meta);

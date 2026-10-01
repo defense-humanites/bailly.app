@@ -5,8 +5,10 @@ import { beforeEach, expect, test } from "vitest";
 import { formatStamp } from "../../app/idb/clock";
 import { emptyState, joinRecords, mergeStates, normalize, withoutTombstones, type BookmarksState } from "../../app/idb/merge";
 import { decryptText, deriveCredentials, encryptText, type SyncCredentials } from "../../app/sync/crypto";
-import { parseLocker, readBookmarksSection, serializeLocker, SyncFormatError, SyncOutdatedError } from "../../app/sync/locker";
-import { lockerBlob, synchronize, SyncLimitError, SyncTooLargeError, type SyncDependencies } from "../../app/sync/engine";
+import { parseLocker, readBookmarksSection, serializeLocker, SyncFormatError, SyncOutdatedError, type LockerSections } from "../../app/sync/locker";
+import { mergePreferenceRecords, type PreferenceRecord, type PreferenceValue } from "../../app/idb/preferenceRecords";
+import type { SyncablePreference } from "../../app/utils/preferences";
+import { lockerBlob, synchronize, SyncLimitError, SyncTooLargeError, type BookmarksDependencies, type PreferencesDependencies, type SyncDependencies } from "../../app/sync/engine";
 import { DAY, deleteLocker, hashToken, IDLE_MAX_DAYS, purgeLockers, readLocker, resetSchemaCache, writeLocker } from "../../server/lib/lockers";
 import { LockerDeletedError, SyncBusyError, SyncQuotaError, SyncTimeoutError } from "../../app/sync/lockerClient";
 
@@ -45,15 +47,17 @@ function fakeServer(db: Database, { beforeWrite }: { beforeWrite?: () => Promise
  */
 function device(server: typeof fetch, initial: BookmarksState = emptyState()) {
   let state = initial;
-  const deps: SyncDependencies = {
-    readState: () => Promise.resolve(state),
-    mergeState: (remote) => {
-      state = normalize(mergeStates(state, remote));
-      return Promise.resolve(state);
-    },
-    joinState: (remote) => {
-      state = normalize(mergeStates(withoutTombstones(state), joinRecords(state, remote, stamp())));
-      return Promise.resolve(state);
+  const deps: SyncDependencies & { bookmarks: BookmarksDependencies } = {
+    bookmarks: {
+      readState: () => Promise.resolve(state),
+      mergeState: (remote) => {
+        state = normalize(mergeStates(state, remote));
+        return Promise.resolve(state);
+      },
+      joinState: (remote) => {
+        state = normalize(mergeStates(withoutTombstones(state), joinRecords(state, remote, stamp())));
+        return Promise.resolve(state);
+      },
     },
     fetch: server,
   };
@@ -293,9 +297,12 @@ test("a cancelled synchronization aborts its requests, and merges nothing afterw
   const aborted = new AbortController();
   const deps = {
     ...phone2.deps,
-    mergeState: (state: BookmarksState) => {
-      merged.push("merged");
-      return phone2.deps.mergeState(state);
+    bookmarks: {
+      ...phone2.deps.bookmarks,
+      mergeState: (state: BookmarksState) => {
+        merged.push("merged");
+        return phone2.deps.bookmarks.mergeState(state);
+      },
     },
     fetch: (async (input, init) => {
       const response = await fakeServer(db)(input, init);
@@ -340,7 +347,7 @@ test("a merge beyond the limits stops the synchronization: nothing is written", 
 
   const phone = device(server);
   phone.change(addStar("psukhe"));
-  const refused = { ...phone.deps, mergeState: () => Promise.reject(new SyncLimitError("Limites dépassées.")) };
+  const refused = { ...phone.deps, bookmarks: { ...phone.deps.bookmarks, mergeState: () => Promise.reject(new SyncLimitError("Limites dépassées.")) } };
   await expect(synchronize(credentials, refused)).rejects.toThrow(SyncLimitError);
   expect(liveStars(phone.state)).toEqual(["psukhe"]);
   expect(await synchronize(credentials, laptop.deps)).toBe(1); // The locker did not change.
@@ -355,7 +362,7 @@ async function writeContent(content: string, version = 0): Promise<void> {
   expect(result.state).toBe("written");
 }
 
-async function readContent(): Promise<Record<string, unknown>> {
+async function readContent(): Promise<LockerSections> {
   const locker = await readLocker(db, credentials.lockerId, await hashToken(credentials.token));
   if (locker.state !== "found") throw new Error(locker.state);
   return parseLocker(await decryptText(locker.blob, credentials));
@@ -418,4 +425,107 @@ test("a locker too large: the sections of other types are left out before the bo
   // Within the limit, kept.
   const roomy = await lockerBlob(state, credentials, undefined, { unknown });
   expect(parseLocker(await decryptText(roomy, credentials)).unknown).toEqual(unknown);
+});
+
+/**
+ * A device's preferences (in memory): their records, and the values applied.
+ */
+function preferencesOf(keys: SyncablePreference[]) {
+  let records: PreferenceRecord[] = [];
+  const applied: Record<string, unknown> = {};
+  const deps: PreferencesDependencies = {
+    keys,
+    readRecords: () => Promise.resolve(records),
+    mergeRecords: (received) => {
+      records = mergePreferenceRecords(records, received);
+      for (const record of records) applied[record.key] = record.value;
+      return Promise.resolve(records);
+    },
+  };
+  return {
+    deps,
+    applied,
+    get records() {
+      return records;
+    },
+    set(key: string, value: PreferenceValue) {
+      records = mergePreferenceRecords(records, [{ key, value, updatedAt: stamp() }]);
+      applied[key] = value;
+    },
+  };
+}
+
+test("the preferences: each device sends and receives those it synchronizes", async () => {
+  const server = fakeServer(db);
+  const laptop = preferencesOf(["readingFont", "transliterateGreek", "inputMode"]);
+  const phone = preferencesOf(["readingFont", "transliterateGreek"]);
+
+  laptop.set("readingFont", "didot");
+  laptop.set("inputMode", "transliteration");
+  expect(await synchronize(credentials, { preferences: laptop.deps, fetch: server })).toBe(1); // Created.
+  phone.set("transliterateGreek", true);
+  phone.set("inputMode", "betaCode"); // Not synchronized on the phone.
+  expect(await synchronize(credentials, { preferences: phone.deps, fetch: server })).toBe(2);
+  expect(phone.applied).toMatchObject({ readingFont: "didot", transliterateGreek: true, inputMode: "betaCode" });
+
+  await synchronize(credentials, { preferences: laptop.deps, fetch: server });
+  expect(laptop.applied).toMatchObject({ readingFont: "didot", transliterateGreek: true, inputMode: "transliteration" });
+
+  // The input mode of the laptop stays online, untouched by the phone.
+  const online = (await readContent()).preferences as unknown as { records: PreferenceRecord[] };
+  expect(online.records.find(record => record.key === "inputMode")?.value).toBe("transliteration");
+});
+
+test("a device that synchronizes its bookmarks only keeps the preferences online, and the reverse", async () => {
+  const server = fakeServer(db);
+  const laptop = device(server);
+  const phone = device(server);
+  const phonePreferences = preferencesOf(["readingFont"]);
+
+  laptop.change(addStar("logos"));
+  await synchronize(credentials, laptop.deps);
+  phonePreferences.set("readingFont", "bodoni");
+  await synchronize(credentials, { preferences: phonePreferences.deps, fetch: server }, { first: true });
+
+  // The laptop writes its bookmarks: the preferences stay.
+  laptop.change(addStar("psukhe"));
+  await synchronize(credentials, laptop.deps);
+  expect((await readContent()).preferences).toMatchObject({ records: [{ key: "readingFont", value: "bodoni" }] });
+
+  // The phone writes its preferences: the bookmarks stay, unread.
+  phonePreferences.set("readingFont", "didot");
+  await synchronize(credentials, { preferences: phonePreferences.deps, fetch: server });
+  await synchronize(credentials, phone.deps);
+  expect(liveStars(phone.state)).toEqual(["logos", "psukhe"]);
+  expect((await readContent()).preferences).toMatchObject({ records: [{ key: "readingFont", value: "didot" }] });
+});
+
+test("a type that cannot be merged does not stop the other: its section stays, its error comes after", async () => {
+  const server = fakeServer(db);
+  const laptop = device(server);
+  laptop.change(addStar("logos"));
+  await synchronize(credentials, laptop.deps);
+
+  const phone = device(server);
+  const phonePreferences = preferencesOf(["readingFont"]);
+  phonePreferences.set("readingFont", "didot");
+  const refused = {
+    bookmarks: { ...phone.deps.bookmarks, mergeState: () => Promise.reject(new SyncLimitError("Limites dépassées.")) },
+    preferences: phonePreferences.deps,
+    fetch: server,
+  };
+  await expect(synchronize(credentials, refused)).rejects.toThrow(SyncLimitError);
+  const sections = await readContent();
+  expect(sections.preferences).toMatchObject({ records: [{ key: "readingFont", value: "didot" }] });
+  expect(readBookmarksSection(sections).starred.map(record => record.uri)).toEqual(["logos"]);
+});
+
+test("the records of preferences unknown to this version are passed on", async () => {
+  const later = { key: "laterPreference", value: "on", updatedAt: stamp() };
+  await writeContent(serializeLocker({ preferences: { version: 1, records: [later] } }));
+  const phone = preferencesOf(["readingFont"]);
+  phone.set("readingFont", "didot");
+  await synchronize(credentials, { preferences: phone.deps, fetch: fakeServer(db) });
+  expect(phone.applied).not.toHaveProperty("laterPreference");
+  expect((await readContent()).preferences).toEqual({ version: 1, records: mergePreferenceRecords([later], phone.records) });
 });

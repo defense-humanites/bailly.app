@@ -111,7 +111,7 @@
   };
 
   const enable = () => run(async () => {
-    const result = await syncStore.enable();
+    const result = await syncStore.enable({ bookmarks: true, preferences: [] });
     if (result.state === "error") {
       actionError.value = result.message;
       return;
@@ -163,7 +163,7 @@
    */
   const join = () => run(async () => {
     joinError.value = null;
-    const result = await syncStore.join(linkKey.value ?? typedWords.value);
+    const result = await syncStore.join(linkKey.value ?? typedWords.value, { bookmarks: true, preferences: [] });
     if (result.state === "error") {
       joinError.value = result.message;
       return;

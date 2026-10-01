@@ -130,7 +130,7 @@ test("a wrong key is explained", async ({ goto, page }) => {
   // Twelve valid words that no device synchronizes.
   await page.getByRole("textbox").fill(Array(12).fill("abaisser").join(" "));
   await page.getByRole("button", { name: "Rejoindre" }).click();
-  await expect(page.getByText(/ne forment pas une clé valide|Aucun signet n'est synchronisé avec cette clé/)).toBeVisible();
+  await expect(page.getByText(/ne forment pas une clé valide|Cette clé n'est utilisée par aucun appareil/)).toBeVisible();
 });
 
 test("a failed first synchronization is reported, and leaves the device as it was", async ({ page, goto, browser, baseURL }) => {

@@ -1,4 +1,5 @@
 import { emptyState, type BookmarksState } from "~/idb/merge";
+import { boundPreferenceRecords, validatePreferenceRecords, type PreferenceRecord } from "~/idb/preferenceRecords";
 import { toBookmarksFile, validateState } from "~/idb/transfer";
 
 /**
@@ -38,14 +39,15 @@ export const MAX_SECTIONS = 8;
 /**
  * The types of data this version synchronizes, by section.
  */
-export type SyncSection = "bookmarks";
-export const KNOWN_SECTIONS: readonly SyncSection[] = ["bookmarks"];
+export type SyncSection = "bookmarks" | "preferences";
+export const KNOWN_SECTIONS: readonly SyncSection[] = ["bookmarks", "preferences"];
 
 /**
  * The versions of the sections this version knows.
  */
 export const SECTION_VERSIONS: Record<SyncSection, number> = {
   bookmarks: 1,
+  preferences: 1,
 };
 
 /**
@@ -76,6 +78,7 @@ export class SyncOutdatedError extends Error {
 
 const OUTDATED_MESSAGES: Record<SyncSection, string> = {
   bookmarks: "Cette version de Bailly.app ne peut plus synchroniser vos signets : rechargez la page.",
+  preferences: "Cette version de Bailly.app ne peut plus synchroniser vos préférences : rechargez la page.",
 };
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -169,4 +172,22 @@ export function readBookmarksSection(sections: LockerSections, now: number = Dat
  */
 export function bookmarksSection(state: BookmarksState): RawSection {
   return { version: SECTION_VERSIONS.bookmarks, state: toBookmarksFile(state, { tombstones: true }).state };
+}
+
+/**
+ * The records of the preferences in the locker (validated and bounded, cf.
+ * `validatePreferenceRecords`; none if it has none).
+ * @param now The reference time for the stamps too far in the future.
+ * @throws {SyncOutdatedError} If the section was written by a later version.
+ */
+export function readPreferencesSection(sections: LockerSections, now: number = Date.now()): PreferenceRecord[] {
+  const section = readable(sections, "preferences");
+  return section ? validatePreferenceRecords(section.records, now) : [];
+}
+
+/**
+ * The section of the preferences.
+ */
+export function preferencesSection(records: PreferenceRecord[]): RawSection {
+  return { version: SECTION_VERSIONS.preferences, records: boundPreferenceRecords(records) };
 }

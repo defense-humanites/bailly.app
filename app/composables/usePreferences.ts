@@ -2,6 +2,7 @@ import { IdbPreferences } from "~/idb";
 import {
   DEFAULT_PREFERENCES,
   parsePreferences,
+  PREFERENCES_COOKIE,
   SYNCABLE_PREFERENCES,
   type Preferences,
 } from "~/utils/preferences";
@@ -21,11 +22,14 @@ export function usePreferences() {
   const stored = useState<Partial<Preferences>>("preferences", () => parsePreferences(cookie.value));
 
   /**
-   * Stamps the changes of the synchronizable preferences (on the client).
+   * Stamps the changes of the synchronizable preferences (on the client),
+   * then lets the synchronization send them.
    */
   const record = (values: Partial<Preferences>): void => {
     if (!import.meta.client) return;
-    IdbPreferences.record(values).catch((e: unknown) => {
+    IdbPreferences.record(values).then((records) => {
+      if (records.length) useSyncStore().preferencesChanged(records.map(({ key }) => key));
+    }).catch((e: unknown) => {
       console.error("The change of the preferences could not be recorded", e);
     });
   };
@@ -64,5 +68,13 @@ export function usePreferences() {
     record(Object.fromEntries(SYNCABLE_PREFERENCES.map(key => [key, DEFAULT_PREFERENCES[key]])));
   };
 
-  return { preference, set, reset };
+  /**
+   * Reads the cookie again (e.g. changed by another tab).
+   */
+  const reload = (): void => {
+    refreshCookie(PREFERENCES_COOKIE);
+    stored.value = parsePreferences(cookie.value);
+  };
+
+  return { preference, set, reset, reload };
 }

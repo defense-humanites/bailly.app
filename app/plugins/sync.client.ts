@@ -31,12 +31,12 @@ const POLL_INTERVAL = 60_000;
 const BOOKMARKS_PATH = "/signets";
 
 /**
- * Runs the synchronization of the bookmarks, if enabled on this device: once
- * the application is ready, every minute while the bookmarks page is shown
- * (and when arriving there), when the
- * user comes back to the page or the network comes back, and shortly after
- * each change (or right away when the page is hidden, before the browser
- * suspends it). It waits for the end of the interactions that hold the
+ * Runs the synchronization of the bookmarks and of the preferences, if
+ * enabled on this device: once the application is ready, every minute while
+ * the bookmarks page is shown (and when arriving there), when the user comes
+ * back to the page or the network comes back, and shortly after each change
+ * of a type synchronized (cf. `usePreferences` for the preferences), or right
+ * away when the page is hidden, before the browser suspends it. It waits for the end of the interactions that hold the
  * bookmarks shown (cf. `useBookmarksHold`).
  */
 export default defineNuxtPlugin({
@@ -45,6 +45,7 @@ export default defineNuxtPlugin({
   setup() {
     const bookmarksStore = useBookmarksStore();
     const syncStore = useSyncStore();
+    const preferences = usePreferences();
     const router = useRouter();
     const onBookmarksPage = (): boolean => router.currentRoute.value.path === BOOKMARKS_PATH;
     const isStale = (delay: number): boolean => Date.now() - (syncStore.lastSyncedAt ?? 0) >= delay;
@@ -58,7 +59,7 @@ export default defineNuxtPlugin({
     bookmarksStore.$onAction(({ name, after }) => {
       if (!LOCAL_CHANGES.has(name)) return;
       after((result: unknown) => {
-        if ((result as { state?: string } | undefined)?.state === "success") syncStore.schedule();
+        if ((result as { state?: string } | undefined)?.state === "success" && syncStore.syncedBookmarks) syncStore.schedule();
       });
     });
 
@@ -87,10 +88,15 @@ export default defineNuxtPlugin({
     }, POLL_INTERVAL);
 
     // The tabs tell each other when the settings change (key enabled,
-    // disabled or deleted, latest synchronization).
+    // disabled or deleted, types of data, latest synchronization): they load
+    // them again, and the preferences (a synchronization may have applied
+    // some received from another device).
     if (typeof BroadcastChannel === "undefined") return;
     const channel = new BroadcastChannel("bailly:sync");
-    channel.onmessage = () => void syncStore.load();
+    channel.onmessage = () => {
+      preferences.reload();
+      void syncStore.load();
+    };
     watch(() => syncStore.settingsVersion, () => {
       channel.postMessage("settings");
     });

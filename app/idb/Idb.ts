@@ -4,6 +4,7 @@ import type { PartialExcept } from "~/types";
 import { maxStamp, nextStamp, type Stamp } from "./clock";
 import type { StarredRecord, TaggedRecord, TagKey, TagOrder, TagRecord } from "./merge";
 import type { PreferenceRecord } from "./preferenceRecords";
+import type { SyncablePreference } from "~/utils/preferences";
 import { randomNodeId, randomUuid } from "./random";
 import { IdbTags, type TagColorKey } from "./IdbTags";
 
@@ -142,6 +143,15 @@ export type IdbSyncConfig = {
    * The date of the latest successful synchronization (ms).
    */
   lastSyncedAt: number | null;
+  /**
+   * Whether the bookmarks are synchronized on this device (absent: they are,
+   * as before the synchronization of the preferences).
+   */
+  bookmarks?: boolean;
+  /**
+   * The preferences synchronized on this device (absent or empty: none).
+   */
+  preferences?: SyncablePreference[];
 };
 
 type IdbMetaValues = {
