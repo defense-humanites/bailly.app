@@ -123,6 +123,12 @@
  * The other reading fonts (cf. `utils/fonts.ts`): GFS Didot, a serif
  * alternative to Brill, and GFS Neohellenic, a sans serif one. A face is only
  * downloaded when some text uses it.
+ *   Their thin spaces are left out (`unicode-range`): in their italic and bold
+ *   faces, U+2009 (thin space) is drawn with contours (in Didot Italic, an
+ *   exclamation mark), and none has U+202F (narrow no-break space, before
+ *   « ; », « ! », « ? », « : » in the text), for which the browsers' shaping
+ *   (HarfBuzz) then takes their U+2009: « etc. ; » showed as « etc.!; ».
+ *   These two spaces come from Inter (cf. below; its file is already loaded).
  */
 
 @font-face {
@@ -134,6 +140,7 @@
   ascent-override: 82.17%;
   descent-override: 20.46%;
   line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
   src: url("../fonts/GFS_Didot/GFS_Didot-Roman.woff2") format("woff2");
 }
 
@@ -146,6 +153,7 @@
   ascent-override: 82.17%;
   descent-override: 20.46%;
   line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
   src: url("../fonts/GFS_Didot/GFS_Didot-Bold.woff2") format("woff2");
 }
 
@@ -158,6 +166,7 @@
   ascent-override: 82.17%;
   descent-override: 20.46%;
   line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
   src: url("../fonts/GFS_Didot/GFS_Didot-Italic.woff2") format("woff2");
 }
 
@@ -170,6 +179,7 @@
   ascent-override: 82.17%;
   descent-override: 20.46%;
   line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
   src: url("../fonts/GFS_Didot/GFS_Didot-BoldItalic.woff2") format("woff2");
 }
 
@@ -182,6 +192,7 @@
   ascent-override: 69.84%;
   descent-override: 17.39%;
   line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
   src: url("../fonts/GFS_NeoHellenic/GFS_NeoHellenic-Roman.woff2") format("woff2");
 }
 
@@ -194,6 +205,7 @@
   ascent-override: 69.84%;
   descent-override: 17.39%;
   line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
   src: url("../fonts/GFS_NeoHellenic/GFS_NeoHellenic-Bold.woff2") format("woff2");
 }
 
@@ -206,6 +218,7 @@
   ascent-override: 69.84%;
   descent-override: 17.39%;
   line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
   src: url("../fonts/GFS_NeoHellenic/GFS_NeoHellenic-Italic.woff2") format("woff2");
 }
 
@@ -218,7 +231,66 @@
   ascent-override: 69.84%;
   descent-override: 17.39%;
   line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
   src: url("../fonts/GFS_NeoHellenic/GFS_NeoHellenic-BoldItalic.woff2") format("woff2");
+}
+
+/*
+ * The thin spaces of GFS Didot and GFS Neohellenic (cf. above): Inter's
+ * (empty, 0.18 em), scaled and aligned as the font they stand in for. One face
+ * per style, for every weight (the space is the same).
+ */
+
+@font-face {
+  font-family: "GFS Didot";
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 117.9%;
+  ascent-override: 82.17%;
+  descent-override: 20.46%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Didot";
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 117.9%;
+  ascent-override: 82.17%;
+  descent-override: 20.46%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Neohellenic";
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 138.7%;
+  ascent-override: 69.84%;
+  descent-override: 17.39%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Neohellenic";
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 138.7%;
+  ascent-override: 69.84%;
+  descent-override: 17.39%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
 }
 
 /*

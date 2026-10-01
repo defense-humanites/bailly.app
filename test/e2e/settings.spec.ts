@@ -100,6 +100,42 @@ test.describe("settings", () => {
     expect(requested).not.toContain("GFS Neohellenic");
   });
 
+  // In their italic and bold faces, U+2009 is drawn (in Didot Italic, an
+  // exclamation mark), and U+202F, missing, was shaped with it: Inter's
+  // spaces stand in for them (cf. fonts.css).
+  test("reading: the thin spaces of GFS Didot and GFS Neohellenic are spaces", async ({ page, goto }) => {
+    await goto("/préférences", { waitUntil: "hydration" });
+    const widths = await page.evaluate(async () => {
+      const result: Record<string, { narrow: number; thin: number }> = {};
+      for (const family of ["GFS Didot", "GFS Neohellenic"]) {
+        for (const style of ["normal", "italic"]) {
+          for (const weight of ["400", "700"]) {
+            const font = `${style} ${weight} 100px "${family}"`;
+            await document.fonts.load(font, "a\u2009\u202f");
+            const span = document.createElement("span");
+            span.style.font = font;
+            span.style.whiteSpace = "pre";
+            document.body.append(span);
+            const width = (text: string): number => {
+              span.textContent = text;
+              return span.getBoundingClientRect().width;
+            };
+            result[`${family} ${style} ${weight}`] = { narrow: width("\u202f"), thin: width("\u2009") };
+            span.remove();
+          }
+        }
+      }
+      return result;
+    });
+    // Inter's thin space: 0.18 em, scaled as the font (100 px: 21 px for
+    // Didot, 25 px for Neohellenic); the exclamation mark was 53 px wide.
+    for (const [face, { narrow, thin }] of Object.entries(widths)) {
+      expect(narrow, face).toBeGreaterThan(15);
+      expect(narrow, face).toBeLessThan(30);
+      expect(thin, face).toBeCloseTo(narrow, 1);
+    }
+  });
+
   test("search: shared with the search options", async ({ page, goto }) => {
     await goto("/préférences", { waitUntil: "hydration" });
     await page.getByText("Translittération", { exact: true }).click();
