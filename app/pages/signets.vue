@@ -83,9 +83,16 @@
         <div
           role="group"
           aria-label="Étiquettes"
-          class="flex flex-wrap overflow-hidden rounded-lg border border-default bg-default shadow-xs"
+          class="flex flex-wrap overflow-hidden rounded-lg border border-default bg-default shadow-xs md:flex-nowrap md:gap-2 md:overflow-visible md:border-0 md:bg-transparent md:shadow-none"
         >
-          <CreateTag class="h-11 min-w-0 basis-full border-default max-md:border-b md:basis-0 md:grow" />
+          <!--
+            Below `md`, one compact block on two lines: the field alone on the
+            first (a border under it), the others side by side on the second
+            (a border before each but the first). From `md`, separate items
+            (each framed, slightly apart) on one line, the fields sharing the
+            width left by the buttons.
+          -->
+          <CreateTag class="h-11 min-w-0 basis-full border-default max-md:border-b md:basis-0 md:grow md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs" />
 
           <!--
             The active tag (the one an entry's toolbar adds it to in one
@@ -93,39 +100,42 @@
             before the bookmarks are loaded too (disabled, as when there is no
             tag): its place is kept.
           -->
-          <USelectMenu
-            :model-value="currentTagKey ?? undefined"
-            :items="activeItems"
-            value-key="value"
-            size="xl"
-            color="neutral"
-            variant="soft"
-            :disabled="!activeItems.length"
-            :placeholder="initialized ? 'Aucune étiquette' : undefined"
-            :search-input="activeItems.length >= ACTIVE_FILTER_FROM && { placeholder: 'Filtrer…' }"
-            aria-label="Étiquette active"
-            class="h-11 min-w-0 grow border-default md:w-64 md:grow-0 md:border-s"
-            :ui="{ base: 'h-full gap-2 rounded-none ps-3 shadow-none', leading: 'static shrink-0 ps-0' }"
-            @update:model-value="(key: TagKey) => bookmarksStore.setCurrentTag(key)"
-          >
-            <template #leading>
-              <span class="flex items-center gap-2">
-                <span class="text-sm text-muted">Active</span>
+          <div class="flex h-11 min-w-0 grow border-default md:basis-0 md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs">
+            <USelectMenu
+              :model-value="currentTagKey ?? undefined"
+              :items="activeItems"
+              value-key="value"
+              size="xl"
+              color="neutral"
+              variant="soft"
+              :disabled="!activeItems.length"
+              :placeholder="initialized ? 'Aucune étiquette' : undefined"
+              :search-input="activeItems.length >= ACTIVE_FILTER_FROM && { placeholder: 'Filtrer…', ui: { base: 'rounded-none shadow-none' } }"
+              aria-label="Étiquette active"
+              class="h-full min-w-0 grow"
+              :ui="{ base: 'h-full gap-2 rounded-none ps-3 shadow-none', leading: 'static shrink-0 ps-0' }"
+              @update:model-value="(key: TagKey) => bookmarksStore.setCurrentTag(key)"
+            >
+              <template #leading>
+                <!--
+                  The mark of the active tag, in its color: the icon of the
+                  cards' "Rendre active" (a selected radio button).
+                -->
                 <UIcon
-                  name="i-bailly-tag-filled"
+                  name="i-lucide-circle-dot"
                   :data-tag-color="currentTag?.color"
                   class="size-5 shrink-0 text-tag-text"
                 />
-              </span>
-            </template>
-            <template #item-leading="{ item }">
-              <UIcon
-                name="i-bailly-tag-filled"
-                :data-tag-color="item.color"
-                class="size-5 shrink-0 text-tag-text"
-              />
-            </template>
-          </USelectMenu>
+              </template>
+              <template #item-leading="{ item }">
+                <UIcon
+                  name="i-bailly-tag-filled"
+                  :data-tag-color="item.color"
+                  class="size-5 shrink-0 text-tag-text"
+                />
+              </template>
+            </USelectMenu>
+          </div>
 
           <!-- Order tags -->
           <UModal
@@ -142,7 +152,7 @@
                 size="xl"
                 color="neutral"
                 variant="ghost"
-                class="h-11 rounded-none border-s border-default aria-expanded:bg-elevated"
+                class="h-11 rounded-none border-s border-default aria-expanded:bg-elevated md:rounded-lg md:border md:bg-default md:shadow-xs"
                 :ui="{ base: 'max-xl:px-2.5', label: 'max-xl:sr-only' }"
               />
             </UTooltip>
@@ -155,7 +165,7 @@
           </UModal>
 
           <!-- Export, import -->
-          <BookmarksMenu class="flex h-11 border-s border-default" />
+          <BookmarksMenu class="flex h-11 border-s border-default md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs" />
         </div>
       </header>
 

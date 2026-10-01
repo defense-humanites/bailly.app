@@ -37,10 +37,6 @@
    */
   const tagName = ref<string>(props.tag.name);
   /**
-   * A boolean representing the state of the tag name input.
-   */
-  const isTagNameErrored = ref<boolean>(false);
-  /**
    * The editable tag description.
    */
   const tagDescription = ref<string>(props.tag.description ?? "");
@@ -95,8 +91,6 @@
    * Updates the tag properties.
    */
   const onUpdateTag = async (): Promise<void> => {
-    isTagNameErrored.value = false;
-
     if (
       tagName.value === props.tag.name
       && tagColor.value === props.tag.color
@@ -110,7 +104,6 @@
     });
 
     if (response.state === "error") {
-      isTagNameErrored.value = true;
       tagName.value = props.tag.name;
       tagDescription.value = props.tag.description ?? "";
       tagColor.value = props.tag.color;
@@ -383,7 +376,6 @@
               aria-label="Nom de l'étiquette"
               :maxlength="IdbTags.nameMaxLength"
               class="min-w-0 grow rounded-r-full bg-default/60 px-2 py-0.5 text-xl/7 font-bold text-tag-text hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300 md:py-0 md:text-2xl/8"
-              :class="{ 'animate-shake': isTagNameErrored }"
             >
           </div>
         </div>

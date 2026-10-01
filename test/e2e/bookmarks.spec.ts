@@ -167,6 +167,36 @@ test.describe("bookmarks page", () => {
     await expect.poll(look).toEqual([restImage, "none", restColor]);
   });
 
+  // No submit button: Enter adds the tag, as the key drawn in the field says.
+  test("creating a tag with Enter, its hint named", async ({ page }) => {
+    const field = page.getByRole("textbox", { name: "Nom de la nouvelle étiquette" });
+    await expect(field).toHaveAccessibleDescription("Entrée pour ajouter");
+    await expect(field).toHaveAttribute("enterkeyhint", "done");
+    await field.fill("Pindare");
+    await field.press("Enter");
+    await expect(card(page, "Pindare")).toBeVisible();
+    await expect(field).toHaveValue("");
+    expect((await bookmarksState(page)).tags).toContain("Pindare");
+  });
+
+  // The error where the eyes are: on the field, as soon as the name is taken
+  // (case and diacritics ignored) or reserved; gone once it changes.
+  test("creating a tag: a taken name told on the field, before Enter", async ({ page }) => {
+    const field = page.getByRole("textbox", { name: "Nom de la nouvelle étiquette" });
+    await field.fill("vidé");
+    await expect(field).toHaveAttribute("aria-invalid", "true");
+    await expect(field).toHaveAccessibleDescription(/L'étiquette « Vide » existe déjà\./);
+    await expect(page.locator("[data-slot=content]").getByText("L'étiquette « Vide » existe déjà.")).toBeVisible();
+    await field.press("Enter");
+    await expect(field).toHaveValue("vidé");
+    expect((await bookmarksState(page)).tags).toHaveLength(2);
+    await field.fill("Favoris");
+    await expect(field).toHaveAccessibleDescription(/réservé à la liste des favoris/);
+    await field.fill("Vides");
+    await expect(field).toHaveAttribute("aria-invalid", "false");
+    await expect(page.locator("[data-slot=content]")).toHaveCount(0);
+  });
+
   test("the active tag: marked on its card, chosen from another card", async ({ page }) => {
     const vide = card(page, "Vide");
     const vocabulaire = card(page, "Vocabulaire homérique");

@@ -1,87 +1,139 @@
 <script setup lang="ts">
   import { IdbTags } from "~/idb";
+  import { comparableTagName } from "~/idb/merge";
+
+  // The field is the popover's anchor (cf. the template): it gets the
+  // attributes.
+  defineOptions({ inheritAttrs: false });
 
   const bookmarksStore = useBookmarksStore();
-  const showButtonLabels = useButtonLabels();
-  const { newTagColor } = storeToRefs(bookmarksStore);
+  const { newTagColor, tags } = storeToRefs(bookmarksStore);
+  const hintId = useId();
+  const errorId = useId();
 
   /**
    * A model to handle a new tag name creation.
    */
   const newTagName = defineModel<string>({ default: "" });
+
   /**
-   * A boolean representing the state of a new tag name creation.
+   * Why the last creation failed, until the name changes.
    */
-  const isNewTagNameErrored = ref<boolean>(false);
+  const failure = ref<string>();
+  watch(newTagName, () => failure.value = undefined);
+
+  /**
+   * Why the name typed cannot be used, before Enter is pressed: taken by a tag
+   * (case and diacritics ignored, as `IdbTags` does) or reserved.
+   */
+  const conflict = computed((): string | undefined => {
+    const name = comparableTagName(newTagName.value.trim());
+    if (!name) return undefined;
+    if (name === "favoris") return "Ce nom est réservé à la liste des favoris.";
+    const homonym = tags.value.find(tag => comparableTagName(tag.name) === name);
+    return homonym && `L'étiquette « ${homonym.name} » existe déjà.`;
+  });
+
+  /**
+   * The error shown on the field, in a bubble under it.
+   */
+  const error = computed((): string | undefined => failure.value ?? conflict.value);
 
   const createTag = async (event: Event): Promise<void> => {
-    isNewTagNameErrored.value = false;
+    if (!newTagName.value || error.value) return;
 
-    if (newTagName.value) {
-      const response = await bookmarksStore.createTag({
-        name: newTagName.value,
-        color: newTagColor.value,
-      });
+    const response = await bookmarksStore.createTag(
+      { name: newTagName.value, color: newTagColor.value },
+      { quiet: true },
+    );
 
-      switch (response.state) {
-        case "success":
-          newTagName.value = "";
-          if (event.target instanceof HTMLInputElement) event.target.blur();
-          break;
-        case "error":
-          isNewTagNameErrored.value = true;
-          break;
-      }
+    if (response.state === "success") {
+      newTagName.value = "";
+      if (event.target instanceof HTMLInputElement) event.target.blur();
+    } else {
+      failure.value = response.message;
     }
   };
 </script>
 
 <template>
   <!--
-    The text stops before the submit button, in the trailing slot (`pe-10`,
-    `pe-28` with its label from `xl`, cf. `useButtonLabels`).
-  -->
-  <!--
     A field of the bookmarks page's menu bar (cf. `signets.vue`): square-
     cornered, without the search bar's pill shape and shadow, its background
-    telling it from the bar's buttons.
+    telling it from the bar's buttons. No submit button: Enter adds the tag
+    (the return key of a touch keyboard, `enterkeyhint`), as the key drawn at
+    its end says; brighter once there is a name to add.
+
+    An error is shown where the eyes are: the field in red, an alert instead
+    of the key, the message in a bubble under it (over the page: nothing
+    moves), read by screen readers from a live region (the bubble is hidden
+    from them). Shown as soon as the name typed is taken, and when a creation
+    fails; gone once the name changes.
   -->
-  <UInput
-    v-model="newTagName"
-    size="xl"
-    variant="soft"
-    placeholder="Nouvelle étiquette"
-    aria-label="Nom de la nouvelle étiquette"
-    :maxlength="IdbTags.nameMaxLength"
-    :class="{ 'animate-shake': isNewTagNameErrored }"
-    :ui="{ base: 'h-full rounded-none shadow-none pe-10 xl:pe-28', leading: 'ps-1.5', trailing: 'pe-1.5' }"
-    @keydown.enter="createTag"
+  <UPopover
+    :open="!!error"
+    :dismissible="false"
+    :content="{ side: 'bottom', align: 'start', sideOffset: 6, onOpenAutoFocus: (event: Event) => event.preventDefault(), onCloseAutoFocus: (event: Event) => event.preventDefault() }"
+    :ui="{ content: 'px-3 py-2 text-sm text-error' }"
   >
-    <!-- Color picker -->
-    <template #leading>
-      <TagColorPicker
-        v-model="newTagColor"
-        label="Couleur de la nouvelle étiquette"
-      />
+    <template #anchor>
+      <UInput
+        v-bind="$attrs"
+        v-model="newTagName"
+        size="xl"
+        variant="soft"
+        :color="error ? 'error' : 'neutral'"
+        :highlight="!!error"
+        placeholder="Nouvelle étiquette"
+        aria-label="Nom de la nouvelle étiquette"
+        :aria-describedby="`${errorId} ${hintId}`"
+        :aria-invalid="!!error"
+        enterkeyhint="done"
+        :maxlength="IdbTags.nameMaxLength"
+        :ui="{ base: 'h-full rounded-none shadow-none', leading: 'ps-1.5', trailing: 'pe-3' }"
+        @keydown.enter="createTag"
+      >
+        <!-- Color picker -->
+        <template #leading>
+          <TagColorPicker
+            v-model="newTagColor"
+            label="Couleur de la nouvelle étiquette"
+          />
+        </template>
+
+        <!-- Enter adds the tag; or why it cannot -->
+        <template #trailing>
+          <UIcon
+            v-if="error"
+            name="i-lucide-circle-alert"
+            aria-hidden="true"
+            class="size-5 text-error"
+          />
+          <UKbd
+            v-else
+            value="enter"
+            size="lg"
+            aria-hidden="true"
+            class="transition-opacity"
+            :class="newTagName.length ? 'opacity-100' : 'opacity-50'"
+          />
+          <span
+            :id="hintId"
+            class="sr-only"
+          >Entrée pour ajouter</span>
+          <span
+            :id="errorId"
+            role="status"
+            class="sr-only"
+          >{{ error }}</span>
+        </template>
+      </UInput>
     </template>
 
-    <!-- Submit button -->
-    <template #trailing>
-      <UTooltip
-        text="Ajouter"
-        :disabled="showButtonLabels"
-      >
-        <UButton
-          :disabled="!newTagName.length"
-          label="Ajouter"
-          size="md"
-          variant="soft"
-          color="secondary"
-          icon="i-lucide-plus"
-          :ui="{ base: 'max-xl:px-1.5', label: 'max-xl:sr-only' }"
-          @click="createTag"
-        />
-      </UTooltip>
+    <template #content>
+      <p aria-hidden="true">
+        {{ error }}
+      </p>
     </template>
-  </UInput>
+  </UPopover>
 </template>
