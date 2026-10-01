@@ -2,10 +2,11 @@ import { defineStore } from "pinia";
 import { IdbBookmarks, Idb, IdbError, IdbMetaKey, IdbPreferences, type IdbResult, type IdbSyncConfig } from "~/idb";
 import type { BookmarksState, LimitExcess } from "~/idb/merge";
 import { applicableValue, type PreferenceRecord } from "~/idb/preferenceRecords";
+import { formatStamp } from "~/idb/clock";
 import { fromBase64url, toBase64url } from "~/sync/base64url";
 import { deriveCredentials, type SyncCredentials } from "~/sync/crypto";
-import { synchronize, SyncLimitError, SyncTooLargeError, type SyncDependencies, type SyncOptions } from "~/sync/engine";
-import { SyncFormatError, SyncOutdatedError } from "~/sync/locker";
+import { synchronize, SyncLimitError, SyncPartialError, SyncTooLargeError, type SyncDependencies, type SyncOptions } from "~/sync/engine";
+import { SyncFormatError, SyncOutdatedError, type SyncSection } from "~/sync/locker";
 import {
   fetchLocker,
   LockerDeletedError,
@@ -15,7 +16,7 @@ import {
   SyncQuotaError,
   SyncTimeoutError,
 } from "~/sync/lockerClient";
-import { SYNCABLE_PREFERENCES, type SyncablePreference } from "~/utils/preferences";
+import { SYNCABLE_PREFERENCES, type Preferences, type SyncablePreference } from "~/utils/preferences";
 
 export type SyncStatus = "idle" | "syncing" | "error";
 
@@ -115,6 +116,11 @@ export const useSyncStore = defineStore("sync", () => {
    */
   const errorNeedsAction = ref(false);
   /**
+   * The type of data the latest error concerns, if one only (the others
+   * being in sync, cf. `SyncPartialError`).
+   */
+  const errorSection = ref<SyncSection | null>(null);
+  /**
    * How far the server's time is ahead of this device's (ms), as of the
    * latest request.
    */
@@ -170,7 +176,7 @@ export const useSyncStore = defineStore("sync", () => {
   async function mergeRemote(state: BookmarksState, first = false): Promise<BookmarksState> {
     const result = first ? await bookmarksStore.joinState(state) : await bookmarksStore.mergeState(state);
     if (result.state === "error") throw new IdbError(result.message);
-    if (result.data.excesses.length) throw new SyncLimitError(describeExcesses(result.data.excesses, first));
+    if (result.data.excesses.length) throw new SyncLimitError(describeExcesses(result.data.excesses), result.data.excesses);
     return result.data.state;
   }
 
@@ -184,25 +190,62 @@ export const useSyncStore = defineStore("sync", () => {
    * @returns This device's records of these preferences, merged.
    */
   async function mergePreferences(received: PreferenceRecord[], keys: readonly SyncablePreference[]): Promise<PreferenceRecord[]> {
-    const merged = await IdbPreferences.merge(received);
+    await IdbPreferences.merge(received);
+    return applyPreferences(keys);
+  }
+
+  /**
+   * Applies the values of this device's records of preferences (the latest
+   * ones: a change made meanwhile is waited for, cf. `IdbPreferences`), e.g.
+   * received, or missing from the cookie.
+   * @returns The records.
+   */
+  async function applyPreferences(keys: readonly SyncablePreference[]): Promise<PreferenceRecord[]> {
+    const records = await IdbPreferences.getRecords();
+    const values: Partial<Preferences> = {};
     for (const key of keys) {
-      const record = merged.find(candidate => candidate.key === key);
+      const record = records.find(candidate => candidate.key === key);
       if (!record) continue;
       const value = applicableValue({ ...record, key });
-      if (value !== undefined && value !== preferences.preference(key).value) preferences.set({ [key]: value }, { stamp: false });
+      if (value !== undefined && value !== preferences.preference(key).value) Object.assign(values, { [key]: value });
     }
-    return merged;
+    // At once (the cookie written once).
+    if (Object.keys(values).length) preferences.set(values, { stamp: false });
+    return records;
+  }
+
+  /**
+   * Applies again the preferences synchronized that the cookie lacks (e.g.
+   * expired), from IndexedDB: at startup, even offline.
+   */
+  async function reconcilePreferences(): Promise<void> {
+    if (syncedPreferences.value.length) await applyPreferences(syncedPreferences.value);
+  }
+
+  /**
+   * Gives the preferences set before their changes were stamped (e.g.
+   * migrated from the former application) a stamp older than any change,
+   * once their synchronization is enabled: they reach the other devices that
+   * have none, and give way to any real change.
+   */
+  async function stampUnstamped(keys: readonly SyncablePreference[]): Promise<void> {
+    const records = await IdbPreferences.getRecords();
+    const unstamped = keys.filter(key => preferences.isSet(key) && !records.some(record => record.key === key));
+    if (!unstamped.length) return;
+    const oldest = formatStamp({ time: 0, counter: 0, node: "0" });
+    await IdbPreferences.merge(unstamped.map(key => ({ key, value: preferences.preference(key).value, updatedAt: oldest })));
   }
 
   /**
    * Explains the limits a merge would exceed, and what to remove on this
    * device (cf. `describeLimitExcesses`).
-   * @param first Whether the key is being enabled (then retried by the user).
+   * @param retried Who retries: the next synchronization (by default), or the
+   * user (an activation that left the device as it was).
    */
-  function describeExcesses(excesses: LimitExcess[], first: boolean): string {
+  function describeExcesses(excesses: LimitExcess[], retried: "sync" | "user" = "sync"): string {
     return describeLimitExcesses(excesses, Idb.config, {
       lead: "Réunis avec ceux de vos autres appareils, vos signets dépasseraient les limites.",
-      ending: first ? "Réessayez ensuite." : "La synchronisation reprendra ensuite.",
+      ending: retried === "user" ? "Réessayez ensuite." : "La synchronisation reprendra ensuite.",
     });
   }
 
@@ -228,7 +271,6 @@ export const useSyncStore = defineStore("sync", () => {
             readState: () => IdbBookmarks.getState(),
             mergeState: state => mergeRemote(state),
             joinState: state => mergeRemote(state, true),
-            referenceTime: () => IdbBookmarks.referenceTime(),
           }
         : undefined,
       preferences: keys.length
@@ -238,6 +280,7 @@ export const useSyncStore = defineStore("sync", () => {
             mergeRecords: records => mergePreferences(records, keys),
           }
         : undefined,
+      referenceTime: () => IdbBookmarks.referenceTime(),
     };
   }
 
@@ -260,7 +303,9 @@ export const useSyncStore = defineStore("sync", () => {
             clockSkew.value = time - Date.now();
           },
           onSections: (names) => {
-            remoteSections.value = names;
+            // Not those of a key being tried (cf. `activate`).
+            if (creds === credentials) remoteSections.value = names;
+            options.onSections?.(names);
           },
         });
         return null;
@@ -294,17 +339,19 @@ export const useSyncStore = defineStore("sync", () => {
   }
 
   /**
-   * An error of the synchronization, explained to the user.
-   */
-  /**
    * Whether an error waits for the user (rather than resolving itself).
    */
   function needsAction(e: unknown): boolean {
+    if (e instanceof SyncPartialError) return needsAction(e.cause);
     return e instanceof SyncLimitError || e instanceof SyncTooLargeError || e instanceof SyncOutdatedError || e instanceof SyncFormatError;
   }
 
+  /**
+   * An error of the synchronization, explained to the user.
+   */
   function describe(e: unknown): string {
-    if (e instanceof LockerDeletedError) return `${e.message} Vos signets restent sur cet appareil.`;
+    if (e instanceof SyncPartialError) return describe(e.cause);
+    if (e instanceof LockerDeletedError) return `${e.message} Vos données restent sur cet appareil.`;
     if (
       e instanceof SyncNetworkError || e instanceof SyncTooLargeError || e instanceof SyncLimitError
       || e instanceof SyncFormatError || e instanceof SyncOutdatedError || e instanceof IdbError
@@ -312,7 +359,7 @@ export const useSyncStore = defineStore("sync", () => {
       return e.message;
     }
     console.error(e);
-    return "La synchronisation a échoué. Vos signets restent sur cet appareil.";
+    return "La synchronisation a échoué. Vos données restent sur cet appareil.";
   }
 
   async function runOnce(force = false): Promise<void> {
@@ -323,10 +370,24 @@ export const useSyncStore = defineStore("sync", () => {
     const readOnly = !force && Date.now() < quotaUntil;
     status.value = "syncing";
     error.value = null;
+    errorSection.value = null;
 
-    const failure = await attempt(credentials, sectionsOf(current), { readOnly });
-    // Disabled (or replaced) meanwhile: the outcome no longer concerns it.
-    if (config !== current) return;
+    const merged: SyncSection[] = [];
+    const failure = await attempt(credentials, sectionsOf(current), {
+      readOnly,
+      first: Boolean(current.joining),
+      onMerged: (sections) => {
+        merged.push(...sections);
+      },
+    });
+    // Disabled (or changed) meanwhile: the outcome no longer concerns it; a
+    // synchronization with the new settings follows.
+    const now = config as IdbSyncConfig | null;
+    if (now !== current) {
+      if ((status.value as SyncStatus) === "syncing") status.value = "idle";
+      if (now) schedule(0);
+      return;
+    }
     errorNeedsAction.value = needsAction(failure);
     if (!failure && readOnly) {
       status.value = "error";
@@ -334,13 +395,23 @@ export const useSyncStore = defineStore("sync", () => {
       schedule(Math.max(0, quotaUntil - Date.now()));
       return;
     }
-    if (!failure) {
+    // In sync, or every type but one (whose error is shown).
+    if (!failure || (failure instanceof SyncPartialError && merged.some(section => section !== failure.section))) {
       clearQuota();
-      config = { ...config, lastSyncedAt: Date.now() };
+      // The bookmarks joined, once merged (or written into a new locker).
+      const joined = current.joining && (merged.includes("bookmarks") || (!failure && !readOnly));
+      const { joining: _joining, ...rest } = config;
+      config = { ...(joined ? rest : config), lastSyncedAt: Date.now() };
       await Idb.writeMeta(IdbMetaKey.Sync, config);
       lastSyncedAt.value = config.lastSyncedAt;
-      status.value = "idle";
       settingsChanged();
+      if (!failure) {
+        status.value = "idle";
+        return;
+      }
+      status.value = "error";
+      error.value = describe(failure);
+      errorSection.value = failure instanceof SyncPartialError ? failure.section : null;
       return;
     }
 
@@ -487,40 +558,59 @@ export const useSyncStore = defineStore("sync", () => {
     const previousStatus = status.value;
     status.value = "syncing";
 
-    // Once the online data have been merged here, the device has joined,
-    // even if sending its own fails: the key is kept, and the sending
-    // retried.
-    const progress = { merged: false, refilled: false };
+    // Once the online data of a type have been merged here, the device has
+    // joined, even if sending its own fails, or if another type could not be
+    // merged: the key is kept, the sending retried, and a type not merged yet
+    // joined at the next synchronization (cf. `IdbSyncConfig.joining`).
+    if (sections.preferences.length) await stampUnstamped(sections.preferences);
+    const merged: SyncSection[] = [];
+    const progress = { refilled: false, sections: [] as string[] };
     const failure = await attempt(await deriveCredentials(secret), sections, {
       first: sections.bookmarks,
-      onMerged: () => {
-        progress.merged = true;
+      onMerged: (types) => {
+        merged.push(...types);
+      },
+      onSections: (names) => {
+        progress.sections = names;
       },
       onRefilled: () => {
         progress.refilled = true;
       },
     });
-    if (failure && !progress.merged) {
+    // Nothing merged (e.g. the only type enabled would exceed the limits):
+    // the device stays as it was.
+    if (failure && !merged.length) {
       status.value = previousStatus;
+      // To be retried by the user, once room is made.
+      const cause = failure instanceof SyncPartialError ? failure.cause : failure;
+      if (cause instanceof SyncLimitError && cause.excesses.length) {
+        return { state: "error", message: describeExcesses(cause.excesses, "user") };
+      }
       return { state: "error", message: describe(failure) };
     }
 
     const value: IdbSyncConfig = {
       secret: toBase64url(secret),
-      lastSyncedAt: failure ? null : Date.now(),
+      lastSyncedAt: failure && !(failure instanceof SyncPartialError) ? null : Date.now(),
       bookmarks: sections.bookmarks,
       preferences: [...sections.preferences],
     };
+    if (sections.bookmarks && failure && !merged.includes("bookmarks")) value.joining = true;
     await Idb.writeMeta(IdbMetaKey.Sync, value);
     await setConfig(value);
+    remoteSections.value = progress.sections;
     // A budget spent with a former key no longer concerns this one.
     clearQuota();
     settingsChanged();
     errorNeedsAction.value = needsAction(failure);
-    const received = sections.bookmarks
+    errorSection.value = failure instanceof SyncPartialError ? failure.section : null;
+    const received = merged.includes("bookmarks")
       ? "Vos signets en ligne ont été ajoutés à cet appareil, mais l'envoi des siens n'a pas abouti"
       : "Vos préférences en ligne ont été appliquées sur cet appareil, mais l'envoi des siennes n'a pas abouti";
-    if (failure && (errorNeedsAction.value || failure instanceof SyncQuotaError)) {
+    if (failure instanceof SyncPartialError) {
+      status.value = "error";
+      error.value = describe(failure);
+    } else if (failure && (errorNeedsAction.value || failure instanceof SyncQuotaError)) {
       // To be done by the user, or tomorrow: no retry in a few seconds.
       status.value = "error";
       error.value = `${received}. ${describe(failure)}`;
@@ -631,19 +721,24 @@ export const useSyncStore = defineStore("sync", () => {
     const current = sectionsOf(config);
     if (sections.bookmarks && !current.bookmarks) return activate(fromBase64url(config.secret), sections);
 
-    // The bookmarks no longer synchronized: their latest changes sent first.
-    if (current.bookmarks && !sections.bookmarks) await lastSync();
+    // A type (or preferences) no longer synchronized: the latest changes
+    // sent first.
+    if ((current.bookmarks && !sections.bookmarks) || current.preferences.some(key => !sections.preferences.includes(key))) {
+      await lastSync();
+    }
     // Disabled (or deleted) meanwhile.
     const latest = config as IdbSyncConfig | null;
     if (!latest) return { state: "success", data: { emptied: false } };
 
+    const added = sections.preferences.filter(key => !current.preferences.includes(key));
+    if (added.length) await stampUnstamped(added);
     const value: IdbSyncConfig = { ...latest, bookmarks: sections.bookmarks, preferences: [...sections.preferences] };
     await Idb.writeMeta(IdbMetaKey.Sync, value);
     await setConfig(value);
     settingsChanged();
 
     // Preferences added: synchronized now.
-    if (sections.preferences.some(key => !current.preferences.includes(key)) && !(await sync({ force: true }))) {
+    if (added.length && !(await sync({ force: true }))) {
       return { state: "error", message: error.value ?? "La synchronisation a échoué." };
     }
     return { state: "success", data: { emptied: false } };
@@ -721,6 +816,7 @@ export const useSyncStore = defineStore("sync", () => {
     status,
     error,
     errorNeedsAction,
+    errorSection,
     clockWrong,
     clockSkew,
     lastSyncedAt,
@@ -738,6 +834,7 @@ export const useSyncStore = defineStore("sync", () => {
     setSections,
     disable,
     preferencesChanged,
+    reconcilePreferences,
     deleteRemote,
     words,
     link,

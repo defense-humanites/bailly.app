@@ -69,7 +69,9 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await page.keyboard.press("Escape");
 
   // A small cloud marks the preferences synchronized.
-  await expect(page.getByRole("img", { name: "Synchronisée avec vos autres appareils" })).toHaveCount(3);
+  await expect(page.locator("[data-synced]")).toHaveCount(3);
+  // For screen readers, the controls say it.
+  await expect(transliteration(page)).toHaveAccessibleName("Grec translittéré (réglage synchronisé avec vos autres appareils)");
   const { link, bookmarks } = await syncStore(page);
   expect(bookmarks).toBe(false);
   expect(link).toMatch(/\/pr%C3%A9f%C3%A9rences#sync=[\w-]{22}$/);
@@ -122,12 +124,14 @@ test("the bookmarks and the preferences: one key, enabled and stopped type by ty
   await expect(page.getByText("Signets à jour")).toBeVisible();
   await page.keyboard.press("Escape");
 
-  // Then the preferences, with the same key.
-  await page.goto(PREFERENCES_PATH);
+  // Then the preferences, with the same key: through the link of the
+  // preferences (e.g. scanned from another device that synchronizes them).
+  const { link } = await syncStore(page);
+  await page.goto(link!);
   await waitForHydration(page);
-  await openSync(page);
   const dialog = page.getByRole("dialog");
-  await dialog.getByRole("button", { name: /Synchroniser aussi vos préférences/ }).click();
+  await expect(dialog.getByText("Cet appareil synchronise déjà ses signets avec la clé de ce lien.")).toBeVisible();
+  await dialog.getByRole("button", { name: "Synchroniser aussi vos préférences" }).click();
   await expect(dialog.getByText("Préférences à jour")).toBeVisible();
   expect(await syncStore(page)).toMatchObject({ bookmarks: true });
   expect((await syncStore(page)).preferences).toHaveLength(3);
@@ -144,5 +148,5 @@ test("the bookmarks and the preferences: one key, enabled and stopped type by ty
   await dialog.getByRole("button", { name: "Désactiver sur cet appareil" }).click();
   await expect(page.getByText("Synchronisation des préférences désactivée sur cet appareil", { exact: true })).toBeVisible();
   expect(await syncStore(page)).toMatchObject({ bookmarks: true, preferences: [] });
-  await expect(page.getByRole("img", { name: "Synchronisée avec vos autres appareils" })).toHaveCount(0);
+  await expect(page.locator("[data-synced]")).toHaveCount(0);
 });

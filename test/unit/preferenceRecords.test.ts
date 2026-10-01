@@ -84,6 +84,13 @@ test("the records received are validated and bounded, the known preferences alwa
     .toBe(2 * MAX_PREFERENCE_RECORDS - (MAX_PREFERENCE_RECORDS - 1));
 });
 
+test("invalid entries cannot push the known preferences out", () => {
+  const stamp = formatStamp({ time: now, counter: 0, node: "a" });
+  const junk = Array.from({ length: 1_000 }, () => ({ key: "", value: true, updatedAt: stamp }));
+  expect(validatePreferenceRecords([...junk, { key: "readingFont", value: "book", updatedAt: stamp }], now))
+    .toEqual([{ key: "readingFont", value: "book", updatedAt: stamp }]);
+});
+
 test("a value this version cannot apply is not applied", () => {
   const stamp = formatStamp({ time: now, counter: 0, node: "a" });
   expect(applicableValue({ key: "readingFont", value: "book", updatedAt: stamp })).toBe("book");

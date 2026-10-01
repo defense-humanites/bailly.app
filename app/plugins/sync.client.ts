@@ -36,8 +36,9 @@ const BOOKMARKS_PATH = "/signets";
  * the bookmarks page is shown (and when arriving there), when the user comes
  * back to the page or the network comes back, and shortly after each change
  * of a type synchronized (cf. `usePreferences` for the preferences), or right
- * away when the page is hidden, before the browser suspends it. It waits for the end of the interactions that hold the
- * bookmarks shown (cf. `useBookmarksHold`).
+ * away when the page is hidden, before the browser suspends it. It waits for
+ * the end of the interactions that hold the bookmarks shown (cf.
+ * `useBookmarksHold`).
  */
 export default defineNuxtPlugin({
   name: "sync",
@@ -53,6 +54,9 @@ export default defineNuxtPlugin({
     onNuxtReady(async () => {
       await bookmarksStore.initialize();
       await syncStore.load();
+      // The preferences synchronized that the cookie lacks (e.g. expired),
+      // even offline.
+      await syncStore.reconcilePreferences();
       if (syncStore.enabled) void syncStore.sync();
     });
 

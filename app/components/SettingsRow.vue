@@ -23,14 +23,17 @@
     <div class="min-w-0">
       <p class="flex items-center gap-1.5 font-medium">
         <span aria-hidden="true">{{ label }}</span>
-        <!-- Synchronized: a small cloud (named for screen readers). -->
+        <!--
+          Synchronized: a small cloud (for screen readers, the control's name
+          says it, cf. the preferences page).
+        -->
         <UTooltip
           v-if="synced"
           text="Synchronisée avec vos autres appareils"
         >
           <span
-            role="img"
-            aria-label="Synchronisée avec vos autres appareils"
+            data-synced
+            aria-hidden="true"
             class="flex"
           >
             <UIcon

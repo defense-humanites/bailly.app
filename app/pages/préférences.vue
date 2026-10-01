@@ -19,6 +19,12 @@
    * small cloud, once the settings of the synchronization are loaded).
    */
   const synced = (key: SyncablePreference): boolean => syncStore.loaded && syncStore.syncedPreferences.includes(key);
+
+  /**
+   * The accessible name of a control, telling whether it is synchronized.
+   */
+  const syncedLabel = (label: string, key: SyncablePreference): string =>
+    synced(key) ? `${label} (réglage synchronisé avec vos autres appareils)` : label;
   const colorMode = useColorMode();
 
   // The search preferences are shared with the options of the search bar.
@@ -153,7 +159,7 @@
         >
           <USwitch
             v-model="transliterateGreek"
-            aria-label="Grec translittéré"
+            :aria-label="syncedLabel('Grec translittéré', 'transliterateGreek')"
           />
         </SettingsRow>
       </UCard>
@@ -192,7 +198,7 @@
           <USelect
             v-model="readingFont"
             :items="readingFontItems"
-            aria-label="Police"
+            :aria-label="syncedLabel('Police', 'readingFont')"
             class="w-48"
           />
         </SettingsRow>
@@ -255,7 +261,7 @@
         >
           <USwitch
             v-model="inflectedForms"
-            aria-label="Formes fléchies"
+            :aria-label="syncedLabel('Formes fléchies', 'inflectedForms')"
           />
         </SettingsRow>
         <SettingsRow
@@ -266,7 +272,7 @@
           <URadioGroup
             v-model="inputMode"
             :items="inputModeItems"
-            legend="Mode de saisie"
+            :legend="syncedLabel('Mode de saisie', 'inputMode')"
             variant="table"
             orientation="horizontal"
             indicator="hidden"

@@ -1,5 +1,5 @@
 import { MAX_LOCKER_BLOB_LENGTH } from "#shared/utils/sync";
-import { canonical, compact, emptyState, TOMBSTONE_MAX_AGE, withoutTombstones, type BookmarksState } from "~/idb/merge";
+import { canonical, compact, emptyState, TOMBSTONE_MAX_AGE, withoutTombstones, type BookmarksState, type LimitExcess } from "~/idb/merge";
 import { mergePreferenceRecords, type PreferenceRecord } from "~/idb/preferenceRecords";
 import { exportState } from "~/idb/transfer";
 import type { SyncablePreference } from "~/utils/preferences";
@@ -13,6 +13,7 @@ import {
   readPreferencesSection,
   serializeLocker,
   type LockerSections,
+  type SyncSection,
 } from "./locker";
 import { EMPTY_LOCKER, fetchLocker, storeLocker, SyncTimeoutError } from "./lockerClient";
 
@@ -36,11 +37,6 @@ export type BookmarksDependencies = {
    * @returns The merged state.
    */
   joinState?: (state: BookmarksState) => Promise<BookmarksState>;
-  /**
-   * The reference time for the stamps received (cf.
-   * `IdbBookmarks.referenceTime`); by default, this device's time.
-   */
-  referenceTime?: () => Promise<number>;
 };
 
 /**
@@ -70,6 +66,12 @@ export type PreferencesDependencies = {
 export type SyncDependencies = {
   bookmarks?: BookmarksDependencies;
   preferences?: PreferencesDependencies;
+  /**
+   * The reference time for the stamps received, the same for every type
+   * (cf. `IdbBookmarks.referenceTime`: this device's clock, or the latest
+   * stamp it observed); by default, this device's time.
+   */
+  referenceTime?: () => Promise<number>;
   fetch?: typeof fetch;
 };
 
@@ -86,10 +88,10 @@ export type SyncOptions = {
    */
   signal?: AbortSignal;
   /**
-   * Called once the locker has been merged into the stored data (every type
-   * synchronized here).
+   * Called once the locker has been merged into the stored data, with the
+   * types merged (some may have failed, cf. `SyncPartialError`).
    */
-  onMerged?: () => void;
+  onMerged?: (sections: SyncSection[]) => void;
   /**
    * Called once this device has filled again a locker the server had emptied.
    */
@@ -127,9 +129,15 @@ export class SyncTooLargeError extends Error {
  * nothing is merged nor written, until the user makes room on this device.
  */
 export class SyncLimitError extends Error {
-  constructor(message: string) {
+  /**
+   * The limits exceeded, if known (e.g. to explain them otherwise).
+   */
+  readonly excesses: LimitExcess[];
+
+  constructor(message: string, excesses: LimitExcess[] = []) {
     super(message);
     this.name = "SyncLimitError";
+    this.excesses = excesses;
   }
 }
 
@@ -179,11 +187,26 @@ const sameBookmarks = (a: BookmarksState, b: BookmarksState): boolean =>
   canonical(exportState(a)) === canonical(exportState(b));
 
 /**
- * The outcome of merging one type of data with the locker: merged (`changed`:
- * to be written back), or not (e.g. the limits would be exceeded, or written
- * by a later version), its section then staying as read.
+ * A type of data could not be merged with the locker (e.g. the limits would
+ * be exceeded, or its section was written by a later version), while the
+ * others were: its section stays as read online, and its error (`cause`) is
+ * reported once the others are written.
  */
-type SectionOutcome = { state: "merged"; changed: boolean } | { state: "failed"; error: unknown };
+export class SyncPartialError extends Error {
+  readonly section: SyncSection;
+
+  constructor(section: SyncSection, cause: unknown) {
+    super(cause instanceof Error ? cause.message : String(cause), { cause });
+    this.name = "SyncPartialError";
+    this.section = section;
+  }
+}
+
+/**
+ * The outcome of merging one type of data with the locker: merged (`changed`:
+ * to be written back), or not, its section then staying as read.
+ */
+type SectionOutcome = { section: SyncSection } & ({ state: "merged"; changed: boolean } | { state: "failed"; error: unknown });
 
 /**
  * Synchronizes the types of data this device synchronizes with the locker:
@@ -192,14 +215,12 @@ type SectionOutcome = { state: "merged"; changed: boolean } | { state: "failed";
  * are written back as they are. If another device wrote in the meantime,
  * starts over (the merges are CRDT merges: nothing is lost, whatever the
  * order).
- * A type that cannot be merged (e.g. the limits would be exceeded, or its
- * section was written by a later version) does not stop the others: its
- * section stays as read, and its error is thrown once the others are
- * written.
  * @returns The version of the locker, once in sync.
+ * @throws {SyncPartialError} If a type could not be merged (or its data are
+ * too large), the others being in sync: its section stays as read.
  * @throws {LockerDeletedError} If a device deleted the locker.
  * @throws {SyncNetworkError} If the server cannot be reached.
- * @throws {SyncTooLargeError} If the bookmarks are too large for a locker.
+ * @throws {SyncTooLargeError} If the content is too large for a locker.
  */
 export async function synchronize(
   credentials: SyncCredentials,
@@ -221,22 +242,23 @@ export async function synchronize(
     // are replaced below.
     const sections: LockerSections = found ? parseLocker(await decryptText(found.blob, credentials)) : {};
     onSections?.(Object.keys(sections));
-    const now = bookmarks?.referenceTime ? await bookmarks.referenceTime() : Date.now();
+    const now = deps.referenceTime ? await deps.referenceTime() : Date.now();
     checkCancelled();
+
+    const outcomes: SectionOutcome[] = [];
 
     // The bookmarks.
     let state: BookmarksState | null = null;
-    let bookmarksOutcome: SectionOutcome | null = null;
     if (bookmarks && exists) {
       try {
         const remote = readBookmarksSection(sections, now);
         checkCancelled();
         state = await (first && bookmarks.joinState ? bookmarks.joinState(remote) : bookmarks.mergeState(remote));
-        bookmarksOutcome = { state: "merged", changed: !sameBookmarks(state, remote) };
+        outcomes.push({ section: "bookmarks", state: "merged", changed: !sameBookmarks(state, remote) });
       } catch (e: unknown) {
         if (e instanceof SyncTimeoutError) throw e;
         state = null;
-        bookmarksOutcome = { state: "failed", error: e };
+        outcomes.push({ section: "bookmarks", state: "failed", error: e });
       }
     } else if (bookmarks && !readOnly) {
       // Not created yet, or emptied (or deleted) after a long idle period:
@@ -244,16 +266,16 @@ export async function synchronize(
       // without its earlier deletions (cf. `joinState`): the other devices'
       // bookmarks are not online to protect them.
       state = first ? withoutTombstones(await bookmarks.readState()) : await bookmarks.readState();
-      bookmarksOutcome = { state: "merged", changed: true };
+      outcomes.push({ section: "bookmarks", state: "merged", changed: true });
     }
 
     // The preferences: those this device synchronizes are merged, the others
     // passed on.
-    let preferencesOutcome: SectionOutcome | null = null;
     if (preferences) {
       try {
         const remote = readPreferencesSection(sections, now);
         const synced = new Set<string>(preferences.keys);
+        checkCancelled();
         const local = exists
           ? await preferences.mergeRecords(remote.filter(record => synced.has(record.key)))
           : await preferences.readRecords();
@@ -264,25 +286,38 @@ export async function synchronize(
         );
         const changed = canonical(merged) !== canonical(remote);
         if (changed) sections.preferences = preferencesSection(merged);
-        preferencesOutcome = { state: "merged", changed };
+        outcomes.push({ section: "preferences", state: "merged", changed });
       } catch (e: unknown) {
         if (e instanceof SyncTimeoutError) throw e;
-        preferencesOutcome = { state: "failed", error: e };
+        outcomes.push({ section: "preferences", state: "failed", error: e });
       }
     }
 
-    const outcomes = [bookmarksOutcome, preferencesOutcome].filter(outcome => outcome !== null);
-    const failure = outcomes.find(outcome => outcome.state === "failed");
-    if (exists && !failure) onMerged?.();
+    if (exists) onMerged?.(outcomes.filter(outcome => outcome.state === "merged").map(outcome => outcome.section));
+    let failure = outcomes.find(outcome => outcome.state === "failed");
+    const partial = (): SyncPartialError | null =>
+      failure?.state === "failed" ? new SyncPartialError(failure.section, failure.error) : null;
 
     // Created even if empty (so that the other devices can join the key).
     const changed = !exists || outcomes.some(outcome => outcome.state === "merged" && outcome.changed);
     if (readOnly || !changed) {
-      if (failure) throw failure.error;
+      const error = partial();
+      if (error) throw error;
       return found ? found.version : 0;
     }
 
-    const blob = await lockerBlob(state, credentials, MAX_LOCKER_BLOB_LENGTH, sections);
+    let blob: string;
+    try {
+      blob = await lockerBlob(state, credentials, MAX_LOCKER_BLOB_LENGTH, sections);
+    } catch (e: unknown) {
+      // Bookmarks too large: the preferences changed are written all the
+      // same, the bookmarks staying as read online.
+      if (!(e instanceof SyncTooLargeError) || !exists || state === null) throw e;
+      const preferencesChanged = outcomes.some(outcome => outcome.section === "preferences" && outcome.state === "merged" && outcome.changed);
+      if (!preferencesChanged) throw new SyncPartialError("bookmarks", e);
+      blob = await lockerBlob(null, credentials, MAX_LOCKER_BLOB_LENGTH, sections);
+      failure = { section: "bookmarks", state: "failed", error: e };
+    }
     checkCancelled();
     const result = await storeLocker(credentials, found ? found.version : 0, blob, requestOptions);
     if (result.state === "written") {
@@ -298,7 +333,8 @@ export async function synchronize(
         }
         if (locker === EMPTY_LOCKER) onRefilled?.();
       }
-      if (failure) throw failure.error;
+      const error = partial();
+      if (error) throw error;
       return result.version;
     }
   }

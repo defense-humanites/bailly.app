@@ -1,7 +1,7 @@
 import { maxStamp } from "./clock";
 import { Idb, IdbMetaKey, IdbStore } from "./Idb";
 import { mergePreferenceRecords, preferenceRecords, type PreferenceRecord } from "./preferenceRecords";
-import type { Preferences } from "~/utils/preferences";
+import { isSyncablePreference, type Preferences } from "~/utils/preferences";
 
 /**
  * The stamps of the synchronizable preferences set on this device (cf.
@@ -39,6 +39,7 @@ export class IdbPreferences {
 
   static async #write(values: Partial<Preferences>): Promise<PreferenceRecord[]> {
     await IdbPreferences.#pending;
+    if (!Object.keys(values).some(isSyncablePreference)) return [];
     const db = await Idb.getIndexedDB();
     const tx = db.transaction(IdbStore.Meta, "readwrite");
     const meta = tx.objectStore(IdbStore.Meta);

@@ -34,6 +34,7 @@
       addDescription: "Avec la clé de vos préférences : vos signets de cet appareil et ceux de vos autres appareils seront réunis.",
       disabled: "Synchronisation des signets désactivée sur cet appareil",
       stopDevice: "Vos signets restent sur cet appareil, et en ligne pour vos autres appareils. Pour réactiver la synchronisation, il faudra la clé : les signets en ligne seront alors rétablis sur cet appareil, même ceux que vous y auriez supprimés entre-temps.",
+      stopDeviceKept: "Vos signets restent sur cet appareil, et en ligne pour vos autres appareils. Pour les synchroniser de nouveau : « Synchroniser aussi vos signets » ; les signets en ligne seront alors rétablis sur cet appareil, même ceux que vous y auriez supprimés entre-temps.",
       otherStays: "Vos préférences restent synchronisées.",
       status: "Pour retrouver vos signets sur un autre appareil (téléphone, tablette…), ajoutez-le avec votre clé. Pensez aussi à la sauvegarder hors du navigateur.",
       emptied: "Faute d'activité, le serveur avait effacé vos signets en ligne : ceux de cet appareil les remplacent. Vos autres appareils y ajouteront les leurs à leur prochaine synchronisation.",
@@ -50,6 +51,7 @@
       addDescription: "Avec la clé de vos signets : les préférences choisies seront les mêmes sur vos appareils.",
       disabled: "Synchronisation des préférences désactivée sur cet appareil",
       stopDevice: "Vos préférences restent réglées sur cet appareil, et en ligne pour vos autres appareils.",
+      stopDeviceKept: "Vos préférences restent réglées sur cet appareil, et en ligne pour vos autres appareils.",
       otherStays: "Vos signets restent synchronisés.",
       status: "Pour retrouver vos préférences sur un autre appareil (téléphone, tablette…), ajoutez-le avec votre clé. Pensez aussi à la sauvegarder hors du navigateur.",
       emptied: "Faute d'activité, le serveur avait effacé vos préférences en ligne : celles de cet appareil les remplacent.",
@@ -82,11 +84,24 @@
     status,
     error,
     errorNeedsAction,
+    errorSection,
     clockWrong,
     clockSkew,
     lastSyncedAt,
     supported,
   } = storeToRefs(syncStore);
+
+  /**
+   * Whether the latest synchronization failed for the type of data of the
+   * window (the other may be the only one concerned).
+   */
+  const scopeError = computed(() => status.value === "error" && (errorSection.value === null || errorSection.value === props.scope));
+
+  /**
+   * The latest error of the synchronization, if it concerns the type of data
+   * of the window.
+   */
+  const scopedError = computed(() => (errorSection.value === null || errorSection.value === props.scope ? error.value : null));
 
   /**
    * Whether this device synchronizes the type of data of the window (the key
@@ -99,12 +114,16 @@
    * once); otherwise, those offered checked.
    */
   const chosenPreferences = ref<SyncablePreference[]>([...DEFAULT_SYNCED_PREFERENCES]);
-  const preferenceItems = computed(() => SYNCABLE_PREFERENCES.map(value => ({
-    value,
-    ...preferenceLabels[value],
+  const preferenceItems = computed(() => SYNCABLE_PREFERENCES.map((value) => {
     // At least one: to synchronize none, the synchronization is stopped.
-    disabled: chosenPreferences.value.length === 1 && chosenPreferences.value[0] === value,
-  })));
+    const last = chosenPreferences.value.length === 1 && chosenPreferences.value[0] === value;
+    return {
+      value,
+      ...preferenceLabels[value],
+      ...(last ? { description: "Au moins une préférence reste cochée : pour n'en synchroniser aucune, arrêtez la synchronisation." } : {}),
+      disabled: last,
+    };
+  }));
 
   /**
    * The types of data to synchronize once the window's is enabled: added to
@@ -122,11 +141,14 @@
   /**
    * Changes the preferences synchronized, once enabled.
    */
-  const setPreferences = async (keys: SyncablePreference[]): Promise<void> => {
+  const setPreferences = (keys: SyncablePreference[]) => {
     chosenPreferences.value = keys;
     if (!scopeEnabled.value || !keys.length) return;
-    const result = await syncStore.setSections({ bookmarks: syncedBookmarks.value, preferences: keys });
-    if (result.state === "error") actionError.value = result.message;
+    // One change at a time (the latest changes are sent first, cf. `setSections`).
+    void run(async () => {
+      const result = await syncStore.setSections({ bookmarks: syncedBookmarks.value, preferences: keys });
+      if (result.state === "error") actionError.value = result.message;
+    });
   };
 
   /**
@@ -233,8 +255,11 @@
    */
   const addScope = () => run(async () => {
     const result = await syncStore.setSections(sectionsToSync());
+    linkKey.value = null;
     if (result.state === "error") {
       actionError.value = result.message;
+      // Enabled all the same (e.g. offline: synchronized later).
+      if (scopeEnabled.value) view.value = "status";
       return;
     }
     toast.add({ title: "Synchronisation activée", icon: "i-lucide-circle-check", color: "success" });
@@ -264,9 +289,6 @@
   });
 
   /**
-   * Whether the key of the link is already this device's.
-   */
-  /**
    * The key of the link, while it has not been used: once joined (or once
    * the user goes elsewhere in the window), "J'ai déjà une clé" asks for the
    * words.
@@ -277,6 +299,10 @@
     if (value !== "join") linkKey.value = null;
   });
 
+  /**
+   * Whether the key of the link is already this device's (for this type, or
+   * the other one only: this one is then added).
+   */
   const sameKey = computed(() => Boolean(linkKey.value && enabled.value && syncStore.hasKey(linkKey.value)));
 
   /**
@@ -467,7 +493,7 @@
     {
       value: "device",
       label: "Sur cet appareil seulement",
-      description: otherEnabled.value ? `${texts.value.stopDevice} ${texts.value.otherStays}` : texts.value.stopDevice,
+      description: otherEnabled.value ? `${texts.value.stopDeviceKept} ${texts.value.otherStays}` : texts.value.stopDevice,
     },
     {
       value: "everywhere",
@@ -544,11 +570,11 @@
         <!-- Not enabled -->
         <template v-else-if="view === 'intro'">
           <UAlert
-            v-if="actionError ?? error"
+            v-if="actionError ?? scopedError"
             :color="actionError ? 'error' : 'warning'"
             variant="subtle"
             :icon="actionError ? 'i-lucide-circle-alert' : 'i-lucide-info'"
-            :title="actionError ?? error ?? undefined"
+            :title="actionError ?? scopedError ?? undefined"
           />
           <p>
             {{ texts.intro }}
@@ -640,8 +666,12 @@
 
         <!-- Join -->
         <template v-else-if="view === 'join'">
-          <p v-if="sameKey">
+          <p v-if="sameKey && scopeEnabled">
             Cet appareil est déjà synchronisé avec la clé de ce lien.
+          </p>
+          <p v-else-if="sameKey">
+            Cet appareil synchronise déjà {{ scope === "bookmarks" ? "ses préférences" : "ses signets" }} avec la clé de ce
+            lien. {{ texts.addDescription }}
           </p>
           <p v-else-if="linkKey">
             Activer la synchronisation sur cet appareil avec la clé de ce lien ? {{ texts.joined }}
@@ -815,13 +845,13 @@
           <!-- The state; a synchronization can be run at once (they are automatic). -->
           <div class="flex items-center gap-3 rounded-md bg-elevated p-3">
             <UIcon
-              :name="syncingShown ? 'i-lucide-refresh-cw' : status === 'error' ? 'i-lucide-cloud-off' : 'i-lucide-cloud-check'"
+              :name="syncingShown ? 'i-lucide-refresh-cw' : scopeError ? 'i-lucide-cloud-off' : 'i-lucide-cloud-check'"
               class="size-6 shrink-0"
-              :class="[syncingShown && 'animate-spin motion-reduce:animate-none', status === 'error' ? 'text-warning' : 'text-success']"
+              :class="[syncingShown && 'animate-spin motion-reduce:animate-none', scopeError ? 'text-warning' : 'text-success']"
             />
             <div class="min-w-0 grow">
               <p class="font-semibold">
-                {{ syncingShown ? "Synchronisation en cours…" : status === "error" ? "Synchronisation en attente" : texts.upToDate }}
+                {{ syncingShown ? "Synchronisation en cours…" : scopeError ? "Synchronisation en attente" : texts.upToDate }}
               </p>
               <p class="text-muted">
                 Synchronisation activée sur cet appareil.
@@ -848,7 +878,7 @@
             >{{ manualSync === "done" ? texts.synced : manualSync === "failed" ? "La synchronisation n'a pas abouti." : "" }}</span>
           </div>
           <UAlert
-            v-if="status === 'error' && error"
+            v-if="scopeError && error"
             color="warning"
             variant="subtle"
             icon="i-lucide-cloud-off"
@@ -876,6 +906,7 @@
             :model-value="chosenPreferences"
             :items="preferenceItems"
             legend="Préférences synchronisées"
+            :disabled="busy"
             @update:model-value="(keys) => setPreferences(keys as SyncablePreference[])"
           />
           <p class="text-muted">
@@ -893,7 +924,7 @@
             :ui="{ legend: 'sr-only', fieldset: 'gap-2' }"
           />
           <UAlert
-            v-if="stopScope === 'device' && status === 'error'"
+            v-if="stopScope === 'device' && scopeError"
             color="warning"
             variant="subtle"
             icon="i-lucide-cloud-off"
@@ -922,12 +953,18 @@
           :label="linkKey ? 'Annuler' : 'Retour'"
           color="neutral"
           variant="outline"
-          @click="linkKey ? (open = false) : (view = enabled ? 'status' : 'intro')"
+          @click="linkKey ? (open = false) : (view = scopeEnabled ? 'status' : 'intro')"
         />
         <UButton
-          v-if="sameKey"
+          v-if="sameKey && scopeEnabled"
           label="Voir la synchronisation"
           @click="view = 'status'"
+        />
+        <UButton
+          v-else-if="sameKey"
+          :label="texts.add"
+          :loading="busy"
+          @click="addScope"
         />
         <UButton
           v-else-if="linkKey && enabled"

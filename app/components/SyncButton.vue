@@ -13,7 +13,7 @@
   }>();
 
   const syncStore = useSyncStore();
-  const { loaded, syncedBookmarks, syncedPreferences, status, error } = storeToRefs(syncStore);
+  const { loaded, syncedBookmarks, syncedPreferences, status, error, errorSection } = storeToRefs(syncStore);
 
   /**
    * Whether this device synchronizes the type of data of the page.
@@ -46,7 +46,8 @@
    * Whether the synchronization failed (e.g. the limits would be exceeded:
    * the user has to make room).
    */
-  const needsAttention = computed(() => enabled.value && status.value === "error" && Boolean(error.value));
+  const needsAttention = computed(() => enabled.value && status.value === "error" && Boolean(error.value)
+    && (errorSection.value === null || errorSection.value === props.scope));
 
   /**
    * The icon, after the state (a plain cloud until the settings are loaded,

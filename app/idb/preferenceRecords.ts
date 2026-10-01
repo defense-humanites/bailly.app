@@ -54,7 +54,9 @@ const isValue = (value: unknown): value is PreferenceValue =>
  */
 export function validatePreferenceRecords(value: unknown, now: number = Date.now()): PreferenceRecord[] {
   if (!Array.isArray(value)) return [];
-  const records = value.slice(0, 10 * MAX_PREFERENCE_RECORDS).filter((record): record is PreferenceRecord =>
+  // The whole array is read (it is bounded by the size of the locker), so that
+  // invalid entries cannot push the known preferences out.
+  const records = value.filter((record): record is PreferenceRecord =>
     typeof record === "object" && record !== null
     && typeof (record as PreferenceRecord).key === "string"
     && (record as PreferenceRecord).key.length > 0 && (record as PreferenceRecord).key.length <= MAX_KEY_LENGTH

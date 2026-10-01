@@ -152,6 +152,12 @@ export type IdbSyncConfig = {
    * The preferences synchronized on this device (absent or empty: none).
    */
   preferences?: SyncablePreference[];
+  /**
+   * Set while the bookmarks, just enabled, have not been merged with the
+   * locker yet (e.g. the limits would have been exceeded): the next
+   * synchronizations join them (cf. `SyncOptions.first`).
+   */
+  joining?: true;
 };
 
 type IdbMetaValues = {

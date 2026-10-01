@@ -75,10 +75,11 @@
         Notre serveur le lit pour afficher les pages avec vos réglages. Le thème et
         l'état de l'interface (étiquette active, avis masqués) sont gardés dans le
         stockage local de votre navigateur. Ces données ne contiennent aucun
-        identifiant et ne servent qu'au fonctionnement de l'application. Si vous
-        synchronisez vos préférences, la date de chaque modification est aussi
-        gardée dans votre navigateur, et le cookie peut être déposé ou modifié pour
-        appliquer un réglage fait sur un autre de vos appareils.
+        identifiant et ne servent qu'au fonctionnement de l'application. La date de
+        chaque modification de certaines préférences (translittération, formes
+        fléchies, police, saisie) est aussi gardée dans votre navigateur, pour leur
+        synchronisation si vous l'activez&nbsp;; le cookie peut alors être déposé
+        ou modifié pour appliquer un réglage fait sur un autre de vos appareils.
       </p>
 
       <p>
