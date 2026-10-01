@@ -7,7 +7,8 @@ test.describe("transliterated Greek", () => {
   test.beforeEach(async ({ page, goto }) => {
     await goto("/préférences", { waitUntil: "hydration" });
     await page.getByRole("switch", { name: "Grec translittéré" }).click();
-    await expect(page.getByRole("figure", { name: "Aperçu" })).toContainText("opso·manēs");
+    // The preview's headword, transliterated (the entry is drawn at random).
+    await expect(page.getByRole("figure", { name: "Aperçu" }).locator(".entreea")).not.toHaveText(GREEK);
   });
 
   test("the entry page, rendered by the server", async ({ page, goto }) => {

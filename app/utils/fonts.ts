@@ -29,9 +29,9 @@ function path(url: string): string {
  */
 export const READING_FONTS = {
   // A subset of Gentium Book Plus, renamed as its license requires (cf.
-  // `scripts/subset-fonts.sh`); its label says what it derives from.
+  // `scripts/subset-fonts.sh`, the README).
   book: {
-    label: "Bailly Book (d'après Gentium)",
+    label: "Bailly Book",
     files: { normal: path(bookRoman), bold: path(bookBold) },
   },
   didot: {
@@ -47,7 +47,7 @@ export const READING_FONTS = {
     files: { normal: path(bodoniRoman), bold: path(bodoniBold) },
   },
   neohellenic: {
-    label: "GFS Neohellenic",
+    label: "GFS NeoHellenic",
     files: { normal: path(neohellenicRoman), bold: path(neohellenicBold) },
   },
 } as const satisfies Record<string, { label: string; files: Record<ReadingWeight, string> }>;

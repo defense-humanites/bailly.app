@@ -1,4 +1,5 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
+import { PREVIEW_ENTRIES } from "../../app/utils/previewEntries";
 import { rootLength } from "./helpers";
 
 test.describe("settings", () => {
@@ -84,7 +85,7 @@ test.describe("settings", () => {
 
     await goto("/préférences", { waitUntil: "hydration" });
     await page.getByRole("combobox", { name: "Police" }).click();
-    await page.getByRole("option", { name: "GFS Neohellenic" }).click();
+    await page.getByRole("option", { name: "GFS NeoHellenic" }).click();
     const preview = page.getByRole("figure", { name: "Aperçu" });
     await expect(preview).toHaveCSS("font-family", /^"GFS Neohellenic"/);
 
@@ -140,6 +141,29 @@ test.describe("settings", () => {
       // The GFS fonts' come from Inter (the same width).
       if (face.startsWith("GFS")) expect(thin, face).toBeCloseTo(narrow, 1);
     }
+  });
+
+  test("reading: the fonts in alphabetical order, the default one first", async ({ page, goto }) => {
+    await goto("/préférences", { waitUntil: "hydration" });
+    await page.getByRole("combobox", { name: "Police" }).click();
+    await expect(page.getByRole("option")).toHaveText(["Bailly Book", "GFS Artemisia", "GFS Bodoni", "GFS Didot", "GFS NeoHellenic"]);
+  });
+
+  test("reading: the preview's entry, drawn at each visit, the same once hydrated", async ({ page, goto }) => {
+    const words = new Set(PREVIEW_ENTRIES.map(entry => entry.html.match(/<span class="grec">([^<]+),<\/span>/)![1]));
+    const errors: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error" || /hydration/i.test(message.text())) errors.push(message.text());
+    });
+    const seen = new Set<string>();
+    for (let visit = 0; visit < 12 && seen.size < 2; visit++) {
+      await goto("/préférences", { waitUntil: "hydration" });
+      const word = (await page.getByRole("figure", { name: "Aperçu" }).locator(".entreea .grec").textContent())!.replace(/,$/, "");
+      expect(words).toContain(word);
+      seen.add(word);
+    }
+    expect(seen.size).toBeGreaterThan(1);
+    expect(errors).toEqual([]);
   });
 
   test("search: shared with the search options", async ({ page, goto }) => {

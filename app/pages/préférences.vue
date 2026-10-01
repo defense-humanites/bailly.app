@@ -3,7 +3,8 @@
   import { InputMode } from "~/enums";
   import { linkDefinition } from "~/utils/linkedEntries";
   import { READING_FONTS } from "~/utils/fonts";
-  import type { ReadingSize } from "~/utils/preferences";
+  import { PREVIEW_ENTRIES } from "~/utils/previewEntries";
+  import { DEFAULT_PREFERENCES, type ReadingSize } from "~/utils/preferences";
 
   useSeoMeta({
     title: "Préférences",
@@ -31,7 +32,11 @@
    * The fonts (their names aren't shown in them: that would download them
    * all; the preview shows the chosen one).
    */
-  const readingFontItems = Object.entries(READING_FONTS).map(([value, { label }]) => ({ label, value }));
+  const readingFontItems = Object.entries(READING_FONTS)
+    .map(([value, { label }]) => ({ label, value }))
+    .sort((a, b) =>
+      Number(b.value === DEFAULT_PREFERENCES.readingFont) - Number(a.value === DEFAULT_PREFERENCES.readingFont)
+      || a.label.localeCompare(b.label, "fr"));
 
   const readingSizeItems: RadioGroupItem[] = [
     { label: "Petite", value: "small" },
@@ -58,11 +63,15 @@
   ];
 
   /**
-   * A short real entry (ὀψομανής), to preview the reading settings: long
-   * enough to take two lines on a desktop screen whatever the font, weight and
-   * size, so that the preview keeps its height when they change.
+   * A short real entry to preview the reading settings, drawn at each visit
+   * (cf. `utils/previewEntries.ts`): on the server, then kept by the
+   * hydration (the same markup), and drawn again on a later visit in the app.
    */
-  const preview = linkDefinition("<span class=\"entreea\"><span class=\"grec\">ὀψο·μανής,</span></span> <span class=\"des\">ής, ές</span>\n[<span class=\"grec\">ᾰ</span>] passionné pour la bonne chère,\ngourmet, <span class=\"aut\">Ath.</span> <span class=\"refpa\">464</span><span class=\"refpb\">e</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/opson\">ὄψον</a>, <a href=\"/mainomai\">μαίνομαι</a></span>.</div>\n", { links: false });
+  const previewIndex = useState("preferences-preview", () => Math.floor(Math.random() * PREVIEW_ENTRIES.length));
+  if (import.meta.client && !useNuxtApp().isHydrating) {
+    previewIndex.value = Math.floor(Math.random() * PREVIEW_ENTRIES.length);
+  }
+  const preview = computed(() => linkDefinition(PREVIEW_ENTRIES[previewIndex.value]!.html, { links: false }));
 
   /**
    * Resetting the settings is confirmed first (it can't be undone).
