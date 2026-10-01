@@ -16,7 +16,7 @@
    * From this number of tags, a table of contents under the header leads to
    * their cards (below, they all show at a glance).
    */
-  const TOC_FROM = 6;
+  const TOC_FROM = 4;
 
   /**
    * The id of a group's card (the target of its link in the table of
