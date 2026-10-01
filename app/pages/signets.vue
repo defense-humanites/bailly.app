@@ -6,7 +6,7 @@
   });
 
   const bookmarksStore = useBookmarksStore();
-  const { initialized, tags, starredEntries } = storeToRefs(bookmarksStore);
+  const { initialized, tags, starredEntries, currentTagKey } = storeToRefs(bookmarksStore);
 
   const showButtonLabels = useButtonLabels();
 
@@ -103,7 +103,7 @@
       <template v-if="initialized">
         <!--
           Table of contents: a link per group, in its colors, to its card
-          (which clears the header). On one column, a single row that scrolls
+          (which clears the header); the active tag's with a stronger ring. On one column, a single row that scrolls
           sideways, to the edges of the screen; on two, it wraps.
         -->
         <nav
@@ -120,8 +120,9 @@
               <!-- Named « Homère, 12 entrées » (the full name, the count spelled out). -->
               <NuxtLink
                 :to="{ hash: `#${groupId(group.key)}` }"
-                :aria-label="`${group.name}, ${group.count} ${entryCount(group.count)}`"
-                class="flex h-8 items-center gap-1.5 rounded-full bg-tag-100 ps-2.5 pe-3 text-sm text-tag-text ring ring-inset ring-tag-300/60 transition-colors hover:bg-tag-200/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
+                :aria-label="`${group.name}, ${group.count} ${entryCount(group.count)}${group.key === currentTagKey ? ', étiquette active' : ''}`"
+                class="flex h-8 items-center gap-1.5 rounded-full bg-tag-100 ps-2.5 pe-3 text-sm text-tag-text ring-inset transition-colors hover:bg-tag-200/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
+                :class="group.key === currentTagKey ? 'ring-2 ring-tag-400' : 'ring ring-tag-300/60'"
               >
                 <UIcon
                   :name="group.icon"

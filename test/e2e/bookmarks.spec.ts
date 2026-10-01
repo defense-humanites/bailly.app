@@ -158,13 +158,29 @@ test.describe("bookmarks page", () => {
     await button.click();
     await expect(button).toHaveAttribute("aria-expanded", "true");
     await expect.poll(async () => (await look())[0]).toBe("none");
-    // The next shade, opaque (not the former translucency).
-    const [, , openColor] = await look();
-    expect(openColor).not.toBe(restColor);
-    expect(openColor).toMatch(/^rgb\(/);
+    // The next shade (once its transition is over), opaque (not the former
+    // translucency).
+    await expect.poll(async () => (await look())[2]).not.toBe(restColor);
+    expect((await look())[2]).toMatch(/^rgb\(/);
     await page.keyboard.press("Escape");
     await page.mouse.move(0, 0);
     await expect.poll(look).toEqual([restImage, "none", restColor]);
+  });
+
+  test("the active tag: marked on its card, chosen from another card", async ({ page }) => {
+    const vide = card(page, "Vide");
+    const vocabulaire = card(page, "Vocabulaire homérique");
+    // The newest tag is the active one.
+    await expect(vocabulaire.getByText("active", { exact: true })).toBeVisible();
+    await expect(vocabulaire.getByRole("button", { name: /^Rendre active/ })).toHaveCount(0);
+    await expect(vide.getByText("active", { exact: true })).toHaveCount(0);
+
+    await vide.getByRole("button", { name: "Rendre active l'étiquette « Vide »" }).click();
+    await expect(vide.getByText("active", { exact: true })).toBeVisible();
+    await expect(vocabulaire.getByText("active", { exact: true })).toHaveCount(0);
+    await expect(vocabulaire.getByRole("button", { name: "Rendre active l'étiquette « Vocabulaire homérique et tragique »" })).toBeAttached();
+    // Not on the favorites.
+    await expect(card(page, "Favoris").getByRole("button", { name: /^Rendre active/ })).toHaveCount(0);
   });
 
   test("removing a favorite", async ({ page }) => {
@@ -286,7 +302,7 @@ test.describe("bookmarks page, table of contents", () => {
     const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
     const links = toc.getByRole("link");
     // The favorites, then the tags in their order (the newest first).
-    const names = ["Favoris, 1 entrée", "Six, 2 entrées", "Cinq, 0 entrée", "Quatre, 0 entrée", "Trois, 0 entrée", "Deux, 0 entrée", "Un, 0 entrée"];
+    const names = ["Favoris, 1 entrée", "Six, 2 entrées, étiquette active", "Cinq, 0 entrée", "Quatre, 0 entrée", "Trois, 0 entrée", "Deux, 0 entrée", "Un, 0 entrée"];
     await expect(links).toHaveCount(names.length);
     for (const [i, name] of names.entries()) await expect(links.nth(i)).toHaveAccessibleName(name);
 

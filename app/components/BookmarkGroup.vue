@@ -150,6 +150,12 @@
   );
 
   /**
+   * Whether the group is the active tag (the one an entry's toolbar adds it
+   * to in one click).
+   */
+  const isActive = computed((): boolean => props.editable && bookmarksStore.currentTagKey === props.tag.key);
+
+  /**
    * The group's name, for accessible names.
    */
   const groupName = computed(
@@ -327,7 +333,16 @@
               :name="icon"
               class="mx-2 mt-1 size-6 shrink-0"
             />
-            <span class="ml-2 min-w-0 grow py-0.5 pe-2 text-xl/7 font-bold wrap-break-word md:py-0 md:text-2xl/8">{{ tag.name }}</span>
+            <span class="ml-2 min-w-0 grow py-0.5 pe-2 text-xl/7 font-bold wrap-break-word md:py-0 md:text-2xl/8">{{ tag.name }}<!--
+              The active tag, marked after its name (as in an entry's panel).
+            --><UBadge
+              v-if="isActive"
+              label="active"
+              color="neutral"
+              variant="soft"
+              size="sm"
+              class="ms-2 -translate-y-0.5 bg-default/60 align-middle font-medium text-tag-text ring ring-inset ring-tag-300/60"
+            /></span>
           </div>
 
           <!-- Edit tag data -->
@@ -374,19 +389,34 @@
         </div>
 
         <!--
-          Actions: the edit button, and in edit mode the tag deletion. Out of
+          Actions: the edit button, out of edit mode the choice of the active
+          tag (on the other tags), and in edit mode the tag deletion. Out of
           edit mode, they show on hover, on focus (they stay in the tab order:
           transparent, not hidden) and always on a touch screen (which has no
           hover).
         -->
         <!--
-          Their place is reserved for two buttons (the edit mode adds the
-          deletion): the name wraps alike in both modes.
+          Their place is reserved for two buttons: the name wraps alike in both
+          modes.
         -->
         <span
           class="flex h-8 min-w-[4.75rem] shrink-0 items-center justify-end gap-3"
           :class="editMode ? '' : 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100'"
         >
+          <UTooltip
+            v-if="editable && !editMode && !isActive"
+            text="Rendre active"
+          >
+            <UButton
+              icon="i-lucide-circle-dot"
+              size="sm"
+              variant="subtle"
+              color="neutral"
+              :aria-label="`Rendre active ${groupName}`"
+              :ui="{ base: 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
+              @click="bookmarksStore.setCurrentTag(tag.key)"
+            />
+          </UTooltip>
           <UButton
             v-if="editableEditMode && !showsDescriptionField"
             icon="i-lucide-text"

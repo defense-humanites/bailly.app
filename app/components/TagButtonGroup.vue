@@ -52,6 +52,13 @@
    */
   const FILTER_FROM = 8;
   const filterable = computed((): boolean => tags.value.length >= FILTER_FROM);
+
+  /**
+   * The tags to choose the active one from, in the user's order (cf. the
+   * panel's « Active » field).
+   */
+  const activeItems = computed(() => tags.value.map(tag => ({ label: tag.name, value: tag.key, color: tag.color })));
+  const activeLabelId = useId();
   /**
    * The filter field: without the search bar's shape (a pill with a shadow,
    * set for every `UInput` in app.config.ts).
@@ -176,6 +183,47 @@
             of its own (Reka's `ListboxContent` takes no attributes): the
             dialog is named, and the heading above it names the list.
           -->
+          <!--
+            The active tag (the one-click button's), chosen here without
+            leaving the entry: a menu of the tags, filterable as the list below
+            from `FILTER_FROM` tags.
+          -->
+          <div
+            v-if="panelTags.length"
+            class="flex items-center gap-2 px-2 pb-1.5"
+          >
+            <span
+              :id="activeLabelId"
+              class="shrink-0 text-sm text-muted"
+            >Active</span>
+            <USelectMenu
+              :model-value="currentTag?.key"
+              :items="activeItems"
+              value-key="value"
+              size="sm"
+              color="neutral"
+              :search-input="filterable && { placeholder: 'Filtrer…' }"
+              :aria-labelledby="activeLabelId"
+              class="min-w-0 grow"
+              @update:model-value="(key: TagKey) => bookmarksStore.setCurrentTag(key)"
+            >
+              <template #leading>
+                <UIcon
+                  name="i-bailly-tag-filled"
+                  :data-tag-color="currentTag?.color"
+                  class="size-4 shrink-0 text-tag-text"
+                />
+              </template>
+              <template #item-leading="{ item }">
+                <UIcon
+                  name="i-bailly-tag-filled"
+                  :data-tag-color="item.color"
+                  class="size-4 shrink-0 text-tag-text"
+                />
+              </template>
+            </USelectMenu>
+          </div>
+
           <UCommandPalette
             v-if="panelTags.length"
             :model-value="selectedItems"
