@@ -2,10 +2,10 @@
 import { createDatabase, type Database } from "db0";
 import sqlite from "db0/connectors/node-sqlite";
 import { beforeEach, expect, test } from "vitest";
-import { parseBookmarksFile } from "../../app/idb/transfer";
 import { formatStamp } from "../../app/idb/clock";
 import { emptyState, joinRecords, mergeStates, normalize, withoutTombstones, type BookmarksState } from "../../app/idb/merge";
-import { decryptText, deriveCredentials, type SyncCredentials } from "../../app/sync/crypto";
+import { decryptText, deriveCredentials, encryptText, type SyncCredentials } from "../../app/sync/crypto";
+import { parseLocker, readBookmarksSection, serializeLocker, SyncFormatError, SyncOutdatedError } from "../../app/sync/locker";
 import { lockerBlob, synchronize, SyncLimitError, SyncTooLargeError, type SyncDependencies } from "../../app/sync/engine";
 import { DAY, deleteLocker, hashToken, IDLE_MAX_DAYS, purgeLockers, readLocker, resetSchemaCache, writeLocker } from "../../server/lib/lockers";
 import { LockerDeletedError, SyncBusyError, SyncQuotaError, SyncTimeoutError } from "../../app/sync/lockerClient";
@@ -326,7 +326,7 @@ test("a content too large leaves out the older tombstones first, then is refused
 
   // Within a smaller limit: the tombstones older than 30 days are left out.
   const blob = await lockerBlob(state, credentials, withoutOlder.length + 10);
-  expect(parseBookmarksFile(await decryptText(blob, credentials)).starred.map(record => record.uri)).toEqual(["logos", "recent"]);
+  expect(readBookmarksSection(parseLocker(await decryptText(blob, credentials))).starred.map(record => record.uri)).toEqual(["logos", "recent"]);
 
   // Too large even without tombstones.
   await expect(lockerBlob(state, credentials, 100)).rejects.toThrow(SyncTooLargeError);
@@ -344,4 +344,78 @@ test("a merge beyond the limits stops the synchronization: nothing is written", 
   await expect(synchronize(credentials, refused)).rejects.toThrow(SyncLimitError);
   expect(liveStars(phone.state)).toEqual(["psukhe"]);
   expect(await synchronize(credentials, laptop.deps)).toBe(1); // The locker did not change.
+});
+
+/**
+ * Writes a locker's content directly (e.g. as a later version would).
+ */
+async function writeContent(content: string, version = 0): Promise<void> {
+  const blob = await encryptText(content, credentials);
+  const result = await writeLocker(db, credentials.lockerId, await hashToken(credentials.token), version, blob);
+  expect(result.state).toBe("written");
+}
+
+async function readContent(): Promise<Record<string, unknown>> {
+  const locker = await readLocker(db, credentials.lockerId, await hashToken(credentials.token));
+  if (locker.state !== "found") throw new Error(locker.state);
+  return parseLocker(await decryptText(locker.blob, credentials));
+}
+
+test("the sections of other types are written back as they are", async () => {
+  const history = { version: 3, entries: ["logos", "psuchê"] };
+  await writeContent(serializeLocker({ history }));
+
+  const laptop = device(fakeServer(db));
+  laptop.change(addStar("logos"));
+  expect(await synchronize(credentials, laptop.deps)).toBe(2);
+  const sections = await readContent();
+  expect(sections.history).toEqual(history);
+  expect(Object.keys(sections).sort()).toEqual(["bookmarks", "history"]);
+});
+
+test("a locker without bookmarks: they are added, the other sections kept", async () => {
+  const preferences = { version: 1, records: [] };
+  await writeContent(serializeLocker({ preferences }));
+
+  const phone = device(fakeServer(db));
+  expect(await synchronize(credentials, phone.deps, { first: true })).toBe(1); // Nothing to add.
+  phone.change(addStar("logos"));
+  expect(await synchronize(credentials, phone.deps)).toBe(2);
+  expect((await readContent()).preferences).toEqual(preferences);
+});
+
+test("bookmarks written by a later version: not merged nor overwritten", async () => {
+  const later = { version: 2, state: { tags: [], tagged: [], starred: [], tagOrder: null, future: true } };
+  await writeContent(serializeLocker({ bookmarks: later }));
+
+  const laptop = device(fakeServer(db));
+  laptop.change(addStar("logos"));
+  const error = await synchronize(credentials, laptop.deps).catch((e: unknown) => e);
+  expect(error).toBeInstanceOf(SyncOutdatedError);
+  expect((error as Error).message).toMatch(/rechargez la page/);
+  expect((await readContent()).bookmarks).toEqual(later);
+});
+
+test("a locker of a later or unknown format stops the synchronization, untouched", async () => {
+  await writeContent(JSON.stringify({ format: "bailly-sync", version: 2, sections: {} }));
+  const laptop = device(fakeServer(db));
+  laptop.change(addStar("logos"));
+  await expect(synchronize(credentials, laptop.deps)).rejects.toThrow(/version plus récente/);
+
+  await db.sql`DELETE FROM sync_lockers`;
+  await writeContent(JSON.stringify({ format: "bailly-bookmarks", version: 1, state: emptyState() }));
+  await expect(synchronize(credentials, laptop.deps)).rejects.toBeInstanceOf(SyncFormatError);
+});
+
+test("a locker too large: the sections of other types are left out before the bookmarks fail", async () => {
+  const state = { ...emptyState(), starred: [star("logos")] };
+  const unknown = { version: 1, padding: Array.from({ length: 400 }, () => Math.random().toString(36).slice(2)).join("") };
+  const alone = await lockerBlob(state, credentials);
+  const blob = await lockerBlob(state, credentials, alone.length + 100, { unknown });
+  const sections = parseLocker(await decryptText(blob, credentials));
+  expect(Object.keys(sections)).toEqual(["bookmarks"]);
+
+  // Within the limit, kept.
+  const roomy = await lockerBlob(state, credentials, undefined, { unknown });
+  expect(parseLocker(await decryptText(roomy, credentials)).unknown).toEqual(unknown);
 });

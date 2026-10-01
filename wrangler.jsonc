@@ -10,10 +10,12 @@
   "preview_urls": false,
   "d1_databases": [
     // @TODO Preview D1 database. Change it when the `bailly-app-nuxt` repository
-    // will be merged in the production `bailly-app` repository.
+    // will be merged in the production `bailly-app` repository (`bailly-sync`).
+    // @TODO Replace the id with that of the new database, once created
+    // (`npx wrangler d1 create bailly-sync-preview`).
     {
-      "binding": "BOOKMARKS_SYNC",
-      "database_name": "bailly-bookmarks-sync-preview",
+      "binding": "SYNC_DB",
+      "database_name": "bailly-sync-preview",
       "database_id": "f02a3b96-f99d-4b35-9cb2-4407a6bebffc"
     }
   ],

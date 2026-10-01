@@ -1,7 +1,8 @@
 import { MAX_LOCKER_BLOB_LENGTH } from "#shared/utils/sync";
 import { canonical, compact, emptyState, TOMBSTONE_MAX_AGE, withoutTombstones, type BookmarksState } from "~/idb/merge";
-import { exportState, parseBookmarksFile, toBookmarksFile } from "~/idb/transfer";
+import { exportState } from "~/idb/transfer";
 import { decryptText, encryptText, type SyncCredentials } from "./crypto";
+import { bookmarksSection, knownSections, parseLocker, readBookmarksSection, serializeLocker, type LockerSections } from "./locker";
 import { EMPTY_LOCKER, fetchLocker, storeLocker, SyncTimeoutError } from "./lockerClient";
 
 export type SyncDependencies = {
@@ -93,8 +94,12 @@ const DAY = 24 * 60 * 60 * 1000;
 const TOMBSTONE_AGES = [TOMBSTONE_MAX_AGE, 30 * DAY, 7 * DAY, 0];
 
 /**
- * The content of the locker for a state, within the size a locker accepts.
+ * The content of the locker for a state, within the size a locker accepts:
+ * beyond, the older tombstones of the bookmarks are left out first, then the
+ * sections this version does not know (so that they never prevent the
+ * bookmarks from synchronizing).
  * @param maxLength The largest content (cf. `MAX_LOCKER_BLOB_LENGTH`).
+ * @param sections The other sections of the locker, as read (kept as is).
  * @throws {SyncTooLargeError} If the bookmarks are too large, even without
  * their tombstones.
  */
@@ -102,11 +107,16 @@ export async function lockerBlob(
   state: BookmarksState,
   credentials: SyncCredentials,
   maxLength: number = MAX_LOCKER_BLOB_LENGTH,
+  sections: LockerSections = {},
 ): Promise<string> {
-  for (const maxAge of TOMBSTONE_AGES) {
-    const file = toBookmarksFile(compact(state, maxAge), { tombstones: true });
-    const blob = await encryptText(JSON.stringify(file), credentials);
-    if (blob.length <= maxLength) return blob;
+  const known = knownSections(sections);
+  const candidates = Object.keys(known).length < Object.keys(sections).length ? [sections, known] : [sections];
+  for (const others of candidates) {
+    for (const maxAge of TOMBSTONE_AGES) {
+      const content = serializeLocker({ ...others, bookmarks: bookmarksSection(compact(state, maxAge)) });
+      const blob = await encryptText(content, credentials);
+      if (blob.length <= maxLength) return blob;
+    }
   }
   throw new SyncTooLargeError();
 }
@@ -143,9 +153,12 @@ export async function synchronize(
 
     let state: BookmarksState;
     let version: number;
+    // The sections of the locker, as read: those of the other types are
+    // written back as they are.
+    let sections: LockerSections = {};
     if (locker && locker !== EMPTY_LOCKER) {
-      const text = await decryptText(locker.blob, credentials);
-      const remote = parseBookmarksFile(text, deps.referenceTime ? await deps.referenceTime() : Date.now());
+      sections = parseLocker(await decryptText(locker.blob, credentials));
+      const remote = readBookmarksSection(sections, deps.referenceTime ? await deps.referenceTime() : Date.now());
       checkCancelled();
       state = await merge(remote);
       onMerged?.();
@@ -161,7 +174,7 @@ export async function synchronize(
       version = 0;
     }
 
-    const blob = await lockerBlob(state, credentials);
+    const blob = await lockerBlob(state, credentials, MAX_LOCKER_BLOB_LENGTH, sections);
     checkCancelled();
     const result = await storeLocker(credentials, version, blob, requestOptions);
     if (result.state === "written") {

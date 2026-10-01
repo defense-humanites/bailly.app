@@ -4,6 +4,7 @@ import type { BookmarksState, LimitExcess } from "~/idb/merge";
 import { fromBase64url, toBase64url } from "~/sync/base64url";
 import { deriveCredentials, type SyncCredentials } from "~/sync/crypto";
 import { synchronize, SyncLimitError, SyncTooLargeError, type SyncOptions } from "~/sync/engine";
+import { SyncFormatError, SyncOutdatedError } from "~/sync/locker";
 import {
   fetchLocker,
   LockerDeletedError,
@@ -182,7 +183,7 @@ export const useSyncStore = defineStore("sync", () => {
     };
 
     const locked = (typeof navigator !== "undefined" && "locks" in navigator
-      ? navigator.locks.request("bailly:bookmarks-sync", { signal: controller.signal }, run)
+      ? navigator.locks.request("bailly:sync", { signal: controller.signal }, run)
       : run()
     ).catch(() => new SyncTimeoutError()); // The wait for the lock, aborted.
 
@@ -217,7 +218,10 @@ export const useSyncStore = defineStore("sync", () => {
 
   function describe(e: unknown): string {
     if (e instanceof LockerDeletedError) return `${e.message} Vos signets restent sur cet appareil.`;
-    if (e instanceof SyncNetworkError || e instanceof SyncTooLargeError || e instanceof SyncLimitError || e instanceof IdbError) {
+    if (
+      e instanceof SyncNetworkError || e instanceof SyncTooLargeError || e instanceof SyncLimitError
+      || e instanceof SyncFormatError || e instanceof SyncOutdatedError || e instanceof IdbError
+    ) {
       return e.message;
     }
     console.error(e);

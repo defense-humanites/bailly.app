@@ -40,7 +40,7 @@ const BOOKMARKS_PATH = "/signets";
  * bookmarks shown (cf. `useBookmarksHold`).
  */
 export default defineNuxtPlugin({
-  name: "bookmarks-sync",
+  name: "sync",
   dependsOn: ["bookmarks"],
   setup() {
     const bookmarksStore = useBookmarksStore();
@@ -89,7 +89,7 @@ export default defineNuxtPlugin({
     // The tabs tell each other when the settings change (key enabled,
     // disabled or deleted, latest synchronization).
     if (typeof BroadcastChannel === "undefined") return;
-    const channel = new BroadcastChannel("bailly:bookmarks-sync");
+    const channel = new BroadcastChannel("bailly:sync");
     channel.onmessage = () => void syncStore.load();
     watch(() => syncStore.settingsVersion, () => {
       channel.postMessage("settings");
