@@ -77,7 +77,6 @@
     {
       as: "h1",
       label: greek.text(entry.word),
-      trailingIcon: entry.children?.length ? "i-lucide-layers" : undefined,
       active: true,
       class: "text-2xl text-center before:bg-transparent",
     },
