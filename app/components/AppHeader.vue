@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import type { NavigationMenuItem } from "@nuxt/ui";
-  import AppNavHorizontal from "./@ui/AppNavHorizontal.vue";
+  import AppNavHorizontal from "./AppNavHorizontal.vue";
 
   const items = ref<NavigationMenuItem[]>([
     {

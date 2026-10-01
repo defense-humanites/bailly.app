@@ -1,7 +1,7 @@
 <script setup lang="ts">
   useSeoMeta({
     title: "À propos",
-    description: "Le dictionnaire grec–français d'Anatole Bailly, dans l'édition révisée Bailly 2020 Hugo Chávez : une application libre et gratuite pour le consulter.",
+    description: "Le dictionnaire grec-français d'Anatole Bailly, dans l'édition révisée Bailly 2020 Hugo Chávez : une application libre et gratuite pour le consulter.",
   });
 
   const searchFocus = useSearchFocus();
@@ -102,7 +102,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
         class="mb-4 size-32"
       />
       <h1 class="max-w-3xl font-serif text-[1.75rem]/[2.8125rem] font-bold text-balance md:text-4xl/[3.75rem]">
-        Le dictionnaire grec–français d'Anatole&nbsp;Bailly, à portée de recherche
+        Le dictionnaire grec-français d'Anatole&nbsp;Bailly, à portée de recherche
       </h1>
       <p class="mt-5 max-w-2xl text-lg text-pretty text-muted md:text-xl">
         Le texte révisé du <em>Bailly 2020 Hugo&nbsp;Chávez</em>, dans une application libre et

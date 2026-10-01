@@ -222,9 +222,15 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   /**
    * Creates a tag, which becomes the current one.
    */
-  async function createTag(data: IdbTagCreation): Promise<IdbResult<IdbTagWithKey>> {
+  /**
+   * Creates a tag, which becomes the current one.
+   * @param options.quiet Whether a failure is left to the caller to show
+   * (no toast).
+   */
+  async function createTag(data: IdbTagCreation, { quiet = false } = {}): Promise<IdbResult<IdbTagWithKey>> {
     await initialize();
-    const result = report(await IdbTags.add(data));
+    const added = await IdbTags.add(data);
+    const result = quiet ? added : report(added);
     if (result.state === "success") {
       currentTagKey.value = result.data.key;
       await Promise.all([fetchTags(), refreshNewTagColor()]);
@@ -232,9 +238,15 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     return result;
   }
 
-  async function updateTag(key: TagKey, data: IdbTagCreation): Promise<IdbResult<IdbTagWithKey>> {
+  /**
+   * Updates a tag.
+   * @param options.quiet Whether a failure is left to the caller to show
+   * (no toast).
+   */
+  async function updateTag(key: TagKey, data: IdbTagCreation, { quiet = false } = {}): Promise<IdbResult<IdbTagWithKey>> {
     await initialize();
-    const result = report(await IdbTags.update(key, data));
+    const updated = await IdbTags.update(key, data);
+    const result = quiet ? updated : report(updated);
     if (result.state === "success") {
       await fetchTags();
       if (newTagColor.value === result.data.color) await refreshNewTagColor();

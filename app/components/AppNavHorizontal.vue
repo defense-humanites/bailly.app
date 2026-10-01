@@ -90,12 +90,12 @@
       >
         <template #item-label>
           <img
-            src="~/assets/images/bailly-app-light.svg"
+            src="../assets/images/bailly-app-light.svg"
             alt="Bailly.app"
             class="h-7 w-auto dark:hidden"
           >
           <img
-            src="~/assets/images/bailly-app-dark.svg"
+            src="../assets/images/bailly-app-dark.svg"
             alt="Bailly.app"
             class="h-7 w-auto hidden dark:block"
           >

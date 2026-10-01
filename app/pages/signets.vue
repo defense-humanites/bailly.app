@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import type { TagKey } from "~/idb";
+
   useSeoMeta({
     title: "Signets",
     description:
@@ -6,7 +8,7 @@
   });
 
   const bookmarksStore = useBookmarksStore();
-  const { initialized, tags, starredEntries, currentTagKey } = storeToRefs(bookmarksStore);
+  const { initialized, tags, starredEntries, currentTagKey, currentTag } = storeToRefs(bookmarksStore);
 
   const showButtonLabels = useButtonLabels();
 
@@ -14,7 +16,7 @@
    * From this number of tags, a table of contents under the header leads to
    * their cards (below, they all show at a glance).
    */
-  const TOC_FROM = 6;
+  const TOC_FROM = 4;
 
   /**
    * The id of a group's card (the target of its link in the table of
@@ -32,6 +34,13 @@
   ]);
 
   const entryCount = (count: number): string => (count < 2 ? "entrée" : "entrées");
+
+  /**
+   * The tags to choose the active one from, in their order; from
+   * `ACTIVE_FILTER_FROM` tags, the menu can be filtered.
+   */
+  const ACTIVE_FILTER_FROM = 8;
+  const activeItems = computed(() => tags.value.map(tag => ({ label: tag.name, value: tag.key, color: tag.color })));
 </script>
 
 <template>
@@ -48,20 +57,86 @@
       class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 supports-[display:grid-lanes]:[display:grid-lanes] lg:max-w-(--content-max-width) lg:grid-cols-2"
       :aria-busy="!initialized"
     >
-      <header class="col-span-full flex gap-6 max-lg:flex-col lg:items-center xl:mb-6">
-        <h1 class="grow font-sans text-3xl font-bold leading-normal">
-          Mes signets
-        </h1>
+      <!--
+        The header: the title and the synchronization (a solid button, in the
+        Aegean blue — `secondary`: the sea, and the sky of the "cloud" —, the
+        page's main action), then a menu bar for the tags, in the style of an
+        entry's toolbar (cf. `TagButtonGroup`): creating a tag, choosing the
+        active one, arranging them, and the file (export, import: less used,
+        within reach for whoever looks for it). Its fields are square-cornered,
+        without the search bar's pill shape, their background telling them
+        from its buttons (ghost). Below `md`, the field takes the bar's first
+        row. Icons only (square buttons) below `xl`, as the header menu (the
+        labels stay for screen readers and show in tooltips; cf.
+        `useButtonLabels`).
+      -->
+      <header class="col-span-full flex flex-col gap-5 xl:mb-2">
+        <div class="flex items-center gap-x-3">
+          <h1 class="grow font-sans text-3xl font-bold leading-normal">
+            Mes signets
+          </h1>
 
-        <!--
-          Actions: solid buttons (the tags' cards use subtle ones: the page's
-          actions stand apart from them), the synchronization in the Aegean
-          blue (`secondary`: the sea, and the sky of the "cloud").
-          Icons only (square buttons) below `xl`, as the header menu
-          (the labels stay for screen readers and show in tooltips; cf.
-          `useButtonLabels`).
-        -->
-        <aside class="flex items-center gap-x-3 max-md:flex-wrap max-md:gap-y-3 xl:gap-x-6">
+          <!-- Synchronization (its state, and its window) -->
+          <SyncButton scope="bookmarks" />
+        </div>
+
+        <div
+          role="group"
+          aria-label="Étiquettes"
+          class="flex flex-wrap overflow-hidden rounded-lg border border-default bg-default shadow-xs md:flex-nowrap md:gap-2 md:overflow-visible md:border-0 md:bg-transparent md:shadow-none"
+        >
+          <!--
+            Below `md`, one compact block on two lines: the field alone on the
+            first (a border under it), the others side by side on the second
+            (a border before each but the first). From `md`, separate items
+            (each framed, slightly apart) on one line, the fields sharing the
+            width left by the buttons.
+          -->
+          <CreateTag class="h-11 min-w-0 basis-full border-default max-md:border-b md:basis-0 md:grow md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs" />
+
+          <!--
+            The active tag (the one an entry's toolbar adds it to in one
+            click), chosen from the page's top, wherever its card is. Shown
+            before the bookmarks are loaded too (disabled, as when there is no
+            tag): its place is kept.
+          -->
+          <div class="flex h-11 min-w-0 grow border-default md:basis-0 md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs">
+            <USelectMenu
+              :model-value="currentTagKey ?? undefined"
+              :items="activeItems"
+              value-key="value"
+              size="xl"
+              color="neutral"
+              variant="soft"
+              :disabled="!activeItems.length"
+              :placeholder="initialized ? 'Aucune étiquette' : undefined"
+              :search-input="activeItems.length >= ACTIVE_FILTER_FROM && { placeholder: 'Filtrer…', ui: { base: 'rounded-none shadow-none' } }"
+              aria-label="Étiquette active"
+              class="h-full min-w-0 grow"
+              :ui="{ base: 'h-full gap-2 rounded-none ps-3 shadow-none', leading: 'static shrink-0 ps-0' }"
+              @update:model-value="(key: TagKey) => bookmarksStore.setCurrentTag(key)"
+            >
+              <template #leading>
+                <!--
+                  The mark of the active tag, in its color: the icon of the
+                  cards' "Rendre active" (a selected radio button).
+                -->
+                <UIcon
+                  name="i-lucide-circle-dot"
+                  :data-tag-color="currentTag?.color"
+                  class="size-5 shrink-0 text-tag-text"
+                />
+              </template>
+              <template #item-leading="{ item }">
+                <UIcon
+                  name="i-bailly-tag-filled"
+                  :data-tag-color="item.color"
+                  class="size-5 shrink-0 text-tag-text"
+                />
+              </template>
+            </USelectMenu>
+          </div>
+
           <!-- Order tags -->
           <UModal
             title="Arranger les étiquettes"
@@ -74,7 +149,10 @@
               <UButton
                 label="Arranger"
                 icon="i-lucide-list-ordered"
-                size="2xl"
+                size="xl"
+                color="neutral"
+                variant="ghost"
+                class="h-11 rounded-none border-s border-default aria-expanded:bg-elevated md:rounded-lg md:border md:bg-default md:shadow-xs"
                 :ui="{ base: 'max-xl:px-2.5', label: 'max-xl:sr-only' }"
               />
             </UTooltip>
@@ -86,14 +164,9 @@
             </template>
           </UModal>
 
-          <!-- Synchronization (its state, and its window) -->
-          <SyncButton scope="bookmarks" />
-
           <!-- Export, import -->
-          <BookmarksMenu />
-
-          <CreateTag class="min-w-0 grow max-md:basis-full lg:w-80 lg:grow-0 xl:w-96" />
-        </aside>
+          <BookmarksMenu class="flex h-11 border-s border-default md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs" />
+        </div>
       </header>
 
       <!--
@@ -103,8 +176,11 @@
       <template v-if="initialized">
         <!--
           Table of contents: a link per group, in its colors, to its card
-          (which clears the header); the active tag's with a stronger ring. On one column, a single row that scrolls
-          sideways, to the edges of the screen; on two, it wraps.
+          (which clears the header). The active tag's and the favorites'
+          (always active) solid: the tag's text color as background, its
+          palest shade as text (readable both ways, in both themes). On one
+          column, a single row that scrolls sideways, to the edges of the
+          screen; on two, it wraps.
         -->
         <nav
           v-if="tags.length >= TOC_FROM"
@@ -121,8 +197,10 @@
               <NuxtLink
                 :to="{ hash: `#${groupId(group.key)}` }"
                 :aria-label="`${group.name}, ${group.count} ${entryCount(group.count)}${group.key === currentTagKey ? ', étiquette active' : ''}`"
-                class="flex h-8 items-center gap-1.5 rounded-full bg-tag-100 ps-2.5 pe-3 text-sm text-tag-text ring-inset transition-colors hover:bg-tag-200/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
-                :class="group.key === currentTagKey ? 'ring-2 ring-tag-400' : 'ring ring-tag-300/60'"
+                class="flex h-8 items-center gap-1.5 rounded-full ps-2.5 pe-3 text-sm ring-inset transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
+                :class="group.key === currentTagKey || group.key === 'favorites'
+                  ? 'bg-tag-text text-tag-100 hover:bg-tag-text/90'
+                  : 'bg-tag-100 text-tag-text ring ring-tag-300/60 hover:bg-tag-200/80'"
               >
                 <UIcon
                   :name="group.icon"

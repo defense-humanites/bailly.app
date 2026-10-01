@@ -56,6 +56,26 @@ test.describe("bookmarks page", () => {
     await expect.poll(async () => await bookmarksState(page)).toMatchObject({ tagged: 0 });
   });
 
+  // As for a new tag: a name taken told on the field, which keeps it and the
+  // focus on Enter; Escape gives it up.
+  test("renaming a tag: a taken name told on the field", async ({ page }) => {
+    await page.getByRole("button", { name: "Modifier l'étiquette « Vide »" }).click();
+    const name = card(page, "Vide").getByRole("textbox", { name: "Nom de l'étiquette" });
+    await name.fill("vocabulaire homerique et tragique");
+    await expect(name).toHaveAttribute("aria-invalid", "true");
+    await expect(name).toHaveAccessibleDescription("L'étiquette « Vocabulaire homérique et tragique » existe déjà.");
+    await expect(page.locator("[data-slot=content]").getByText("existe déjà")).toBeVisible();
+    await name.press("Enter");
+    await expect(name).toBeFocused();
+    await expect(name).toHaveValue("vocabulaire homerique et tragique");
+    await name.fill("");
+    await name.press("Enter");
+    await expect(name).toHaveAccessibleDescription("Une étiquette doit être nommée.");
+    await name.press("Escape");
+    await expect(name).toHaveValue("Vide");
+    expect((await bookmarksState(page)).tags).toEqual(["Vocabulaire homérique et tragique", "Vide"]);
+  });
+
   test("a tag's color, picked with the keyboard: the selected one focused, the arrows, its name shown", async ({ page }) => {
     await page.getByRole("button", { name: "Modifier l'étiquette « Vide »" }).click();
     const trigger = page.getByRole("button", { name: "Couleur de l'étiquette : vert" });
@@ -149,8 +169,8 @@ test.describe("bookmarks page", () => {
 
   // A solid button keeps its pressed look while its menu or dialog is open
   // (`aria-expanded`).
-  test("a solid button stays pressed while its menu is open", async ({ page }) => {
-    const button = page.locator("main header aside button").filter({ hasText: "Fichier" });
+  test("a solid button stays pressed while its window is open", async ({ page }) => {
+    const button = page.locator("main header button").filter({ hasText: "Synchronisation" });
     const look = () => button.evaluate(element => [getComputedStyle(element).backgroundImage, getComputedStyle(element).filter, getComputedStyle(element).backgroundColor]);
     await page.mouse.move(0, 0);
     const [restImage, , restColor] = await look();
@@ -167,6 +187,36 @@ test.describe("bookmarks page", () => {
     await expect.poll(look).toEqual([restImage, "none", restColor]);
   });
 
+  // No submit button: Enter adds the tag, as the key drawn in the field says.
+  test("creating a tag with Enter, its hint named", async ({ page }) => {
+    const field = page.getByRole("textbox", { name: "Nom de la nouvelle étiquette" });
+    await expect(field).toHaveAccessibleDescription("Entrée pour ajouter");
+    await expect(field).toHaveAttribute("enterkeyhint", "done");
+    await field.fill("Pindare");
+    await field.press("Enter");
+    await expect(card(page, "Pindare")).toBeVisible();
+    await expect(field).toHaveValue("");
+    expect((await bookmarksState(page)).tags).toContain("Pindare");
+  });
+
+  // The error where the eyes are: on the field, as soon as the name is taken
+  // (case and diacritics ignored) or reserved; gone once it changes.
+  test("creating a tag: a taken name told on the field, before Enter", async ({ page }) => {
+    const field = page.getByRole("textbox", { name: "Nom de la nouvelle étiquette" });
+    await field.fill("vidé");
+    await expect(field).toHaveAttribute("aria-invalid", "true");
+    await expect(field).toHaveAccessibleDescription(/L'étiquette « Vide » existe déjà\./);
+    await expect(page.locator("[data-slot=content]").getByText("L'étiquette « Vide » existe déjà.")).toBeVisible();
+    await field.press("Enter");
+    await expect(field).toHaveValue("vidé");
+    expect((await bookmarksState(page)).tags).toHaveLength(2);
+    await field.fill("Favoris");
+    await expect(field).toHaveAccessibleDescription(/réservé à la liste des favoris/);
+    await field.fill("Vides");
+    await expect(field).toHaveAttribute("aria-invalid", "false");
+    await expect(page.locator("[data-slot=content]")).toHaveCount(0);
+  });
+
   test("the active tag: marked on its card, chosen from another card", async ({ page }) => {
     const vide = card(page, "Vide");
     const vocabulaire = card(page, "Vocabulaire homérique");
@@ -181,6 +231,14 @@ test.describe("bookmarks page", () => {
     await expect(vocabulaire.getByRole("button", { name: "Rendre active l'étiquette « Vocabulaire homérique et tragique »" })).toBeAttached();
     // Not on the favorites.
     await expect(card(page, "Favoris").getByRole("button", { name: /^Rendre active/ })).toHaveCount(0);
+
+    // Or from the header's menu.
+    const menu = page.getByRole("group", { name: "Étiquettes" }).getByRole("button", { name: "Étiquette active" });
+    await expect(menu).toContainText("Vide");
+    await menu.click();
+    await page.getByRole("option", { name: "Vocabulaire homérique et tragique" }).click();
+    await expect(vocabulaire.getByText("active", { exact: true })).toBeVisible();
+    await expect(menu).toContainText("Vocabulaire homérique et tragique");
   });
 
   test("removing a favorite", async ({ page }) => {
