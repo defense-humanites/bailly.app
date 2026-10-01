@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import type { ColorKey } from "~/enums";
   import { IdbTags, type IdbEntry, type IdbTagWithKey } from "~/idb";
+  import { comparableTagName } from "~/idb/merge";
 
   const bookmarksStore = useBookmarksStore();
 
@@ -88,7 +89,55 @@
   });
 
   /**
-   * Updates the tag properties.
+   * Why the name typed could not be saved (Enter in its field), until it
+   * changes.
+   */
+  const nameFailure = ref<string>();
+  watch(tagName, () => nameFailure.value = undefined);
+
+  /**
+   * Why the name typed cannot be used, as it is typed: taken by another tag
+   * (case and diacritics ignored, as `IdbTags` does) or reserved.
+   */
+  const nameConflict = computed((): string | undefined => {
+    const name = comparableTagName(tagName.value.trim());
+    if (!name) return undefined;
+    if (name === "favoris") return "Ce nom est réservé à la liste des favoris.";
+    const homonym = bookmarksStore.tags.find(tag => tag.key !== props.tag.key && comparableTagName(tag.name) === name);
+    return homonym && `L'étiquette « ${homonym.name} » existe déjà.`;
+  });
+
+  /**
+   * The error shown on the name field (in edit mode), in a bubble under it.
+   */
+  const nameError = computed((): string | undefined =>
+    editableEditMode.value ? nameFailure.value ?? nameConflict.value : undefined);
+  const nameErrorId = useId();
+
+  /**
+   * Saves the name typed (Enter in its field): an error is shown on the
+   * field, which keeps the focus and the name; otherwise, it is left.
+   */
+  const onSaveName = async (input: HTMLInputElement): Promise<void> => {
+    if (!tagName.value.trim()) nameFailure.value = "Une étiquette doit être nommée.";
+    if (nameError.value) return;
+    if (tagName.value === props.tag.name) {
+      input.blur();
+      return;
+    }
+    const response = await bookmarksStore.updateTag(
+      props.tag.key,
+      { name: tagName.value, description: props.tag.description, color: IdbTags.isColorKey(props.tag.color) ? props.tag.color : undefined },
+      { quiet: true },
+    );
+    if (response.state === "error") nameFailure.value = response.message;
+    else input.blur();
+  };
+
+  /**
+   * Updates the tag properties (leaving a field or the edit mode, picking a
+   * color): a failure is reported by a toast, and the stored values come
+   * back.
    */
   const onUpdateTag = async (): Promise<void> => {
     if (
@@ -231,6 +280,12 @@
       void onUpdateTag();
     } else if (input && input === document.activeElement) {
       event.preventDefault();
+      if (event.key === "Enter") {
+        void onSaveName(input);
+        return;
+      }
+      // Escape leaves the field; a name that cannot be saved is given up.
+      if (nameError.value || !tagName.value.trim()) tagName.value = props.tag.name;
       input.blur();
       void onUpdateTag();
     } else if (event.key === "Escape" || !(event.target as Element | null)?.closest("button, a")) {
@@ -367,16 +422,40 @@
               A field on one line (Enter validates), in the name's text: its
               height comes from the same padding and line height as the name
               (32 px), rather than from a fixed height, in which each browser
-              centres the text its own way.
+              centres the text its own way. A name that cannot be used is
+              told on the field, as for a new tag (cf. `CreateTag`): a red
+              ring, the message in a bubble under it and in a live region.
             -->
-            <input
-              ref="tag-name-input"
-              v-model="tagName"
-              type="text"
-              aria-label="Nom de l'étiquette"
-              :maxlength="IdbTags.nameMaxLength"
-              class="min-w-0 grow rounded-r-full bg-default/60 px-2 py-0.5 text-xl/7 font-bold text-tag-text hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300 md:py-0 md:text-2xl/8"
+            <UPopover
+              :open="!!nameError"
+              :dismissible="false"
+              :content="{ side: 'bottom', align: 'start', sideOffset: 6, onOpenAutoFocus: (event: Event) => event.preventDefault(), onCloseAutoFocus: (event: Event) => event.preventDefault() }"
+              :ui="{ content: 'px-3 py-2 text-sm text-error' }"
             >
+              <template #anchor>
+                <input
+                  ref="tag-name-input"
+                  v-model="tagName"
+                  type="text"
+                  aria-label="Nom de l'étiquette"
+                  :aria-describedby="nameErrorId"
+                  :aria-invalid="!!nameError"
+                  :maxlength="IdbTags.nameMaxLength"
+                  class="min-w-0 grow rounded-r-full bg-default/60 px-2 py-0.5 text-xl/7 font-bold text-tag-text hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2 md:py-0 md:text-2xl/8"
+                  :class="nameError ? 'ring-2 ring-error focus-visible:ring-error' : 'focus-visible:ring-tag-300'"
+                >
+              </template>
+              <template #content>
+                <p aria-hidden="true">
+                  {{ nameError }}
+                </p>
+              </template>
+            </UPopover>
+            <span
+              :id="nameErrorId"
+              role="status"
+              class="sr-only"
+            >{{ nameError }}</span>
           </div>
         </div>
 

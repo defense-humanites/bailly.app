@@ -56,6 +56,26 @@ test.describe("bookmarks page", () => {
     await expect.poll(async () => await bookmarksState(page)).toMatchObject({ tagged: 0 });
   });
 
+  // As for a new tag: a name taken told on the field, which keeps it and the
+  // focus on Enter; Escape gives it up.
+  test("renaming a tag: a taken name told on the field", async ({ page }) => {
+    await page.getByRole("button", { name: "Modifier l'étiquette « Vide »" }).click();
+    const name = card(page, "Vide").getByRole("textbox", { name: "Nom de l'étiquette" });
+    await name.fill("vocabulaire homerique et tragique");
+    await expect(name).toHaveAttribute("aria-invalid", "true");
+    await expect(name).toHaveAccessibleDescription("L'étiquette « Vocabulaire homérique et tragique » existe déjà.");
+    await expect(page.locator("[data-slot=content]").getByText("existe déjà")).toBeVisible();
+    await name.press("Enter");
+    await expect(name).toBeFocused();
+    await expect(name).toHaveValue("vocabulaire homerique et tragique");
+    await name.fill("");
+    await name.press("Enter");
+    await expect(name).toHaveAccessibleDescription("Une étiquette doit être nommée.");
+    await name.press("Escape");
+    await expect(name).toHaveValue("Vide");
+    expect((await bookmarksState(page)).tags).toEqual(["Vocabulaire homérique et tragique", "Vide"]);
+  });
+
   test("a tag's color, picked with the keyboard: the selected one focused, the arrows, its name shown", async ({ page }) => {
     await page.getByRole("button", { name: "Modifier l'étiquette « Vide »" }).click();
     const trigger = page.getByRole("button", { name: "Couleur de l'étiquette : vert" });

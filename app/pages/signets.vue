@@ -176,8 +176,11 @@
       <template v-if="initialized">
         <!--
           Table of contents: a link per group, in its colors, to its card
-          (which clears the header); the active tag's with a stronger ring. On one column, a single row that scrolls
-          sideways, to the edges of the screen; on two, it wraps.
+          (which clears the header). The active tag's and the favorites'
+          (always active) solid: the tag's text color as background, its
+          palest shade as text (readable both ways, in both themes). On one
+          column, a single row that scrolls sideways, to the edges of the
+          screen; on two, it wraps.
         -->
         <nav
           v-if="tags.length >= TOC_FROM"
@@ -194,8 +197,10 @@
               <NuxtLink
                 :to="{ hash: `#${groupId(group.key)}` }"
                 :aria-label="`${group.name}, ${group.count} ${entryCount(group.count)}${group.key === currentTagKey ? ', étiquette active' : ''}`"
-                class="flex h-8 items-center gap-1.5 rounded-full bg-tag-100 ps-2.5 pe-3 text-sm text-tag-text ring-inset transition-colors hover:bg-tag-200/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
-                :class="group.key === currentTagKey ? 'ring-2 ring-tag-400' : 'ring ring-tag-300/60'"
+                class="flex h-8 items-center gap-1.5 rounded-full ps-2.5 pe-3 text-sm ring-inset transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
+                :class="group.key === currentTagKey || group.key === 'favorites'
+                  ? 'bg-tag-text text-tag-100 hover:bg-tag-text/90'
+                  : 'bg-tag-100 text-tag-text ring ring-tag-300/60 hover:bg-tag-200/80'"
               >
                 <UIcon
                   :name="group.icon"

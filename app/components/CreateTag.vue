@@ -95,10 +95,21 @@
       >
         <!-- Color picker -->
         <template #leading>
+          <!-- Its corners follow the field's (not the pill buttons'). -->
           <TagColorPicker
             v-model="newTagColor"
             label="Couleur de la nouvelle étiquette"
-          />
+          >
+            <template #trigger="{ icon, attrs }">
+              <UButton
+                :icon="icon"
+                color="neutral"
+                variant="outline"
+                v-bind="attrs"
+                :ui="{ base: 'rounded-md shadow-none' }"
+              />
+            </template>
+          </TagColorPicker>
         </template>
 
         <!-- Enter adds the tag; or why it cannot -->
