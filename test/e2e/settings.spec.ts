@@ -168,6 +168,37 @@ test.describe("settings", () => {
     expect(errors).toEqual([]);
   });
 
+  // Every weight the text uses (the headwords' 600 included) is drawn by the
+  // reading font itself, not by the fonts after it: the same width whatever
+  // the fallback (cf. the thin spaces' faces in fonts.css).
+  test("reading: every weight drawn by the reading font", async ({ page, goto }) => {
+    await goto("/préférences", { waitUntil: "hydration" });
+    const fallbacks = await page.evaluate(async () => {
+      const found: string[] = [];
+      for (const family of ["Bailly Book", "GFS Didot", "GFS Artemisia", "GFS Bodoni", "GFS Neohellenic"]) {
+        for (const style of ["normal", "italic"]) {
+          for (const weight of ["400", "500", "600", "700"]) {
+            const width = async (fallback: string): Promise<number> => {
+              const font = `${style} ${weight} 100px "${family}", ${fallback}`;
+              await document.fonts.load(font, "λόγος word");
+              const span = document.createElement("span");
+              span.style.font = font;
+              span.style.whiteSpace = "pre";
+              span.textContent = "λόγος word";
+              document.body.append(span);
+              const result = span.getBoundingClientRect().width;
+              span.remove();
+              return result;
+            };
+            if (Math.abs(await width("monospace") - await width("cursive")) > 0.5) found.push(`${family} ${style} ${weight}`);
+          }
+        }
+      }
+      return found;
+    });
+    expect(fallbacks).toEqual([]);
+  });
+
   // Each entry keeps its lines whatever the font and weight (cf.
   // `previewEntries.ts`), and a line its height (cf. `.definition` in
   // components.css): the preview doesn't move when a setting changes.

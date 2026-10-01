@@ -98,9 +98,9 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
     html: "<span class=\"entreea\"><span class=\"grec\">ἔλασμα,</span></span> <span class=\"gens\">ατος</span>\n(<span class=\"grec\"><span data-linked-entries=\"ho_(1),to\">τὸ</span></span>) lame métallique, <span class=\"aut\">Paus.</span> <span class=\"refch\">10, 16, 1 ;</span>\n<span class=\"aut\">Str.</span> <span class=\"refch\">240 ;</span>\n<span class=\"aut\">Spt.</span> <span class=\"oeuv\">Hab.</span>\n<span class=\"refch\">2, 19 ;</span> <span class=\"aut\">Diosc.</span>\n<span class=\"refch\">5, 96</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><span data-linked-entries=\"elaunô,elaô-ô,elaô\">ἐλάω</span></span>.</div>\n",
   },
   {
-    word: "προκλύζω",
-    uri: "prokluzô",
-    html: "<span class=\"entreea\"><span class=\"grec\">προ·κλύζω</span></span> :\n<div class=\"pp\"><span class=\"ppa\">1</span> laver <span class=\"ital\">ou</span> inonder auparavant, <span class=\"aut\">Phil.</span>\n<span class=\"refch\">1, 257</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> donner un lavement\nauparavant, <span class=\"aut\">A. Tr.</span> <span class=\"refch\">8,\n463</span>.</div>\n",
+    word: "ἀϋλία",
+    uri: "aulia",
+    html: "<span class=\"entreea\"><span class=\"grec\">ἀϋλία,</span></span> <span class=\"gens\">ας</span>\n(<span class=\"grec\"><span data-linked-entries=\"hê_(1),ho_(1)\">ἡ</span></span>) [<span class=\"grec\">ᾰῡ</span>] nature\nimmatérielle <span class=\"ital\">ou</span> incorporelle,\n<span class=\"aut\">Hiérocl.</span> <span class=\"oeuv\">C. aur.</span>\n<span class=\"refch\">p. 479 Mullach</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/aulos_(2)\">ἄϋλος</a></span>.</div>\n",
   },
   {
     word: "ὀκτάτονος",
@@ -113,9 +113,9 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
     html: "<span class=\"entreea\"><span class=\"grec\">οὐδέ·πη</span></span> <span class=\"ital\">ou</span>\n<span class=\"es\">οὐδέ πη,</span> <span class=\"ital\">adv.</span> en\naucune façon, <span class=\"aut\">Il.</span> <span class=\"refch\">6,\n267,</span> <span class=\"ital\">etc. ;</span> <span class=\"aut\">Od.</span> <span class=\"refch\">12, 232 ;</span> <span class=\"aut\">Hh.</span> <span class=\"refch\">6, 58</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><span data-linked-entries=\"oude,oudos\">οὐδέ</span>, πῆ</span>.</div>\n",
   },
   {
-    word: "ἐπιϐλαστάνω",
-    uri: "epiblastanô",
-    html: "<span class=\"entreea\"><span class=\"grec\">ἐπι·ϐλαστάνω</span></span> :\n<div class=\"pp\"><span class=\"ppa\">1</span> germer sur, <span class=\"aut\">Plut.</span> <span class=\"oeuv\">M.</span> <span class=\"refpa\">723</span><span class=\"refpb\">f</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> germer ensuite\n<span class=\"ital\">ou</span> en outre, <span class=\"aut\">Th.</span>\n<span class=\"oeuv\">C.P.</span> <span class=\"refch\">1, 10,\n6</span>.</div>\n",
+    word: "ἡμιδανάκη",
+    uri: "hêmidanakê",
+    html: "<span class=\"entreea\"><span class=\"grec\">ἡμι·δανάκη,</span></span> <span class=\"gens\">ης</span>\n<span class=\"art\">(<span class=\"grec\"><span data-linked-entries=\"hê_(1),ho_(1)\">ἡ</span></span>)</span>\n[<span class=\"grec-longueur\">ᾰν</span>] demi-<span class=\"grec\">δανάκη,</span> <span class=\"ital\">monnaie barbare,</span>\n<span class=\"aut\">Théon</span> <span class=\"oeuv\">Prog.</span>\n<span class=\"refch\">13 conj.</span>\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/hêmi-\">ἡμι-</a></span>, <span class=\"grec\">δ.</span></div>\n",
   },
   {
     word: "Δαμοίτας",
@@ -128,9 +128,9 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
     html: "<span class=\"entreea\"><span class=\"grec\">ἀντ·αγανακτέω-ῶ</span></span> [<span class=\"grec\">ᾰγᾰν</span>] s’indigner à son tour, <span class=\"aut\">Œnom.</span> (<span class=\"aut\">Eus.</span> <span class=\"refch\">3, 437 Migne</span>).\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/anti\">ἀντί</a>, ἀγ.</span></div>\n",
   },
   {
-    word: "Θερμά",
-    uri: "Therma",
-    html: "<span class=\"entreea\"><span class=\"grec\">Θερμά,</span></span> <span class=\"gens\">ῶν</span>\n(<span class=\"grec\"><span data-linked-entries=\"ho_(1),ta_(1),tis_(1)\">τὰ</span></span>) les Thermes, <span class=\"ital\">sources thermales, dans l’isthme de Corinthe,</span>\n<span class=\"aut\">Xén.</span> <span class=\"oeuv\">Hell.</span>\n<span class=\"refch\">4, 5, 8</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/thermos_(1)\">θερμός</a></span>.</div>\n",
+    word: "Ἀρχιτέλης",
+    uri: "Architelês",
+    html: "<span class=\"entreea\"><span class=\"grec\">Ἀρχι·τέλης,</span></span> <span class=\"gens\">ους,</span>\n<span class=\"ital\">acc.</span> <span class=\"des\">ην</span>\n(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>) Arkhitélès, <span class=\"ital\">h.</span> <span class=\"aut\">Plut.</span> <span class=\"oeuv\">Them.</span> <span class=\"refch\">7 ;</span> <span class=\"aut\">Luc.</span> <span class=\"oeuv\">Scyth.</span> <span class=\"refch\">2,</span> <span class=\"ital\">etc.</span>\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/archô\">ἄρχω</a>, <a href=\"/telos\">τέλος</a></span>.</div>\n",
   },
   {
     word: "ψυχάω-ῶ",

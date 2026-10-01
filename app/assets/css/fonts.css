@@ -333,12 +333,16 @@
 /*
  * The thin spaces of the GFS fonts (cf. above): Inter's
  * (empty, 0.18 em), scaled and aligned as the font they stand in for. One face
- * per style, for every weight (the space is the same).
+ * per weight and style, with the very descriptors of the font's faces: a
+ * face covering a range of weights (`100 900`) would be the best match for a
+ * weight between them (e.g. the headwords' 600, rather than the bold faces'
+ * 700), and the text, which it doesn't draw, would fall back to the next
+ * fonts (seen in Safari).
  */
 
 @font-face {
   font-family: "GFS Didot";
-  font-weight: 100 900;
+  font-weight: normal;
   font-style: normal;
   font-display: block;
   size-adjust: 117.9%;
@@ -351,7 +355,33 @@
 
 @font-face {
   font-family: "GFS Didot";
-  font-weight: 100 900;
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 117.9%;
+  ascent-override: 82.17%;
+  descent-override: 20.46%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Didot";
+  font-weight: normal;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 117.9%;
+  ascent-override: 82.17%;
+  descent-override: 20.46%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Didot";
+  font-weight: bold;
   font-style: italic;
   font-display: block;
   size-adjust: 117.9%;
@@ -364,7 +394,7 @@
 
 @font-face {
   font-family: "GFS Neohellenic";
-  font-weight: 100 900;
+  font-weight: normal;
   font-style: normal;
   font-display: block;
   size-adjust: 138.7%;
@@ -377,7 +407,33 @@
 
 @font-face {
   font-family: "GFS Neohellenic";
-  font-weight: 100 900;
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 138.7%;
+  ascent-override: 69.84%;
+  descent-override: 17.39%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Neohellenic";
+  font-weight: normal;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 138.7%;
+  ascent-override: 69.84%;
+  descent-override: 17.39%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Neohellenic";
+  font-weight: bold;
   font-style: italic;
   font-display: block;
   size-adjust: 138.7%;
@@ -390,7 +446,7 @@
 
 @font-face {
   font-family: "GFS Artemisia";
-  font-weight: 100 900;
+  font-weight: normal;
   font-style: normal;
   font-display: block;
   size-adjust: 112.9%;
@@ -403,7 +459,33 @@
 
 @font-face {
   font-family: "GFS Artemisia";
-  font-weight: 100 900;
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 112.9%;
+  ascent-override: 85.81%;
+  descent-override: 21.36%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Artemisia";
+  font-weight: normal;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 112.9%;
+  ascent-override: 85.81%;
+  descent-override: 21.36%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Artemisia";
+  font-weight: bold;
   font-style: italic;
   font-display: block;
   size-adjust: 112.9%;
@@ -416,7 +498,7 @@
 
 @font-face {
   font-family: "GFS Bodoni";
-  font-weight: 100 900;
+  font-weight: normal;
   font-style: normal;
   font-display: block;
   size-adjust: 111.6%;
@@ -429,7 +511,33 @@
 
 @font-face {
   font-family: "GFS Bodoni";
-  font-weight: 100 900;
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 111.6%;
+  ascent-override: 86.81%;
+  descent-override: 21.61%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Bodoni";
+  font-weight: normal;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 111.6%;
+  ascent-override: 86.81%;
+  descent-override: 21.61%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Bodoni";
+  font-weight: bold;
   font-style: italic;
   font-display: block;
   size-adjust: 111.6%;
