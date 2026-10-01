@@ -41,14 +41,20 @@
     The text stops before the submit button, in the trailing slot (`pe-10`,
     `pe-28` with its label from `xl`, cf. `useButtonLabels`).
   -->
+  <!--
+    A field of the bookmarks page's menu bar (cf. `signets.vue`): square-
+    cornered, without the search bar's pill shape and shadow, its background
+    telling it from the bar's buttons.
+  -->
   <UInput
     v-model="newTagName"
-    size="2xl"
+    size="xl"
+    variant="soft"
     placeholder="Nouvelle étiquette"
     aria-label="Nom de la nouvelle étiquette"
     :maxlength="IdbTags.nameMaxLength"
     :class="{ 'animate-shake': isNewTagNameErrored }"
-    :ui="{ base: 'pe-10 xl:pe-28', leading: 'ps-1.5', trailing: 'pe-1.5' }"
+    :ui="{ base: 'h-full rounded-none shadow-none pe-10 xl:pe-28', leading: 'ps-1.5', trailing: 'pe-1.5' }"
     @keydown.enter="createTag"
   >
     <!-- Color picker -->

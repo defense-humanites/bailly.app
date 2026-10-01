@@ -179,8 +179,10 @@
       :content="{ align: 'end' }"
     >
       <!--
-        Icon only below `xl`, as the other actions of the page (the label
-        stays for screen readers, and shows in the tooltip).
+        An item of the bookmarks page's menu bar (cf. `signets.vue`): a ghost
+        button, square-cornered, as high as the bar. Icon only below `xl`, as
+        the other actions of the page (the label stays for screen readers, and
+        shows in the tooltip).
       -->
       <UTooltip
         text="Fichier"
@@ -189,7 +191,10 @@
         <UButton
           label="Fichier"
           icon="i-lucide-archive"
-          size="2xl"
+          size="xl"
+          color="neutral"
+          variant="ghost"
+          class="h-full rounded-none aria-expanded:bg-elevated"
           :ui="{ base: 'max-xl:px-2.5', label: 'max-xl:sr-only' }"
         />
       </UTooltip>

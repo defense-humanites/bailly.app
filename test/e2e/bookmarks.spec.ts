@@ -149,8 +149,8 @@ test.describe("bookmarks page", () => {
 
   // A solid button keeps its pressed look while its menu or dialog is open
   // (`aria-expanded`).
-  test("a solid button stays pressed while its menu is open", async ({ page }) => {
-    const button = page.locator("main header button").filter({ hasText: "Fichier" });
+  test("a solid button stays pressed while its window is open", async ({ page }) => {
+    const button = page.locator("main header button").filter({ hasText: "Synchronisation" });
     const look = () => button.evaluate(element => [getComputedStyle(element).backgroundImage, getComputedStyle(element).filter, getComputedStyle(element).backgroundColor]);
     await page.mouse.move(0, 0);
     const [restImage, , restColor] = await look();

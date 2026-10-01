@@ -129,6 +129,8 @@
         color="secondary"
         :aria-label="stateText ? `${label} (${stateText})` : label"
         :ui="{ base: 'max-xl:px-2.5', label: 'max-xl:sr-only' }"
+        aria-haspopup="dialog"
+        :aria-expanded="isSyncOpen"
         @click="openSync"
       >
         <template #leading>
