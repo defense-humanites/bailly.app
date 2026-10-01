@@ -6,6 +6,18 @@
       "src": "/favicon/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "maskable"
     },
     {
@@ -15,7 +27,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ce6610",
-  "background_color": "#ce6610",
+  "theme_color": "#f5f2ea",
+  "background_color": "#782e21",
   "display": "standalone"
 }

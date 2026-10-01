@@ -62,6 +62,7 @@
         href: "/favicon/favicon-dark.ico",
         media: "(prefers-color-scheme: dark)",
       },
+      { rel: "manifest", href: "/site.webmanifest" },
       {
         rel: "apple-touch-icon",
         sizes: "180x180",
