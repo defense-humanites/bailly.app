@@ -86,7 +86,7 @@
       <UNavigationMenu
         aria-label="Accueil"
         :items="[{ label: 'Bailly.app', to: '/', active: false }]"
-        :ui="{ item: 'md:py-0', link: 'py-1.5 md:py-0.5' }"
+        :ui="{ item: 'md:py-0', link: 'cursor-pointer py-1.5 md:py-0.5' }"
       >
         <template #item-label>
           <img
