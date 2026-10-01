@@ -14,20 +14,6 @@
 
 ## Licence
 
-Copyright (C) 2021-2026 Antoine Boquet, Benjamin Georges
-
-This program is free software: you can redistribute it and/or modify it under
-the terms of the GNU Affero General Public License as published by the Free
-Software Foundation, either version 3 of the License, or (at your option) any
-later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License along
-with this program. If not, see https://www.gnu.org/licenses/agpl-3.0.fr.html.
-
 ### Données
 
 Cette application utilise les données du
@@ -35,17 +21,6 @@ Cette application utilise les données du
 Gréco, André Charbonnet, Mark De Wilde, Bernard Maréchal _et al._), distribuées
 sous licence _Creative Commons Attribution - Pas d'Utilisation Commerciale - Pas
 de Modification_ (CC&nbsp;BY-NC-ND&nbsp;4.0).
-
-### Analyse morphologique
-
-Cette application tire parti de
-[libmorpheus](https://github.com/defense-humanites/libmorpheus), une bibliothèque logicielle qui modernise et étend les capacités de l'analyseur morphologique
-Morpheus, initialement développé dans le cadre de la Perseus Digital Library
-(Gregory Crane _et al._ pour le compte de l'université Tufts).
-
-`libmorpheus` est distribuée sous licence
-mixte, _Mozilla Public License 2.0_ (MPL-2.0) et _GNU Affero General Public
-License v3.0 or later_ (AGPL-3.0-or-later.
 
 ### Fontes grecques
 
@@ -70,3 +45,31 @@ le nom « Bailly Book ».
 
 Les fichiers des fontes, accompagnés de leurs licences, se trouvent dans
 `app/assets/fonts/`.
+
+### Analyse morphologique
+
+Cette application tire parti de
+[libmorpheus](https://github.com/defense-humanites/libmorpheus), une bibliothèque
+logicielle qui modernise et étend les capacités de l'analyseur morphologique
+Morpheus, initialement développé dans le cadre de la Perseus Digital Library
+(Gregory Crane _et al._ pour le compte de l'université Tufts).
+
+`libmorpheus` est distribuée sous licence
+mixte, _Mozilla Public License 2.0_ (MPL-2.0) et _GNU Affero General Public
+License v3.0 or later_ (AGPL-3.0-or-later).
+
+### Application Bailly (le présent dépôt)
+
+Copyright (C) 2021-2026 Antoine Boquet, Benjamin Georges
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License along
+with this program. If not, see https://www.gnu.org/licenses/agpl-3.0.fr.html.
