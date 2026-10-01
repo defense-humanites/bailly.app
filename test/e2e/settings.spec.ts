@@ -1,4 +1,5 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
+import { rootLength } from "./helpers";
 
 test.describe("settings", () => {
   test("the former address, « /paramètres », redirects to the preferences", async ({ page }) => {
@@ -28,9 +29,10 @@ test.describe("settings", () => {
     const general = await extent("[aria-labelledby=settings-general]");
     const reading = await extent("[aria-labelledby=settings-reading]");
     const search = await extent("[aria-labelledby=settings-search]");
-    // The header steps out of the content by the search bar's overhangs (3rem).
-    expect(general.left).toBe(nav.left + 48);
-    expect(reading.right).toBe(nav.right - 48);
+    // The header steps out of the content by the search bar's overhangs.
+    const overhang = await rootLength(page, "--search-overhang");
+    expect(Math.abs(general.left - nav.left - overhang)).toBeLessThanOrEqual(1);
+    expect(Math.abs(nav.right - reading.right - overhang)).toBeLessThanOrEqual(1);
     expect(reading.top).toBe(general.top);
     expect(search.left).toBe(general.left);
 

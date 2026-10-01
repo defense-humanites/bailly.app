@@ -8,6 +8,18 @@ export const searchInput = (page: Page) => page.locator("header input[role=combo
 /**
  * The search bar (field and options button).
  */
+/**
+ * A length of `root.css`, in pixels (e.g. `--search-overhang`, `--reading-width`,
+ * in rem): the tests follow the layout's values rather than repeat them.
+ */
+export async function rootLength(page: Page, name: string): Promise<number> {
+  return page.evaluate((property) => {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(property).trim();
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    return value.endsWith("rem") ? parseFloat(value) * rem : parseFloat(value);
+  }, name);
+}
+
 export const searchBar = (page: Page) => page.locator("header .group\\/search");
 
 /**

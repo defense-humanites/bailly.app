@@ -1,6 +1,6 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
 import type { Page } from "@playwright/test";
-import { resultsExtent, searchInput, searchResults, xExtent } from "./helpers";
+import { resultsExtent, rootLength, searchInput, searchResults, xExtent } from "./helpers";
 
 /**
  * The header's inner box (inside its border and
@@ -87,15 +87,16 @@ test("the header is anchored, its border shown once the page is scrolled", async
 test("from md, the search bar widens up to the reading width and its overhangs, and never narrows", async ({ page, goto }) => {
   await page.setViewportSize({ width: 768, height: 800 });
   await goto("/logos", { waitUntil: "hydration" });
+  const widest = await rootLength(page, "--reading-width") + 2 * await rootLength(page, "--search-overhang");
   let previous = 0;
   for (let width = 768; width <= 1920; width += 16) {
     await page.setViewportSize({ width, height: 800 });
     const [left, right] = await xExtent(page, "header .group\\/search");
     expect(right - left).toBeGreaterThanOrEqual(previous - 0.5);
-    expect(right - left).toBeLessThanOrEqual(688.5);
+    expect(right - left).toBeLessThanOrEqual(widest + 0.5);
     previous = right - left;
   }
-  expect(previous).toBeCloseTo(688, 0);
+  expect(previous).toBeCloseTo(widest, 0);
 });
 
 test.describe("header menu", () => {

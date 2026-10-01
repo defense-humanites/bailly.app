@@ -58,10 +58,10 @@
           class="size-4 shrink-0 transition-[color,translate] ease-out group-hover:text-primary motion-reduce:transition-none"
           :class="link.direction === 'next' ? 'group-active:translate-x-0.5' : 'group-active:-translate-x-0.5'"
         />
-          <span
-              class="block truncate font-serif text-sm/7 font-bold text-highlighted"
-              :lang="greek.lang.value"
-          >{{ greek.text(link.word) }}</span>
+        <span
+          class="block truncate font-serif text-sm/7 font-bold text-highlighted"
+          :lang="greek.lang.value"
+        >{{ greek.text(link.word) }}</span>
       </span>
       <span
         v-if="link.rest"

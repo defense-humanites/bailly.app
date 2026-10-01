@@ -1,6 +1,6 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
 import type { Page } from "@playwright/test";
-import { bookmarksState, seedBookmarks } from "./helpers";
+import { bookmarksState, rootLength, seedBookmarks } from "./helpers";
 
 // Real entries (their excerpts come from the Bailly).
 const logos = { word: "λόγος", uri: "logos", excerpt: "λόγος, ου (ὁ) A parole : I la parole, en gén. : ἔργα λόγου μέζω, Hdt. 2, 35, actions au-dessus de ce qu’on en pourrait dire ; λόγου κρεῖσσον, Thc. 2,…" };
@@ -174,9 +174,11 @@ test.describe("bookmarks page", () => {
       };
       return { content: edges(document.querySelector("main section")!), inner: edges(document.querySelector("header > nav")!) };
     });
-    // The header steps out of the content by the search bar's overhangs (3rem).
-    expect(Math.abs(content.left - inner.left - 48)).toBeLessThan(1);
-    expect(Math.abs(inner.right - content.right - 48)).toBeLessThan(1);
+    // The header steps out of the content by the search bar's overhangs.
+    const overhang = await rootLength(page, "--search-overhang");
+    expect(overhang).toBeGreaterThan(0);
+    expect(Math.abs(content.left - inner.left - overhang)).toBeLessThan(1);
+    expect(Math.abs(inner.right - content.right - overhang)).toBeLessThan(1);
   });
 
   // Where supported (e.g. Safari), the cards are laid out in lanes.
