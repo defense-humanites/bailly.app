@@ -40,18 +40,22 @@ export default defineAppConfig({
         },
       },
       // The text in a hue of the palette rather than plain white or black:
-      // gold on terracotta (the cream gold, 4.7:1; in the dark theme, the
-      // darkest gold, 5.1:1), the Aegean blue in its light shade on the dark
-      // blue (5.6:1) and conversely (5.9:1). Pressed, the button darkens a
-      // little rather than turning translucent (as on hover).
+      // gold on terracotta (the cream gold, 4.7:1; in the dark theme, a dark
+      // gold, 3.4:1, chosen over the darkest one, 5.1:1), the Aegean blue in
+      // its lightest shade on the dark blue (7:1) and conversely (5.9:1).
+      // Pressed, or while the panel it opens is open (`aria-expanded`: a
+      // menu, a dialog; not `data-state`, which a tooltip around the button
+      // sets too, to its own state), the button darkens a little rather than
+      // turning translucent (as on hover), and keeps that look until it
+      // closes.
       // Literal classes, for Tailwind to find them.
       compoundVariants: [
-        { color: "primary", variant: "solid", class: "text-(--ui-color-warning-100) dark:text-(--ui-color-warning-950) active:bg-primary active:brightness-95" },
-        { color: "secondary", variant: "solid", class: "text-(--ui-color-secondary-200) dark:text-(--ui-color-secondary-900) active:bg-secondary active:brightness-95" },
-        { color: "success", variant: "solid", class: "active:bg-success active:brightness-95" },
-        { color: "info", variant: "solid", class: "active:bg-info active:brightness-95" },
-        { color: "warning", variant: "solid", class: "active:bg-warning active:brightness-95" },
-        { color: "error", variant: "solid", class: "active:bg-error active:brightness-95" },
+        { color: "primary", variant: "solid", class: "text-(--ui-color-warning-100) dark:text-(--ui-color-warning-900) active:bg-primary active:brightness-95 aria-expanded:bg-primary aria-expanded:brightness-95" },
+        { color: "secondary", variant: "solid", class: "text-(--ui-color-secondary-100) dark:text-(--ui-color-secondary-900) active:bg-secondary active:brightness-95 aria-expanded:bg-secondary aria-expanded:brightness-95" },
+        { color: "success", variant: "solid", class: "active:bg-success active:brightness-95 aria-expanded:bg-success aria-expanded:brightness-95" },
+        { color: "info", variant: "solid", class: "active:bg-info active:brightness-95 aria-expanded:bg-info aria-expanded:brightness-95" },
+        { color: "warning", variant: "solid", class: "active:bg-warning active:brightness-95 aria-expanded:bg-warning aria-expanded:brightness-95" },
+        { color: "error", variant: "solid", class: "active:bg-error active:brightness-95 aria-expanded:bg-error aria-expanded:brightness-95" },
       ],
     },
     input: {
