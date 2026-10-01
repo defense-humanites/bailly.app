@@ -506,13 +506,18 @@
             @click="onDeleteEntry(entry)"
           />
 
+          <!--
+            The excerpts follow the reading font, not its size nor its weight
+            (as the search results and the history): the normal size and
+            weight, set on the reading variables (the arrow follows them).
+          -->
           <EntryCard
             :entry="entry"
             link
             prefetch-on="visibility"
             :ui="{
               root: 'bg-default/75 ring-tag-300/50 hover:ring-tag-400 text-tag-text shadow-none',
-              entry: 'mx-3 my-1.5 line-clamp-4',
+              entry: 'mx-3 my-1.5 line-clamp-4 [--reading-font-size:0.96875rem] [--reading-font-weight:400]',
             }"
           />
         </div>

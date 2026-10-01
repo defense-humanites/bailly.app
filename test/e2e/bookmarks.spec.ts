@@ -138,6 +138,15 @@ test.describe("bookmarks page", () => {
     expect(text).toBeCloseTo(name, 0);
   });
 
+  test("the excerpts follow the reading font, not its size nor its weight", async ({ page }) => {
+    const excerpt = card(page, "Vocabulaire homérique").locator(".definition").first();
+    await expect(excerpt).toHaveCSS("font-size", "15.5px");
+    await page.evaluate(() => Object.assign(document.documentElement.dataset, { readingFont: "didot", readingSize: "larger", readingWeight: "bold" }));
+    await expect(excerpt).toHaveCSS("font-family", /^"GFS Didot"/);
+    await expect(excerpt).toHaveCSS("font-size", "15.5px");
+    await expect(excerpt).toHaveCSS("font-weight", "400");
+  });
+
   test("removing a favorite", async ({ page }) => {
     await page.getByRole("button", { name: "Modifier les favoris" }).click();
     await page.getByRole("button", { name: "Retirer « λόγος » des favoris" }).click();
