@@ -48,19 +48,17 @@ License v3.0 or later_ (AGPL-3.0-or-later.
 
 ### Fontes grecques
 
-Cette application utilise la fonte [Brill](https://brill.com/page/419386), dont
-l'usage est régi par le
-_[Brill Fonts End User License Agreement](https://brill.com/page/FontsEndUserLicenseAgreement/brill-fonts-end-user-license-agreement)_,
-ainsi que la fonte
+Cette application utilise les fontes de lecture
+[GFS Didot](https://www.greekfontsociety-gfs.gr/typefaces/19th_century) (par
+défaut) et
+[GFS Neohellenic](https://www.greekfontsociety-gfs.gr/typefaces/20th_21st_century)
+(Greek Font Society) et la fonte d'interface [Inter](https://rsms.me/inter/)
+(Rasmus Andersson), distribuées sous licence _SIL Open Font License 1.1_, ainsi
+que la fonte
 [IFAOGrec](https://www.ifao.egnet.net/publications/outils/polices/#grec)
 (Jean-Luc Fournet, Ralph Hancock & Adam Bülow-Jacobsen), qui est libre de tous
-droits, pour rendre les caractères les plus spécifiques. Les fontes
-[GFS Didot](https://www.greekfontsociety-gfs.gr/typefaces/19th_century) et
-[GFS Neohellenic](https://www.greekfontsociety-gfs.gr/typefaces/20th_21st_century)
-(Greek Font Society), proposées comme alternatives à Brill, et la fonte
-d'interface [Inter](https://rsms.me/inter/) (Rasmus Andersson) sont
-distribuées sous licence _SIL Open Font License 1.1_. Brill et Inter sont
-servies en sous-ensembles (`scripts/subset-fonts.sh`).
+droits, pour rendre les caractères les plus spécifiques. Inter est servie en
+sous-ensemble (`scripts/subset-fonts.sh`).
 
 Les fichiers des fontes, accompagnés de leurs licences, se trouvent dans
 `app/assets/fonts/`.

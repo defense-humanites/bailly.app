@@ -76,18 +76,19 @@ test.describe("settings", () => {
   });
 
   test("reading: the font, preloaded, and only its faces downloaded", async ({ page, goto }) => {
+    // GFS Didot by default.
     await goto("/logos", { waitUntil: "hydration" });
-    await expect(page.locator("link[rel=preload][as=font]")).toHaveAttribute("href", /^\/_nuxt\/Brill-Roman\.subset\.[\w-]+\.woff2$/);
+    await expect(page.locator("link[rel=preload][as=font]")).toHaveAttribute("href", /^\/_nuxt\/GFS_Didot-Roman\.[\w-]+\.woff2$/);
 
     await goto("/préférences", { waitUntil: "hydration" });
     await page.getByRole("combobox", { name: "Police" }).click();
-    await page.getByRole("option", { name: "GFS Didot" }).click();
+    await page.getByRole("option", { name: "GFS Neohellenic" }).click();
     const preview = page.getByRole("figure", { name: "Aperçu" });
-    await expect(preview).toHaveCSS("font-family", /^"GFS Didot"/);
+    await expect(preview).toHaveCSS("font-family", /^"GFS Neohellenic"/);
 
     const html = await page.evaluate(async () => (await fetch("/logos")).text());
-    expect(html).toMatch(/<html[^>]*data-reading-font="didot"/);
-    expect(html).toMatch(/href="\/_nuxt\/GFS_Didot-Roman\.[\w-]+\.woff2"/);
+    expect(html).toMatch(/<html[^>]*data-reading-font="neohellenic"/);
+    expect(html).toMatch(/href="\/_nuxt\/GFS_NeoHellenic-Roman\.[\w-]+\.woff2"/);
 
     // The faces requested by the page.
     await goto("/logos", { waitUntil: "hydration" });
@@ -95,9 +96,8 @@ test.describe("settings", () => {
       await document.fonts.ready;
       return [...document.fonts].filter(face => face.status !== "unloaded").map(face => face.family.replace(/"/g, ""));
     });
-    expect(requested).toContain("GFS Didot");
-    expect(requested).not.toContain("Brill");
-    expect(requested).not.toContain("GFS Neohellenic");
+    expect(requested).toContain("GFS Neohellenic");
+    expect(requested).not.toContain("GFS Didot");
   });
 
   // In their italic and bold faces, U+2009 is drawn (in Didot Italic, an

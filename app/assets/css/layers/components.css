@@ -124,7 +124,7 @@
   .definition {
     font-size: var(--reading-font-size);
     font-weight: var(--reading-font-weight);
-    /* The former 1.4 of Brill (cf. `fonts.css`): 28 px for the normal size. */
+    /* 28 px for the normal size. */
     line-height: 1.8;
   }
 

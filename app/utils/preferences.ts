@@ -31,7 +31,7 @@ export type ReadingWeight = typeof READING_WEIGHTS[number];
 
 export const DEFAULT_PREFERENCES: Readonly<Preferences> = {
   transliterateGreek: false,
-  readingFont: "brill",
+  readingFont: "didot",
   readingSize: "normal",
   readingWeight: "normal",
   inputMode: InputMode.BetaCode,

@@ -1,5 +1,3 @@
-import brillBold from "~/assets/fonts/Brill/Brill-Bold.subset.woff2";
-import brillRoman from "~/assets/fonts/Brill/Brill-Roman.subset.woff2";
 import didotBold from "~/assets/fonts/GFS_Didot/GFS_Didot-Bold.woff2";
 import didotRoman from "~/assets/fonts/GFS_Didot/GFS_Didot-Roman.woff2";
 import neohellenicBold from "~/assets/fonts/GFS_NeoHellenic/GFS_NeoHellenic-Bold.woff2";
@@ -24,10 +22,6 @@ function path(url: string): string {
  * `fonts.css` (the same URLs, versioned by Vite), preloaded (cf. `app.vue`).
  */
 export const READING_FONTS = {
-  brill: {
-    label: "Brill",
-    files: { normal: path(brillRoman), bold: path(brillBold) },
-  },
   didot: {
     label: "GFS Didot",
     files: { normal: path(didotRoman), bold: path(didotBold) },
