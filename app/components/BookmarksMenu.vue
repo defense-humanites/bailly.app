@@ -141,7 +141,9 @@
     ].filter(Boolean);
 
     // Synchronized, the imported bookmarks also go to the other devices.
-    const synchronized = added.length && syncStore.enabled ? " Ils seront aussi envoyés à vos autres appareils." : "";
+    // Sent to the other devices only if this one synchronizes its bookmarks
+    // (its key may synchronize its preferences only).
+    const synchronized = added.length && syncStore.syncedBookmarks ? " Ils seront aussi envoyés à vos autres appareils." : "";
 
     toast.add({
       title: "Signets importés",

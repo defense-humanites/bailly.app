@@ -295,6 +295,11 @@ export async function synchronize(
 
     if (exists) onMerged?.(outcomes.filter(outcome => outcome.state === "merged").map(outcome => outcome.section));
     let failure = outcomes.find(outcome => outcome.state === "failed");
+    // The first failure is reported; the others (rare: two types at once) are
+    // logged, and reported by the next synchronization.
+    for (const other of outcomes) {
+      if (other.state === "failed" && other !== failure) console.warn(`The synchronization of the ${other.section} failed too`, other.error);
+    }
     const partial = (): SyncPartialError | null =>
       failure?.state === "failed" ? new SyncPartialError(failure.section, failure.error) : null;
 

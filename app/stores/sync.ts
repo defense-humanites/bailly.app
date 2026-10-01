@@ -721,6 +721,16 @@ export const useSyncStore = defineStore("sync", () => {
     const current = sectionsOf(config);
     if (sections.bookmarks && !current.bookmarks) return activate(fromBase64url(config.secret), sections);
 
+    // Nothing changes (e.g. the device's own key typed again): a
+    // synchronization, as asked.
+    const unchanged = sections.bookmarks === current.bookmarks
+      && sections.preferences.length === current.preferences.length
+      && sections.preferences.every(key => current.preferences.includes(key));
+    if (unchanged) {
+      if (await sync({ force: true })) return { state: "success", data: { emptied: false } };
+      return { state: "error", message: error.value ?? "La synchronisation a échoué." };
+    }
+
     // A type (or preferences) no longer synchronized: the latest changes
     // sent first.
     if ((current.bookmarks && !sections.bookmarks) || current.preferences.some(key => !sections.preferences.includes(key))) {
