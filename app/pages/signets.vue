@@ -9,6 +9,29 @@
   const { initialized, tags, starredEntries } = storeToRefs(bookmarksStore);
 
   const showButtonLabels = useButtonLabels();
+
+  /**
+   * From this number of tags, a table of contents under the header leads to
+   * their cards (below, they all show at a glance).
+   */
+  const TOC_FROM = 6;
+
+  /**
+   * The id of a group's card (the target of its link in the table of
+   * contents).
+   */
+  const groupId = (key: string): string => (key === "favorites" ? "favoris" : `etiquette-${key}`);
+
+  /**
+   * The table of contents: the favorites, then the tags in their order, with
+   * their number of entries.
+   */
+  const toc = computed(() => [
+    { key: "favorites", name: "Favoris", color: "Yellow", icon: "i-bailly-star-filled", count: starredEntries.value.length },
+    ...tags.value.map(tag => ({ key: tag.key, name: tag.name, color: tag.color, icon: "i-bailly-tag-filled", count: bookmarksStore.entriesOf(tag.key).length })),
+  ]);
+
+  const entryCount = (count: number): string => (count < 2 ? "entrée" : "entrées");
 </script>
 
 <template>
@@ -76,8 +99,43 @@
         then (and on the server), placeholders keep the page from collapsing.
       -->
       <template v-if="initialized">
+        <!--
+          Table of contents: a link per group, in its colors, to its card
+          (which clears the header). On one column, a single row that scrolls
+          sideways, to the edges of the screen; on two, it wraps.
+        -->
+        <nav
+          v-if="tags.length >= TOC_FROM"
+          aria-label="Sommaire des signets"
+          class="col-span-full -mx-4 overflow-x-auto px-4 [scrollbar-width:none] md:-mx-6 md:px-6 lg:mx-0 lg:overflow-visible lg:px-0"
+        >
+          <ul class="flex w-max gap-2 lg:w-auto lg:flex-wrap">
+            <li
+              v-for="group in toc"
+              :key="group.key"
+              :data-tag-color="group.color"
+            >
+              <!-- Named « Homère, 12 entrées » (the full name, the count spelled out). -->
+              <NuxtLink
+                :to="{ hash: `#${groupId(group.key)}` }"
+                :aria-label="`${group.name}, ${group.count} ${entryCount(group.count)}`"
+                class="flex h-8 items-center gap-1.5 rounded-full bg-tag-100 ps-2.5 pe-3 text-sm text-tag-text ring ring-inset ring-tag-300/60 transition-colors hover:bg-tag-200/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
+              >
+                <UIcon
+                  :name="group.icon"
+                  class="size-4 shrink-0"
+                />
+                <span class="max-w-48 truncate font-medium">{{ group.name }}</span>
+                <span class="tabular-nums opacity-75">{{ group.count }}</span>
+              </NuxtLink>
+            </li>
+          </ul>
+        </nav>
+
         <!-- Favorites -->
         <BookmarkGroup
+          :id="groupId('favorites')"
+          class="scroll-mt-[calc(var(--header-bottom)+1.5rem)]"
           :tag="{
             key: 'favorites',
             name: 'Favoris',
@@ -94,7 +152,9 @@
         <!-- Tags -->
         <BookmarkGroup
           v-for="tag in tags"
+          :id="groupId(tag.key)"
           :key="tag.key"
+          class="scroll-mt-[calc(var(--header-bottom)+1.5rem)]"
           :tag="tag"
           :entries="bookmarksStore.entriesOf(tag.key)"
           editable

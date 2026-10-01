@@ -234,6 +234,41 @@ test.describe("bookmarks page, long groups", () => {
   });
 });
 
+test.describe("bookmarks page, table of contents", () => {
+  const tagNames = ["Un", "Deux", "Trois", "Quatre", "Cinq"];
+
+  test("from six tags: a link per group, with its count, to its card", async ({ page, goto }) => {
+    await goto("/signets", { waitUntil: "hydration" });
+    await seedBookmarks(page, {
+      starred: [logos],
+      tags: tagNames.map(name => ({ name, color: "Sky" })),
+    });
+    // Five tags: no table of contents.
+    await expect(card(page, "Cinq")).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Sommaire des signets" })).toHaveCount(0);
+
+    await seedBookmarks(page, { tags: [{ name: "Six", color: "Rose", entries: [anax, menis] }] });
+    const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
+    const links = toc.getByRole("link");
+    // The favorites, then the tags in their order (the newest first).
+    const names = ["Favoris, 1 entrée", "Six, 2 entrées", "Cinq, 0 entrée", "Quatre, 0 entrée", "Trois, 0 entrée", "Deux, 0 entrée", "Un, 0 entrée"];
+    await expect(links).toHaveCount(names.length);
+    for (const [i, name] of names.entries()) await expect(links.nth(i)).toHaveAccessibleName(name);
+
+    await page.setViewportSize({ width: 1280, height: 600 });
+    await links.filter({ hasText: /^Un/ }).click();
+    await expect(page).toHaveURL(/#etiquette-[\w-]+$/);
+    const target = page.locator("main section > .group").filter({ has: page.getByText("Un", { exact: true }) });
+    await expect(target).toBeInViewport();
+    // Under the sticky header.
+    const [top, headerBottom] = await Promise.all([
+      target.evaluate(element => element.getBoundingClientRect().top),
+      page.locator("header").first().evaluate(element => element.getBoundingClientRect().bottom),
+    ]);
+    expect(top).toBeGreaterThanOrEqual(headerBottom);
+  });
+});
+
 test.describe("bookmarks page on a touch screen", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
