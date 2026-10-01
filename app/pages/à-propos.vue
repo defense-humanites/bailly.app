@@ -34,7 +34,7 @@
     {
       icon: "i-lucide-book-open",
       title: "Une lecture à votre main",
-      text: "Quatre polices, quatre tailles de texte, et la translittération du grec si vous le souhaitez.",
+      text: "Cinq polices, quatre tailles de texte, et la translittération du grec si vous le souhaitez.",
     },
   ];
 
@@ -69,7 +69,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
       licence: "GNU Affero General Public License (AGPL-3.0-or-later)",
       links: [
         { label: "Licence", href: "/COPYING" },
-        { label: "Code source", href: "https://github.com/antoineboquet/bailly.app" },
+        { label: "Code source", href: "https://github.com/defense-humanites/bailly.app" },
       ],
     },
     {
@@ -351,7 +351,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                 label="Signaler un problème"
               />
               <UButton
-                to="https://github.com/antoineboquet/bailly.app"
+                to="https://github.com/defense-humanites/bailly.app"
                 target="_blank"
                 color="neutral"
                 variant="ghost"
