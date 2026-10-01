@@ -2,11 +2,12 @@
  * The fonts' sizes are normalized on Inter, the interface's font: each serif
  * font (and IFAOGrec, their fallback) is scaled (`size-adjust`) so that its
  * lowercase letters, Greek and Latin (mean of α ε ι κ ν ο π σ τ υ ω and
- * a c e m n o r s u v x z), are as high as Inter's: `1rem` of Didot looks as
+ * a c e m n o r s u v x z), are as high as Inter's: `1rem` of Gentium looks as
  * large as `1rem` of Inter, and the reading fonts are interchangeable at the
  * same size. The ratios were measured on the fonts' outlines (fontTools):
  *
- *   GFS Didot 1.179, GFS Neohellenic 1.387, IFAOGrec 1.204.
+ *   Bailly Book (Gentium Book Plus) 1.176, GFS Didot 1.179, GFS Artemisia
+ *   1.129, GFS Bodoni 1.116, GFS Neohellenic 1.387, IFAOGrec 1.204.
  *
  * Their vertical metrics are also set to Inter's (ascent 0.96875 em, descent
  * 0.24121 em, no line gap, divided by the scale, as `size-adjust` also scales
@@ -27,7 +28,7 @@
 /*
  * The font files are in `app/assets/fonts` (one folder per font, with its
  * license): Vite serves them under `/_nuxt/`, their names versioned by their
- * content (e.g. `GFS_Didot-Roman.Bx3Yt1Qq.woff2`), with a long cache (immutable):
+ * content (e.g. `BaillyBook-Roman.subset.Bx3Yt1Qq.woff2`), with a long cache (immutable):
  * a font is only downloaded again when it changes.
  */
 
@@ -52,13 +53,69 @@
 }
 
 /*
- * The reading fonts (cf. `utils/fonts.ts`): GFS Didot, a serif font (the
- * default), and GFS Neohellenic, a sans serif one. A face is only downloaded
- * when some text uses it.
+ * Bailly Book, the default reading font: a subset of Gentium Book Plus (SIL),
+ * renamed as its license requires (cf. `scripts/subset-fonts.sh`). It has
+ * every space, U+202F included.
+ *   Using `font-display: block;`, so as not to show the fallback font (of
+ *   other proportions) while it loads.
+ */
+
+@font-face {
+  font-family: "Bailly Book";
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 117.6%;
+  ascent-override: 82.38%;
+  descent-override: 20.51%;
+  line-gap-override: 0%;
+  src: url("../fonts/Gentium_Book_Plus/BaillyBook-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Bailly Book";
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 117.6%;
+  ascent-override: 82.38%;
+  descent-override: 20.51%;
+  line-gap-override: 0%;
+  src: url("../fonts/Gentium_Book_Plus/BaillyBook-Bold.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Bailly Book";
+  font-weight: normal;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 117.6%;
+  ascent-override: 82.38%;
+  descent-override: 20.51%;
+  line-gap-override: 0%;
+  src: url("../fonts/Gentium_Book_Plus/BaillyBook-Italic.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Bailly Book";
+  font-weight: bold;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 117.6%;
+  ascent-override: 82.38%;
+  descent-override: 20.51%;
+  line-gap-override: 0%;
+  src: url("../fonts/Gentium_Book_Plus/BaillyBook-BoldItalic.subset.woff2") format("woff2");
+}
+
+/*
+ * The other reading fonts (cf. `utils/fonts.ts`), from the Greek Font Society:
+ * GFS Didot, GFS Artemisia and GFS Bodoni, serif fonts, and GFS Neohellenic, a
+ * sans serif one. A face is only downloaded when some text uses it.
  *   Using `font-display: block;`, so as not to show the fallback font (of
  *   other proportions) while it loads.
  *   Their thin spaces are left out (`unicode-range`): in their italic and bold
- *   faces, U+2009 (thin space) is drawn with contours (in Didot Italic, an
+ *   faces (and in all of GFS Bodoni's), U+2009 (thin space) is drawn with contours (in Didot Italic, an
  *   exclamation mark), and none has U+202F (narrow no-break space, before
  *   « ; », « ! », « ? », « : » in the text), for which the browsers' shaping
  *   (HarfBuzz) then takes their U+2009: « etc. ; » showed as « etc.!; ».
@@ -169,8 +226,112 @@
   src: url("../fonts/GFS_NeoHellenic/GFS_NeoHellenic-BoldItalic.woff2") format("woff2");
 }
 
+@font-face {
+  font-family: "GFS Artemisia";
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 112.9%;
+  ascent-override: 85.81%;
+  descent-override: 21.36%;
+  line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
+  src: url("../fonts/GFS_Artemisia/GFS_Artemisia-Roman.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Artemisia";
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 112.9%;
+  ascent-override: 85.81%;
+  descent-override: 21.36%;
+  line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
+  src: url("../fonts/GFS_Artemisia/GFS_Artemisia-Bold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Artemisia";
+  font-weight: normal;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 112.9%;
+  ascent-override: 85.81%;
+  descent-override: 21.36%;
+  line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
+  src: url("../fonts/GFS_Artemisia/GFS_Artemisia-Italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Artemisia";
+  font-weight: bold;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 112.9%;
+  ascent-override: 85.81%;
+  descent-override: 21.36%;
+  line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
+  src: url("../fonts/GFS_Artemisia/GFS_Artemisia-BoldItalic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Bodoni";
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 111.6%;
+  ascent-override: 86.81%;
+  descent-override: 21.61%;
+  line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
+  src: url("../fonts/GFS_Bodoni/GFS_Bodoni-Roman.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Bodoni";
+  font-weight: bold;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 111.6%;
+  ascent-override: 86.81%;
+  descent-override: 21.61%;
+  line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
+  src: url("../fonts/GFS_Bodoni/GFS_Bodoni-Bold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Bodoni";
+  font-weight: normal;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 111.6%;
+  ascent-override: 86.81%;
+  descent-override: 21.61%;
+  line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
+  src: url("../fonts/GFS_Bodoni/GFS_Bodoni-Italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Bodoni";
+  font-weight: bold;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 111.6%;
+  ascent-override: 86.81%;
+  descent-override: 21.61%;
+  line-gap-override: 0%;
+  unicode-range: U+0-2008, U+200A-202E, U+2030-10FFFF;
+  src: url("../fonts/GFS_Bodoni/GFS_Bodoni-BoldItalic.woff2") format("woff2");
+}
+
 /*
- * The thin spaces of GFS Didot and GFS Neohellenic (cf. above): Inter's
+ * The thin spaces of the GFS fonts (cf. above): Inter's
  * (empty, 0.18 em), scaled and aligned as the font they stand in for. One face
  * per style, for every weight (the space is the same).
  */
@@ -222,6 +383,58 @@
   size-adjust: 138.7%;
   ascent-override: 69.84%;
   descent-override: 17.39%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Artemisia";
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 112.9%;
+  ascent-override: 85.81%;
+  descent-override: 21.36%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Artemisia";
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 112.9%;
+  ascent-override: 85.81%;
+  descent-override: 21.36%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Bodoni";
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+  size-adjust: 111.6%;
+  ascent-override: 86.81%;
+  descent-override: 21.61%;
+  line-gap-override: 0%;
+  unicode-range: U+2009, U+202F;
+  src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "GFS Bodoni";
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: block;
+  size-adjust: 111.6%;
+  ascent-override: 86.81%;
+  descent-override: 21.61%;
   line-gap-override: 0%;
   unicode-range: U+2009, U+202F;
   src: url("../fonts/Inter_Variable/Inter_Variable-Roman.subset.woff2") format("woff2");

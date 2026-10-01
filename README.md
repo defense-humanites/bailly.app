@@ -48,17 +48,22 @@ License v3.0 or later_ (AGPL-3.0-or-later.
 
 ### Fontes grecques
 
-Cette application utilise les fontes de lecture
-[GFS Didot](https://www.greekfontsociety-gfs.gr/typefaces/19th_century) (par
-défaut) et
+Cette application utilise les fontes de lecture « Bailly Book » (par défaut),
+sous-ensemble renommé de
+[Gentium Book Plus](https://software.sil.org/gentium/) (SIL International),
+[GFS Didot](https://www.greekfontsociety-gfs.gr/typefaces/19th_century),
+[GFS Artemisia](https://www.greekfontsociety-gfs.gr/typefaces/20th_21st_century),
+[GFS Bodoni](https://www.greekfontsociety-gfs.gr/typefaces/19th_century) et
 [GFS Neohellenic](https://www.greekfontsociety-gfs.gr/typefaces/20th_21st_century)
-(Greek Font Society) et la fonte d'interface [Inter](https://rsms.me/inter/)
+(Greek Font Society), et la fonte d'interface [Inter](https://rsms.me/inter/)
 (Rasmus Andersson), distribuées sous licence _SIL Open Font License 1.1_, ainsi
 que la fonte
 [IFAOGrec](https://www.ifao.egnet.net/publications/outils/polices/#grec)
 (Jean-Luc Fournet, Ralph Hancock & Adam Bülow-Jacobsen), qui est libre de tous
-droits, pour rendre les caractères les plus spécifiques. Inter est servie en
-sous-ensemble (`scripts/subset-fonts.sh`).
+droits, pour rendre les caractères les plus spécifiques. Gentium Book Plus et
+Inter sont servies en sous-ensembles (`scripts/subset-fonts.sh`) ; « Gentium »
+étant un nom réservé de sa licence, le sous-ensemble de Gentium Book Plus porte
+le nom « Bailly Book ».
 
 Les fichiers des fontes, accompagnés de leurs licences, se trouvent dans
 `app/assets/fonts/`.

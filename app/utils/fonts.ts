@@ -1,3 +1,9 @@
+import bookBold from "~/assets/fonts/Gentium_Book_Plus/BaillyBook-Bold.subset.woff2";
+import bookRoman from "~/assets/fonts/Gentium_Book_Plus/BaillyBook-Roman.subset.woff2";
+import artemisiaBold from "~/assets/fonts/GFS_Artemisia/GFS_Artemisia-Bold.woff2";
+import artemisiaRoman from "~/assets/fonts/GFS_Artemisia/GFS_Artemisia-Roman.woff2";
+import bodoniBold from "~/assets/fonts/GFS_Bodoni/GFS_Bodoni-Bold.woff2";
+import bodoniRoman from "~/assets/fonts/GFS_Bodoni/GFS_Bodoni-Roman.woff2";
 import didotBold from "~/assets/fonts/GFS_Didot/GFS_Didot-Bold.woff2";
 import didotRoman from "~/assets/fonts/GFS_Didot/GFS_Didot-Roman.woff2";
 import neohellenicBold from "~/assets/fonts/GFS_NeoHellenic/GFS_NeoHellenic-Bold.woff2";
@@ -22,9 +28,23 @@ function path(url: string): string {
  * `fonts.css` (the same URLs, versioned by Vite), preloaded (cf. `app.vue`).
  */
 export const READING_FONTS = {
+  // A subset of Gentium Book Plus, renamed as its license requires (cf.
+  // `scripts/subset-fonts.sh`); its label says what it derives from.
+  book: {
+    label: "Bailly Book (d'après Gentium)",
+    files: { normal: path(bookRoman), bold: path(bookBold) },
+  },
   didot: {
     label: "GFS Didot",
     files: { normal: path(didotRoman), bold: path(didotBold) },
+  },
+  artemisia: {
+    label: "GFS Artemisia",
+    files: { normal: path(artemisiaRoman), bold: path(artemisiaBold) },
+  },
+  bodoni: {
+    label: "GFS Bodoni",
+    files: { normal: path(bodoniRoman), bold: path(bodoniBold) },
   },
   neohellenic: {
     label: "GFS Neohellenic",

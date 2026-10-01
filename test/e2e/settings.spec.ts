@@ -78,9 +78,9 @@ test.describe("settings", () => {
   });
 
   test("reading: the font, preloaded, and only its faces downloaded", async ({ page, goto }) => {
-    // GFS Didot by default.
+    // Bailly Book by default.
     await goto("/logos", { waitUntil: "hydration" });
-    await expect(page.locator("link[rel=preload][as=font]")).toHaveAttribute("href", /^\/_nuxt\/GFS_Didot-Roman\.[\w-]+\.woff2$/);
+    await expect(page.locator("link[rel=preload][as=font]")).toHaveAttribute("href", /^\/_nuxt\/BaillyBook-Roman\.subset\.[\w-]+\.woff2$/);
 
     await goto("/préférences", { waitUntil: "hydration" });
     await page.getByRole("combobox", { name: "Police" }).click();
@@ -99,17 +99,17 @@ test.describe("settings", () => {
       return [...document.fonts].filter(face => face.status !== "unloaded").map(face => face.family.replace(/"/g, ""));
     });
     expect(requested).toContain("GFS Neohellenic");
-    expect(requested).not.toContain("GFS Didot");
+    expect(requested).not.toContain("Bailly Book");
   });
 
   // In their italic and bold faces, U+2009 is drawn (in Didot Italic, an
   // exclamation mark), and U+202F, missing, was shaped with it: Inter's
   // spaces stand in for them (cf. fonts.css).
-  test("reading: the thin spaces of GFS Didot and GFS Neohellenic are spaces", async ({ page, goto }) => {
+  test("reading: the thin spaces of the reading fonts are spaces", async ({ page, goto }) => {
     await goto("/préférences", { waitUntil: "hydration" });
     const widths = await page.evaluate(async () => {
       const result: Record<string, { narrow: number; thin: number }> = {};
-      for (const family of ["GFS Didot", "GFS Neohellenic"]) {
+      for (const family of ["Bailly Book", "GFS Didot", "GFS Artemisia", "GFS Bodoni", "GFS Neohellenic"]) {
         for (const style of ["normal", "italic"]) {
           for (const weight of ["400", "700"]) {
             const font = `${style} ${weight} 100px "${family}"`;
@@ -129,12 +129,16 @@ test.describe("settings", () => {
       }
       return result;
     });
-    // Inter's thin space: 0.18 em, scaled as the font (100 px: 21 px for
-    // Didot, 25 px for Neohellenic); the exclamation mark was 53 px wide.
+    // Inter's thin space: 0.18 em, scaled as the font (100 px: 20 to 25 px);
+    // the exclamation mark was 53 px wide in Didot. Bailly Book's own: 0.15 to
+    // 0.17 em, scaled.
     for (const [face, { narrow, thin }] of Object.entries(widths)) {
       expect(narrow, face).toBeGreaterThan(15);
       expect(narrow, face).toBeLessThan(30);
-      expect(thin, face).toBeCloseTo(narrow, 1);
+      expect(thin, face).toBeGreaterThan(15);
+      expect(thin, face).toBeLessThan(30);
+      // The GFS fonts' come from Inter (the same width).
+      if (face.startsWith("GFS")) expect(thin, face).toBeCloseTo(narrow, 1);
     }
   });
 

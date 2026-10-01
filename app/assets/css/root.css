@@ -155,8 +155,20 @@
 
 /*
  * The serif font (entries, headwords…), chosen in the settings (cf.
- * `utils/fonts.ts`); GFS Didot by default (cf. `theme.css`).
+ * `utils/fonts.ts`); Bailly Book by default (cf. `theme.css`).
  */
+:root[data-reading-font="didot"] {
+  --font-serif: "GFS Didot", IFAOGrec, ui-serif, Georgia, serif;
+}
+
+:root[data-reading-font="artemisia"] {
+  --font-serif: "GFS Artemisia", IFAOGrec, ui-serif, Georgia, serif;
+}
+
+:root[data-reading-font="bodoni"] {
+  --font-serif: "GFS Bodoni", IFAOGrec, ui-serif, Georgia, serif;
+}
+
 :root[data-reading-font="neohellenic"] {
   --font-serif: "GFS Neohellenic", IFAOGrec, ui-serif, Georgia, serif;
 }
