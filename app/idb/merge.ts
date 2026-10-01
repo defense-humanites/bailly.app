@@ -197,7 +197,7 @@ function latest<T extends { updatedAt: Stamp; deleted?: true }>(a: T, b: T): T {
  * Merges collections of records, keeping the latest version of each record.
  * @returns The records, sorted by identity (a canonical form).
  */
-function mergeRecords<T extends Versioned>(id: (record: T) => string, ...collections: T[][]): T[] {
+export function mergeRecords<T extends Versioned>(id: (record: T) => string, ...collections: T[][]): T[] {
   const byId = new Map<string, T>();
   for (const collection of collections) {
     for (const record of collection) {

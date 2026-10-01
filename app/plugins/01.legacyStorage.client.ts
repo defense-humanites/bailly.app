@@ -32,7 +32,9 @@ export default defineNuxtPlugin(() => {
   const colorMode = useColorMode();
 
   onNuxtReady(() => {
-    if (Object.keys(preferences).length) set(preferences);
+    // Not stamped: they give way to any preference synchronized from another
+    // device (cf. `IdbPreferences`).
+    if (Object.keys(preferences).length) set(preferences, { stamp: false });
     if (theme) colorMode.preference = theme;
   });
 });

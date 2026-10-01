@@ -3,6 +3,7 @@ import type { Entry, EntryData } from "#shared/types/api";
 import type { PartialExcept } from "~/types";
 import { maxStamp, nextStamp, type Stamp } from "./clock";
 import type { StarredRecord, TaggedRecord, TagKey, TagOrder, TagRecord } from "./merge";
+import type { PreferenceRecord } from "./preferenceRecords";
 import { randomNodeId, randomUuid } from "./random";
 import { IdbTags, type TagColorKey } from "./IdbTags";
 
@@ -120,6 +121,12 @@ export enum IdbMetaKey {
    * The synchronization settings (`IdbSyncConfig`), if enabled.
    */
   Sync = "sync",
+  /**
+   * The records of the synchronizable preferences set on this device, with
+   * the stamps of their changes (cf. `IdbPreferences`); their values are
+   * applied from the preferences cookie.
+   */
+  Preferences = "preferences",
 }
 
 /**
@@ -142,6 +149,7 @@ type IdbMetaValues = {
   [IdbMetaKey.Node]: string;
   [IdbMetaKey.TagOrder]: TagOrder;
   [IdbMetaKey.Sync]: IdbSyncConfig;
+  [IdbMetaKey.Preferences]: PreferenceRecord[];
 };
 
 /**

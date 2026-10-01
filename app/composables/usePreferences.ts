@@ -1,12 +1,16 @@
+import { IdbPreferences } from "~/idb";
 import {
   DEFAULT_PREFERENCES,
   parsePreferences,
+  SYNCABLE_PREFERENCES,
   type Preferences,
 } from "~/utils/preferences";
 
 /**
  * The user's preferences (cf. `utils/preferences.ts`), shared across the
- * application and stored in a cookie when the user changes them.
+ * application and stored in a cookie when the user changes them; the changes
+ * of the synchronizable ones are also stamped in IndexedDB (cf.
+ * `IdbPreferences`).
  */
 export function usePreferences() {
   const { $preferencesCookie: cookie } = useNuxtApp();
@@ -17,11 +21,25 @@ export function usePreferences() {
   const stored = useState<Partial<Preferences>>("preferences", () => parsePreferences(cookie.value));
 
   /**
-   * Sets preferences, and stores them.
+   * Stamps the changes of the synchronizable preferences (on the client).
    */
-  const set = (values: Partial<Preferences>): void => {
+  const record = (values: Partial<Preferences>): void => {
+    if (!import.meta.client) return;
+    IdbPreferences.record(values).catch((e: unknown) => {
+      console.error("The change of the preferences could not be recorded", e);
+    });
+  };
+
+  /**
+   * Sets preferences, and stores them.
+   * @param options.stamp Whether the change is the user's, stamped for the
+   * synchronization (not a migration, nor a change received from another
+   * device, which carries its own stamp).
+   */
+  const set = (values: Partial<Preferences>, { stamp = true }: { stamp?: boolean } = {}): void => {
     stored.value = { ...stored.value, ...values };
     cookie.value = stored.value;
+    if (stamp) record(values);
   };
 
   /**
@@ -36,11 +54,14 @@ export function usePreferences() {
     });
 
   /**
-   * Restores the default preferences, and removes the cookie.
+   * Restores the default preferences, and removes the cookie; the reset of
+   * the synchronizable ones is stamped, so that it reaches the devices that
+   * synchronize them.
    */
   const reset = (): void => {
     stored.value = {};
     cookie.value = null;
+    record(Object.fromEntries(SYNCABLE_PREFERENCES.map(key => [key, DEFAULT_PREFERENCES[key]])));
   };
 
   return { preference, set, reset };

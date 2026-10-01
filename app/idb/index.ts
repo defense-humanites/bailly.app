@@ -13,6 +13,7 @@ export type {
 } from "./Idb";
 export { IdbBookmarks, type MergeOutcome } from "./IdbBookmarks";
 export { IdbHistory } from "./IdbHistory";
+export { IdbPreferences } from "./IdbPreferences";
 export { IdbStarred } from "./IdbStarred";
 export { IdbTaggedEntry } from "./IdbTaggedEntry";
 export { IdbTags, type TagColorKey } from "./IdbTags";
