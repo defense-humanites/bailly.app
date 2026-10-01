@@ -115,11 +115,12 @@
   );
   --header-max-width: calc(var(--content-max-width) + 2 * var(--search-overhang));
   /*
-   * Below `lg`, the bar is capped at the width it has when `lg` starts (the
-   * header's tracks and gaps widen there, 60px more than the reading width at
-   * 1024px): it never narrows as the window widens.
+   * Below `lg`, the bar is capped at the width it has when `lg` starts: the
+   * room left by the header's tracks and gaps, which widen there (60px more
+   * than the reading width at 1024px), or less if the overhangs are smaller:
+   * it never narrows as the window widens.
    */
-  --search-width: calc(var(--reading-width) + 3.75rem);
+  --search-width: calc(var(--reading-width) + min(3.75rem, 2 * var(--search-overhang)));
   --header-menu-width: 7.5rem; /* Icons only. */
   --header-gap: 2rem;
 
