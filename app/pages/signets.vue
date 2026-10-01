@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import type { TagKey } from "~/idb";
+
   useSeoMeta({
     title: "Signets",
     description:
@@ -6,7 +8,7 @@
   });
 
   const bookmarksStore = useBookmarksStore();
-  const { initialized, tags, starredEntries, currentTagKey } = storeToRefs(bookmarksStore);
+  const { initialized, tags, starredEntries, currentTagKey, currentTag } = storeToRefs(bookmarksStore);
 
   const showButtonLabels = useButtonLabels();
 
@@ -32,6 +34,14 @@
   ]);
 
   const entryCount = (count: number): string => (count < 2 ? "entrée" : "entrées");
+
+  /**
+   * The tags to choose the active one from, in their order; from
+   * `ACTIVE_FILTER_FROM` tags, the menu can be filtered.
+   */
+  const ACTIVE_FILTER_FROM = 8;
+  const activeItems = computed(() => tags.value.map(tag => ({ label: tag.name, value: tag.key, color: tag.color })));
+  const activeLabelId = useId();
 </script>
 
 <template>
@@ -48,20 +58,80 @@
       class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 supports-[display:grid-lanes]:[display:grid-lanes] lg:max-w-(--content-max-width) lg:grid-cols-2"
       :aria-busy="!initialized"
     >
-      <header class="col-span-full flex gap-6 max-lg:flex-col lg:items-center xl:mb-6">
-        <h1 class="grow font-sans text-3xl font-bold leading-normal">
-          Mes signets
-        </h1>
+      <!--
+        The header, on two levels: the collection (the title, its
+        synchronization and its file), then, under a rule, the tags (creating
+        one, choosing the active one, arranging them), above their table of
+        contents.
+        Solid buttons (the tags' cards use subtle ones: the page's actions
+        stand apart from them), the synchronization in the Aegean blue
+        (`secondary`: the sea, and the sky of the "cloud"). Icons only (square
+        buttons) below `xl`, as the header menu (the labels stay for screen
+        readers and show in tooltips; cf. `useButtonLabels`).
+      -->
+      <header class="col-span-full flex flex-col gap-5 xl:mb-2">
+        <div class="flex items-center gap-x-3 xl:gap-x-6">
+          <h1 class="grow font-sans text-3xl font-bold leading-normal">
+            Mes signets
+          </h1>
 
-        <!--
-          Actions: solid buttons (the tags' cards use subtle ones: the page's
-          actions stand apart from them), the synchronization in the Aegean
-          blue (`secondary`: the sea, and the sky of the "cloud").
-          Icons only (square buttons) below `xl`, as the header menu
-          (the labels stay for screen readers and show in tooltips; cf.
-          `useButtonLabels`).
-        -->
-        <aside class="flex items-center gap-x-3 max-md:flex-wrap max-md:gap-y-3 xl:gap-x-6">
+          <!-- Synchronization (its state, and its window) -->
+          <BookmarksSyncButton />
+
+          <!-- Export, import -->
+          <BookmarksMenu />
+        </div>
+
+        <div
+          role="group"
+          aria-label="Étiquettes"
+          class="flex flex-wrap items-center gap-3 border-t border-default pt-5 xl:gap-x-6"
+        >
+          <CreateTag class="min-w-0 grow basis-full md:basis-auto lg:w-80 lg:grow-0 xl:w-96" />
+
+          <!--
+            The active tag (the one an entry's toolbar adds it to in one
+            click), chosen from the page's top, wherever its card is. Shown
+            before the bookmarks are loaded too (disabled, as when there is no
+            tag): its place is kept. As high as the field and the buttons, with
+            the field's shadow.
+          -->
+          <div class="flex min-w-0 items-center gap-2 max-md:grow">
+            <span
+              :id="activeLabelId"
+              class="shrink-0 text-sm text-muted"
+            >Étiquette active</span>
+            <USelectMenu
+              :model-value="currentTagKey ?? undefined"
+              :items="activeItems"
+              value-key="value"
+              size="xl"
+              color="neutral"
+              :disabled="!activeItems.length"
+              :placeholder="initialized ? 'Aucune étiquette' : undefined"
+              :search-input="activeItems.length >= ACTIVE_FILTER_FROM && { placeholder: 'Filtrer…' }"
+              :aria-labelledby="activeLabelId"
+              class="min-w-0 grow md:w-56 md:grow-0"
+              :ui="{ base: 'h-11 rounded-full shadow-lg shadow-black/10' }"
+              @update:model-value="(key: TagKey) => bookmarksStore.setCurrentTag(key)"
+            >
+              <template #leading>
+                <UIcon
+                  name="i-bailly-tag-filled"
+                  :data-tag-color="currentTag?.color"
+                  class="size-5 shrink-0 text-tag-text"
+                />
+              </template>
+              <template #item-leading="{ item }">
+                <UIcon
+                  name="i-bailly-tag-filled"
+                  :data-tag-color="item.color"
+                  class="size-5 shrink-0 text-tag-text"
+                />
+              </template>
+            </USelectMenu>
+          </div>
+
           <!-- Order tags -->
           <UModal
             title="Arranger les étiquettes"
@@ -75,6 +145,7 @@
                 label="Arranger"
                 icon="i-lucide-list-ordered"
                 size="2xl"
+                class="ms-auto"
                 :ui="{ base: 'max-xl:px-2.5', label: 'max-xl:sr-only' }"
               />
             </UTooltip>
@@ -85,15 +156,7 @@
               />
             </template>
           </UModal>
-
-          <!-- Synchronization (its state, and its window) -->
-          <BookmarksSyncButton />
-
-          <!-- Export, import -->
-          <BookmarksMenu />
-
-          <CreateTag class="min-w-0 grow max-md:basis-full lg:w-80 lg:grow-0 xl:w-96" />
-        </aside>
+        </div>
       </header>
 
       <!--

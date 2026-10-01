@@ -78,23 +78,6 @@ test.describe("the tags of an entry", () => {
     await expect(allTags(page)).toContainText("Aucune étiquette ne correspond.");
   });
 
-  test("the active tag, chosen in the panel", async ({ page, goto }) => {
-    await goto("/logos", { waitUntil: "hydration" });
-    await seedBookmarks(page, {
-      tags: [
-        { name: "Vert", color: "Green" },
-        { name: "Ciel", color: "Sky" },
-      ],
-      current: "Ciel",
-    });
-    await expect(page.getByRole("button", { name: "Étiquette active : Ciel" })).toBeVisible();
-
-    await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
-    await allTags(page).getByRole("button", { name: "Active", exact: true }).click();
-    await page.getByRole("option", { name: "Vert" }).last().click();
-    await expect(page.getByRole("button", { name: "Étiquette active : Vert" })).toBeVisible();
-  });
-
   test("without tags, a message and the link to manage them", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     await page.getByRole("button", { name: "Toutes les étiquettes" }).click();

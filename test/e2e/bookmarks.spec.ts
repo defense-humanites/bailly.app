@@ -150,7 +150,7 @@ test.describe("bookmarks page", () => {
   // A solid button keeps its pressed look while its menu or dialog is open
   // (`aria-expanded`).
   test("a solid button stays pressed while its menu is open", async ({ page }) => {
-    const button = page.locator("main header aside button").filter({ hasText: "Fichier" });
+    const button = page.locator("main header button").filter({ hasText: "Fichier" });
     const look = () => button.evaluate(element => [getComputedStyle(element).backgroundImage, getComputedStyle(element).filter, getComputedStyle(element).backgroundColor]);
     await page.mouse.move(0, 0);
     const [restImage, , restColor] = await look();
@@ -181,6 +181,14 @@ test.describe("bookmarks page", () => {
     await expect(vocabulaire.getByRole("button", { name: "Rendre active l'étiquette « Vocabulaire homérique et tragique »" })).toBeAttached();
     // Not on the favorites.
     await expect(card(page, "Favoris").getByRole("button", { name: /^Rendre active/ })).toHaveCount(0);
+
+    // Or from the header's menu.
+    const menu = page.getByRole("group", { name: "Étiquettes" }).getByRole("button", { name: "Étiquette active" });
+    await expect(menu).toContainText("Vide");
+    await menu.click();
+    await page.getByRole("option", { name: "Vocabulaire homérique et tragique" }).click();
+    await expect(vocabulaire.getByText("active", { exact: true })).toBeVisible();
+    await expect(menu).toContainText("Vocabulaire homérique et tragique");
   });
 
   test("removing a favorite", async ({ page }) => {
