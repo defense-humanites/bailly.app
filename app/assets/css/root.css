@@ -150,8 +150,6 @@
   @variant md {
     --header-bottom: 3.5rem;
   }
-
-  @apply overscroll-none;
 }
 
 /*
