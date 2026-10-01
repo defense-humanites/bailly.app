@@ -129,6 +129,17 @@
   }
 
   /*
+   * Its inline elements (spans, links) take a line height of 1: each face
+   * (bold, italic, a fallback such as IFAOGrec) has its own metrics, and with
+   * the block's 1.8 their boxes, aligned on the baseline, could make a line a
+   * few pixels taller depending on the font (3 px at the largest size). The
+   * lines are then the block's alone: the same height with every font.
+   */
+  .definition :where(span, a) {
+    line-height: 1;
+  }
+
+  /*
    * Links of the definitions (to an entry, or to the reader for an ambiguous
    * form): a thin, discreet dotted underline, so as not to disrupt the
    * reading (an entry can hold hundreds of links), which turns solid on hover

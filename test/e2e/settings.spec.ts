@@ -150,7 +150,9 @@ test.describe("settings", () => {
   });
 
   test("reading: the preview's entry, drawn at each visit, the same once hydrated", async ({ page, goto }) => {
-    const words = new Set(PREVIEW_ENTRIES.map(entry => entry.html.match(/<span class="grec">([^<]+),<\/span>/)![1]));
+    // The headword as shown (« θελξί·νοος-ους, ») and as listed (« θελξίνοος-ους »).
+    const bare = (word: string) => word.replace(/[·*]/g, "").replace(/[\s,:]+$/, "").trim();
+    const words = new Set(PREVIEW_ENTRIES.map(entry => bare(entry.word)));
     const errors: string[] = [];
     page.on("console", (message) => {
       if (message.type() === "error" || /hydration/i.test(message.text())) errors.push(message.text());
@@ -158,12 +160,41 @@ test.describe("settings", () => {
     const seen = new Set<string>();
     for (let visit = 0; visit < 12 && seen.size < 2; visit++) {
       await goto("/préférences", { waitUntil: "hydration" });
-      const word = (await page.getByRole("figure", { name: "Aperçu" }).locator(".entreea .grec").textContent())!.replace(/,$/, "");
+      const word = bare((await page.getByRole("figure", { name: "Aperçu" }).locator(".entreea .grec").first().textContent())!);
       expect(words).toContain(word);
       seen.add(word);
     }
     expect(seen.size).toBeGreaterThan(1);
     expect(errors).toEqual([]);
+  });
+
+  // Each entry keeps its lines whatever the font and weight (cf.
+  // `previewEntries.ts`), and a line its height (cf. `.definition` in
+  // components.css): the preview doesn't move when a setting changes.
+  test("reading: the preview keeps its height whatever the font and weight", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await goto("/préférences", { waitUntil: "hydration" });
+    const variations = await page.evaluate(async (entries) => {
+      const preview = document.querySelector("[aria-label=Aperçu]") as HTMLElement;
+      const root = document.documentElement;
+      const found: string[] = [];
+      for (const entry of entries) {
+        preview.innerHTML = entry.html;
+        for (const size of ["small", "normal", "large", "larger"]) {
+          const heights = new Set<number>();
+          for (const font of ["book", "didot", "artemisia", "bodoni", "neohellenic"]) {
+            for (const weight of ["normal", "bold"]) {
+              Object.assign(root.dataset, { readingFont: font, readingSize: size, readingWeight: weight });
+              await document.fonts.ready;
+              heights.add(Math.round(preview.getBoundingClientRect().height));
+            }
+          }
+          if (heights.size > 1) found.push(`${entry.uri} (${size}): ${[...heights].join(", ")}`);
+        }
+      }
+      return found;
+    }, PREVIEW_ENTRIES.map(({ uri, html }) => ({ uri, html })));
+    expect(variations).toEqual([]);
   });
 
   test("search: shared with the search options", async ({ page, goto }) => {
