@@ -243,15 +243,13 @@
 
   /**
    * A long group is collapsed: it shows its first `COLLAPSED_COUNT` entries
-   * (three rows on two columns), and a button reveals the others. Only from
-   * `COLLAPSE_FROM` entries, so that the button always hides a few (not one
-   * or two, which would take hardly more room than the button itself).
+   * (three rows on two columns), and a button reveals the others, from the
+   * seventh entry on (to save room, even if it hides only one).
    * @remarks The cards keep a bounded height: on a grid (without masonry),
    * a row of cards takes the height of the highest one.
    */
   const COLLAPSED_COUNT = 6;
-  const COLLAPSE_FROM = 9;
-  const collapsible = computed((): boolean => props.entries.length >= COLLAPSE_FROM);
+  const collapsible = computed((): boolean => props.entries.length > COLLAPSED_COUNT);
   /**
    * Whether all the entries of a collapsible group are shown (for the visit:
    * in memory only).
@@ -530,7 +528,7 @@
       <UButton
         v-if="collapsible"
         ref="expand-toggle"
-        :label="expanded ? 'Réduire' : `Voir les ${hiddenCount} autres`"
+        :label="expanded ? 'Réduire' : hiddenCount === 1 ? 'Voir l’autre' : `Voir les ${hiddenCount} autres`"
         :trailing-icon="expanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
         :aria-expanded="expanded"
         :aria-controls="entryListId"

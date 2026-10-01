@@ -227,17 +227,21 @@ test.describe("bookmarks page, long groups", () => {
     await goto("/signets", { waitUntil: "hydration" });
     await seedBookmarks(page, {
       tags: [
-        { name: "Huit", color: "Green", entries: words.slice(0, 8).map(entry) },
+        { name: "Six", color: "Green", entries: words.slice(0, 6).map(entry) },
+        { name: "Sept", color: "Rose", entries: words.slice(0, 7).map(entry) },
         { name: "Dix", color: "Sky", entries: words.map(entry) },
       ],
     });
     await expect(card(page, "Dix")).toBeVisible();
   });
 
-  test("from nine entries, the first six, then a button reveals the others", async ({ page }) => {
+  test("from seven entries, the first six, then a button reveals the others", async ({ page }) => {
     // Eight: all shown, no button.
-    await expect(card(page, "Huit").getByRole("link")).toHaveCount(8);
-    await expect(card(page, "Huit").getByRole("button", { name: /^Voir/ })).toHaveCount(0);
+    // Six: all shown, no button; seven: the seventh behind « Voir l’autre ».
+    await expect(card(page, "Six").getByRole("link")).toHaveCount(6);
+    await expect(card(page, "Six").getByRole("button", { name: /^Voir/ })).toHaveCount(0);
+    await expect(card(page, "Sept").getByRole("link")).toHaveCount(6);
+    await expect(card(page, "Sept").getByRole("button", { name: "Voir l’autre" })).toBeVisible();
 
     const links = card(page, "Dix").getByRole("link");
     const toggle = card(page, "Dix").getByRole("button", { name: "Voir les 4 autres" });
