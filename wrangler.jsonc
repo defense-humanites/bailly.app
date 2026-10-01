@@ -11,12 +11,15 @@
   "d1_databases": [
     // @TODO Preview D1 database. Change it when the `bailly-app-nuxt` repository
     // will be merged in the production `bailly-app` repository (`bailly-sync`).
-    // @TODO Replace the id with that of the new database, once created
-    // (`npx wrangler d1 create bailly-sync-preview`).
+    // `remote`: the local emulation (`wrangler dev`, `NITRO_PRESET=cloudflare_module
+    // npm run dev`) uses this real preview database, not Miniflare's local state:
+    // the trials made in development create lockers there, and count in the
+    // daily budgets of the address.
     {
       "binding": "SYNC_DB",
       "database_name": "bailly-sync-preview",
-      "database_id": "f02a3b96-f99d-4b35-9cb2-4407a6bebffc"
+      "database_id": "e49c1937-0c29-44f7-914c-c7312eff1e86",
+      "remote": true
     }
   ],
   "observability": {
