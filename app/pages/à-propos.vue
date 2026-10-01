@@ -97,9 +97,10 @@ mort d'un homme qu'on lance (du haut d'un rocher).
 <template>
   <div class="mx-auto max-w-(--content-max-width) px-4 md:px-6">
     <section class="flex flex-col items-center py-12 text-center md:py-20">
-      <p class="mb-3 text-sm font-semibold tracking-widest text-primary uppercase">
-        Bailly.app
-      </p>
+      <UIcon
+        name="i-bailly-bailly"
+        class="mb-4 size-32"
+      />
       <h1 class="max-w-3xl font-serif text-[1.75rem]/[2.8125rem] font-bold text-balance md:text-4xl/[3.75rem]">
         Le dictionnaire grec–français d'Anatole&nbsp;Bailly, à portée de recherche
       </h1>
