@@ -9,8 +9,8 @@
    * The solid buttons' relief (cf. app.config.ts): a slight light at the top,
    * a thin darker edge, a short shadow, and the label slightly engraved (a
    * shade under it, a light one in the dark theme, where the label is dark).
-   * Pressed, or while the panel it opens is open, it only darkens a little
-   * and loses its light (cf. app.config.ts): no movement, the tone of the
+   * Pressed, or while the panel it opens is open, it takes its hovered shade
+   * (cf. app.config.ts) and loses its light: no movement, the tone of the
    * site being scholarly rather than playful.
    */
   .button-relief {

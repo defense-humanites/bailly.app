@@ -148,16 +148,20 @@ test.describe("bookmarks page", () => {
   });
 
   // A solid button keeps its pressed look while its menu or dialog is open
-  // (`aria-expanded`), even under the pointer (not the hover's translucency).
+  // (`aria-expanded`).
   test("a solid button stays pressed while its menu is open", async ({ page }) => {
     const button = page.locator("main header aside button").filter({ hasText: "Fichier" });
     const look = () => button.evaluate(element => [getComputedStyle(element).backgroundImage, getComputedStyle(element).filter, getComputedStyle(element).backgroundColor]);
-    const [restImage, restFilter, restColor] = await look();
+    await page.mouse.move(0, 0);
+    const [restImage, , restColor] = await look();
     expect(restImage).toMatch(/gradient/);
-    expect(restFilter).toBe("none");
     await button.click();
     await expect(button).toHaveAttribute("aria-expanded", "true");
-    await expect.poll(look).toEqual(["none", "brightness(0.95)", restColor]);
+    await expect.poll(async () => (await look())[0]).toBe("none");
+    // The next shade, opaque (not the former translucency).
+    const [, , openColor] = await look();
+    expect(openColor).not.toBe(restColor);
+    expect(openColor).toMatch(/^rgb\(/);
     await page.keyboard.press("Escape");
     await page.mouse.move(0, 0);
     await expect.poll(look).toEqual([restImage, "none", restColor]);

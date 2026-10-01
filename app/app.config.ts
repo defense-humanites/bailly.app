@@ -40,22 +40,31 @@ export default defineAppConfig({
         },
       },
       // The text in a hue of the palette rather than plain white or black:
-      // gold on terracotta (the cream gold, 4.7:1; in the dark theme, a dark
-      // gold, 3.4:1, chosen over the darkest one, 5.1:1), the Aegean blue in
-      // its lightest shade on the dark blue (7:1) and conversely (5.9:1).
-      // Pressed, or while the panel it opens is open (`aria-expanded`: a
-      // menu, a dialog; not `data-state`, which a tooltip around the button
-      // sets too, to its own state), the button darkens a little rather than
-      // turning translucent (as on hover), and keeps that look until it
-      // closes.
+      // gold on terracotta (the cream gold, 4.7:1; in the dark theme, the
+      // darkest gold, 5.1:1), the Aegean blue in its lightest shade on the
+      // dark blue (7:1) and conversely (5.9:1). Hovered, pressed, or while
+      // the panel it opens is open (`aria-expanded`: a menu, a dialog; not
+      // `data-state`, which a tooltip around the button sets too, to its own
+      // state), the button takes the next shade, further from its text (the
+      // darker in the light theme, the lighter in the dark one: the contrast
+      // grows), rather than Nuxt UI's translucency, which veiled it; pressed
+      // or open, it also loses its light (cf. `button-relief`).
       // Literal classes, for Tailwind to find them.
       compoundVariants: [
-        { color: "primary", variant: "solid", class: "text-(--ui-color-warning-100) dark:text-(--ui-color-warning-900) active:bg-primary active:brightness-95 aria-expanded:bg-primary aria-expanded:brightness-95" },
-        { color: "secondary", variant: "solid", class: "text-(--ui-color-secondary-100) dark:text-(--ui-color-secondary-900) active:bg-secondary active:brightness-95 aria-expanded:bg-secondary aria-expanded:brightness-95" },
-        { color: "success", variant: "solid", class: "active:bg-success active:brightness-95 aria-expanded:bg-success aria-expanded:brightness-95" },
-        { color: "info", variant: "solid", class: "active:bg-info active:brightness-95 aria-expanded:bg-info aria-expanded:brightness-95" },
-        { color: "warning", variant: "solid", class: "active:bg-warning active:brightness-95 aria-expanded:bg-warning aria-expanded:brightness-95" },
-        { color: "error", variant: "solid", class: "active:bg-error active:brightness-95 aria-expanded:bg-error aria-expanded:brightness-95" },
+        {
+          color: "primary",
+          variant: "solid",
+          class: "text-(--ui-color-warning-100) dark:text-(--ui-color-warning-950) hover:bg-(--ui-color-primary-700) active:bg-(--ui-color-primary-700) aria-expanded:bg-(--ui-color-primary-700) dark:hover:bg-(--ui-color-primary-300) dark:active:bg-(--ui-color-primary-300) dark:aria-expanded:bg-(--ui-color-primary-300)",
+        },
+        {
+          color: "secondary",
+          variant: "solid",
+          class: "text-(--ui-color-secondary-100) dark:text-(--ui-color-secondary-900) hover:bg-(--ui-color-secondary-800) active:bg-(--ui-color-secondary-800) aria-expanded:bg-(--ui-color-secondary-800) dark:hover:bg-(--ui-color-secondary-200) dark:active:bg-(--ui-color-secondary-200) dark:aria-expanded:bg-(--ui-color-secondary-200)",
+        },
+        { color: "success", variant: "solid", class: "hover:bg-success active:bg-success aria-expanded:bg-success hover:brightness-90 active:brightness-90 aria-expanded:brightness-90" },
+        { color: "info", variant: "solid", class: "hover:bg-info active:bg-info aria-expanded:bg-info hover:brightness-90 active:brightness-90 aria-expanded:brightness-90" },
+        { color: "warning", variant: "solid", class: "hover:bg-warning active:bg-warning aria-expanded:bg-warning hover:brightness-90 active:brightness-90 aria-expanded:brightness-90" },
+        { color: "error", variant: "solid", class: "hover:bg-error active:bg-error aria-expanded:bg-error hover:brightness-90 active:brightness-90 aria-expanded:brightness-90" },
       ],
     },
     input: {
