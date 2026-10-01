@@ -3,13 +3,13 @@
 > trouve dans le dépôt
 > [bailly-api](https://github.com/antoineboquet/bailly-api).
 
-<p align="center">
-  <br><br><img width="192" height="192" src="public/favicon/favicon.svg">
+<p style="text-align:center;"">
+  <br><br><img width="192" height="192" src="app/assets/icons/bailly.svg" alt="Logo de l'application Bailly">
 </p>
 
-<p align="center">
+<p style="text-align:center;font-weight:bold;font-variant: small-caps;">
   Une application web pour rendre accessible à tous<br>
-  le dictionnaire grec–français de référence d'Anatole Bailly.<br><br>
+  le dictionnaire grec-français de référence d'Anatole Bailly.<br><br>
 </p>
 
 ## Licence
@@ -38,11 +38,12 @@ de Modification_ (CC&nbsp;BY-NC-ND&nbsp;4.0).
 
 ### Analyse morphologique
 
-Cette application utilise
-[libmorpheus](https://github.com/defense-humanites/libmorpheus), qui modernise
-et étend les capacités de l'analyseur morphologique Morpheus, lequel a initialement
-été développé dans le cadre de la Perseus Digital Library (Gregory Crane _et al._
-pour le compte de l'université Tufts). `libmorpheus` est distribuée sous licence
+Cette application tire parti de
+[libmorpheus](https://github.com/defense-humanites/libmorpheus), une bibliothèque logicielle qui modernise et étend les capacités de l'analyseur morphologique
+Morpheus, initialement développé dans le cadre de la Perseus Digital Library
+(Gregory Crane _et al._ pour le compte de l'université Tufts).
+
+`libmorpheus` est distribuée sous licence
 mixte, _Mozilla Public License 2.0_ (MPL-2.0) et _GNU Affero General Public
 License v3.0 or later_ (AGPL-3.0-or-later.
 
@@ -60,7 +61,9 @@ sous-ensemble renommé de
 que la fonte
 [IFAOGrec](https://www.ifao.egnet.net/publications/outils/polices/#grec)
 (Jean-Luc Fournet, Ralph Hancock & Adam Bülow-Jacobsen), qui est libre de tous
-droits, pour rendre les caractères les plus spécifiques. Gentium Book Plus et
+droits, pour rendre les caractères les plus spécifiques. 
+
+Gentium Book Plus et
 Inter sont servies en sous-ensembles (`scripts/subset-fonts.sh`) ; « Gentium »
 étant un nom réservé de sa licence, le sous-ensemble de Gentium Book Plus porte
 le nom « Bailly Book ».
