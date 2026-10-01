@@ -5,6 +5,34 @@
    * the sources: no safelist is needed.
    */
 
+  /*
+   * The solid buttons' relief (cf. app.config.ts): a slight light at the top,
+   * a thin darker edge, a short shadow, and the label slightly engraved (a
+   * shade under it, a light one in the dark theme, where the label is dark).
+   * Pressed, the button sinks: an inner shadow, no light.
+   */
+  .button-relief {
+    background-image: linear-gradient(to bottom, color-mix(in srgb, white 10%, transparent), transparent 60%);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, white 30%, transparent),
+      inset 0 0 0 1px color-mix(in srgb, black 12%, transparent),
+      0 1px 1px color-mix(in srgb, black 20%, transparent),
+      0 2px 6px -1px color-mix(in srgb, black 18%, transparent);
+    text-shadow: 0 1px 0 color-mix(in srgb, black 18%, transparent);
+
+    .dark & {
+      text-shadow: 0 1px 0 color-mix(in srgb, white 20%, transparent);
+    }
+
+    &:active:not(:disabled, [aria-disabled="true"]) {
+      background-image: none;
+      box-shadow:
+        inset 0 1px 3px color-mix(in srgb, black 30%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, black 12%, transparent);
+      translate: 0 1px;
+    }
+  }
+
   .entreea,
   .des,
   .gens,
