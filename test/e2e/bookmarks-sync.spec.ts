@@ -109,7 +109,7 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await page.getByRole("button", { name: "Continuer…" }).click();
   await expect(page.getByText("sans retour possible")).toBeVisible();
   await page.getByRole("button", { name: "Supprimer définitivement" }).click();
-  await expect(page.getByText("Signets supprimés du serveur", { exact: true })).toBeVisible();
+  await expect(page.getByText("Données supprimées du serveur", { exact: true })).toBeVisible();
 
   await phone.reload();
   await waitForHydration(phone);

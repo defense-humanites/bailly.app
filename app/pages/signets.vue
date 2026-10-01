@@ -87,7 +87,7 @@
           </UModal>
 
           <!-- Synchronization (its state, and its window) -->
-          <BookmarksSyncButton />
+          <SyncButton scope="bookmarks" />
 
           <!-- Export, import -->
           <BookmarksMenu />

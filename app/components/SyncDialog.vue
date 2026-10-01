@@ -1,14 +1,69 @@
 <script setup lang="ts">
   import { renderSVG } from "uqr";
+  import type { SyncSections } from "~/stores/sync";
+  import { DEFAULT_SYNCED_PREFERENCES, SYNCABLE_PREFERENCES, type SyncablePreference } from "~/utils/preferences";
 
   const open = defineModel<boolean>("open", { default: false });
 
   const props = defineProps<{
     /**
-     * A key received through a link (`/signets#sync=…`), to join.
+     * The type of data of the page that opens the window: only it is shown
+     * (the key, common to both, synchronizes the other where it is enabled).
+     */
+    scope: "bookmarks" | "preferences";
+    /**
+     * A key received through a link (`/signets#sync=…`, `/préférences#sync=…`),
+     * to join.
      */
     linkSecret?: Uint8Array<ArrayBuffer> | null;
   }>();
+
+  /**
+   * The words of the window, after its type of data.
+   */
+  const texts = computed(() => props.scope === "bookmarks"
+    ? {
+      data: "vos signets",
+      Data: "Vos signets",
+      encrypted: "Vos signets sont chiffrés sur l'appareil avant d'être envoyés",
+      upToDate: "Signets à jour",
+      synced: "Signets synchronisés.",
+      intro: "Retrouvez vos signets sur tous vos appareils (ordinateur, téléphone…), sans créer de compte.",
+      joined: "Vos signets de cet appareil et ceux de vos autres appareils seront réunis.",
+      add: "Synchroniser aussi vos signets",
+      addDescription: "Avec la clé de vos préférences : vos signets de cet appareil et ceux de vos autres appareils seront réunis.",
+      disabled: "Synchronisation des signets désactivée sur cet appareil",
+      stopDevice: "Vos signets restent sur cet appareil, et en ligne pour vos autres appareils. Pour réactiver la synchronisation, il faudra la clé : les signets en ligne seront alors rétablis sur cet appareil, même ceux que vous y auriez supprimés entre-temps.",
+      otherStays: "Vos préférences restent synchronisées.",
+      status: "Pour retrouver vos signets sur un autre appareil (téléphone, tablette…), ajoutez-le avec votre clé. Pensez aussi à la sauvegarder hors du navigateur.",
+      emptied: "Faute d'activité, le serveur avait effacé vos signets en ligne : ceux de cet appareil les remplacent. Vos autres appareils y ajouteront les leurs à leur prochaine synchronisation.",
+    }
+    : {
+      data: "vos préférences",
+      Data: "Vos préférences",
+      encrypted: "Vos préférences sont chiffrées sur l'appareil avant d'être envoyées",
+      upToDate: "Préférences à jour",
+      synced: "Préférences synchronisées.",
+      intro: "Retrouvez vos préférences sur tous vos appareils (ordinateur, téléphone…), sans créer de compte.",
+      joined: "Les préférences choisies seront les mêmes sur cet appareil et sur vos autres appareils : le réglage le plus récent l'emporte.",
+      add: "Synchroniser aussi vos préférences",
+      addDescription: "Avec la clé de vos signets : les préférences choisies seront les mêmes sur vos appareils.",
+      disabled: "Synchronisation des préférences désactivée sur cet appareil",
+      stopDevice: "Vos préférences restent réglées sur cet appareil, et en ligne pour vos autres appareils.",
+      otherStays: "Vos signets restent synchronisés.",
+      status: "Pour retrouver vos préférences sur un autre appareil (téléphone, tablette…), ajoutez-le avec votre clé. Pensez aussi à la sauvegarder hors du navigateur.",
+      emptied: "Faute d'activité, le serveur avait effacé vos préférences en ligne : celles de cet appareil les remplacent.",
+    });
+
+  /**
+   * The preferences that can be synchronized, as offered.
+   */
+  const preferenceLabels: Record<SyncablePreference, { label: string; description?: string }> = {
+    transliterateGreek: { label: "Grec translittéré" },
+    inflectedForms: { label: "Formes fléchies" },
+    readingFont: { label: "Police" },
+    inputMode: { label: "Saisie", description: "Beta code ou translittération : selon le clavier de chaque appareil." },
+  };
 
   type View = "intro" | "join" | "key" | "status" | "stop" | "delete";
 
@@ -19,7 +74,60 @@
   const SYNC_KEY_WORD_COUNT = 12;
 
   const syncStore = useSyncStore();
-  const { enabled, status, error, errorNeedsAction, clockWrong, clockSkew, lastSyncedAt, supported } = storeToRefs(syncStore);
+  const {
+    enabled,
+    syncedBookmarks,
+    syncedPreferences,
+    remoteSections,
+    status,
+    error,
+    errorNeedsAction,
+    clockWrong,
+    clockSkew,
+    lastSyncedAt,
+    supported,
+  } = storeToRefs(syncStore);
+
+  /**
+   * Whether this device synchronizes the type of data of the window (the key
+   * may synchronize the other one only).
+   */
+  const scopeEnabled = computed(() => (props.scope === "bookmarks" ? syncedBookmarks.value : syncedPreferences.value.length > 0));
+
+  /**
+   * The preferences chosen: those synchronized, once enabled (changed at
+   * once); otherwise, those offered checked.
+   */
+  const chosenPreferences = ref<SyncablePreference[]>([...DEFAULT_SYNCED_PREFERENCES]);
+  const preferenceItems = computed(() => SYNCABLE_PREFERENCES.map(value => ({
+    value,
+    ...preferenceLabels[value],
+    // At least one: to synchronize none, the synchronization is stopped.
+    disabled: chosenPreferences.value.length === 1 && chosenPreferences.value[0] === value,
+  })));
+
+  /**
+   * The types of data to synchronize once the window's is enabled: added to
+   * those this device synchronizes, if any (e.g. when the key is replaced).
+   */
+  const sectionsToSync = (): SyncSections => {
+    const current = enabled.value
+      ? { bookmarks: syncedBookmarks.value, preferences: syncedPreferences.value }
+      : { bookmarks: false, preferences: [] };
+    return props.scope === "bookmarks"
+      ? { ...current, bookmarks: true }
+      : { ...current, preferences: [...chosenPreferences.value] };
+  };
+
+  /**
+   * Changes the preferences synchronized, once enabled.
+   */
+  const setPreferences = async (keys: SyncablePreference[]): Promise<void> => {
+    chosenPreferences.value = keys;
+    if (!scopeEnabled.value || !keys.length) return;
+    const result = await syncStore.setSections({ bookmarks: syncedBookmarks.value, preferences: keys });
+    if (result.state === "error") actionError.value = result.message;
+  };
 
   /**
    * How wrong this device's clock seems, e.g. « 3 jours » (cf. `clockWrong`).
@@ -79,14 +187,14 @@
     view.value = "key";
   };
 
-  const titles: Record<View, string> = {
-    intro: "Synchroniser vos signets",
+  const titles = computed((): Record<View, string> => ({
+    intro: props.scope === "bookmarks" ? "Synchroniser vos signets" : "Synchroniser vos préférences",
     join: "Rejoindre la synchronisation",
     key: "Votre clé de synchronisation",
-    status: "Synchronisation des signets",
+    status: props.scope === "bookmarks" ? "Synchronisation des signets" : "Synchronisation des préférences",
     stop: "Arrêter la synchronisation ?",
-    delete: "Supprimer les signets en ligne ?",
-  };
+    delete: "Supprimer vos données en ligne ?",
+  }));
 
   /**
    * The error of an action, explained to the user.
@@ -104,19 +212,33 @@
       await action();
     } catch (e: unknown) {
       console.error(e);
-      actionError.value = "Une erreur inattendue est survenue. Vos signets restent sur cet appareil.";
+      actionError.value = `Une erreur inattendue est survenue. ${texts.value.Data} restent sur cet appareil.`;
     } finally {
       busy.value = false;
     }
   };
 
   const enable = () => run(async () => {
-    const result = await syncStore.enable({ bookmarks: true, preferences: [] });
+    const result = await syncStore.enable(sectionsToSync());
     if (result.state === "error") {
       actionError.value = result.message;
       return;
     }
     await showKey();
+  });
+
+  /**
+   * Adds the type of data of the window to those this device synchronizes
+   * with its key.
+   */
+  const addScope = () => run(async () => {
+    const result = await syncStore.setSections(sectionsToSync());
+    if (result.state === "error") {
+      actionError.value = result.message;
+      return;
+    }
+    toast.add({ title: "Synchronisation activée", icon: "i-lucide-circle-check", color: "success" });
+    view.value = "status";
   });
 
   /* Joining: the words typed (or pasted), or the key of a link. */
@@ -163,7 +285,7 @@
    */
   const join = () => run(async () => {
     joinError.value = null;
-    const result = await syncStore.join(linkKey.value ?? typedWords.value, { bookmarks: true, preferences: [] });
+    const result = await syncStore.join(linkKey.value ?? typedWords.value, sectionsToSync());
     if (result.state === "error") {
       joinError.value = result.message;
       return;
@@ -173,7 +295,7 @@
       title: "Synchronisation activée",
       // The key is valid, but the server had emptied its locker.
       description: result.data.emptied
-        ? "Faute d'activité, le serveur avait effacé vos signets en ligne : ceux de cet appareil les remplacent. Vos autres appareils y ajouteront les leurs à leur prochaine synchronisation."
+        ? texts.value.emptied
         : undefined,
       icon: "i-lucide-circle-check",
       color: "success",
@@ -184,7 +306,7 @@
 
   /* The key, outside of the browser. */
 
-  const link = computed(() => (import.meta.client ? syncStore.link(window.location.origin) : null));
+  const link = computed(() => (import.meta.client ? syncStore.link(window.location.origin, props.scope) : null));
   const qrCode = computed(() => (view.value === "key" && link.value
     ? renderSVG(link.value, { border: 2, ecc: "M", whiteColor: "#fff", blackColor: "#000" })
     : ""));
@@ -194,20 +316,21 @@
 
   const downloadRecoveryKit = (): void => {
     const text = [
-      "Bailly.app — clé de synchronisation des signets",
+      "Bailly.app — clé de synchronisation",
       "",
       numberedWords(),
       "",
-      "Pour retrouver vos signets sur un autre appareil : ouvrez Bailly.app, page",
-      "« Signets », bouton « Synchronisation » > « J'ai déjà une clé », puis",
-      "saisissez ces douze mots dans l'ordre.",
+      "Pour retrouver vos signets ou vos préférences sur un autre appareil :",
+      "ouvrez Bailly.app, page « Signets » ou « Préférences », bouton",
+      "« Synchronisation » > « J'ai déjà une clé », puis saisissez ces douze",
+      "mots dans l'ordre.",
       ...(link.value ? ["", "Ou ouvrez ce lien sur l'autre appareil :", link.value] : []),
       "",
       "Gardez ce document en lieu sûr : qui possède ces mots peut lire et",
-      "modifier vos signets.",
+      "modifier vos signets et vos préférences.",
       "",
-      "La copie en ligne de vos signets est effacée après 18 mois sans aucune",
-      "synchronisation (vos appareils gardent la leur).",
+      "La copie en ligne est effacée après 18 mois sans aucune synchronisation",
+      "(vos appareils gardent la leur).",
       "",
     ].join("\n");
 
@@ -318,22 +441,40 @@
 
   /**
    * What stopping the synchronization concerns: this device only, or every
-   * device (the bookmarks are then deleted from the server).
+   * device (the locker is then deleted from the server).
    */
   const stopScope = ref<"device" | "everywhere">("device");
 
-  const stopItems = [
+  /**
+   * Whether this device synchronizes the other type of data too (it goes on
+   * when the window's is stopped on this device).
+   */
+  const otherEnabled = computed(() => (props.scope === "bookmarks" ? syncedPreferences.value.length > 0 : syncedBookmarks.value));
+
+  const capitalize = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
+
+  /**
+   * What the locker holds, as last read (the deletion deletes it all).
+   */
+  const onlineData = computed((): string => {
+    const bookmarks = remoteSections.value.includes("bookmarks") || syncedBookmarks.value;
+    const preferences = remoteSections.value.includes("preferences") || syncedPreferences.value.length > 0;
+    if (bookmarks && preferences) return "vos signets et vos préférences";
+    return preferences ? "vos préférences" : "vos signets";
+  });
+
+  const stopItems = computed(() => [
     {
       value: "device",
       label: "Sur cet appareil seulement",
-      description: "Vos signets restent sur cet appareil, et en ligne pour vos autres appareils. Pour réactiver la synchronisation, il faudra la clé : les signets en ligne seront alors rétablis sur cet appareil, même ceux que vous y auriez supprimés entre-temps.",
+      description: otherEnabled.value ? `${texts.value.stopDevice} ${texts.value.otherStays}` : texts.value.stopDevice,
     },
     {
       value: "everywhere",
       label: "Sur tous vos appareils",
-      description: "Vos signets sont supprimés du serveur, et la synchronisation s'arrête sur tous vos appareils. Chacun d'eux garde ses signets. Utile aussi si quelqu'un a pu voir votre clé : réactivez ensuite la synchronisation, avec une nouvelle clé.",
+      description: `${onlineData.value === "vos préférences" ? "Vos préférences sont supprimées" : `${capitalize(onlineData.value)} sont supprimés`} du serveur, et la synchronisation s'arrête sur tous vos appareils. Chacun d'eux garde ses données. Utile aussi si quelqu'un a pu voir votre clé : réactivez ensuite la synchronisation, avec une nouvelle clé.`,
     },
-  ];
+  ]);
 
   /**
    * Stops the synchronization on this device; for every device, a second
@@ -345,8 +486,13 @@
   };
 
   const disable = () => run(async () => {
-    await syncStore.disable();
-    toast.add({ title: "Synchronisation désactivée sur cet appareil", icon: "i-lucide-circle-check", color: "success" });
+    const other = otherEnabled.value;
+    await syncStore.disable(props.scope);
+    toast.add({
+      title: other ? texts.value.disabled : "Synchronisation désactivée sur cet appareil",
+      icon: "i-lucide-circle-check",
+      color: "success",
+    });
     view.value = "intro";
   });
 
@@ -359,7 +505,8 @@
     actionError.value = null;
     linkKey.value = props.linkSecret ?? null;
     stopScope.value = "device";
-    view.value = linkKey.value ? "join" : enabled.value ? "status" : "intro";
+    chosenPreferences.value = syncedPreferences.value.length ? [...syncedPreferences.value] : [...DEFAULT_SYNCED_PREFERENCES];
+    view.value = linkKey.value ? "join" : scopeEnabled.value ? "status" : "intro";
   }, { immediate: true });
 
   const deleteRemote = async (): Promise<void> => {
@@ -370,7 +517,7 @@
         toast.add({ title: result.message, icon: "i-lucide-circle-alert", color: "error" });
         return;
       }
-      toast.add({ title: "Signets supprimés du serveur", icon: "i-lucide-circle-check", color: "success" });
+      toast.add({ title: "Données supprimées du serveur", icon: "i-lucide-circle-check", color: "success" });
       view.value = "intro";
     } finally {
       busy.value = false;
@@ -404,18 +551,49 @@
             :title="actionError ?? error ?? undefined"
           />
           <p>
-            Retrouvez vos signets sur tous vos appareils (ordinateur, téléphone…), sans créer de compte.
+            {{ texts.intro }}
           </p>
-          <p>
-            Une <strong>clé de douze mots</strong> relie vos appareils. Vos signets sont chiffrés sur l'appareil
-            avant d'être envoyés : sans la clé, personne ne peut les lire, pas même Bailly.app.
+          <p v-if="!enabled">
+            Une <strong>clé de douze mots</strong> relie vos appareils. {{ texts.encrypted }} : sans la clé,
+            personne ne peut les lire, pas même Bailly.app.
           </p>
+
+          <!-- The preferences to synchronize. -->
+          <UCheckboxGroup
+            v-if="scope === 'preferences'"
+            :model-value="chosenPreferences"
+            :items="preferenceItems"
+            legend="Préférences à synchroniser"
+            @update:model-value="(keys) => setPreferences(keys as SyncablePreference[])"
+          />
+
+          <!-- The key already synchronizes the other type: this one is added. -->
+          <button
+            v-if="enabled"
+            type="button"
+            class="flex w-full items-start gap-3 rounded-lg bg-primary/10 p-4 text-start ring-1 ring-primary/25 transition-colors hover:bg-primary/15 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-75"
+            :disabled="busy"
+            @click="addScope"
+          >
+            <UIcon
+              :name="busy ? 'i-lucide-loader-circle' : 'i-lucide-cloud-upload'"
+              class="mt-0.5 size-6 shrink-0 text-primary"
+              :class="{ 'animate-spin': busy }"
+            />
+            <span>
+              <span class="block font-semibold text-highlighted">{{ texts.add }}</span>
+              <span class="mt-1 block text-muted">{{ texts.addDescription }}</span>
+            </span>
+          </button>
 
           <!--
             The two ways in, as tiles: each explains itself, and is large and
             apart enough not to be touched for the other.
           -->
-          <div class="grid gap-4 sm:grid-cols-2">
+          <div
+            v-else
+            class="grid gap-4 sm:grid-cols-2"
+          >
             <button
               type="button"
               class="flex items-start gap-3 rounded-lg bg-primary/10 p-4 text-start ring-1 ring-primary/25 transition-colors hover:bg-primary/15 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-75"
@@ -466,11 +644,10 @@
             Cet appareil est déjà synchronisé avec la clé de ce lien.
           </p>
           <p v-else-if="linkKey">
-            Activer la synchronisation sur cet appareil avec la clé de ce lien ? Vos signets de cet appareil
-            et ceux de vos autres appareils seront réunis.
+            Activer la synchronisation sur cet appareil avec la clé de ce lien ? {{ texts.joined }}
           </p>
           <p v-else>
-            Vos signets de cet appareil et ceux de vos autres appareils seront réunis.
+            {{ texts.joined }}
           </p>
           <UAlert
             v-if="enabled && !sameKey"
@@ -478,7 +655,7 @@
             variant="subtle"
             icon="i-lucide-triangle-alert"
             title="Cet appareil est déjà synchronisé avec une autre clé."
-            description="Ses signets seront désormais synchronisés avec la nouvelle clé."
+            description="Ses données seront désormais synchronisées avec la nouvelle clé."
           />
           <form
             v-if="!linkKey"
@@ -540,7 +717,7 @@
                 class="size-8 text-muted"
               />
               <p>
-                Qui voit ces mots peut lire et modifier vos signets.<br>
+                Qui voit ces mots peut lire et modifier vos signets et vos préférences.<br>
                 Ne les affichez pas si quelqu'un peut voir votre écran.
               </p>
               <UButton
@@ -592,8 +769,8 @@
           <template v-else>
             <p>
               Votre clé est une suite de <strong>douze mots</strong>, à garder dans l'ordre. Conservez-la
-              <strong>hors du navigateur</strong> : elle permet de retrouver vos signets si ce navigateur les
-              efface, et d'activer la synchronisation sur vos autres appareils.
+              <strong>hors du navigateur</strong> : elle permet de retrouver {{ texts.data }} si ce navigateur
+              les efface, et d'activer la synchronisation sur vos autres appareils.
             </p>
             <div class="flex flex-col gap-2">
               <UButton
@@ -644,7 +821,7 @@
             />
             <div class="min-w-0 grow">
               <p class="font-semibold">
-                {{ syncingShown ? "Synchronisation en cours…" : status === "error" ? "Synchronisation en attente" : "Signets à jour" }}
+                {{ syncingShown ? "Synchronisation en cours…" : status === "error" ? "Synchronisation en attente" : texts.upToDate }}
               </p>
               <p class="text-muted">
                 Synchronisation activée sur cet appareil.
@@ -668,7 +845,7 @@
             <span
               class="sr-only"
               role="status"
-            >{{ manualSync === "done" ? "Signets synchronisés." : manualSync === "failed" ? "La synchronisation n'a pas abouti." : "" }}</span>
+            >{{ manualSync === "done" ? texts.synced : manualSync === "failed" ? "La synchronisation n'a pas abouti." : "" }}</span>
           </div>
           <UAlert
             v-if="status === 'error' && error"
@@ -686,9 +863,23 @@
             :title="`L'horloge de cet appareil semble ${clockSkew > 0 ? 'en retard' : 'en avance'} de ${clockGap}.`"
             description="Réglez sa date et son heure : sinon, ses changements ou ceux de vos autres appareils pourraient être ignorés."
           />
+          <UAlert
+            v-if="actionError"
+            color="error"
+            variant="subtle"
+            icon="i-lucide-circle-alert"
+            :title="actionError"
+          />
+          <!-- The preferences synchronized, changed at once. -->
+          <UCheckboxGroup
+            v-if="scope === 'preferences'"
+            :model-value="chosenPreferences"
+            :items="preferenceItems"
+            legend="Préférences synchronisées"
+            @update:model-value="(keys) => setPreferences(keys as SyncablePreference[])"
+          />
           <p class="text-muted">
-            Pour retrouver vos signets sur un autre appareil (téléphone, tablette…), ajoutez-le avec votre clé.
-            Pensez aussi à la sauvegarder hors du navigateur.
+            {{ texts.status }}
           </p>
         </template>
 
@@ -714,9 +905,9 @@
         <!-- Stop everywhere: the second confirmation -->
         <template v-else-if="view === 'delete'">
           <ul class="list-disc space-y-1.5 ps-5">
-            <li>La copie en ligne de vos signets sera effacée, sans retour possible.</li>
+            <li>La copie en ligne de {{ onlineData }} sera effacée, sans retour possible.</li>
             <li>La synchronisation s'arrêtera sur tous vos appareils, et cette clé ne pourra plus servir.</li>
-            <li>Chaque appareil garde ses signets.</li>
+            <li>Chaque appareil garde ses données.</li>
           </ul>
         </template>
       </div>

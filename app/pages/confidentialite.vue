@@ -14,7 +14,7 @@
   const summary = [
     "Vos signets et votre historique sont enregistrés sur votre appareil.",
     "Aucun compte, aucun cookie de suivi, aucune publicité.",
-    "Si vous synchronisez vos signets, ils sont chiffrés sur votre appareil : nous ne pouvons pas les lire.",
+    "Si vous synchronisez vos signets ou vos préférences, ils sont chiffrés sur votre appareil : nous ne pouvons pas les lire.",
     "La mesure d'audience ne dépose aucun cookie et ne conserve pas votre adresse IP.",
   ];
 </script>
@@ -75,22 +75,26 @@
         Notre serveur le lit pour afficher les pages avec vos réglages. Le thème et
         l'état de l'interface (étiquette active, avis masqués) sont gardés dans le
         stockage local de votre navigateur. Ces données ne contiennent aucun
-        identifiant et ne servent qu'au fonctionnement de l'application.
+        identifiant et ne servent qu'au fonctionnement de l'application. Si vous
+        synchronisez vos préférences, la date de chaque modification est aussi
+        gardée dans votre navigateur, et le cookie peut être déposé ou modifié pour
+        appliquer un réglage fait sur un autre de vos appareils.
       </p>
 
       <p>
-        <strong>Synchronisation des signets.</strong> Si vous l'activez, vos signets
-        sont chiffrés sur votre appareil avant d'être envoyés, avec une clé de
-        douze mots que vous êtes seul à détenir. Aucun compte n'est nécessaire&nbsp;:
-        notre serveur ne garde qu'une copie chiffrée de vos signets, qu'il ne peut
-        pas lire, sans votre nom ni votre adresse électronique. Nous ne pouvons
+        <strong>Synchronisation.</strong> Si vous l'activez, vos signets, les
+        préférences que vous choisissez de synchroniser, ou les deux, sont chiffrés
+        sur votre appareil avant d'être envoyés, avec une clé de douze mots que
+        vous êtes seul à détenir. Aucun compte n'est nécessaire&nbsp;: notre
+        serveur n'en garde qu'une copie chiffrée, qu'il ne peut pas lire, sans
+        votre nom ni votre adresse électronique. Nous ne pouvons
         donc pas non plus retrouver une clé perdue. La copie en ligne est effacée
         après dix-huit mois sans aucune synchronisation (vos appareils gardent la
         leur), et ce qu'il en reste (l'identifiant du casier et ses dates) est
         supprimé après trois ans. Par mesure de protection contre les abus, un
         casier créé parmi de nombreux autres depuis une même adresse, le même jour,
         et jamais relu est effacé après trente jours&nbsp;; un usage ordinaire
-        n'est pas concerné. Vous pouvez aussi effacer vos signets en ligne à tout
+        n'est pas concerné. Vous pouvez aussi effacer vos données en ligne à tout
         moment, depuis la fenêtre de synchronisation.
       </p>
 
@@ -149,7 +153,7 @@
         exercer vos droits (accès, rectification, effacement), écrivez à
         <a href="mailto:contact@bailly.app">contact@bailly.app</a>. Comme nous ne
         pouvons relier aucune copie en ligne à une personne, l'effacement de vos
-        signets en ligne se fait depuis la fenêtre de synchronisation, avec votre
+        données en ligne se fait depuis la fenêtre de synchronisation, avec votre
         clé.
       </p>
     </section>

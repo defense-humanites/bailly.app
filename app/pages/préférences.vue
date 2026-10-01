@@ -4,7 +4,7 @@
   import { linkDefinition } from "~/utils/linkedEntries";
   import { READING_FONTS } from "~/utils/fonts";
   import { PREVIEW_ENTRIES } from "~/utils/previewEntries";
-  import { DEFAULT_PREFERENCES, type ReadingSize } from "~/utils/preferences";
+  import { DEFAULT_PREFERENCES, type ReadingSize, type SyncablePreference } from "~/utils/preferences";
 
   useSeoMeta({
     title: "Préférences",
@@ -12,6 +12,13 @@
   });
 
   const { preference, reset: resetPreferences } = usePreferences();
+  const syncStore = useSyncStore();
+
+  /**
+   * Whether a preference is synchronized with the other devices (shown by a
+   * small cloud, once the settings of the synchronization are loaded).
+   */
+  const synced = (key: SyncablePreference): boolean => syncStore.loaded && syncStore.syncedPreferences.includes(key);
   const colorMode = useColorMode();
 
   // The search preferences are shared with the options of the search bar.
@@ -102,9 +109,13 @@
 <template>
   <div class="px-4 py-6 md:px-6 lg:py-12">
     <div class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 lg:max-w-(--content-max-width) lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr_auto]">
-      <h1 class="text-3xl leading-normal font-bold lg:col-span-2">
-        Préférences
-      </h1>
+      <!-- The title, and the synchronization of the preferences. -->
+      <div class="flex items-center justify-between gap-4 lg:col-span-2">
+        <h1 class="text-3xl leading-normal font-bold">
+          Préférences
+        </h1>
+        <SyncButton scope="preferences" />
+      </div>
 
       <UCard
         as="section"
@@ -138,6 +149,7 @@
         <SettingsRow
           label="Grec translittéré"
           description="Le grec en caractères latins, pour les non-hellénistes."
+          :synced="synced('transliterateGreek')"
         >
           <USwitch
             v-model="transliterateGreek"
@@ -173,7 +185,10 @@
           v-html="greek.html(preview)"
         />
         <!-- eslint-enable vue/no-v-html -->
-        <SettingsRow label="Police">
+        <SettingsRow
+          label="Police"
+          :synced="synced('readingFont')"
+        >
           <USelect
             v-model="readingFont"
             :items="readingFontItems"
@@ -236,6 +251,7 @@
         <SettingsRow
           label="Formes fléchies"
           description="Chercher aussi les formes déclinées ou conjuguées (analyse morphologique)."
+          :synced="synced('inflectedForms')"
         >
           <USwitch
             v-model="inflectedForms"
@@ -245,6 +261,7 @@
         <SettingsRow
           label="Saisie"
           description="Le grec est toujours accepté."
+          :synced="synced('inputMode')"
         >
           <URadioGroup
             v-model="inputMode"
@@ -262,7 +279,9 @@
       <UModal
         v-model:open="isResetConfirmationOpen"
         title="Réinitialiser les préférences ?"
-        description="Le thème, la lecture et la recherche retrouveront leurs réglages par défaut."
+        :description="syncStore.syncedPreferences.length
+          ? 'Le thème, la lecture et la recherche retrouveront leurs réglages par défaut. Les préférences synchronisées seront aussi réinitialisées sur vos autres appareils.'
+          : 'Le thème, la lecture et la recherche retrouveront leurs réglages par défaut.'"
         :ui="{ footer: 'justify-end' }"
       >
         <UButton

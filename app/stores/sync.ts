@@ -711,8 +711,8 @@ export const useSyncStore = defineStore("sync", () => {
    * A link that enables the synchronization on another device (e.g. through
    * a QR code); the key is in the fragment, which browsers do not send.
    */
-  function link(origin: string): string | null {
-    return config ? `${origin}/signets#sync=${config.secret}` : null;
+  function link(origin: string, scope: "bookmarks" | "preferences" = "bookmarks"): string | null {
+    return config ? `${origin}${scope === "bookmarks" ? "/signets" : encodeURI("/préférences")}#sync=${config.secret}` : null;
   }
 
   return {
