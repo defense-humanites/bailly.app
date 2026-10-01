@@ -108,7 +108,7 @@
   --header-title-width: 6.75rem; /* A menu link (padding included). */
   --header-menu-width-labels: 20.5rem; /* Icons and labels. */
   --header-gap-wide: 3rem;
-  --search-overhang: 3rem;
+  --search-overhang: 1.5rem;
   --content-max-width: calc(
     var(--header-title-width) + var(--reading-width) + var(--header-menu-width-labels)
     + 2 * var(--header-gap-wide)
