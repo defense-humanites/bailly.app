@@ -493,7 +493,7 @@
       <template #item-label="{ item }">
         <span
           v-if="item.parts"
-          class="font-serif text-xs/6"
+          class="font-serif text-sm/6"
           :data-nested="item.nested || undefined"
         ><span class="font-semibold">{{ greek.text(item.parts.word) }}</span>{{ greek.text(item.parts.rest) }}</span>
         <template v-else>
