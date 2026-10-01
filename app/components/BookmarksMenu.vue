@@ -190,7 +190,6 @@
           label="Fichier"
           icon="i-lucide-archive"
           size="2xl"
-          variant="subtle"
           :ui="{ base: 'max-xl:px-2.5', label: 'max-xl:sr-only' }"
         />
       </UTooltip>

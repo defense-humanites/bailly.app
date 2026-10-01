@@ -54,7 +54,10 @@
         </h1>
 
         <!--
-          Actions: icons only (square buttons) below `xl`, as the header menu
+          Actions: solid buttons (the tags' cards use subtle ones: the page's
+          actions stand apart from them), the synchronization in the Aegean
+          blue (`secondary`: the sea, and the sky of the "cloud").
+          Icons only (square buttons) below `xl`, as the header menu
           (the labels stay for screen readers and show in tooltips; cf.
           `useButtonLabels`).
         -->
@@ -72,7 +75,6 @@
                 label="Arranger"
                 icon="i-lucide-list-ordered"
                 size="2xl"
-                variant="subtle"
                 :ui="{ base: 'max-xl:px-2.5', label: 'max-xl:sr-only' }"
               />
             </UTooltip>

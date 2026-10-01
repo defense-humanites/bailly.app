@@ -126,7 +126,7 @@
       <UButton
         :label="label"
         size="2xl"
-        variant="subtle"
+        color="secondary"
         :aria-label="stateText ? `${label} (${stateText})` : label"
         :ui="{ base: 'max-xl:px-2.5', label: 'max-xl:sr-only' }"
         @click="openSync"
