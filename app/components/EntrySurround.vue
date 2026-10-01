@@ -58,12 +58,11 @@
           class="size-4 shrink-0 transition-[color,translate] ease-out group-hover:text-primary motion-reduce:transition-none"
           :class="link.direction === 'next' ? 'group-active:translate-x-0.5' : 'group-active:-translate-x-0.5'"
         />
-        {{ link.direction === "next" ? "Entrée suivante" : "Entrée précédente" }}
+          <span
+              class="block truncate font-serif text-sm/7 font-bold text-highlighted"
+              :lang="greek.lang.value"
+          >{{ greek.text(link.word) }}</span>
       </span>
-      <span
-        class="mt-1 block truncate font-serif text-sm/7 font-bold text-highlighted"
-        :lang="greek.lang.value"
-      >{{ greek.text(link.word) }}</span>
       <span
         v-if="link.rest"
         class="line-clamp-2 font-serif text-xs/5 text-muted"
