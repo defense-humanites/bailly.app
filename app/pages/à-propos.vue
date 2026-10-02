@@ -52,12 +52,16 @@ mort d'un homme qu'on lance (du haut d'un rocher).
    */
   const reportTextError = `mailto:numerisation.gaffiot@hotmail.fr?subject=${encodeURIComponent("Bailly 2020 Chávez : erreur dans l'entrée …")}`;
 
+  /**
+   * The documents of `public/documents/`, with their number of pages and their
+   * size (in kB), to say what one downloads.
+   */
   const resources = [
-    { title: "Préface d'Anatole Bailly", href: "/documents/préface-anatole-bailly.pdf" },
-    { title: "Abréviations et signes usuels", href: "/documents/abréviations-signes-usuels.pdf" },
-    { title: "Liste des auteurs et des ouvrages", href: "/documents/liste-auteurs-ouvrages.pdf" },
-    { title: "Mesures", href: "/documents/mesures.pdf" },
-    { title: "Notice de l'édition 2020", href: "/documents/notice-édition-2020.pdf" },
+    { title: "Préface d'Anatole Bailly", href: "/documents/préface-anatole-bailly.pdf", pages: 6, size: 75 },
+    { title: "Abréviations et signes usuels", href: "/documents/abréviations-signes-usuels.pdf", pages: 5, size: 49 },
+    { title: "Liste des auteurs et des ouvrages", href: "/documents/liste-auteurs-ouvrages.pdf", pages: 59, size: 319 },
+    { title: "Mesures", href: "/documents/mesures.pdf", pages: 7, size: 77 },
+    { title: "Notice de l'édition 2020", href: "/documents/notice-édition-2020.pdf", pages: 6, size: 85 },
   ];
 
   type Link = { label: string; href: string };
@@ -171,11 +175,11 @@ mort d'un homme qu'on lance (du haut d'un rocher).
     <div class="mx-auto max-w-(--content-max-width) px-4 md:px-6">
       <section
         aria-labelledby="atouts"
-        class="py-10 md:py-14"
+        class="chapter py-10 md:py-14"
       >
         <h2
           id="atouts"
-          class="mb-8 scroll-mt-[calc(var(--header-bottom)+1.5rem)] text-center text-2xl font-bold md:text-3xl"
+          class="mb-8 scroll-mt-[calc(var(--header-bottom)+1.5rem)] text-center font-serif text-2xl/9 font-bold md:text-3xl/10"
         >
           Ce que l'application apporte au texte
         </h2>
@@ -206,11 +210,11 @@ mort d'un homme qu'on lance (du haut d'un rocher).
 
       <section
         aria-labelledby="origine"
-        class="py-10 md:py-14"
+        class="chapter py-10 md:py-14"
       >
         <h2
           id="origine"
-          class="text-center text-2xl font-bold md:text-3xl"
+          class="text-center font-serif text-2xl/9 font-bold md:text-3xl/10"
         >
           D'où vient le texte
         </h2>
@@ -387,86 +391,85 @@ mort d'un homme qu'on lance (du haut d'un rocher).
 
       <section
         aria-labelledby="ressources"
-        class="py-10 md:py-14"
+        class="chapter py-10 md:py-14"
       >
         <h2
           id="ressources"
-          class="mb-6 text-center text-2xl font-bold md:text-3xl"
+          class="mb-6 text-center font-serif text-2xl/9 font-bold md:text-3xl/10"
         >
           Ressources
         </h2>
-        <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <ol class="mx-auto max-w-2xl">
           <li
             v-for="resource in resources"
             :key="resource.href"
           >
-            <UButton
-              :to="resource.href"
+            <a
+              :href="resource.href"
               target="_blank"
-              color="neutral"
-              variant="ghost"
-              icon="i-lucide-file-text"
-              trailing-icon="i-lucide-arrow-up-right"
-              :label="resource.title"
-              class="w-full"
-              :ui="{ trailingIcon: 'ms-auto' }"
-            />
+              class="group flex flex-col py-1.5 sm:flex-row sm:items-baseline sm:gap-2"
+            >
+              <span class="font-serif text-base/7 group-hover:text-primary">{{ resource.title }}</span>
+              <span
+                aria-hidden="true"
+                class="hidden min-w-6 flex-1 translate-y-[-0.3em] border-b-2 border-dotted border-dimmed/60 sm:block"
+              />
+              <span class="shrink-0 text-sm text-muted tabular-nums">
+                PDF · {{ resource.pages }}<span aria-hidden="true">&nbsp;p.</span><span class="sr-only">&nbsp;pages</span> · {{ resource.size }}&nbsp;Ko
+              </span>
+            </a>
           </li>
-        </ul>
+        </ol>
       </section>
 
       <section
         aria-labelledby="credits"
-        class="py-10 md:py-14"
+        class="chapter pt-10 pb-16 md:pt-14 md:pb-20"
       >
         <h2
           id="credits"
-          class="mb-6 text-center text-2xl font-bold md:text-3xl"
+          class="mb-6 text-center font-serif text-2xl/9 font-bold md:text-3xl/10"
         >
           Crédits et licences
         </h2>
-        <ul class="grid gap-4 lg:grid-cols-3">
-          <li
+        <div class="colophon mx-auto max-w-xl text-center font-serif text-sm/6">
+          <div
             v-for="credit in credits"
             :key="credit.title"
-            class="rounded-lg bg-elevated/50 p-4 text-sm"
           >
-            <h3 class="font-semibold">
+            <h3 class="font-bold tracking-wide [font-variant-caps:all-small-caps]">
               {{ credit.title }}
             </h3>
-            <p class="mt-1">
-              {{ credit.authors }}
-            </p>
-            <p class="mt-1 text-muted">
+            <p>{{ credit.authors }}</p>
+            <p class="text-muted">
               {{ credit.licence }}
             </p>
             <p
               v-if="credit.note"
-              class="mt-1 text-muted"
+              class="text-muted"
             >
               {{ credit.note }}
             </p>
-            <p class="mt-2 flex gap-4">
+            <p class="mt-1 flex justify-center gap-4 font-sans">
               <a
                 v-for="link in credit.links"
                 :key="link.href"
                 :href="link.href"
                 target="_blank"
                 rel="noopener"
+                class="underline decoration-dotted underline-offset-4 hover:text-primary"
               >{{ link.label }}</a>
             </p>
-          </li>
-        </ul>
+          </div>
+          <p class="text-muted">
+            Ce que l'application garde de vos données, et où :
+            <NuxtLink
+              to="/confidentialite"
+              class="underline decoration-dotted underline-offset-4 hover:text-primary"
+            >confidentialité</NuxtLink>.
+          </p>
+        </div>
       </section>
-
-      <p class="pb-10 text-sm text-muted">
-        <UIcon
-          name="i-lucide-shield-check"
-          class="me-1 inline size-4 align-[-0.125em]"
-        />
-        Ce que l'application garde de vos données, et où :
-        <NuxtLink to="/confidentialite">confidentialité</NuxtLink>.
-      </p>
     </div>
 
     <section
@@ -517,6 +520,47 @@ mort d'un homme qu'on lance (du haut d'un rocher).
 </template>
 
 <style scoped>
+/* An asterism between the chapters. */
+.chapter + .chapter {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 1.5rem;
+    height: 1.25rem;
+    translate: -50% -50%;
+    background-color: var(--rule-color);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 20'%3E%3Cg stroke='black' stroke-width='1.3' stroke-linecap='round'%3E%3Cpath d='M12 1.6v6.8M9.06 3.3l5.88 3.4M9.06 6.7l5.88-3.4'/%3E%3Cpath d='M6 11.6v6.8M3.06 13.3l5.88 3.4M3.06 16.7l5.88-3.4'/%3E%3Cpath d='M18 11.6v6.8M15.06 13.3l5.88 3.4M15.06 16.7l5.88-3.4'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+  }
+}
+
+/* The colophon: its entries separated by a small lozenge. */
+.colophon > * + * {
+  margin-top: 1.25rem;
+
+  &::before {
+    content: "";
+    display: block;
+    width: 0.375rem;
+    height: 0.375rem;
+    margin: 0 auto 1.25rem;
+    rotate: 45deg;
+    background-color: var(--rule-color);
+  }
+}
+
+/* The ornaments are in the cloth of the icon, like the hero frame. */
+.chapter {
+  --rule-color: var(--color-terracotta-700);
+}
+
+:global(.dark) .chapter {
+  --rule-color: var(--color-terracotta-600);
+}
+
 /* The scroll invitation bounces a few times once the page is shown. */
 .hero-cue {
   animation: hero-cue-bounce 1.4s ease-in-out 0.8s 2 both;
