@@ -104,52 +104,64 @@ mort d'un homme qu'on lance (du haut d'un rocher).
       rather than letting it overflow (e.g. a phone in landscape).
     -->
     <div class="p-4 md:p-6">
-      <section class="flex min-h-[calc(100svh-(6.5rem+1px)-2rem)] flex-col items-center justify-center rounded-xl border-2 border-terracotta-700 px-3 py-[clamp(1.25rem,4svh,3rem)] text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[calc(100svh-3.5rem-3rem)] md:px-8">
-        <UIcon
-          name="i-bailly-bailly"
-          class="mb-[clamp(0.75rem,2.5svh,1.25rem)] size-[clamp(3rem,9svh,5rem)] shrink-0 md:size-[clamp(4rem,14svh,8rem)]"
-        />
-        <h1 class="max-w-3xl font-serif text-2xl/[1.2] font-bold text-balance max-[25rem]:text-[1.375rem]/[1.2] md:text-4xl/[1.2]">
-          Le dictionnaire grec-français d'Anatole&nbsp;Bailly, à portée de recherche
-        </h1>
-        <p class="mt-[clamp(0.75rem,2.5svh,1.25rem)] max-w-2xl text-base text-pretty text-muted md:text-xl">
-          Le texte révisé du <em>Bailly 2020 Hugo&nbsp;Chávez</em>, dans une application libre et
-          gratuite, pensée pour la lecture et la recherche, sans compte ni publicité.
-        </p>
-        <div class="mt-[clamp(1.25rem,4svh,2rem)] flex flex-wrap justify-center gap-2 md:gap-3">
-          <UButton
-            size="lg"
-            icon="i-lucide-search"
-            label="Chercher un mot"
-            class="max-sm:px-2.5 max-[23.5rem]:gap-1.5 max-[23.5rem]:px-2 md:text-base"
-            :ui="{ leadingIcon: 'md:size-6' }"
-            @click="searchFocus.focus()"
+      <section class="flex min-h-[calc(100svh-(6.5rem+1px)-2rem)] flex-col items-center rounded-xl border-2 border-terracotta-700 px-3 pt-[clamp(1rem,3svh,3rem)] pb-[clamp(0.25rem,1svh,1rem)] text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[calc(100svh-3.5rem-3rem)] md:px-8 dark:border-terracotta-600 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-600)]">
+        <div class="my-auto flex w-full flex-col items-center">
+          <UIcon
+            name="i-bailly-bailly"
+            class="mb-[clamp(0.75rem,2.5svh,1.25rem)] size-[clamp(3rem,8svh,5rem)] shrink-0 md:size-[clamp(4rem,14svh,8rem)]"
           />
-          <UButton
-            to="/soutenir"
-            size="lg"
-            color="neutral"
-            variant="outline"
-            icon="i-lucide-heart"
-            label="Nous soutenir"
-            class="max-sm:px-2.5 max-[23.5rem]:gap-1.5 max-[23.5rem]:px-2 md:text-base"
-            :ui="{ leadingIcon: 'md:size-6' }"
-          />
-        </div>
-        <dl class="mt-[clamp(1rem,4.5svh,3rem)] grid w-full max-w-2xl grid-cols-3 gap-4 border-t border-terracotta-700/35 pt-[clamp(0.75rem,2.5svh,1.5rem)]">
-          <div
-            v-for="figure in figures"
-            :key="figure.label"
-            class="flex flex-col-reverse"
-          >
-            <dt class="text-sm text-muted">
-              {{ figure.label }}
-            </dt>
-            <dd class="font-serif text-lg/8 font-bold md:text-2xl/9">
-              {{ figure.value }}
-            </dd>
+          <h1 class="max-w-3xl font-serif text-2xl/[1.2] font-bold text-balance max-[25rem]:text-[1.375rem]/[1.2] md:text-4xl/[1.2]">
+            Le dictionnaire grec-français d'Anatole&nbsp;Bailly, à portée de recherche
+          </h1>
+          <p class="mt-[clamp(0.75rem,2.5svh,1.25rem)] max-w-2xl text-base text-pretty text-muted md:text-xl">
+            Le texte révisé du <em>Bailly 2020 Hugo&nbsp;Chávez</em>, dans une application libre et
+            gratuite, pensée pour la lecture et la recherche, sans compte ni publicité.
+          </p>
+          <div class="mt-[clamp(1.25rem,4svh,2rem)] flex flex-wrap justify-center gap-2 md:gap-3">
+            <UButton
+              size="lg"
+              icon="i-lucide-search"
+              label="Chercher un mot"
+              class="max-sm:px-2.5 max-[23.5rem]:gap-1.5 max-[23.5rem]:px-2 md:text-base"
+              :ui="{ leadingIcon: 'md:size-6' }"
+              @click="searchFocus.focus()"
+            />
+            <UButton
+              to="/soutenir"
+              size="lg"
+              color="neutral"
+              variant="outline"
+              icon="i-lucide-heart"
+              label="Nous soutenir"
+              class="max-sm:px-2.5 max-[23.5rem]:gap-1.5 max-[23.5rem]:px-2 md:text-base"
+              :ui="{ leadingIcon: 'md:size-6' }"
+            />
           </div>
-        </dl>
+          <dl class="mt-[clamp(0.75rem,3.5svh,3rem)] grid w-full max-w-2xl grid-cols-3 gap-4 border-t border-terracotta-700/35 dark:border-terracotta-600/40 pt-[clamp(0.75rem,2.5svh,1.5rem)]">
+            <div
+              v-for="figure in figures"
+              :key="figure.label"
+              class="flex flex-col-reverse"
+            >
+              <dt class="text-sm text-muted">
+                {{ figure.label }}
+              </dt>
+              <dd class="font-serif text-lg/8 font-bold md:text-2xl/9">
+                {{ figure.value }}
+              </dd>
+            </div>
+          </dl>
+        </div>
+        <!-- The rest of the page is below the fold: an invitation to scroll. -->
+        <UButton
+          to="#atouts"
+          variant="link"
+          color="neutral"
+          size="sm"
+          trailing-icon="i-lucide-chevron-down"
+          label="En savoir plus"
+          class="mt-[clamp(0.25rem,1.5svh,1.5rem)] shrink-0 text-muted"
+        />
       </section>
     </div>
 
@@ -160,7 +172,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
       >
         <h2
           id="atouts"
-          class="mb-8 text-center text-2xl font-bold md:text-3xl"
+          class="mb-8 scroll-mt-[calc(var(--header-bottom)+1.5rem)] text-center text-2xl font-bold md:text-3xl"
         >
           Ce que l'application apporte au texte
         </h2>
