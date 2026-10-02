@@ -191,22 +191,22 @@ mort d'un homme qu'on lance (du haut d'un rocher).
       </p>
 
       <!--
-        A timeline: each work in a bubble, dated, on the left then on the right,
-        joined by a winding path (from `md`); on mobile, a rail on the left.
+        Each work in a bubble, on the left then on the right, joined by a
+        winding path (from `md`); on mobile, the bubble is centered above the
+        text, without a path.
       -->
       <ol class="mt-10 space-y-12 md:mx-auto md:max-w-4xl md:space-y-24">
-        <li class="relative grid grid-cols-[5rem_minmax(0,1fr)] gap-x-4 md:flex md:items-start md:gap-12 md:even:flex-row-reverse">
-          <!-- The line to the next work (mobile: a rail; from `md`: a winding path). -->
+        <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
+          <!-- The winding path to the next work (from `md`). -->
           <div
             aria-hidden="true"
             class="contents"
           >
-            <div class="absolute top-20 -bottom-12 left-10 border-s-2 border-dashed border-primary/40 md:hidden" />
             <div class="absolute top-56 bottom-0 left-28 hidden border-s-2 border-dashed border-primary/40 md:block" />
             <div class="absolute top-full right-1/2 left-28 hidden h-12 rounded-bl-3xl border-b-2 border-s-2 border-dashed border-primary/40 md:block" />
             <div class="absolute top-[calc(100%+3rem-2px)] right-28 left-1/2 hidden h-12 rounded-tr-3xl border-e-2 border-t-2 border-dashed border-primary/40 md:block" />
           </div>
-          <div class="relative size-20 shrink-0 md:size-56">
+          <div class="size-40 shrink-0 md:size-56">
             <div class="relative size-full overflow-hidden rounded-full bg-white shadow-2xl ring-4 ring-primary/10 md:ring-8">
               <img
                 src="/images/bailly-1935-rhiptos.webp"
@@ -216,11 +216,8 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                 class="size-full"
               >
             </div>
-            <span class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-inverted shadow-md md:px-3 md:py-1 md:text-sm">
-              1894 – 1935
-            </span>
           </div>
-          <div class="min-w-0 flex-1 md:pt-6">
+          <div class="min-w-0 flex-1 self-stretch md:self-auto md:pt-6">
             <h3 class="font-serif text-lg/8 font-bold">
               Le dictionnaire d'Anatole Bailly
             </h3>
@@ -236,34 +233,30 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           </div>
         </li>
 
-        <li class="relative grid grid-cols-[5rem_minmax(0,1fr)] gap-x-4 md:flex md:items-start md:gap-12 md:even:flex-row-reverse">
-          <!-- The line to the next work (mobile: a rail; from `md`: a winding path). -->
+        <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
+          <!-- The winding path to the next work (from `md`). -->
           <div
             aria-hidden="true"
             class="contents"
           >
-            <div class="absolute top-20 -bottom-12 left-10 border-s-2 border-dashed border-primary/40 md:hidden" />
             <div class="absolute top-56 right-28 bottom-0 hidden border-e-2 border-dashed border-primary/40 md:block" />
             <div class="absolute top-full right-28 left-1/2 hidden h-12 rounded-br-3xl border-e-2 border-b-2 border-dashed border-primary/40 md:block" />
             <div class="absolute top-[calc(100%+3rem-2px)] right-1/2 left-28 hidden h-12 rounded-tl-3xl border-s-2 border-t-2 border-dashed border-primary/40 md:block" />
           </div>
-          <div class="relative size-20 shrink-0 md:size-56">
+          <div class="size-40 shrink-0 md:size-56">
             <div
               aria-hidden="true"
               class="flex size-full items-center justify-center overflow-hidden rounded-full bg-default shadow-2xl ring-4 ring-primary/10 md:ring-8"
             >
               <!-- eslint-disable vue/no-v-html -- A constant of this page. -->
               <div
-                class="definition w-[10.4rem] shrink-0 font-serif [--reading-font-size:0.75rem] [--reading-font-weight:400] max-md:scale-[0.36]"
+                class="definition w-[10.4rem] shrink-0 font-serif [--reading-font-size:0.75rem] [--reading-font-weight:400] max-md:scale-[0.715]"
                 v-html="rhiptos"
               />
               <!-- eslint-enable vue/no-v-html -->
             </div>
-            <span class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-inverted shadow-md md:px-3 md:py-1 md:text-sm">
-              2020
-            </span>
           </div>
-          <div class="min-w-0 flex-1 md:pt-6">
+          <div class="min-w-0 flex-1 self-stretch md:self-auto md:pt-6">
             <h3 class="font-serif text-lg/8 font-bold">
               L'édition numérique <em>Bailly 2020 Hugo&nbsp;Chávez</em>
             </h3>
@@ -302,13 +295,13 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           </div>
         </li>
 
-        <li class="relative grid grid-cols-[5rem_minmax(0,1fr)] gap-x-4 md:flex md:items-start md:gap-12 md:even:flex-row-reverse">
-          <div class="relative size-20 shrink-0 md:size-56">
+        <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
+          <div class="size-40 shrink-0 md:size-56">
             <div
               aria-hidden="true"
               class="flex size-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary/15 to-(--ui-bg) shadow-2xl ring-4 ring-primary/10 md:ring-8"
             >
-              <div class="w-[11.2rem] shrink-0 space-y-1.5 max-md:scale-[0.36]">
+              <div class="w-[11.2rem] shrink-0 space-y-1.5 max-md:scale-[0.715]">
                 <div class="flex items-center gap-1.5 rounded-full bg-default px-3 py-1.5 text-sm shadow-xs ring-1 ring-default">
                   <UIcon
                     name="i-lucide-search"
@@ -331,11 +324,8 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                 </div>
               </div>
             </div>
-            <span class="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-inverted shadow-md md:px-3 md:py-1 md:text-sm">
-              Aujourd'hui
-            </span>
           </div>
-          <div class="min-w-0 flex-1 md:pt-6">
+          <div class="min-w-0 flex-1 self-stretch md:self-auto md:pt-6">
             <h3 class="font-serif text-lg/8 font-bold">
               L'application Bailly.app
             </h3>
