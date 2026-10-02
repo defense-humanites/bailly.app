@@ -401,6 +401,11 @@ test.describe("bookmarks page, table of contents", () => {
     const headerBottom = await page.locator("header").first().evaluate(element => element.getBoundingClientRect().bottom);
     await expect.poll(async () => (await toc.boundingBox())!.y).toBeCloseTo(headerBottom, 0);
     await expect(target).toBeInViewport({ ratio: 1 });
+    // The mark slides under its link.
+    await expect.poll(async () => {
+      const [mark, link] = await Promise.all([toc.locator("[data-toc-mark]").boundingBox(), target.boundingBox()]);
+      return Math.round(mark!.x + mark!.width / 2 - (link!.x + link!.width / 2));
+    }).toBe(0);
     const cardTop = await card(page, "Étiquette numéro 12").evaluate(element => element.getBoundingClientRect().top);
     expect(cardTop).toBeGreaterThanOrEqual(headerBottom + 48);
 

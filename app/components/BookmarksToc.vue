@@ -113,8 +113,14 @@
     measureRow();
     overflows.value = !!row.value && row.value.scrollWidth > row.value.clientWidth + 1;
   }
-  useResizeObserver(row, measureOverflow);
-  watch(() => props.groups, measureOverflow, { flush: "post" });
+  useResizeObserver(row, () => {
+    measureOverflow();
+    placeMark();
+  });
+  watch(() => props.groups, () => {
+    measureOverflow();
+    placeMark();
+  }, { flush: "post" });
   const canScrollStart = computed((): boolean => overflows.value && !arrivedState.left);
   const canScrollEnd = computed((): boolean => overflows.value && !arrivedState.right);
 
@@ -176,6 +182,29 @@
   }
 
   /**
+   * The mark under the group being read: one line in the row that slides
+   * from link to link (`translate`, `width`), in the group's color; placed at
+   * once when it appears (`markSlides`), and without sliding with reduced
+   * motion.
+   */
+  const mark = ref<{ left: number; width: number; color: ColorKey }>();
+  const markSlides = ref(false);
+  function placeMark(): void {
+    const group = props.groups.find(({ key }) => key === current.value);
+    const link = group && row.value?.querySelector<HTMLElement>(`[data-group="${group.key}"]`);
+    if (!group || !link) {
+      mark.value = undefined;
+      markSlides.value = false;
+      return;
+    }
+    const appears = !mark.value;
+    // As the links' inner margins (`inset-x-3`).
+    mark.value = { left: link.offsetLeft + 12, width: link.offsetWidth - 24, color: group.color };
+    if (appears) requestAnimationFrame(() => (markSlides.value = true));
+  }
+  watch(current, placeMark, { flush: "post" });
+
+  /**
    * The group being read stays in sight in the row (not with reduced motion:
    * the row then never moves by itself).
    */
@@ -235,7 +264,7 @@
           :data-group="group.key"
           :aria-label="`${group.name}, ${group.count} ${entryCount(group.count)}${group.active && group.key !== 'favorites' ? ', étiquette active' : ''}`"
           :aria-current="group.key === current ? 'location' : undefined"
-          class="relative flex h-8 items-center gap-1.5 rounded-full ps-2.5 pe-3 text-sm ring-inset transition-colors after:absolute after:inset-x-3 after:-bottom-1.5 after:h-0.5 after:rounded-full after:bg-tag-text after:opacity-0 after:transition-opacity aria-[current]:after:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
+          class="relative flex h-8 items-center gap-1.5 rounded-full ps-2.5 pe-3 text-sm ring-inset transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
           :class="group.active
             ? 'bg-tag-text text-tag-100 hover:bg-tag-text/90'
             : 'bg-tag-100 text-tag-text ring ring-tag-300/60 hover:bg-tag-200/80'"
@@ -249,6 +278,17 @@
           <span class="tabular-nums opacity-75">{{ group.count }}</span>
         </NuxtLink>
       </li>
+
+      <!-- The mark under the group being read (cf. `placeMark`). -->
+      <li
+        v-if="mark"
+        aria-hidden="true"
+        data-toc-mark
+        :data-tag-color="mark.color"
+        class="pointer-events-none absolute start-0 bottom-0.5 h-0.5 rounded-full bg-tag-text duration-300 ease-out motion-reduce:transition-none"
+        :class="{ 'transition-[translate,width,background-color]': markSlides }"
+        :style="{ translate: `${mark.left}px 0`, width: `${mark.width}px` }"
+      />
     </ul>
 
     <!-- Arrows: a pointer's affordance (the keyboard goes from link to link). -->
