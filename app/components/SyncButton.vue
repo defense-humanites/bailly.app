@@ -2,13 +2,23 @@
   import { fromBase64url } from "~/sync/base64url";
 
   /**
-   * The synchronization of the bookmarks, on the bookmarks page: a button that
-   * shows its state (off, up to date, running, waiting for the user) and
-   * opens its window (`BookmarksSync`), also opened by a link (`#sync=…`).
+   * The synchronization of a type of data, on its page (the bookmarks, the
+   * preferences): a button that shows its state (off, up to date, running,
+   * waiting for the user) and opens its window (`SyncDialog`), also opened by
+   * a link (`#sync=…`).
    */
 
+  const props = defineProps<{
+    scope: "bookmarks" | "preferences";
+  }>();
+
   const syncStore = useSyncStore();
-  const { loaded, enabled, status, error } = storeToRefs(syncStore);
+  const { loaded, syncedBookmarks, syncedPreferences, status, error, errorSection } = storeToRefs(syncStore);
+
+  /**
+   * Whether this device synchronizes the type of data of the page.
+   */
+  const enabled = computed(() => (props.scope === "bookmarks" ? syncedBookmarks.value : syncedPreferences.value.length > 0));
 
   const showButtonLabels = useButtonLabels();
 
@@ -36,7 +46,8 @@
    * Whether the synchronization failed (e.g. the limits would be exceeded:
    * the user has to make room).
    */
-  const needsAttention = computed(() => enabled.value && status.value === "error" && Boolean(error.value));
+  const needsAttention = computed(() => enabled.value && status.value === "error" && Boolean(error.value)
+    && (errorSection.value === null || errorSection.value === props.scope));
 
   /**
    * The icon, after the state (a plain cloud until the settings are loaded,
@@ -69,7 +80,8 @@
 
   const isSyncOpen = ref(false);
   /**
-   * The key of a link (`/signets#sync=…`), to join the synchronization.
+   * The key of a link (`/signets#sync=…`, `/préférences#sync=…`), to join the
+   * synchronization.
    */
   const linkSecret = ref<Uint8Array<ArrayBuffer> | null>(null);
 
@@ -151,9 +163,10 @@
     </UTooltip>
 
     <!-- Loaded when first opened (with the QR code generator). -->
-    <LazyBookmarksSync
+    <LazySyncDialog
       v-if="syncRequested"
       v-model:open="isSyncOpen"
+      :scope="scope"
       :link-secret="linkSecret"
     />
   </div>

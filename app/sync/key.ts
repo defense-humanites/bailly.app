@@ -66,7 +66,9 @@ export function suggestWords(input: string, limit = 5): string[] {
  * The words of a text (e.g. pasted, with numbers, commas or line breaks).
  */
 export function splitWords(text: string): string[] {
-  return text.split(/[^\p{L}]+/u).filter(Boolean);
+  // Composed first: an accent typed or pasted apart (e.g. from a password
+  // manager) is a mark, not a letter, and would split its word.
+  return text.normalize("NFC").split(/[^\p{L}\p{M}]+/u).filter(Boolean);
 }
 
 /**

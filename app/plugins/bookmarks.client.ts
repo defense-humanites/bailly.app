@@ -9,7 +9,7 @@ const MUTATIONS = new Set([
   "unstarEntry",
   "createTag",
   "updateTag",
-  "reorderTags",
+  "pinTag",
   "removeTag",
   "tagEntry",
   "untagEntry",

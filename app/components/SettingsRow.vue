@@ -6,6 +6,8 @@
     description?: string;
     /** Whether the setting isn't available (yet). */
     disabled?: boolean;
+    /** Whether the setting is synchronized with the other devices. */
+    synced?: boolean;
   }>();
 </script>
 
@@ -19,11 +21,27 @@
     :class="{ 'opacity-75': disabled }"
   >
     <div class="min-w-0">
-      <p
-        class="font-medium"
-        aria-hidden="true"
-      >
-        {{ label }}
+      <p class="flex items-center gap-1.5 font-medium">
+        <span aria-hidden="true">{{ label }}</span>
+        <!--
+          Synchronized: a small cloud (for screen readers, the control's name
+          says it, cf. the preferences page).
+        -->
+        <UTooltip
+          v-if="synced"
+          text="Synchronisée avec vos autres appareils"
+        >
+          <span
+            data-synced
+            aria-hidden="true"
+            class="flex"
+          >
+            <UIcon
+              name="i-lucide-cloud"
+              class="size-4 shrink-0 text-muted"
+            />
+          </span>
+        </UTooltip>
       </p>
       <p
         v-if="description"

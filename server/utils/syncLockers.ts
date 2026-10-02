@@ -5,7 +5,7 @@ import { hashToken, LOCKER_ID_PATTERN, TOKEN_PATTERN } from "../lib/lockers";
  * The database of the synchronization lockers (cf. `nitro.database` in
  * `nuxt.config.ts`).
  */
-export const useLockersDatabase = () => useDatabase("bookmarksSync");
+export const useLockersDatabase = () => useDatabase("sync");
 
 /**
  * The locker id and the hash of the token of a request.

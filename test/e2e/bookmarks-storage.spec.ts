@@ -56,7 +56,8 @@ test("the bookmarks of the previous schema (version 3) are migrated", async ({ p
   await page.goto(new URL("/signets", baseURL).href);
   await waitForHydration(page);
 
-  await expect.poll(() => bookmarksState(page)).toEqual({ tags: ["Théétète", "Banquet"], tagged: 1, starred: 1 });
+  // By name: their former order is not kept.
+  await expect.poll(() => bookmarksState(page)).toEqual({ tags: ["Banquet", "Théétète"], tagged: 1, starred: 1 });
   const current = await page.evaluate(() => {
     const root = document.querySelector("#__nuxt") as AppRoot;
     const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { currentTag: { name: string } | null };
@@ -155,7 +156,6 @@ test("an import beyond the limits asks first, then leaves out what does not fit"
       tags: [{ key: "4b8c3c1e-5a4e-4f0e-9d7a-1c2b3d4e5f60", name: "Homère", description: "", color: "Blue", createdAt: stamp, updatedAt: stamp }],
       tagged: [{ tagKey: "4b8c3c1e-5a4e-4f0e-9d7a-1c2b3d4e5f60", ...logos, updatedAt: stamp }],
       starred: [{ ...logos, updatedAt: stamp }, { word: "ψυχή", uri: "psuchê", excerpt: "ψυχή, ῆς (ἡ) souffle", updatedAt: stamp }],
-      tagOrder: null,
     },
   };
 

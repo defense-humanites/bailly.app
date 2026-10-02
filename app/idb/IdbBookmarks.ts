@@ -32,8 +32,8 @@ export type MergeOutcome = {
 };
 
 /**
- * Methods on the bookmarks as a whole (favorites, tags, tagged entries and
- * the order of the tags), with their tombstones: the state that is exported,
+ * Methods on the bookmarks as a whole (favorites, tags and tagged entries),
+ * with their tombstones: the state that is exported,
  * imported and synchronized.
  */
 export class IdbBookmarks {
@@ -43,16 +43,15 @@ export class IdbBookmarks {
    */
   static async getState(): Promise<BookmarksState> {
     const db = await Idb.getIndexedDB();
-    const tx = db.transaction([IdbStore.Tags, IdbStore.Tagged, IdbStore.Starred, IdbStore.Meta]);
-    const [tags, tagged, starred, tagOrder] = await Promise.all([
+    const tx = db.transaction([IdbStore.Tags, IdbStore.Tagged, IdbStore.Starred]);
+    const [tags, tagged, starred] = await Promise.all([
       tx.objectStore(IdbStore.Tags).getAll(),
       tx.objectStore(IdbStore.Tagged).getAll(),
       tx.objectStore(IdbStore.Starred).getAll(),
-      Idb.getMeta(tx.objectStore(IdbStore.Meta), IdbMetaKey.TagOrder),
     ]);
     await tx.done;
 
-    return mergeStates({ tags, tagged, starred, tagOrder: tagOrder ?? null }, emptyState());
+    return mergeStates({ tags, tagged, starred }, emptyState());
   }
 
   /**
@@ -236,7 +235,6 @@ export class IdbBookmarks {
         tags: await stores.tags.getAll(),
         tagged: await stores.tagged.getAll(),
         starred: await stores.starred.getAll(),
-        tagOrder: (await Idb.getMeta(stores.meta, IdbMetaKey.TagOrder)) ?? null,
       };
       const received = await incoming(local, stores.meta);
       const merged = compact(normalize(mergeStates(forgetDeletions ? withoutTombstones(local) : local, received)));
@@ -268,12 +266,10 @@ export class IdbBookmarks {
         tags: changed(recordId.tag, local.tags, merged.tags),
         tagged: changed(recordId.tagged, local.tagged, merged.tagged),
         starred: changed(recordId.starred, local.starred, merged.starred),
-        tagOrder: merged.tagOrder && canonical(merged.tagOrder) !== canonical(local.tagOrder) ? merged.tagOrder : null,
       };
       for (const record of changes.tags) await stores.tags.put(record);
       for (const record of changes.tagged) await stores.tagged.put(record);
       for (const record of changes.starred) await stores.starred.put(record);
-      if (changes.tagOrder) await stores.meta.put(changes.tagOrder, IdbMetaKey.TagOrder);
 
       // Forgetting a tombstone changes nothing that shows (`changed` stays
       // false): no need to tell the other tabs.
@@ -290,7 +286,7 @@ export class IdbBookmarks {
 
       return {
         state: merged,
-        changed: Boolean(changes.tags.length || changes.tagged.length || changes.starred.length || changes.tagOrder),
+        changed: Boolean(changes.tags.length || changes.tagged.length || changes.starred.length),
         excesses: [],
       };
     });

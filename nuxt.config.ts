@@ -10,12 +10,12 @@ const cloudflare = Boolean(
 
 /**
  * The database of the bookmarks synchronization (encrypted lockers, cf.
- * `server/lib/lockers.ts`): D1 on Cloudflare (binding `BOOKMARKS_SYNC`),
- * SQLite elsewhere (`.data/bookmarks-sync.sqlite`, with `node:sqlite`).
+ * `server/lib/lockers.ts`): D1 on Cloudflare (binding `SYNC_DB`), SQLite
+ * elsewhere (`.data/sync.sqlite`, with `node:sqlite`).
  */
-const bookmarksSyncDatabase = cloudflare
-  ? { connector: "cloudflare-d1" as const, options: { bindingName: "BOOKMARKS_SYNC" } }
-  : { connector: "sqlite" as const, options: { name: "bookmarks-sync" } };
+const syncDatabase = cloudflare
+  ? { connector: "cloudflare-d1" as const, options: { bindingName: "SYNC_DB" } }
+  : { connector: "sqlite" as const, options: { name: "sync" } };
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -116,10 +116,10 @@ export default defineNuxtConfig({
       database: true,
     },
     database: {
-      bookmarksSync: bookmarksSyncDatabase,
+      sync: syncDatabase,
     },
     devDatabase: {
-      bookmarksSync: bookmarksSyncDatabase,
+      sync: syncDatabase,
     },
     /**
      * Development only: relays `/_api/**` to `DEV_API_PROXY` (e.g. a local

@@ -99,7 +99,7 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
     await page.reload();
     await waitForHydration(page);
     return (await bookmarksState(page)).tags;
-  }, { timeout: 15_000 }).toEqual(["Platon", "Homère"]);
+  }, { timeout: 15_000 }).toEqual(["Homère", "Platon"]);
 
   // The laptop deletes the bookmarks online: the phone stops synchronizing,
   // and keeps its bookmarks.
@@ -109,7 +109,7 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await page.getByRole("button", { name: "Continuer…" }).click();
   await expect(page.getByText("sans retour possible")).toBeVisible();
   await page.getByRole("button", { name: "Supprimer définitivement" }).click();
-  await expect(page.getByText("Signets supprimés du serveur", { exact: true })).toBeVisible();
+  await expect(page.getByText("Données supprimées du serveur", { exact: true })).toBeVisible();
 
   await phone.reload();
   await waitForHydration(phone);
@@ -125,12 +125,59 @@ test("a wrong key is explained", async ({ goto, page }) => {
 
   await page.getByRole("textbox").fill("abaisser zzzz ");
   await expect(page.getByText("« zzzz » n'est pas un mot de la liste.")).toBeVisible();
+  // While a word is typed, as soon as no word starts like it.
+  await page.getByRole("textbox").fill("abaisser aba");
+  await expect(page.getByText("n'est pas un mot de la liste")).toHaveCount(0);
+  await page.getByRole("textbox").fill("abaisser abaq");
+  await expect(page.getByText("« abaq » n'est pas un mot de la liste.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Rejoindre" })).toBeDisabled();
 
   // Twelve valid words that no device synchronizes.
   await page.getByRole("textbox").fill(Array(12).fill("abaisser").join(" "));
   await page.getByRole("button", { name: "Rejoindre" }).click();
-  await expect(page.getByText(/ne forment pas une clé valide|Aucun signet n'est synchronisé avec cette clé/)).toBeVisible();
+  await expect(page.getByText(/ne forment pas une clé valide|Cette clé n'est utilisée par aucun appareil/)).toBeVisible();
+});
+
+test("the key can be sent with Enter once its twelfth word is recognized (its first 4 letters)", async ({ page, goto, browser, baseURL }) => {
+  test.setTimeout(60_000);
+  await goto("/signets", { waitUntil: "hydration" });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await page.getByRole("tab", { name: "Ajouter un appareil" }).click();
+  await page.getByRole("button", { name: "Afficher la clé" }).click();
+  const keyWords = page.getByRole("list", { name: "Les douze mots de la clé" }).locator("li > span:last-child");
+  await expect(keyWords).toHaveCount(12);
+  // The first 4 letters of each word, without accents.
+  const prefixes = (await keyWords.allInnerTexts()).map(word => word.normalize("NFD").replace(/\p{M}/gu, "").slice(0, 4));
+
+  const phone = await newDevice(browser, baseURL);
+  await openSync(phone);
+  await phone.getByRole("button", { name: "J'ai déjà une clé" }).click();
+  const field = phone.getByRole("textbox");
+  const hint = phone.locator("[data-key-ready-hint]");
+  const join = phone.getByRole("button", { name: "Rejoindre" });
+
+  // Before the twelfth word, Enter starts a new line (a separator).
+  await field.pressSequentially(prefixes.slice(0, 11).join(" "));
+  await field.press("Enter");
+  await expect(field).toHaveValue(`${prefixes.slice(0, 11).join(" ")}\n`);
+  // Three letters of the twelfth: not recognized yet.
+  await field.pressSequentially(prefixes[11]!.slice(0, 3));
+  await expect(hint).toHaveCSS("opacity", "0");
+  await expect(join).toBeDisabled();
+  // The fourth: the key drawn at the bottom right says Enter sends it.
+  await field.pressSequentially(prefixes[11]!.slice(3));
+  await expect(hint).toHaveCSS("opacity", "1");
+  await expect(join).toBeEnabled();
+  const [hintBox, fieldBox] = await Promise.all([hint.boundingBox(), field.boundingBox()]);
+  expect(hintBox!.x + hintBox!.width).toBeGreaterThan(fieldBox!.x + fieldBox!.width * 0.75);
+  expect(hintBox!.y + hintBox!.height).toBeGreaterThan(fieldBox!.y + fieldBox!.height * 0.75);
+
+  // Screen readers are told too.
+  await expect(phone.getByRole("status").filter({ hasText: "Clé complète" })).toHaveText("Clé complète : appuyez sur Entrée pour rejoindre.");
+
+  await field.press("Enter");
+  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
 });
 
 test("a failed first synchronization is reported, and leaves the device as it was", async ({ page, goto, browser, baseURL }) => {
@@ -310,7 +357,7 @@ test("a synchronization beyond the limits waits until the device makes room", as
   await expect.poll(async () => (await bookmarksState(page)).starred).toBe(100); // Unchanged: the phone's favorite was left out.
 });
 
-test("the synchronization waits while the tags are being arranged", async ({ page, goto, browser, baseURL }) => {
+test("the synchronization waits while a tag is being edited", async ({ page, goto, browser, baseURL }) => {
   test.setTimeout(60_000);
   const syncNow = (target: Page) => target.evaluate(async () => {
     const root = document.querySelector("#__nuxt") as AppRoot;
@@ -332,9 +379,9 @@ test("the synchronization waits while the tags are being arranged", async ({ pag
   await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
   await phone.keyboard.press("Escape");
 
-  // The laptop arranges its tags while the phone adds a favorite.
-  await page.getByRole("button", { name: "Arranger" }).click();
-  await expect(page.getByRole("dialog", { name: "Arranger les étiquettes" })).toBeVisible();
+  // The laptop edits a tag while the phone adds a favorite.
+  await page.getByRole("button", { name: "Modifier l'étiquette « Homère »" }).click();
+  await expect(page.getByRole("textbox", { name: "Nom de l'étiquette" })).toBeVisible();
   await seedBookmarks(phone, { starred: [psuche] });
   // (Once its settings are loaded, after the reload.)
   await expect.poll(() => syncNow(phone)).toBe(true);
@@ -342,7 +389,7 @@ test("the synchronization waits while the tags are being arranged", async ({ pag
   await syncNow(page); // Deferred: nothing changes under the user's feet.
   expect((await bookmarksState(page)).starred).toBe(1);
 
-  // Once the window is closed, the laptop synchronizes, and the phone's
+  // Once the editing is over, the laptop synchronizes, and the phone's
   // favorite shows (without reloading).
   await page.keyboard.press("Escape");
   await expect(page.getByText(/ψυχή, ῆς/).first()).toBeVisible({ timeout: 15_000 });

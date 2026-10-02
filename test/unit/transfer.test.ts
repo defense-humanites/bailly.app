@@ -17,12 +17,11 @@ const day = 86_400_000;
 
 const state: BookmarksState = {
   tags: [
-    { key: "t1", name: "Homère", description: "", color: "Blue", createdAt: stamp(), updatedAt: stamp(), legacyKey: 3 },
+    { key: "t1", name: "Homère", description: "", color: "Blue", createdAt: stamp(), pinnedAt: stamp(), updatedAt: stamp(), legacyKey: 3 },
     { key: "t2", name: "Ancienne", description: "", color: "Rose", createdAt: stamp(), updatedAt: stamp(now - 100 * day), deleted: true },
   ],
   tagged: [{ tagKey: "t1", uri: "logos", word: "λόγος", updatedAt: stamp() }],
   starred: [{ uri: "psukhê", word: "ψυχή", updatedAt: stamp(now - 10 * day), deleted: true }],
-  tagOrder: { keys: ["t1"], updatedAt: stamp() },
 };
 
 test("an exported file reads back as the existing bookmarks", () => {
@@ -63,7 +62,8 @@ test("invalid records are left out, unknown colors replaced", () => {
       { tagKey: "ok", uri: "", word: "", excerpt: "", updatedAt: stamp() },
     ],
     starred: [{ uri: "logos", word: "λόγος", excerpt: "", updatedAt: stamp(), deleted: "yes" }, "junk"],
-    tagOrder: { keys: ["ok", "ok", 3], updatedAt: stamp() },
+    // The order of the tags of the first previews: ignored.
+    tagOrder: { keys: ["ok"], updatedAt: stamp() },
   });
 
   expect(validated.tags).toEqual([
@@ -71,7 +71,35 @@ test("invalid records are left out, unknown colors replaced", () => {
   ]);
   expect(validated.tagged).toHaveLength(1);
   expect(validated.starred).toEqual([]);
-  expect(validated.tagOrder).toEqual({ keys: ["ok"], updatedAt: stamp() });
+  expect(validated).not.toHaveProperty("tagOrder");
+});
+
+test("the stamp of a tag's pinning: kept if valid and not after its latest change, else the tag is not pinned", () => {
+  const tag = (key: string, fields: Record<string, unknown>) =>
+    ({ key, name: key, description: "", color: "Blue", createdAt: stamp(now - 3 * day), updatedAt: stamp(now - day), ...fields });
+  const validated = validateState({
+    tags: [
+      tag("kept", { pinnedAt: stamp(now - 2 * day) }),
+      tag("equal", { pinnedAt: stamp(now - day) }),
+      tag("absent", {}),
+      tag("invalid", { pinnedAt: "hier" }),
+      tag("afterChange", { pinnedAt: stamp(now) }),
+      tag("tombstone", { pinnedAt: stamp(now - 2 * day), deleted: true }),
+    ],
+    tagged: [],
+    starred: [],
+  }, now);
+
+  const pinnedAt = Object.fromEntries(validated.tags.map(record => [record.key, record.pinnedAt]));
+  expect(pinnedAt).toEqual({
+    kept: stamp(now - 2 * day),
+    equal: stamp(now - day),
+    absent: undefined,
+    invalid: undefined,
+    afterChange: undefined,
+    tombstone: undefined,
+  });
+  expect(validated.tags.filter(record => "pinnedAt" in record).map(record => record.key).sort()).toEqual(["equal", "kept"]);
 });
 
 test("file name", () => {
@@ -93,12 +121,10 @@ test("records stamped too far in the future are left out", () => {
       { uri: "soon", word: "a", excerpt: "a", updatedAt: stamp(now + 60 * 60 * 1000) }, // An hour ahead: clocks drift.
       { uri: "later", word: "b", excerpt: "b", updatedAt: future },
     ],
-    tagOrder: { keys: ["t"], updatedAt: future },
   }, now);
 
   expect(validated.tags).toEqual([]);
   expect(validated.starred.map(record => record.uri)).toEqual(["soon"]);
-  expect(validated.tagOrder).toBeNull();
 });
 
 test("the stamp of an entry's addition: kept if valid, else its latest change stands for it", () => {
@@ -116,7 +142,6 @@ test("the stamp of an entry's addition: kept if valid, else its latest change st
       { uri: "otherNode", word: "f", addedAt: formatStamp({ time: now - day, counter: 0, node: "a" }), updatedAt: formatStamp({ time: now - day, counter: 0, node: "b" }) },
       { uri: "tombstone", word: "", addedAt: stamp(now - 2 * day), updatedAt: stamp(now - day), deleted: true },
     ],
-    tagOrder: null,
   }, now);
 
   const addedAt = Object.fromEntries(validated.starred.map(record => [record.uri, record.addedAt]));
@@ -149,7 +174,7 @@ test("a tombstone may have neither name nor entry", () => {
 });
 
 test("a locker has no excerpts; an exported file keeps them, for its reader", () => {
-  const state: BookmarksState = { tags: [], tagged: [], starred: [{ uri: "logos", word: "λόγος", updatedAt: stamp() }], tagOrder: null };
+  const state: BookmarksState = { tags: [], tagged: [], starred: [{ uri: "logos", word: "λόγος", updatedAt: stamp() }] };
   const excerpts = new Map([["logos", "λόγος parole"]]);
   expect(toBookmarksFile(state, { tombstones: true }).state.starred[0]).not.toHaveProperty("excerpt");
   expect(toBookmarksFile(state, { excerpts }).state.starred[0]).toMatchObject({ excerpt: "λόγος parole" });
