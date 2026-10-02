@@ -15,28 +15,27 @@
     { value: "1 325", label: "auteurs cités" },
   ];
 
-  const features = [
-    {
-      icon: "i-lucide-search",
+  /**
+   * The features, each shown with a small demonstration (in the template).
+   */
+  const features = {
+    search: {
       title: "Cherchez comme vous écrivez",
       text: "En grec, en beta code ou en translittération : tapez logos ou λόγος, les résultats s'affichent dès la première lettre.",
     },
-    {
-      icon: "i-lucide-sparkles",
+    inflected: {
       title: "Les formes fléchies aussi",
       text: "ἦλθον vous mène à ἔρχομαι : l'analyseur morphologique Morpheus retrouve le lemme d'une forme conjuguée ou déclinée.",
     },
-    {
-      icon: "i-lucide-bookmark",
+    bookmarks: {
       title: "Vos signets, sur tous vos appareils",
       text: "Classez vos entrées par étiquettes, et synchronisez-les, chiffrées, sans créer de compte.",
     },
-    {
-      icon: "i-lucide-book-open",
+    reading: {
       title: "Une lecture à votre main",
       text: "Cinq polices, quatre tailles de texte, et la translittération du grec si vous le souhaitez.",
     },
-  ];
+  };
 
   /**
    * The entry ῥιπτός, as the 2020 edition gives it (cf. its scan from 1935).
@@ -184,26 +183,134 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           Ce que l'application apporte au texte
         </h2>
         <ul class="grid gap-4 sm:grid-cols-2">
-          <li
-            v-for="feature in features"
-            :key="feature.title"
-          >
-            <UCard class="h-full">
-              <div class="flex items-center gap-3">
-                <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <UIcon
-                    :name="feature.icon"
-                    class="size-5"
-                  />
-                </div>
-                <h3 class="font-semibold text-balance">
-                  {{ feature.title }}
-                </h3>
+          <li class="flex flex-col rounded-lg bg-default p-5 ring-1 ring-default">
+            <div
+              aria-hidden="true"
+              class="mb-4 flex h-28 items-center justify-center rounded-md bg-page ring-1 ring-default"
+            >
+              <div class="grid grid-cols-[auto_auto_auto] items-center gap-x-3 gap-y-2">
+                <span class="rounded-full bg-default px-3 py-0.5 text-sm ring-1 ring-accented">logos</span>
+                <UIcon
+                  name="i-lucide-arrow-right"
+                  class="size-4 text-dimmed"
+                />
+                <span class="font-serif text-lg font-bold">λόγος</span>
+                <span class="rounded-full bg-default px-3 py-0.5 text-sm ring-1 ring-accented">lo/gos</span>
+                <UIcon
+                  name="i-lucide-arrow-right"
+                  class="size-4 text-dimmed"
+                />
+                <span class="font-serif text-lg font-bold">λόγος</span>
               </div>
-              <p class="mt-3 text-muted">
-                {{ feature.text }}
-              </p>
-            </UCard>
+            </div>
+            <h3 class="font-semibold">
+              {{ features.search.title }}
+            </h3>
+            <p class="mt-1 text-muted">
+              {{ features.search.text }}
+            </p>
+          </li>
+          <li class="flex flex-col rounded-lg bg-default p-5 ring-1 ring-default">
+            <div
+              aria-hidden="true"
+              class="mb-4 flex h-28 items-center justify-center rounded-md bg-page ring-1 ring-default"
+            >
+              <div class="grid grid-cols-[auto_auto_auto] items-center gap-x-3 gap-y-2">
+                <span class="font-serif text-lg">ἦλθον</span>
+                <UIcon
+                  name="i-lucide-arrow-right"
+                  class="size-4 text-dimmed"
+                />
+                <span class="flex items-center gap-1.5 font-serif text-lg font-bold">ἔρχομαι<UIcon
+                  name="i-lucide-sparkles"
+                  class="size-4 text-primary"
+                /></span>
+                <span class="font-serif text-lg">λόγοις</span>
+                <UIcon
+                  name="i-lucide-arrow-right"
+                  class="size-4 text-dimmed"
+                />
+                <span class="flex items-center gap-1.5 font-serif text-lg font-bold">λόγος<UIcon
+                  name="i-lucide-sparkles"
+                  class="size-4 text-primary"
+                /></span>
+              </div>
+            </div>
+            <h3 class="font-semibold">
+              {{ features.inflected.title }}
+            </h3>
+            <p class="mt-1 text-muted">
+              {{ features.inflected.text }}
+            </p>
+          </li>
+          <li class="flex flex-col rounded-lg bg-default p-5 ring-1 ring-default">
+            <div
+              aria-hidden="true"
+              class="mb-4 flex h-28 items-center justify-center rounded-md bg-page ring-1 ring-default"
+            >
+              <div class="flex max-w-60 flex-wrap items-center justify-center gap-2">
+                <span class="inline-flex items-center gap-1 rounded-full bg-default px-2.5 py-0.5 text-sm ring-1 ring-default"><UIcon
+                  name="i-bailly-star-filled"
+                  class="size-4 text-favorite"
+                />Favoris</span>
+                <span
+                  data-tag-color="Blue"
+                  class="inline-flex items-center gap-1 rounded-full bg-tag-100 px-2.5 py-0.5 text-sm text-tag-text ring-1 ring-tag-300/60"
+                ><UIcon
+                  name="i-bailly-tag-filled"
+                  class="size-4"
+                />Homère</span>
+                <span
+                  data-tag-color="Orange"
+                  class="inline-flex items-center gap-1 rounded-full bg-tag-100 px-2.5 py-0.5 text-sm text-tag-text ring-1 ring-tag-300/60"
+                ><UIcon
+                  name="i-bailly-tag-filled"
+                  class="size-4"
+                />Tragédie</span>
+                <span
+                  data-tag-color="Green"
+                  class="inline-flex items-center gap-1 rounded-full bg-tag-100 px-2.5 py-0.5 text-sm text-tag-text ring-1 ring-tag-300/60"
+                ><UIcon
+                  name="i-bailly-tag-filled"
+                  class="size-4"
+                />Vocabulaire</span>
+              </div>
+            </div>
+            <h3 class="font-semibold">
+              {{ features.bookmarks.title }}
+            </h3>
+            <p class="mt-1 text-muted">
+              {{ features.bookmarks.text }}
+            </p>
+          </li>
+          <li class="flex flex-col rounded-lg bg-default p-5 ring-1 ring-default">
+            <div
+              aria-hidden="true"
+              class="mb-4 flex h-28 items-center justify-center rounded-md bg-page ring-1 ring-default"
+            >
+              <div class="flex items-end gap-5">
+                <div
+                  v-for="font in fontSpecimens.fonts"
+                  :key="font.name"
+                  class="flex flex-col items-center gap-1"
+                >
+                  <svg
+                    :viewBox="`0 ${fontSpecimens.viewBoxTop} ${font.width} ${fontSpecimens.viewBoxHeight}`"
+                    :style="{ width: `${font.width / 1000 * 1.5}rem` }"
+                    class="h-[2.4rem] fill-current"
+                  >
+                    <path :d="font.d" />
+                  </svg>
+                  <span class="text-xs text-dimmed">{{ font.name }}</span>
+                </div>
+              </div>
+            </div>
+            <h3 class="font-semibold">
+              {{ features.reading.title }}
+            </h3>
+            <p class="mt-1 text-muted">
+              {{ features.reading.text }}
+            </p>
           </li>
         </ul>
       </section>
