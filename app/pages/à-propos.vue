@@ -241,20 +241,20 @@ mort d'un homme qu'on lance (du haut d'un rocher).
               aria-hidden="true"
               class="mb-4 flex h-32 items-center justify-center rounded-md bg-page ring-1 ring-default"
             >
-              <!-- The results the API gives for γυναικα: the lemma γυνή, and two entries beginning so. -->
+              <!-- The results the API gives for ορνιθα: the lemma ὄρνις, and two entries beginning so. -->
               <div class="flex items-center gap-3">
-                <span class="font-serif text-lg">γυναῖκα</span>
+                <span class="font-serif text-lg">ὄρνιθα</span>
                 <UIcon
                   name="i-lucide-arrow-right"
                   class="size-4 text-dimmed"
                 />
                 <div class="flex flex-col gap-1.5">
-                  <span class="font-serif text-sm text-dimmed">γυναικάνηρ</span>
-                  <span class="flex items-center gap-1.5 font-serif text-lg font-bold">γυνή<UIcon
+                  <span class="font-serif text-sm text-dimmed">ὀρνιθάριον</span>
+                  <span class="flex items-center gap-1.5 font-serif text-lg font-bold">ὄρνις<UIcon
                     name="i-lucide-sparkles"
                     class="size-4 text-primary"
                   /></span>
-                  <span class="font-serif text-sm text-dimmed">γυναικάριον</span>
+                  <span class="font-serif text-sm text-dimmed">ὀρνίθαρχος</span>
                 </div>
               </div>
             </div>
