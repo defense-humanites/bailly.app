@@ -39,6 +39,11 @@
   const scrolled = computed((): boolean => y.value > 0);
 
   /**
+   * A bar stuck under the header draws the border under both.
+   */
+  const extended = useHeaderExtended();
+
+  /**
    * Scrolls shorter than this (in px) are ignored, e.g. iOS rubber-banding.
    */
   const SCROLL_THRESHOLD = 8;
@@ -71,7 +76,7 @@
   <header
     ref="header"
     class="sticky z-[99] border-b bg-bar backdrop-blur-sm transition-[top,border-color] duration-300 ease-out motion-reduce:transition-none md:top-0 md:h-14 md:px-safe-6 md:transition-[border-color]"
-    :class="[titleRowShown ? 'top-0' : '-top-12', scrolled ? 'border-default' : 'border-transparent']"
+    :class="[titleRowShown ? 'top-0' : '-top-12', scrolled && !extended ? 'border-default' : 'border-transparent']"
   >
     <nav
       class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 max-md:px-safe-4 md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:pb-0"

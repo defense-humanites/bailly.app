@@ -636,7 +636,7 @@
         variant="subtle"
         color="neutral"
         block
-        class="mt-3 scroll-mt-[calc(var(--header-bottom)+0.75rem)]"
+        class="mt-3 scroll-mt-[calc(var(--header-bottom)+var(--toc-height,0px)+0.75rem)]"
         :ui="{ base: 'rounded-lg bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
         @click="toggleExpanded"
       />

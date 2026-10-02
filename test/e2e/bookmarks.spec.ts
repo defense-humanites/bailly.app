@@ -344,23 +344,23 @@ test.describe("bookmarks page, long groups", () => {
 });
 
 test.describe("bookmarks page, table of contents", () => {
-  const tagNames = ["Un", "Deux", "Trois", "Quatre", "Cinq"];
+  const tagNames = ["Un", "Deux", "Trois"];
 
-  test("from six tags: a link per group, with its count, to its card", async ({ page, goto }) => {
+  test("from four tags: a link per group, with its count, to its card", async ({ page, goto }) => {
     await goto("/signets", { waitUntil: "hydration" });
     await seedBookmarks(page, {
       starred: [logos],
       tags: tagNames.map(name => ({ name, color: "Sky" })),
     });
-    // Five tags: no table of contents.
-    await expect(card(page, "Cinq")).toBeVisible();
+    // Three tags: no table of contents.
+    await expect(card(page, "Trois")).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Sommaire des signets" })).toHaveCount(0);
 
-    await seedBookmarks(page, { tags: [{ name: "Six", color: "Rose", entries: [anax, menis] }] });
+    await seedBookmarks(page, { tags: [{ name: "Quatre", color: "Rose", entries: [anax, menis] }] });
     const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
     const links = toc.getByRole("link");
     // The favorites, then the tags in their order (the newest first).
-    const names = ["Favoris, 1 entrée", "Six, 2 entrées, étiquette active", "Cinq, 0 entrée", "Quatre, 0 entrée", "Trois, 0 entrée", "Deux, 0 entrée", "Un, 0 entrée"];
+    const names = ["Favoris, 1 entrée", "Quatre, 2 entrées, étiquette active", "Trois, 0 entrée", "Deux, 0 entrée", "Un, 0 entrée"];
     await expect(links).toHaveCount(names.length);
     for (const [i, name] of names.entries()) await expect(links.nth(i)).toHaveAccessibleName(name);
 
@@ -375,6 +375,39 @@ test.describe("bookmarks page, table of contents", () => {
       page.locator("header").first().evaluate(element => element.getBoundingClientRect().bottom),
     ]);
     expect(top).toBeGreaterThanOrEqual(headerBottom);
+  });
+
+  // Sticky under the header, on one row; the link followed marks its group
+  // as being read, and scrolling marks the one under the table of contents.
+  test("sticky on one row, the group being read marked", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1280, height: 600 });
+    await goto("/signets", { waitUntil: "hydration" });
+    const names = Array.from({ length: 24 }, (_, i) => `Étiquette numéro ${i + 1}`);
+    await seedBookmarks(page, {
+      starred: [logos],
+      tags: names.map(name => ({ name, color: "Sky", entries: [anax] })),
+    });
+    const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
+    const box = await toc.boundingBox();
+    // One row, which overflows: it scrolls sideways.
+    expect(box!.height).toBe(48);
+    expect(await toc.locator("ul").evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
+
+    const target = toc.getByRole("link", { name: /^Étiquette numéro 12,/ });
+    await target.click();
+    await expect(target).toHaveAttribute("aria-current", "location");
+    await expect(toc.locator("[aria-current]")).toHaveCount(1);
+    // Stuck under the header, its link in sight, the card under it.
+    const headerBottom = await page.locator("header").first().evaluate(element => element.getBoundingClientRect().bottom);
+    await expect.poll(async () => (await toc.boundingBox())!.y).toBeCloseTo(headerBottom, 0);
+    await expect(target).toBeInViewport({ ratio: 1 });
+    const cardTop = await card(page, "Étiquette numéro 12").evaluate(element => element.getBoundingClientRect().top);
+    expect(cardTop).toBeGreaterThanOrEqual(headerBottom + 48);
+
+    // Scrolling back to the top: the favorites are being read.
+    await page.mouse.move(640, 400);
+    await page.mouse.wheel(0, -100000);
+    await expect(toc.getByRole("link", { name: /^Favoris/ })).toHaveAttribute("aria-current", "location");
   });
 });
 
