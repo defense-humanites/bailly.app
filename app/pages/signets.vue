@@ -83,7 +83,7 @@
         active one, sorting them, and the file (export, import: less used,
         within reach for whoever looks for it). Its fields are square-cornered,
         without the search bar's pill shape, their background telling them
-        from its buttons (ghost). Below `md`, the field takes the bar's first
+        from its buttons (ghost). Below `lg`, the field takes the bar's first
         row. Icons only (square buttons) below `xl`, as the header menu (the
         labels stay for screen readers and show in tooltips; cf.
         `useButtonLabels`).
@@ -101,16 +101,17 @@
         <div
           role="group"
           aria-label="Étiquettes"
-          class="flex flex-wrap overflow-hidden rounded-lg border border-default bg-default shadow-xs md:flex-nowrap md:gap-2 md:overflow-visible md:border-0 md:bg-transparent md:shadow-none"
+          class="flex flex-wrap overflow-hidden rounded-lg border border-default bg-default shadow-xs lg:flex-nowrap lg:gap-2 lg:overflow-visible lg:border-0 lg:bg-transparent lg:shadow-none"
         >
           <!--
-            Below `md`, one compact block on two lines: the field alone on the
-            first (a border under it), the others side by side on the second
-            (a border before each but the first). From `md`, separate items
+            Below `lg`, one compact block on two lines (the field keeps a fair
+            width): the field alone on the first (a border under it), the
+            others side by side on the second (a border before each but the
+            first). From `lg`, separate items
             (each framed, slightly apart) on one line, the fields sharing the
             width left by the buttons.
           -->
-          <CreateTag class="h-11 min-w-0 basis-full border-default max-md:border-b md:basis-0 md:grow md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs" />
+          <CreateTag class="h-11 min-w-0 basis-full border-default max-lg:border-b lg:basis-0 lg:grow lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
 
           <!--
             The active tag (the one an entry's toolbar adds it to in one
@@ -118,7 +119,7 @@
             before the bookmarks are loaded too (disabled, as when there is no
             tag): its place is kept.
           -->
-          <div class="flex h-11 min-w-0 grow border-default md:basis-0 md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs">
+          <div class="flex h-11 min-w-0 grow border-default lg:basis-0 lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs">
             <USelectMenu
               :model-value="currentTagKey ?? undefined"
               :items="activeItems"
@@ -157,9 +158,9 @@
 
           <!-- Export, import -->
           <!-- Sorting -->
-          <TagSortMenu class="flex h-11 border-s border-default md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs" />
+          <TagSortMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
 
-          <BookmarksMenu class="flex h-11 border-s border-default md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs" />
+          <BookmarksMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
         </div>
       </header>
 
