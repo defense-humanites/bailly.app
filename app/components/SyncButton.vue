@@ -1,6 +1,4 @@
 <script setup lang="ts">
-  import { fromBase64url } from "~/sync/base64url";
-
   /**
    * The synchronization of a type of data, on its page (the bookmarks, the
    * preferences): a button that shows its state (off, up to date, running,
@@ -33,25 +31,7 @@
 
   const showButtonLabels = useButtonLabels();
 
-  /**
-   * Whether a synchronization has been running for a moment: the short ones
-   * (most of them) don't change the button.
-   */
-  const syncingShown = ref(false);
-  let syncingTimer: ReturnType<typeof setTimeout> | undefined;
-  watch(status, (value) => {
-    clearTimeout(syncingTimer);
-    if (value === "syncing") {
-      syncingTimer = setTimeout(() => {
-        syncingShown.value = true;
-      }, 400);
-    } else {
-      syncingShown.value = false;
-    }
-  });
-  onBeforeUnmount(() => {
-    clearTimeout(syncingTimer);
-  });
+  const { syncingShown } = useSyncActivity();
 
   /**
    * Whether the synchronization failed (e.g. the limits would be exceeded:
@@ -113,29 +93,10 @@
    */
   const linkSecret = ref<Uint8Array<ArrayBuffer> | null>(null);
 
-  const route = useRoute();
-
-  /**
-   * Opens the synchronization window with the key of a link, when the page
-   * loads or when its fragment changes (a link opened in the same tab).
-   */
-  const readLink = (hash: string): void => {
-    const match = /^#sync=([\w-]{22})$/.exec(hash);
-    if (!match) return;
-    try {
-      linkSecret.value = fromBase64url(match[1]!);
-      isSyncOpen.value = true;
-    } catch {
-      // An invalid link: ignored.
-    }
-    // The key does not stay in the address (history, shared links).
-    void navigateTo({ hash: "" }, { replace: true });
-  };
-
-  onMounted(() => {
-    readLink(route.hash);
+  useSyncLink((secret) => {
+    linkSecret.value = secret;
+    isSyncOpen.value = true;
   });
-  watch(() => route.hash, readLink);
 
   /**
    * Whether the synchronization window has been opened.

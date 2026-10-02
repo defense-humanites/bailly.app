@@ -16,6 +16,12 @@
      * to join.
      */
     linkSecret?: Uint8Array<ArrayBuffer> | null;
+    /**
+     * Where the window opens, once the type of data is synchronized (cf.
+     * the card of the preferences page): its state (by default), its
+     * stopping, or the key. Opened there, « Annuler », « Retour » close it.
+     */
+    startView?: "status" | "stop" | "key";
   }>();
 
   /**
@@ -91,7 +97,6 @@
     errorSection,
     clockWrong,
     clockSkew,
-    lastSyncedAt,
     supported,
   } = storeToRefs(syncStore);
 
@@ -440,69 +445,7 @@
 
   /* Status. */
 
-  const now = useNow({ interval: 30_000 });
-  const relativeTime = new Intl.RelativeTimeFormat("fr-FR", { numeric: "auto" });
-
-  /**
-   * When the latest synchronization happened, e.g. « il y a 5 minutes » (the
-   * date beyond a day), updated as time goes by.
-   */
-  const lastSync = computed((): string | null => {
-    if (!lastSyncedAt.value) return null;
-    const minutes = Math.round((now.value.getTime() - lastSyncedAt.value) / 60_000);
-    if (minutes < 1) return "à l'instant";
-    if (minutes < 60) return relativeTime.format(-minutes, "minute");
-    if (minutes < 24 * 60) return relativeTime.format(-Math.round(minutes / 60), "hour");
-    return `le ${new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short" }).format(lastSyncedAt.value)}`;
-  });
-
-  /**
-   * Whether a synchronization has been running for a moment: the short ones
-   * (most of them) don't change the state shown.
-   */
-  const syncingShown = ref(false);
-  let syncingTimer: ReturnType<typeof setTimeout> | undefined;
-  watch(status, (value) => {
-    clearTimeout(syncingTimer);
-    if (value === "syncing") {
-      syncingTimer = setTimeout(() => {
-        syncingShown.value = true;
-      }, 400);
-    } else {
-      syncingShown.value = false;
-    }
-  });
-
-  onBeforeUnmount(() => {
-    clearTimeout(syncingTimer);
-  });
-
-  /**
-   * The outcome of a synchronization asked by the user, shown on its button:
-   * running (at least a moment, even when it is quick), then done or failed
-   * for a moment.
-   */
-  const manualSync = ref<"idle" | "running" | "done" | "failed">("idle");
-  let manualSyncTimer: ReturnType<typeof setTimeout> | undefined;
-
-  const syncNow = async (): Promise<void> => {
-    clearTimeout(manualSyncTimer);
-    manualSync.value = "running";
-    const [ok] = await Promise.all([
-      syncStore.sync({ force: true }),
-      new Promise((resolve) => {
-        setTimeout(resolve, 600);
-      }),
-    ]);
-    manualSync.value = ok ? "done" : "failed";
-    manualSyncTimer = setTimeout(() => {
-      manualSync.value = "idle";
-    }, 2_000);
-  };
-
-  onBeforeUnmount(() => {
-    clearTimeout(manualSyncTimer);
-  });
+  const { lastSync, syncingShown, manualSync, syncNow } = useSyncActivity();
 
   /**
    * What stopping the synchronization concerns: this device only, or every
@@ -558,8 +501,23 @@
       icon: "i-lucide-circle-check",
       color: "success",
     });
-    view.value = "intro";
+    if (openedOn.value === "stop") open.value = false;
+    else view.value = "intro";
   });
+
+  /**
+   * The view the window opened on: going back from it closes the window.
+   */
+  const openedOn = ref<View>("intro");
+
+  /**
+   * Goes back to the state of the synchronization, or closes the window
+   * when it opened on the current view.
+   */
+  const back = (): void => {
+    if (openedOn.value === view.value) open.value = false;
+    else view.value = "status";
+  };
 
   // Each opening starts from the state of the synchronization (declared last:
   // it runs at once when the window is created open, e.g. from a link).
@@ -571,7 +529,19 @@
     linkKey.value = props.linkSecret ?? null;
     stopScope.value = "device";
     chosenPreferences.value = syncedPreferences.value.length ? [...syncedPreferences.value] : [...DEFAULT_SYNCED_PREFERENCES];
-    view.value = linkKey.value ? "join" : scopeEnabled.value ? "status" : "intro";
+    if (linkKey.value) view.value = "join";
+    else if (props.startView === "key" && enabled.value) {
+      // At once (not after the words, read meanwhile: hidden until asked).
+      keyFromStatus.value = true;
+      keyTab.value = "device";
+      keyRevealed.value = false;
+      view.value = "key";
+      void syncStore.words().then((value) => {
+        words.value = value;
+      });
+    } else if (props.startView === "stop" && scopeEnabled.value) view.value = "stop";
+    else view.value = scopeEnabled.value ? "status" : "intro";
+    openedOn.value = view.value;
   }, { immediate: true });
 
   const deleteRemote = async (): Promise<void> => {
@@ -1055,10 +1025,10 @@
 
       <template v-else-if="view === 'key'">
         <UButton
-          :label="keyFromStatus ? 'Retour' : 'J\'ai conservé ma clé'"
+          :label="keyFromStatus ? (openedOn === 'key' ? 'Fermer' : 'Retour') : 'J\'ai conservé ma clé'"
           :color="keyFromStatus ? 'neutral' : 'primary'"
           :variant="keyFromStatus ? 'outline' : 'solid'"
-          @click="view = 'status'"
+          @click="keyFromStatus ? back() : (view = 'status')"
         />
       </template>
 
@@ -1082,7 +1052,7 @@
           label="Annuler"
           color="neutral"
           variant="outline"
-          @click="view = 'status'"
+          @click="back"
         />
         <UButton
           :label="stopScope === 'device' ? 'Désactiver sur cet appareil' : 'Continuer…'"
