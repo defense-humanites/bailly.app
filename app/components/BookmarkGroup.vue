@@ -208,7 +208,8 @@
 
   /**
    * Pins the tag, or unpins it. A pinned tag moves to the top: the page
-   * follows it (smoothly, unless reduced motion), the user caring for it; an
+   * follows it (smoothly, unless reduced motion), the user caring for it,
+   * and points it out as from the table of contents (`highlightCard`); an
    * unpinned one, given up, is left to go.
    */
   async function togglePin(): Promise<void> {
@@ -220,6 +221,7 @@
     if (!(element instanceof HTMLElement)) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     element.scrollIntoView({ behavior: reduced ? "instant" : "smooth", block: "start" });
+    highlightCard(element);
   }
 
   /**

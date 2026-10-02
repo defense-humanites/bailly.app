@@ -375,6 +375,8 @@ test.describe("bookmarks page, pinning and scrolling", () => {
     // Followed: under the header and the table of contents, at the top.
     await expect.poll(() => last.evaluate(element => Math.round(element.getBoundingClientRect().top))).toBeLessThan(250);
     await expect(last).toBeInViewport();
+    // Pointed out, as from the table of contents.
+    await expect(last).toHaveAttribute("data-card-highlight", "");
 
     await page.evaluate(() => {
       window.scrollTo(0, 0);
@@ -517,8 +519,8 @@ test.describe("bookmarks page, table of contents", () => {
     await expect.poll(async () => (await toc.boundingBox())!.y).toBeCloseTo(headerBottom, 0);
     await expect(target).toBeInViewport({ ratio: 1 });
     // Its card outlined for a moment.
-    await expect(card(page, "Étiquette numéro 12")).toHaveAttribute("data-toc-target", "");
-    await expect(card(page, "Étiquette numéro 12")).not.toHaveAttribute("data-toc-target");
+    await expect(card(page, "Étiquette numéro 12")).toHaveAttribute("data-card-highlight", "");
+    await expect(card(page, "Étiquette numéro 12")).not.toHaveAttribute("data-card-highlight");
     // The mark slides under its link.
     await expect.poll(async () => {
       const [mark, link] = await Promise.all([toc.locator("[data-toc-mark]").boundingBox(), target.boundingBox()]);
@@ -560,6 +562,8 @@ test.describe("bookmarks page, table of contents", () => {
         tags: Array.from({ length: 24 }, (_, i) => ({ name: `Étiquette numéro ${i + 1}`, color: "Sky", entries: [anax] })),
       });
       const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
+      // The cards loaded (the page as long as it gets) before scrolling.
+      await expect(card(page, "Étiquette numéro 24")).toBeAttached();
       await page.mouse.move(640, 400);
       await page.mouse.wheel(0, 100000);
       // The last cards (by name, numbers by value): 21 to 24.
