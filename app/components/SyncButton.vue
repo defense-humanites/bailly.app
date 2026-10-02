@@ -73,6 +73,28 @@
 
   const label = "Synchronisation";
 
+  /**
+   * The look and the visible label, after the state: an invitation while the
+   * synchronization is off (solid Aegean blue, « Synchroniser »), calm once
+   * it is on (subtle, « Synchronisé »), gold when it needs attention
+   * (« À vérifier »); until the settings are loaded (on the server, and once
+   * hydrated for a moment), the calm look and no visible label (its room
+   * kept). The accessible name stays « Synchronisation (…) ».
+   */
+  const look = computed((): { text: string; color: "secondary" | "warning"; variant: "solid" | "subtle" } => {
+    if (!loaded.value) return { text: "", color: "secondary", variant: "subtle" };
+    if (!enabled.value) return { text: "Synchroniser", color: "secondary", variant: "solid" };
+    if (needsAttention.value) return { text: "À vérifier", color: "warning", variant: "solid" };
+    return { text: "Synchronisé", color: "secondary", variant: "subtle" };
+  });
+
+  /**
+   * All the labels, laid in one cell: the button keeps the width of the
+   * longest whatever the state (no shift when it changes; their lengths are
+   * close).
+   */
+  const LABELS = ["Synchroniser", "À vérifier", "Synchronisé"];
+
   const tooltip = computed((): string => {
     if (!stateText.value) return label;
     return needsAttention.value ? `${label} : ${stateText.value}` : `${label} ${stateText.value}`;
@@ -136,11 +158,11 @@
       :disabled="showButtonLabels && !needsAttention"
     >
       <UButton
-        :label="label"
         size="2xl"
-        color="secondary"
+        :color="look.color"
+        :variant="look.variant"
         :aria-label="stateText ? `${label} (${stateText})` : label"
-        :ui="{ base: 'max-xl:px-2.5', label: 'max-xl:sr-only' }"
+        :ui="{ base: 'max-xl:px-2.5' }"
         aria-haspopup="dialog"
         :aria-expanded="isSyncOpen"
         @click="openSync"
@@ -159,6 +181,18 @@
             />
           </UChip>
         </template>
+        <!-- From `xl` (cf. `LABELS`); the accessible name is the button's. -->
+        <span
+          aria-hidden="true"
+          class="grid max-xl:hidden"
+        >
+          <span
+            v-for="text in LABELS"
+            :key="text"
+            class="col-start-1 row-start-1 text-center"
+            :class="{ invisible: text !== look.text }"
+          >{{ text }}</span>
+        </span>
       </UButton>
     </UTooltip>
 

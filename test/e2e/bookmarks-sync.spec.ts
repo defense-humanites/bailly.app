@@ -36,6 +36,10 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   // Laptop: enables the synchronization, and reads its key.
   await goto("/signets", { waitUntil: "hydration" });
   await seedBookmarks(page, { starred: [logos], tags: [{ name: "Homère", color: "Blue", entries: [logos] }] });
+  // The button invites to synchronize (solid), then tells it is done (calm).
+  const syncButton = page.getByRole("button", { name: /^Synchronisation/ });
+  await expect(syncButton.getByText("Synchroniser", { exact: true })).toBeVisible();
+  await expect(syncButton).toHaveClass(/button-relief/);
   await openSync(page);
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
   // The key is kept first; the words and the QR code are in the other tab.
@@ -55,6 +59,9 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
   await expect(page.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
   await page.keyboard.press("Escape");
+  await expect(syncButton.getByText("Synchronisé", { exact: true })).toBeVisible();
+  await expect(syncButton.getByText("Synchroniser", { exact: true })).toBeHidden();
+  await expect(syncButton).not.toHaveClass(/button-relief/);
 
   // Phone: has a favorite of its own, and joins with the 12 words (typed
   // without accents, in capitals).

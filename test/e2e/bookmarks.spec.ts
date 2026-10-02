@@ -178,11 +178,16 @@ test.describe("bookmarks page", () => {
   // A solid button keeps its pressed look while its menu or dialog is open
   // (`aria-expanded`).
   test("a solid button stays pressed while its window is open", async ({ page }) => {
-    const button = page.locator("main header button").filter({ hasText: "Synchronisation" });
+    // The synchronization, off: a solid button (once its state is loaded).
+    // (Not by its role: the open dialog hides the page from the accessibility
+    // tree.)
+    const button = page.locator("main header button[aria-label^=Synchronisation]");
     const look = () => button.evaluate(element => [getComputedStyle(element).backgroundImage, getComputedStyle(element).filter, getComputedStyle(element).backgroundColor]);
     await page.mouse.move(0, 0);
+    await expect.poll(async () => (await look())[0]).toMatch(/gradient/);
+    // Its color reached (from the calm look shown until then).
+    await expect.poll(async () => (await look())[2]).toMatch(/^rgb\(/);
     const [restImage, , restColor] = await look();
-    expect(restImage).toMatch(/gradient/);
     await button.click();
     await expect(button).toHaveAttribute("aria-expanded", "true");
     await expect.poll(async () => (await look())[0]).toBe("none");
