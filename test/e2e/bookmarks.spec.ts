@@ -367,6 +367,98 @@ test.describe("bookmarks page, table of contents", () => {
     ]);
     expect(top).toBeGreaterThanOrEqual(headerBottom);
   });
+
+  // Sticky under the header, on one row; the link followed marks its group
+  // as being read, and scrolling marks the one under the table of contents.
+  test("sticky on one row, the group being read marked", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1280, height: 600 });
+    await goto("/signets", { waitUntil: "hydration" });
+    const names = Array.from({ length: 24 }, (_, i) => `Étiquette numéro ${i + 1}`);
+    await seedBookmarks(page, {
+      starred: [logos],
+      tags: names.map(name => ({ name, color: "Sky", entries: [anax] })),
+    });
+    const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
+    const box = await toc.boundingBox();
+    // One row, which overflows: it scrolls sideways.
+    expect(box!.height).toBe(48);
+    expect(await toc.locator("ul").evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
+
+    // A vertical wheel over the row scrolls the page, not the row.
+    await toc.hover();
+    await page.mouse.wheel(0, 300);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+    expect(await toc.locator("ul").evaluate(element => element.scrollLeft)).toBe(0);
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
+
+    const target = toc.getByRole("link", { name: /^Étiquette numéro 12,/ });
+    await target.click();
+    await expect(target).toHaveAttribute("aria-current", "location");
+    await expect(toc.locator("[aria-current]")).toHaveCount(1);
+    // Stuck under the header, its link in sight, the card under it.
+    const headerBottom = await page.locator("header").first().evaluate(element => element.getBoundingClientRect().bottom);
+    await expect.poll(async () => (await toc.boundingBox())!.y).toBeCloseTo(headerBottom, 0);
+    await expect(target).toBeInViewport({ ratio: 1 });
+    // Its card outlined for a moment.
+    await expect(card(page, "Étiquette numéro 12")).toHaveAttribute("data-toc-target", "");
+    await expect(card(page, "Étiquette numéro 12")).not.toHaveAttribute("data-toc-target");
+    // The mark slides under its link.
+    await expect.poll(async () => {
+      const [mark, link] = await Promise.all([toc.locator("[data-toc-mark]").boundingBox(), target.boundingBox()]);
+      return Math.round(mark!.x + mark!.width / 2 - (link!.x + link!.width / 2));
+    }).toBe(0);
+    const cardTop = await card(page, "Étiquette numéro 12").evaluate(element => element.getBoundingClientRect().top);
+    expect(cardTop).toBeGreaterThanOrEqual(headerBottom + 48);
+
+    // Scrolling back to the top: the favorites are being read.
+    await page.mouse.move(640, 400);
+    await page.mouse.wheel(0, -100000);
+    await expect(toc.getByRole("link", { name: /^Favoris/ })).toHaveAttribute("aria-current", "location");
+  });
+
+  // On a narrow window with a mouse too, arrows scroll the row.
+  test("arrows on a narrow window", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 390, height: 700 });
+    await goto("/signets", { waitUntil: "hydration" });
+    await seedBookmarks(page, {
+      tags: Array.from({ length: 8 }, (_, i) => ({ name: `Étiquette numéro ${i + 1}`, color: "Sky" })),
+    });
+    const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
+    const [previous, next] = [toc.locator("button").first(), toc.locator("button").last()];
+    await expect(next).toBeVisible();
+    await expect(previous).toBeHidden();
+    await next.click();
+    await expect.poll(() => toc.locator("ul").evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+    await expect(previous).toBeVisible();
+  });
+
+  // Scrolling the page, the row follows the group being read; with reduced
+  // motion, it never moves by itself.
+  for (const reducedMotion of ["no-preference", "reduce"] as const) {
+    test(`the row follows the reading (${reducedMotion})`, async ({ page, goto }) => {
+      await page.emulateMedia({ reducedMotion });
+      await page.setViewportSize({ width: 1280, height: 600 });
+      await goto("/signets", { waitUntil: "hydration" });
+      await seedBookmarks(page, {
+        tags: Array.from({ length: 24 }, (_, i) => ({ name: `Étiquette numéro ${i + 1}`, color: "Sky", entries: [anax] })),
+      });
+      const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
+      await page.mouse.move(640, 400);
+      await page.mouse.wheel(0, 100000);
+      // The last cards (by name, numbers by value): 21 to 24.
+      await expect(toc.locator("[aria-current=location]")).toHaveAccessibleName(/^Étiquette numéro 2[1-4],/);
+      const row = toc.locator("ul");
+      if (reducedMotion === "reduce") {
+        await page.waitForTimeout(500);
+        expect(await row.evaluate(element => element.scrollLeft)).toBe(0);
+      } else {
+        await expect(toc.locator("[aria-current]")).toBeInViewport({ ratio: 1 });
+        expect(await row.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+      }
+    });
+  }
 });
 
 test.describe("bookmarks page on a touch screen", () => {

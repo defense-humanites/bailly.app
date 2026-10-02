@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import type { TocGroup } from "~/components/BookmarksToc.vue";
   import type { TagKey } from "~/idb";
 
   useSeoMeta({
@@ -26,12 +27,19 @@
    * The table of contents: the favorites, then the tags in their order, with
    * their number of entries.
    */
-  const toc = computed(() => [
-    { key: "favorites", name: "Favoris", color: "Yellow", icon: "i-bailly-star-filled", count: starredEntries.value.length },
-    ...tags.value.map(tag => ({ key: tag.key, name: tag.name, color: tag.color, icon: "i-bailly-tag-filled", count: bookmarksStore.entriesOf(tag.key).length })),
+  const toc = computed((): TocGroup[] => [
+    { key: "favorites", id: groupId("favorites"), name: "Favoris", color: "Yellow", icon: "i-bailly-star-filled", count: starredEntries.value.length, active: true },
+    ...tags.value.map(tag => ({
+      key: tag.key,
+      id: groupId(tag.key),
+      name: tag.name,
+      color: tag.color,
+      icon: "i-bailly-tag-filled",
+      count: bookmarksStore.entriesOf(tag.key).length,
+      active: tag.key === currentTagKey.value,
+    })),
   ]);
-
-  const entryCount = (count: number): string => (count < 2 ? "entrée" : "entrées");
+  const showToc = computed((): boolean => initialized.value && tags.value.length >= TOC_FROM);
 
   /**
    * The tags to choose the active one from, in their order; from
@@ -42,7 +50,11 @@
 </script>
 
 <template>
-  <div class="px-4 py-6 md:px-6 lg:py-12">
+  <div class="overflow-x-clip px-4 py-6 md:px-6 lg:py-12">
+    <!--
+      Clipped sideways: the table of contents' background spans the window
+      (cf. `BookmarksToc`). `clip` (not `hidden`) keeps it sticky.
+    -->
     <!--
       As the preferences page: on one column (below `lg`), as wide as the
       reading column, with the title above the actions (the field then takes
@@ -52,7 +64,8 @@
       goes, in order, into the shortest column), otherwise on a grid.
     -->
     <section
-      class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 supports-[display:grid-lanes]:[display:grid-lanes] lg:max-w-(--content-max-width) lg:grid-cols-2"
+      class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-(--cards-gap) [--cards-gap:1.5rem] supports-[display:grid-lanes]:[display:grid-lanes] lg:max-w-(--content-max-width) lg:grid-cols-2"
+      :class="{ '[--toc-height:3rem]': showToc }"
       :aria-busy="!initialized"
     >
       <!--
@@ -145,49 +158,15 @@
         then (and on the server), placeholders keep the page from collapsing.
       -->
       <template v-if="initialized">
-        <!--
-          Table of contents: a link per group, in its colors, to its card
-          (which clears the header). The active tag's and the favorites'
-          (always active) solid: the tag's text color as background, its
-          palest shade as text (readable both ways, in both themes). On one
-          column, a single row that scrolls sideways, to the edges of the
-          screen; on two, it wraps.
-        -->
-        <nav
-          v-if="tags.length >= TOC_FROM"
-          aria-label="Sommaire des signets"
-          class="col-span-full -mx-4 overflow-x-auto px-4 [scrollbar-width:none] md:-mx-6 md:px-6 lg:mx-0 lg:overflow-visible lg:px-0"
-        >
-          <ul class="flex w-max gap-2 lg:w-auto lg:flex-wrap">
-            <li
-              v-for="group in toc"
-              :key="group.key"
-              :data-tag-color="group.color"
-            >
-              <!-- Named « Homère, 12 entrées » (the full name, the count spelled out). -->
-              <NuxtLink
-                :to="{ hash: `#${groupId(group.key)}` }"
-                :aria-label="`${group.name}, ${group.count} ${entryCount(group.count)}${group.key === currentTagKey ? ', étiquette active' : ''}`"
-                class="flex h-8 items-center gap-1.5 rounded-full ps-2.5 pe-3 text-sm ring-inset transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
-                :class="group.key === currentTagKey || group.key === 'favorites'
-                  ? 'bg-tag-text text-tag-100 hover:bg-tag-text/90'
-                  : 'bg-tag-100 text-tag-text ring ring-tag-300/60 hover:bg-tag-200/80'"
-              >
-                <UIcon
-                  :name="group.icon"
-                  class="size-4 shrink-0"
-                />
-                <span class="max-w-48 truncate font-medium">{{ group.name }}</span>
-                <span class="tabular-nums opacity-75">{{ group.count }}</span>
-              </NuxtLink>
-            </li>
-          </ul>
-        </nav>
+        <BookmarksToc
+          v-if="showToc"
+          :groups="toc"
+        />
 
         <!-- Favorites -->
         <BookmarkGroup
           :id="groupId('favorites')"
-          class="scroll-mt-[calc(var(--header-bottom)+1.5rem)]"
+          class="scroll-mt-[calc(var(--header-bottom)+var(--toc-height,0px)+var(--cards-gap))]"
           :tag="{
             key: 'favorites',
             name: 'Favoris',
@@ -206,7 +185,7 @@
           v-for="tag in tags"
           :id="groupId(tag.key)"
           :key="tag.key"
-          class="scroll-mt-[calc(var(--header-bottom)+1.5rem)]"
+          class="scroll-mt-[calc(var(--header-bottom)+var(--toc-height,0px)+var(--cards-gap))]"
           :tag="tag"
           :entries="bookmarksStore.entriesOf(tag.key)"
           editable
