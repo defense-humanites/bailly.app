@@ -218,17 +218,13 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                     <span class="flex h-6 items-center rounded-full bg-default px-3 text-sm ring-1 ring-accented">{{ input.text }}</span>
                   </template>
                 </div>
-                <!-- A brace as high as the inputs (rows of 1.5rem, gaps of 0.5rem), its point at the middle (44). -->
+                <!-- A brace (drawn: thick arms, thin tips) as high as the inputs (rows of 1.5rem, gaps of 0.5rem), its point at the middle (44). -->
                 <svg
                   viewBox="0 0 16 88"
                   class="ms-1 me-2 h-22 w-4 shrink-0 text-dimmed sm:ms-2 sm:me-3"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.25"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  fill="currentColor"
                 >
-                  <path d="M2 2C6 2 8 4 8 9V36C8 41 10 44 14 44C10 44 8 47 8 52V79C8 84 6 86 2 86" />
+                  <path d="M3.00 1.80L3.39 1.93L3.75 2.03L4.09 2.14L4.40 2.25L4.69 2.37L4.96 2.50L5.21 2.64L5.44 2.78L5.65 2.94L5.85 3.10L6.03 3.27L6.19 3.45L6.35 3.63L6.49 3.83L6.62 4.03L6.75 4.25L6.86 4.48L6.97 4.72L7.08 4.98L7.18 5.25L7.27 5.54L7.35 5.84L7.43 6.16L7.51 6.49L7.58 6.84L7.64 7.21L7.69 7.59L7.75 7.99L7.79 8.41L7.83 8.84L7.87 9.28L7.90 9.75L7.92 10.23L7.95 10.72L7.96 11.23L7.98 11.75L7.99 12.29L7.99 12.85L8.00 13.42L8.00 14.00L8.00 15.20L8.01 16.39L8.02 17.57L8.03 18.74L8.05 19.90L8.08 21.05L8.11 22.19L8.15 23.31L8.20 24.41L8.25 25.50L8.32 26.57L8.39 27.62L8.48 28.65L8.57 29.66L8.68 30.65L8.80 31.62L8.93 32.56L9.07 33.47L9.23 34.36L9.40 35.22L9.59 36.05L9.80 36.86L10.02 37.63L10.26 38.37L10.51 39.08L10.79 39.75L11.09 40.39L11.41 40.98L11.75 41.55L12.11 42.07L12.50 42.54L12.92 42.97L13.36 43.35L13.83 43.68L14.31 43.95L14.82 44.16L15.35 44.31L15.89 44.39L16.44 44.40L17.00 44.30L17.00 43.70L16.53 43.55L16.10 43.41L15.71 43.23L15.35 43.02L15.02 42.78L14.71 42.51L14.42 42.20L14.15 41.86L13.88 41.48L13.64 41.06L13.40 40.60L13.18 40.10L12.97 39.57L12.77 38.99L12.59 38.38L12.42 37.73L12.26 37.04L12.11 36.32L11.97 35.57L11.85 34.78L11.73 33.96L11.63 33.11L11.53 32.23L11.45 31.33L11.38 30.40L11.31 29.44L11.25 28.46L11.20 27.45L11.16 26.42L11.12 25.37L11.09 24.31L11.07 23.22L11.05 22.12L11.03 21.00L11.02 19.86L11.01 18.71L11.01 17.55L11.00 16.38L11.00 15.19L11.00 14.00L11.00 13.40L10.99 12.81L10.98 12.23L10.96 11.66L10.93 11.10L10.90 10.56L10.85 10.03L10.81 9.51L10.75 9.00L10.68 8.51L10.61 8.02L10.53 7.55L10.43 7.10L10.33 6.65L10.21 6.22L10.08 5.80L9.95 5.39L9.79 5.00L9.63 4.61L9.45 4.25L9.25 3.90L9.05 3.56L8.82 3.24L8.58 2.94L8.33 2.66L8.05 2.39L7.77 2.15L7.47 1.93L7.15 1.73L6.82 1.56L6.48 1.41L6.13 1.28L5.77 1.18L5.40 1.10L5.02 1.05L4.64 1.02L4.24 1.01L3.84 1.03L3.42 1.08L3.00 1.20ZM3.00 86.20L3.39 86.07L3.75 85.97L4.09 85.86L4.40 85.75L4.69 85.63L4.96 85.50L5.21 85.36L5.44 85.22L5.65 85.06L5.85 84.90L6.03 84.73L6.19 84.55L6.35 84.37L6.49 84.17L6.62 83.97L6.75 83.75L6.86 83.52L6.97 83.28L7.08 83.02L7.18 82.75L7.27 82.46L7.35 82.16L7.43 81.84L7.51 81.51L7.58 81.16L7.64 80.79L7.69 80.41L7.75 80.01L7.79 79.59L7.83 79.16L7.87 78.72L7.90 78.25L7.92 77.77L7.95 77.28L7.96 76.77L7.98 76.25L7.99 75.71L7.99 75.15L8.00 74.58L8.00 74.00L8.00 72.80L8.01 71.61L8.02 70.43L8.03 69.26L8.05 68.10L8.08 66.95L8.11 65.81L8.15 64.69L8.20 63.59L8.25 62.50L8.32 61.43L8.39 60.38L8.48 59.35L8.57 58.34L8.68 57.35L8.80 56.38L8.93 55.44L9.07 54.53L9.23 53.64L9.40 52.78L9.59 51.95L9.80 51.14L10.02 50.37L10.26 49.63L10.51 48.92L10.79 48.25L11.09 47.61L11.41 47.02L11.75 46.45L12.11 45.93L12.50 45.46L12.92 45.03L13.36 44.65L13.83 44.32L14.31 44.05L14.82 43.84L15.35 43.69L15.89 43.61L16.44 43.60L17.00 43.70L17.00 44.30L16.53 44.45L16.10 44.59L15.71 44.77L15.35 44.98L15.02 45.22L14.71 45.49L14.42 45.80L14.15 46.14L13.88 46.52L13.64 46.94L13.40 47.40L13.18 47.90L12.97 48.43L12.77 49.01L12.59 49.62L12.42 50.27L12.26 50.96L12.11 51.68L11.97 52.43L11.85 53.22L11.73 54.04L11.63 54.89L11.53 55.77L11.45 56.67L11.38 57.60L11.31 58.56L11.25 59.54L11.20 60.55L11.16 61.58L11.12 62.63L11.09 63.69L11.07 64.78L11.05 65.88L11.03 67.00L11.02 68.14L11.01 69.29L11.01 70.45L11.00 71.62L11.00 72.81L11.00 74.00L11.00 74.60L10.99 75.19L10.98 75.77L10.96 76.34L10.93 76.90L10.90 77.44L10.85 77.97L10.81 78.49L10.75 79.00L10.68 79.49L10.61 79.98L10.53 80.45L10.43 80.90L10.33 81.35L10.21 81.78L10.08 82.20L9.95 82.61L9.79 83.00L9.63 83.39L9.45 83.75L9.25 84.10L9.05 84.44L8.82 84.76L8.58 85.06L8.33 85.34L8.05 85.61L7.77 85.85L7.47 86.07L7.15 86.27L6.82 86.44L6.48 86.59L6.13 86.72L5.77 86.82L5.40 86.90L5.02 86.95L4.64 86.98L4.24 86.99L3.84 86.97L3.42 86.92L3.00 86.80Z" />
                 </svg>
                 <span class="font-serif text-lg font-bold sm:text-xl">φύσις</span>
               </div>
@@ -245,25 +241,21 @@ mort d'un homme qu'on lance (du haut d'un rocher).
               aria-hidden="true"
               class="mb-4 flex h-32 items-center justify-center rounded-md bg-page ring-1 ring-default"
             >
-              <div class="grid grid-cols-[auto_auto_auto] items-center gap-x-3 gap-y-2">
-                <span class="font-serif text-lg">ἦλθον</span>
+              <!-- The results the API gives for γυναικα: the lemma γυνή, and two entries beginning so. -->
+              <div class="flex items-center gap-3">
+                <span class="font-serif text-lg">γυναῖκα</span>
                 <UIcon
                   name="i-lucide-arrow-right"
                   class="size-4 text-dimmed"
                 />
-                <span class="flex items-center gap-1.5 font-serif text-lg font-bold">ἔρχομαι<UIcon
-                  name="i-lucide-sparkles"
-                  class="size-4 text-primary"
-                /></span>
-                <span class="font-serif text-lg">λόγοις</span>
-                <UIcon
-                  name="i-lucide-arrow-right"
-                  class="size-4 text-dimmed"
-                />
-                <span class="flex items-center gap-1.5 font-serif text-lg font-bold">λόγος<UIcon
-                  name="i-lucide-sparkles"
-                  class="size-4 text-primary"
-                /></span>
+                <div class="flex flex-col gap-1.5">
+                  <span class="font-serif text-sm text-dimmed">γυναικάνηρ</span>
+                  <span class="flex items-center gap-1.5 font-serif text-lg font-bold">γυνή<UIcon
+                    name="i-lucide-sparkles"
+                    class="size-4 text-primary"
+                  /></span>
+                  <span class="font-serif text-sm text-dimmed">γυναικάριον</span>
+                </div>
               </div>
             </div>
             <h3 class="font-semibold">
@@ -352,79 +344,34 @@ mort d'un homme qu'on lance (du haut d'un rocher).
         </h2>
         <p class="mx-auto mt-2 max-w-2xl text-center text-muted">
           Trois ouvrages en un : le dictionnaire, son édition numérique, et l'application qui vous la
-          présente. Suivez l'entrée ῥιπτός de l'un à l'autre.
+          présente. Voici la même entrée, ῥιπτός, dans chacun d'eux.
         </p>
 
         <!--
-        Each work in a bubble, on the left then on the right, joined by a
-        winding path (from `md`); on mobile, the bubble is centered above the
-        text, centered too, without a path.
-      -->
-        <ol class="mt-10 space-y-12 md:mx-auto md:max-w-4xl md:space-y-24">
-          <li class="relative flex flex-col items-center gap-6 md:min-h-[calc(14rem+0.875rem)] md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
-            <!-- The line to the next work (from `md`): a smooth curve, faded at its ends. -->
-            <div
+          A triptych: the entry in its three states, side by side from `lg`
+          (one above the other below, the panel beside its legend from `md`),
+          under two headings, the text (the first two) and the application.
+        -->
+        <div class="mt-10 grid gap-x-8 gap-y-10 lg:grid-cols-3 lg:gap-y-6">
+          <p class="flex flex-col items-center text-xs font-semibold tracking-[0.2em] text-muted uppercase -mb-4 lg:col-span-2 lg:row-start-1 lg:mb-0">
+            Le texte
+            <span
               aria-hidden="true"
-              class="pointer-events-none absolute top-[calc(14rem+0.875rem)] right-28 -bottom-[5.125rem] left-28 hidden text-(--rule-color) md:block"
-            >
-              <svg
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-                class="size-full overflow-visible"
+              class="mt-2 h-2 w-full rounded-t-md border-x border-t border-(--rule-color)/60 lg:w-[calc(100%+0.75rem)]"
+            />
+          </p>
+
+          <article class="flex flex-col gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-8 lg:flex lg:col-start-1 lg:row-start-2">
+            <div class="mx-auto aspect-[4/3] w-full max-w-sm bg-white overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
+              <img
+                src="/images/bailly-1935-rhiptos.webp"
+                width="480"
+                height="480"
+                alt="L'entrée ῥιπτός dans l'édition de 1935 (fac-similé)."
+                class="size-full object-cover"
               >
-                <defs>
-                  <linearGradient
-                    id="timeline-fade-1"
-                    gradientUnits="userSpaceOnUse"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="100"
-                  >
-                    <stop
-                      offset="0"
-                      stop-color="currentColor"
-                      stop-opacity="0"
-                    />
-                    <stop
-                      offset="0.2"
-                      stop-color="currentColor"
-                      stop-opacity="0.75"
-                    />
-                    <stop
-                      offset="0.8"
-                      stop-color="currentColor"
-                      stop-opacity="0.75"
-                    />
-                    <stop
-                      offset="1"
-                      stop-color="currentColor"
-                      stop-opacity="0"
-                    />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M0 0C0 27.6 8.1 50 18 50H82C91.9 50 100 72.4 100 100"
-                  fill="none"
-                  stroke="url(#timeline-fade-1)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  vector-effect="non-scaling-stroke"
-                />
-              </svg>
             </div>
-            <div class="size-40 shrink-0 md:size-56">
-              <div class="relative size-full overflow-hidden rounded-full bg-white border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)]">
-                <img
-                  src="/images/bailly-1935-rhiptos.webp"
-                  width="480"
-                  height="480"
-                  alt="L'entrée ῥιπτός dans l'édition de 1935 (fac-similé)."
-                  class="size-full"
-                >
-              </div>
-            </div>
-            <div class="min-w-0 flex-1 self-stretch max-md:text-center md:self-auto md:pt-6">
+            <div class="min-w-0 max-md:text-center">
               <h3 class="font-serif text-lg/8 font-bold">
                 Le dictionnaire d'Anatole Bailly
               </h3>
@@ -438,74 +385,21 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                 >fac-similé</a> est disponible sur l'<em>Internet Archive</em>.
               </p>
             </div>
-          </li>
+          </article>
 
-          <li class="relative flex flex-col items-center gap-6 md:min-h-[calc(14rem+0.875rem)] md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
-            <!-- The line to the next work (from `md`): a smooth curve, faded at its ends. -->
+          <article class="flex flex-col gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-8 lg:flex lg:col-start-2 lg:row-start-2">
             <div
               aria-hidden="true"
-              class="pointer-events-none absolute top-[calc(14rem+0.875rem)] right-28 -bottom-[5.125rem] left-28 hidden text-(--rule-color) md:block"
+              class="mx-auto flex aspect-[4/3] w-full max-w-sm items-center justify-center bg-default p-4 overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none"
             >
-              <svg
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-                class="size-full overflow-visible"
-              >
-                <defs>
-                  <linearGradient
-                    id="timeline-fade-2"
-                    gradientUnits="userSpaceOnUse"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="100"
-                  >
-                    <stop
-                      offset="0"
-                      stop-color="currentColor"
-                      stop-opacity="0"
-                    />
-                    <stop
-                      offset="0.2"
-                      stop-color="currentColor"
-                      stop-opacity="0.75"
-                    />
-                    <stop
-                      offset="0.8"
-                      stop-color="currentColor"
-                      stop-opacity="0.75"
-                    />
-                    <stop
-                      offset="1"
-                      stop-color="currentColor"
-                      stop-opacity="0"
-                    />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M100 0C100 27.6 91.9 50 82 50H18C8.1 50 0 72.4 0 100"
-                  fill="none"
-                  stroke="url(#timeline-fade-2)"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  vector-effect="non-scaling-stroke"
-                />
-              </svg>
-            </div>
-            <div class="size-40 shrink-0 md:size-56">
+              <!-- eslint-disable vue/no-v-html -- A constant of this page. -->
               <div
-                aria-hidden="true"
-                class="flex size-full items-center justify-center overflow-hidden rounded-full bg-default border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)]"
-              >
-                <!-- eslint-disable vue/no-v-html -- A constant of this page. -->
-                <div
-                  class="definition w-[10.4rem] shrink-0 font-serif [--reading-font-size:0.75rem] [--reading-font-weight:400] max-md:scale-[0.715]"
-                  v-html="rhiptos"
-                />
+                class="definition max-w-[17rem] font-serif [--reading-font-size:0.875rem] [--reading-font-weight:400]"
+                v-html="rhiptos"
+              />
               <!-- eslint-enable vue/no-v-html -->
-              </div>
             </div>
-            <div class="min-w-0 flex-1 self-stretch max-md:text-center md:self-auto md:pt-6">
+            <div class="min-w-0 max-md:text-center">
               <h3 class="font-serif text-lg/8 font-bold">
                 L'édition numérique <em>Bailly 2020 Hugo&nbsp;Chávez</em>
               </h3>
@@ -542,39 +436,45 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                 version (Chávez).
               </p>
             </div>
-          </li>
+          </article>
 
-          <li class="relative flex flex-col items-center gap-6 md:min-h-[calc(14rem+0.875rem)] md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
-            <div class="size-40 shrink-0 md:size-56">
-              <div
-                aria-hidden="true"
-                class="flex size-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary/15 to-(--ui-bg) border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)]"
-              >
-                <div class="w-[11.2rem] shrink-0 space-y-1.5 max-md:scale-[0.715]">
-                  <div class="flex items-center gap-1.5 rounded-full bg-default px-3 py-1.5 text-sm shadow-xs ring-1 ring-default">
+          <p class="flex flex-col items-center text-xs font-semibold tracking-[0.2em] text-muted uppercase -mb-4 lg:col-start-3 lg:row-start-1 lg:mb-0">
+            L'application
+            <span
+              aria-hidden="true"
+              class="mt-2 h-2 w-full rounded-t-md border-x border-t border-(--rule-color)/60 lg:w-[calc(100%+0.75rem)]"
+            />
+          </p>
+
+          <article class="flex flex-col gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-8 lg:flex lg:col-start-3 lg:row-start-2">
+            <div
+              aria-hidden="true"
+              class="mx-auto flex aspect-[4/3] w-full max-w-sm items-center justify-center bg-linear-to-br from-primary/10 to-(--ui-bg) overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none"
+            >
+              <div class="w-56 space-y-2">
+                <div class="flex items-center gap-2 rounded-full bg-default px-3 py-1.5 text-sm shadow-xs ring-1 ring-default">
+                  <UIcon
+                    name="i-lucide-search"
+                    class="size-4 text-muted"
+                  />
+                  <span class="font-serif">ῥιπτ</span>
+                  <span class="ms-auto rounded-full bg-elevated px-1.5 text-xs text-muted">4</span>
+                </div>
+                <div class="rounded-md bg-default p-2.5 ring-1 ring-default">
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-serif text-sm font-bold">ῥιπτός</span>
                     <UIcon
-                      name="i-lucide-search"
-                      class="size-3.5 text-muted"
+                      name="i-bailly-star-filled"
+                      class="ms-auto size-4 text-favorite"
                     />
-                    <span class="font-serif text-[0.6875rem]/5">ῥιπτ</span>
-                    <span class="ms-auto rounded-full bg-elevated px-1.5 text-[0.625rem] text-muted">4</span>
                   </div>
-                  <div class="rounded-md bg-default p-2 ring-1 ring-default">
-                    <div class="flex items-center gap-1.5">
-                      <span class="font-serif text-[0.6875rem]/5 font-bold">ῥιπτός</span>
-                      <UIcon
-                        name="i-bailly-star-filled"
-                        class="ms-auto size-3.5 text-favorite"
-                      />
-                    </div>
-                    <p class="line-clamp-2 font-serif text-[0.5625rem]/4 text-muted">
-                      ή, όν, jeté, lancé : μόρος, Soph. Tr. 357, mort d'un homme qu'on lance…
-                    </p>
-                  </div>
+                  <p class="line-clamp-2 font-serif text-xs/5 text-muted">
+                    ή, όν, jeté, lancé : μόρος, Soph. Tr. 357, mort d'un homme qu'on lance…
+                  </p>
                 </div>
               </div>
             </div>
-            <div class="min-w-0 flex-1 self-stretch max-md:text-center md:self-auto md:pt-6">
+            <div class="min-w-0 max-md:text-center">
               <h3 class="font-serif text-lg/8 font-bold">
                 L'application Bailly.app
               </h3>
@@ -601,8 +501,8 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                 />
               </div>
             </div>
-          </li>
-        </ol>
+          </article>
+        </div>
       </section>
 
       <section
