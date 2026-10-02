@@ -21,11 +21,11 @@
   const features = {
     search: {
       title: "Cherchez comme vous écrivez",
-      text: "En grec, en beta code ou en translittération : tapez logos ou λόγος, les résultats s'affichent dès la première lettre.",
+      text: "En grec, en beta code ou en translittération : les résultats s'affichent dès la première lettre.",
     },
     inflected: {
       title: "Les formes fléchies aussi",
-      text: "ἦλθον vous mène à ἔρχομαι : l'analyseur morphologique Morpheus retrouve le lemme d'une forme conjuguée ou déclinée.",
+      text: "L'analyseur morphologique Morpheus retrouve le lemme d'une forme conjuguée ou déclinée.",
     },
     bookmarks: {
       title: "Vos signets, sur tous vos appareils",
