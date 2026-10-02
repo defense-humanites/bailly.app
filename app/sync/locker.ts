@@ -11,9 +11,10 @@ import { toBookmarksFile, validateState } from "~/idb/transfer";
  *   as is: the devices write at the version they read (cf. `storeLocker`), so
  *   that copying it never overwrites a later write.
  * - Each section has its own version, raised by any change of its structure
- *   (e.g. a field added to its records): a device that does not know it
- *   keeps the section as is, and stops synchronizing that type only (cf.
- *   `SyncOutdatedError`).
+ *   (e.g. a field added to its records) once the application is online (until
+ *   then, the structures change in place, the test devices being updated
+ *   together): a device that does not know it keeps the section as is, and
+ *   stops synchronizing that type only (cf. `SyncOutdatedError`).
  * - A missing section is empty (e.g. a key used for the preferences only).
  * - The envelope's own version only changes with these rules: a device that
  *   does not know it stops synchronizing altogether.

@@ -53,7 +53,7 @@ test("Upgrade from version 3: UUIDs, stamps and legacy keys", async () => {
   Idb.configure();
 
   const db = await Idb.getIndexedDB();
-  expect(db.version).toBe(5);
+  expect(db.version).toBe(4);
   expect([...db.objectStoreNames].sort()).toEqual(Object.values(IdbStore).sort());
 
   const tags = await IdbTags.getAll();

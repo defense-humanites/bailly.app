@@ -222,7 +222,7 @@ const IDB_NAME = "bailly";
  * @remarks Versions 1 and 2 were used by the previous (Astro) application;
  * version 3 had numeric (auto-incremented) keys and no stamps.
  */
-const IDB_VERSION = 5;
+const IDB_VERSION = 4;
 
 type IdbConfig = {
   searchHistoryLength: number;
@@ -436,13 +436,9 @@ export class Idb {
           });
         }
 
-        // Version 4 first had no excerpts store (test devices of the preview
-        // only): added if missing.
-        if (oldVersion === 4 && !db.objectStoreNames.contains(IdbStore.Excerpts)) {
-          db.createObjectStore(IdbStore.Excerpts, { keyPath: "uri" });
-        }
-
-        // Future versions: add `if (oldVersion < 6) { … }` blocks here.
+        // Future versions: add `if (oldVersion < 5) { … }` blocks here (only
+        // once the application is online: until then, the schema of version
+        // 4 changes in place, the test devices clearing their site data).
       },
       blocked() {
         // Another tab (e.g. of the previous version) keeps the database open
