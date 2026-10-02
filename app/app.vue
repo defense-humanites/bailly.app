@@ -37,7 +37,7 @@
       {
         name: "description",
         content:
-          "Consultez le dictionnaire grec-français d'Anatole Bailly dans l'édition Bailly 2020 Hugo Chávez.",
+          "Consultez le dictionnaire grec-français d'Anatole Bailly, dans une application libre et gratuite.",
       },
     ],
     htmlAttrs: {

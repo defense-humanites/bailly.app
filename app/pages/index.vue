@@ -1,45 +1,142 @@
+<script setup lang="ts">
+  const searchFocus = useSearchFocus();
+
+  /**
+   * The search is the page's main action: its field gets the focus on
+   * opening, except with a coarse pointer (a touch screen), where it would
+   * bring up the virtual keyboard.
+   */
+  onMounted(() => {
+    if (!window.matchMedia("(pointer: coarse)").matches) searchFocus.focus();
+  });
+  const { preference } = usePreferences();
+  const transliterateGreek = preference("transliterateGreek");
+
+  /**
+   * The edition's popover: opened by a click or a tap, and by hovering it with
+   * a mouse (closed shortly after leaving it, so that the pointer can reach
+   * the popover's link).
+   */
+  const editionOpen = ref(false);
+  let closing: ReturnType<typeof setTimeout> | undefined;
+  let hovered = false;
+
+  function hover(event: PointerEvent, open: boolean): void {
+    if (event.pointerType !== "mouse") return;
+    clearTimeout(closing);
+    if (open) {
+      hovered = !editionOpen.value || hovered;
+      editionOpen.value = true;
+    } else {
+      closing = setTimeout(() => (editionOpen.value = false), 200);
+    }
+  }
+
+  /**
+   * Opened by hovering, the popover leaves the focus where it is; opened by a
+   * click, a tap or the keyboard, it moves it to its link.
+   */
+  function onOpenAutoFocus(event: Event): void {
+    if (hovered) event.preventDefault();
+  }
+
+  watch(editionOpen, (open) => {
+    if (!open) hovered = false;
+  });
+</script>
+
 <template>
-  <div class="mx-auto items-center px-6 sm:px-12 lg:flex lg:min-h-[calc(100dvh-(var(--spacing)*14))] lg:max-w-screen-lg lg:px-24 lg:pb-3 xl:px-0">
-    <section class="my-6 sm:my-12 flex flex-col gap-2 lg:gap-4 xl:gap-6">
-      <NuxtLink to="/soutenir">
-        <UBadge
-          class="rounded-full bg-primary/10 hover:bg-primary/15 text-primary transition-colors"
-          size="lg"
-          variant="soft"
-        >❤️ Nous soutenir</UBadge>
-      </NuxtLink>
-      <h1 class="font-serif text-2xl/9 font-bold xl:text-[1.75rem]/10">
-        Consultez le dictionnaire<br>grec&ndash;français d'Anatole&nbsp;Bailly
+  <div class="mx-auto grid max-w-(--content-max-width) items-center gap-10 px-4 py-8 md:px-6 md:py-12 lg:min-h-[calc(100dvh-(var(--spacing)*14))] lg:grid-cols-2 lg:gap-12 lg:py-10">
+    <section class="@container flex flex-col items-start gap-5">
+      <UButton
+        to="/soutenir"
+        size="sm"
+        color="primary"
+        variant="soft"
+        icon="i-lucide-heart"
+        label="Nous soutenir"
+      />
+      <!--
+        The title on two lines from `lg`, its size following the column's
+        width (`cqi`), so that the longest line, with the popover's button,
+        fits in the widest reading font (GFS Artemisia: 17.8 times the font
+        size); balanced below. The heading is named after its text only, not
+        the button (`aria-labelledby`), which stays glued to « Bailly ».
+      -->
+      <h1
+        aria-labelledby="titre-accueil"
+        class="font-serif text-[1.75rem]/[1.25] font-bold text-balance md:text-4xl/[1.25] lg:text-[length:min(2.25rem,5.6cqi)]"
+      >
+        <span id="titre-accueil">Consultez le dictionnaire <br class="max-lg:hidden">grec–français d'Anatole&nbsp;Bailly</span><span class="whitespace-nowrap">&nbsp;<UPopover
+          v-model:open="editionOpen"
+          :content="{ side: 'top', sideOffset: 6, onOpenAutoFocus }"
+          arrow
+        >
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-circle-help"
+            aria-label="L'édition du texte"
+            class="size-[0.7em] rounded-full p-0 align-[-0.05em] text-[1em] text-dimmed hover:text-default"
+            :ui="{ leadingIcon: 'size-full' }"
+            @pointerenter="hover($event, true)"
+            @pointerleave="hover($event, false)"
+          />
+          <template #content>
+            <p
+              class="max-w-72 p-3 font-sans text-sm font-normal text-pretty"
+              @pointerenter="hover($event, true)"
+              @pointerleave="hover($event, false)"
+            >
+              Le texte est celui de l'édition numérique de Gérard Gréco et de son équipe, que ses
+              auteurs ont intitulée <em>Bailly 2020 Hugo&nbsp;Chávez</em>.
+              <NuxtLink
+                :to="{ path: '/à-propos', hash: '#origine' }"
+                class="underline decoration-dotted underline-offset-4 hover:text-primary"
+              >En savoir plus</NuxtLink>
+            </p>
+          </template>
+        </UPopover></span>
       </h1>
-      <p class="font-serif text-base/7 xl:text-lg/8">
-        Dans l'édition Bailly 2020 Hugo&nbsp;Chávez (<a href="/à-propos">à&nbsp;propos</a>).
+      <p class="text-lg text-pretty text-muted">
+        Une application libre et gratuite, pensée pour la lecture et la recherche.
+        <NuxtLink
+          to="/à-propos"
+          class="underline decoration-dotted underline-offset-4 hover:text-primary"
+        >D'où vient le texte&nbsp;?</NuxtLink>
       </p>
+      <!--
+        For the readers who don't read Greek: the transliteration preference,
+        whose effect shows at once on the opened entry (and is saved).
+      -->
+      <div class="flex items-start gap-3 rounded-lg bg-default/60 px-4 py-3 ring-1 ring-default">
+        <USwitch
+          v-model="transliterateGreek"
+          aria-labelledby="translitteration"
+          aria-describedby="translitteration-aide"
+          class="mt-0.5"
+        />
+        <div class="text-sm">
+          <p
+            id="translitteration"
+            class="font-medium"
+          >
+            Vous ne lisez pas le grec ?
+          </p>
+          <p
+            id="translitteration-aide"
+            class="text-muted"
+          >
+            Affichez-le en caractères latins : <span lang="grc">λόγος</span> → <span lang="grc-Latn">lógos</span>.
+            Ce choix est enregistré dans vos <NuxtLink
+              :to="encodeURI('/préférences')"
+              class="underline decoration-dotted underline-offset-4 hover:text-primary"
+            >préférences</NuxtLink>.
+          </p>
+        </div>
+      </div>
     </section>
 
-    <aside
-      class="flex-1 mx-6 pb-6 sm:pb-12 lg:pb-0"
-      data-nosnippet
-    >
-      <ClientOnly>
-        <template #fallback>
-          <UCard class="h-96">
-            <div class="grid gap-6">
-              <USkeleton class="h-3 w-full" />
-              <USkeleton class="h-3 w-11/12" />
-              <USkeleton class="h-3 w-full" />
-              <USkeleton class="h-3 w-11/12" />
-              <USkeleton class="h-3 w-full" />
-              <USkeleton class="h-3 w-11/12" />
-              <USkeleton class="h-3 w-full" />
-              <USkeleton class="h-3 w-11/12" />
-              <USkeleton class="h-3 w-full" />
-              <USkeleton class="h-3 w-6/12" />
-            </div>
-          </UCard>
-        </template>
-
-        <RandomEntryCard />
-      </ClientOnly>
-    </aside>
+    <RandomOpening data-nosnippet />
   </div>
 </template>

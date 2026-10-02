@@ -258,6 +258,28 @@
    "missing": []
   }
  },
+ "/entry/à-propos?fields=word,uri,excerpt,htmlDefinition&siblings=true&siblingsFields=word,uri,excerpt": {
+  "data": {
+   "$query": {
+    "fields": [
+     "word",
+     "uri",
+     "excerpt",
+     "htmlDefinition"
+    ],
+    "siblings": true,
+    "siblingsFields": [
+     "word",
+     "uri",
+     "excerpt"
+    ],
+    "q": "à-propos"
+   },
+   "version": "2023-02-28",
+   "entry": {},
+   "siblings": {}
+  }
+ },
  "/entry/anêr?fields=word,uri,excerpt,htmlDefinition&siblings=true&siblingsFields=word,uri,excerpt": {
   "data": {
    "$query": {
@@ -292,6 +314,44 @@
      "word": "ἀνήρεικτος",
      "uri": "anêreiktos",
      "excerpt": "ἀν·ήρεικτος, c. ἀνέρεικτος, Gal. Lex. Hipp. 19, 81."
+    }
+   }
+  }
+ },
+ "/entry/apotrechô?fields=word,uri,excerpt,htmlDefinition&siblings=true&siblingsFields=word,uri,excerpt": {
+  "data": {
+   "$query": {
+    "fields": [
+     "word",
+     "uri",
+     "excerpt",
+     "htmlDefinition"
+    ],
+    "siblings": true,
+    "siblingsFields": [
+     "word",
+     "uri",
+     "excerpt"
+    ],
+    "q": "apotrechô"
+   },
+   "version": "2023-02-28",
+   "entry": {
+    "word": "ἀποτρέχω",
+    "uri": "apotrechô",
+    "excerpt": "ἀπο·τρέχω (f. ἀποθρέξομαι, ou ἀποδραμοῦμαι, ao. 2 ἀπέδραμον, pf. inus.) 1 s’éloigner en courant, Hdt. 4, 203 ; Xén. An. 5, 2, 6, etc. ; Plat. Theæt. …",
+    "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">ἀπο·τρέχω</span></span> (<span class=\"ital\">f.</span>\n<span class=\"grec\"><span data-linked-self>ἀποθρέξομαι</span>,</span> <span class=\"ital\">ou</span>\n<span class=\"grec\"><span data-linked-self>ἀποδραμοῦμαι</span>,</span> <span class=\"ital\">ao.\n2</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"apedramon\">ἀπέδραμον</span>,</span> <span class=\"ital\">pf. inus.</span>)\n<div class=\"pp\"><span class=\"ppa\">1</span> s’éloigner en courant,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">4, 203 ;</span>\n<span class=\"aut\">Xén.</span> <span class=\"oeuv\">An.</span>\n<span class=\"refch\">5, 2, 6,</span> <span class=\"ital\">etc. ;</span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Theæt.</span> <span class=\"refpa\">171</span><span class=\"refpb\">d</span>, <span class=\"ital\">etc. ;</span> <span class=\"ital\">d’où en gén.</span> s’éloigner (par mer <span class=\"ital\">ou</span> par terre) <span class=\"aut\">Pol.</span>\n<span class=\"refch\">3, 22, 7 ;</span> <span class=\"refch\">3, 24,\n11,</span> <span class=\"ital\">etc.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> courir fort,\n<span class=\"ital\">ou sel. d’autres,</span> lutter à la course,\n<span class=\"aut\">Ar.</span> <span class=\"oeuv\">Nub.</span>\n<span class=\"refch\">1005</span> ||</div>\n<div class=\"fleche\"><span class=\"flechea\">E</span> <span class=\"ital\">Fut.</span> <span class=\"grec\">-θρέξομαι,</span>\n<span class=\"aut\">Ar.</span> <span class=\"ital\">l. c. ou</span>\n<span class=\"grec\">-δραμοῦμαι,</span> <span class=\"aut\">Xén.</span>\n<span class=\"oeuv\">An.</span> <span class=\"refch\">7, 6, 5 ;</span>\n<span class=\"grec\">-θρέξω,</span> <span class=\"aut\">Plat.\ncom.</span> <span class=\"refch\">2-2, 695 Mein.</span></div>\n"
+   },
+   "siblings": {
+    "previous": {
+     "word": "ἀποτρέπω",
+     "uri": "apotrepô",
+     "excerpt": "ἀπο·τρέπω : 1 détourner, écarter : τινά, Il. 11, 758 ; 15, 276, qqn ; ἔγχεος ὁρμήν, Hés. Sc. 456, détourner l’essor d’une javeline ; fig. βλάϐην, ξυμ…"
+    },
+    "next": {
+     "word": "ἀπότρεψις",
+     "uri": "apotrepsis",
+     "excerpt": "ἀπότρεψις, εως, ion. ιος (ἡ) aversion, dégoût, Hpc. 425, 35. Étym. ἀποτρέπω. "
     }
    }
   }
@@ -642,27 +702,21 @@
    "siblings": {}
   }
  },
- "/entry/random?fields=word,uri,excerpt,htmlDefinition&lengthRange=600,700": {
+ "/entry/random?fields=uri&lengthRange=400,700": {
   "data": {
    "$query": {
     "fields": [
-     "word",
-     "uri",
-     "excerpt",
-     "htmlDefinition"
+     "uri"
     ],
     "lengthRange": [
-     600,
+     400,
      700
     ]
    },
    "version": "2023-02-28",
-   "length": 668,
+   "length": 410,
    "entry": {
-    "word": "οἶος",
-    "uri": "oios_(1)",
-    "excerpt": "οἶος, η, ον, seul. c. à d. 1 propr. seul, unique, Il. 2, 247, etc. ; Att. ; οἶος ἄνευθ’ ἄλλων, Il. 22, 309, seul sans d’autres ; οἶος νόσφιν τινός, O…",
-    "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">οἶος,</span></span> <span class=\"des\">η, ον,</span>\n<span class=\"ital\">seul.</span> <span class=\"ital\">c. à d.</span>\n<div class=\"pp\"><span class=\"ppa\">1</span> <span class=\"ital\">propr.</span> seul, unique, <span class=\"aut\">Il.</span>\n<span class=\"refch\">2, 247,</span> <span class=\"ital\">etc. ;</span>\n<span class=\"aut\">Att.</span> ; <span class=\"grec\"><span data-linked-self>οἶος</span> <a href=\"/aneuthe\">ἄνευθ’</a>\n<a href=\"/allos\">ἄλλων</a>,</span> <span class=\"aut\">Il.</span> <span class=\"refch\">22,\n309,</span> seul sans d’autres ; <span class=\"grec\"><span data-linked-self>οἶος</span> <span data-linked-entries=\"nosphi,nosphin\">νόσφιν</span>\n<a href=\"/tis_(2)\">τινός</a>,</span> <span class=\"aut\">Od.</span> <span class=\"refch\">14,\n450,</span> seul sans qqn ; <span class=\"grec\"><a href=\"/heis\">εἷς</a> <span data-linked-self>οἶος</span>,</span>\n<span class=\"aut\">Il.</span> <span class=\"refch\">4, 397,</span> un\nseul ; <span class=\"grec\"><a href=\"/duo\">δύο</a> <span data-linked-self data-linked-alternatives=\"oiô_(1)\">οἴω</span>,</span> <span class=\"aut\">Il.</span> <span class=\"refch\">24, 473 ;</span> <span class=\"aut\">Od.</span> <span class=\"refch\">14, 94,</span> deux hommes\nseuls ; <span class=\"grec\"><a href=\"/duo\">δύο</a> <span data-linked-self data-linked-alternatives=\"oiê\">οἶαι</span>,</span> <span class=\"aut\">Od.</span> <span class=\"refch\">3, 424,</span> deux femmes\nseules ; <span class=\"ital\">avec un gén.</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"oiê\">οἴη</span> <span data-linked-entries=\"thea_(1),thea_(2),theaô,theos\">θεῶν</span>,</span> <span class=\"aut\">Il.</span> <span class=\"refch\">11, 74,</span> seule d’entre les dieux ; <span class=\"ital\">cf.</span> <span class=\"aut\">Il.</span> <span class=\"refch\">11, 693</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> isolé de, séparé\nde : <span class=\"grec\"><a href=\"/apo\">ἀπό</a> <a href=\"/tis_(2)\">τινος</a>,</span> <span class=\"aut\">Il.</span> <span class=\"refch\">9, 438 ;</span> <span class=\"aut\">Od.</span> <span class=\"refch\">9, 192 ;</span> <span class=\"refch\">21, 364 ;</span> <span class=\"grec\"><a href=\"/tis_(2)\">τινος</a> <span data-linked-entries=\"dicha,dichaô\">δίχα</span>,</span>\n<span class=\"aut\">Soph.</span> <span class=\"oeuv\">Aj.</span>\n<span class=\"refch\">750,</span> de qqn ||</div>\n<div class=\"pp\"><span class=\"ppa\">3</span> seul en son genre, sans\négal, <span class=\"aut\">Il.</span> <span class=\"refch\">24,\n499 ;</span> <span class=\"ital\">adv.</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"oion\">οἶον</span>,</span> seulement, <span class=\"aut\">Hés.</span>\n<span class=\"oeuv\">Th.</span> <span class=\"refch\">26 ;</span>\n<span class=\"grec\"><span data-linked-self data-linked-alternatives=\"oion\">οἶον</span> <a href=\"/mê\">μή</a>,</span> <span class=\"aut\">Eschl.</span>\n<span class=\"oeuv\">Ag.</span> <span class=\"refch\">131,</span>\nseulement que... ne !.</div>\n<div class=\"etymrev\"><span class=\"etiqetymrev\">Étym.</span>\n<span class=\"ital\">indo-europ.</span> <span class=\"indoeurop\">*Hoi-uo-,</span> un, seulement.</div>\n"
+    "uri": "apotrechô"
    }
   }
  },

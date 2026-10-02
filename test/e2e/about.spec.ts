@@ -7,7 +7,7 @@ test.describe("about page", () => {
     const lineage = page.getByRole("region", { name: "D'où vient le texte" });
     await expect(lineage.getByRole("heading", { level: 3 })).toHaveText([
       "Le dictionnaire d'Anatole Bailly",
-      "L'édition numérique Bailly 2020 Hugo Chávez",
+      "L'édition numérique de Gérard Gréco",
       "L'application Bailly.app",
     ]);
     // The errors of the text go to the team of the edition, the others to us.

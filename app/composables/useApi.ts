@@ -1,7 +1,6 @@
 import type {
   ApiEntryData,
   ApiLookupData,
-  ApiRandomEntryData,
   ApiResponse,
   Entry,
   EntryField,
@@ -9,7 +8,6 @@ import type {
   LookupEntry,
   LookupParams,
   MorphologyGroups,
-  RandomEntryParams,
   Siblings,
 } from "#shared/types/api";
 import { sortLookupEntries, toApiQuery } from "#shared/utils/api";
@@ -76,18 +74,6 @@ export function useApiEntries<F extends EntryField>(
       };
     },
   );
-}
-
-/**
- * Fetches a random entry.
- * @param params The requested fields and options.
- */
-export function useApiRandomEntry<F extends EntryField>(params: RandomEntryParams<F>) {
-  return useFetch("entry/random", {
-    $fetch: useNuxtApp().$api,
-    query: toApiQuery(params),
-    transform: ({ data }: ApiResponse<ApiRandomEntryData<F>>): Entry<F> => data.entry,
-  });
 }
 
 /**

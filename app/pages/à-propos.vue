@@ -1,13 +1,13 @@
 <script setup lang="ts">
   useSeoMeta({
     title: "À propos",
-    description: "Le dictionnaire grec-français d'Anatole Bailly, dans l'édition révisée Bailly 2020 Hugo Chávez : une application libre et gratuite pour le consulter.",
+    description: "Le dictionnaire grec-français d'Anatole Bailly, révisé par Gérard Gréco et son équipe : une application libre et gratuite pour le consulter.",
   });
 
   const searchFocus = useSearchFocus();
 
   /**
-   * Key figures of the Bailly 2020 Hugo Chávez edition (after its notice).
+   * Key figures of the 2020 digital edition (after its notice).
    */
   const figures = [
     { value: "107 809", label: "entrées" },
@@ -141,7 +141,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
             Le dictionnaire grec-français d'Anatole&nbsp;Bailly, à portée de recherche
           </h1>
           <p class="mt-[clamp(0.5rem,2svh,1.25rem)] max-w-2xl text-base text-pretty text-muted md:text-xl">
-            Le texte révisé du <em>Bailly 2020 Hugo&nbsp;Chávez</em>, dans une application libre et
+            Le texte révisé par Gérard Gréco et son équipe, dans une application libre et
             gratuite, pensée pour la lecture et la recherche, sans compte ni publicité.
           </p>
           <div class="mt-[clamp(1.25rem,4svh,2rem)] flex flex-wrap justify-center gap-2 md:gap-3">
@@ -407,12 +407,12 @@ mort d'un homme qu'on lance (du haut d'un rocher).
             </div>
             <div class="min-w-0 max-md:text-center">
               <h3 class="font-serif text-lg/8 font-bold">
-                L'édition numérique <em>Bailly 2020 Hugo&nbsp;Chávez</em>
+                L'édition numérique de Gérard Gréco
               </h3>
               <p class="mt-2 text-muted">
                 Gérard Gréco et son équipe ont numérisé le texte, l'ont corrigé à la main d'après les
                 ouvrages de référence, puis ont mis à jour les étymologies et la toponymie, et normalisé
-                les références. C'est leur texte que vous lisez ici. Une
+                les références ; ils l'ont intitulée <em>Bailly 2020 Hugo&nbsp;Chávez</em>. C'est leur texte que vous lisez ici. Une
                 <a
                   href="http://gerardgreco.free.fr/spip.php?article24"
                   target="_blank"
@@ -438,8 +438,8 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                 />
               </div>
               <p class="mt-2 text-sm text-muted">
-                Les erreurs du texte se signalent à l'équipe de M.&nbsp;Gréco, en précisant l'entrée et la
-                version (Chávez).
+                Les erreurs du texte se signalent à l'équipe de M.&nbsp;Gréco, en précisant l'entrée
+                concernée.
               </p>
             </div>
           </article>
