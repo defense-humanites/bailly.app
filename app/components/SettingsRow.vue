@@ -44,10 +44,12 @@
         </UTooltip>
       </p>
       <p
-        v-if="description"
+        v-if="description || $slots.description"
         class="text-sm text-muted"
       >
-        {{ description }}
+        <slot name="description">
+          {{ description }}
+        </slot>
       </p>
     </div>
     <div class="shrink-0">

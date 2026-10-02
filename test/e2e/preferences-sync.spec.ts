@@ -30,9 +30,15 @@ const syncStore = (page: Page) => page.evaluate(() => {
   return { link: store.link(window.location.origin, "preferences"), bookmarks: store.syncedBookmarks, preferences: [...store.syncedPreferences] };
 });
 
+/**
+ * Opens the synchronization: its button (the bookmarks page), or the switch
+ * of the preferences (the preferences page, while off).
+ */
 const openSync = async (page: Page) => {
   await page.getByRole("button", { name: /^Synchronisation/ }).click();
 };
+const preferencesSwitch = (page: Page) => page.getByRole("switch", { name: "Synchroniser les préférences" });
+const bookmarksSwitch = (page: Page) => page.getByRole("switch", { name: "Synchroniser les signets" });
 
 const transliteration = (page: Page) => page.getByRole("switch", { name: "Grec translittéré" });
 const inflectedForms = (page: Page) => page.getByRole("switch", { name: "Formes fléchies" });
@@ -55,7 +61,7 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await goto(PREFERENCES_PATH, { waitUntil: "hydration" });
   await transliteration(page).click();
   await expect(transliteration(page)).toBeChecked();
-  await openSync(page);
+  await preferencesSwitch(page).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByText("Synchroniser vos préférences")).toBeVisible();
   // In the order of the page, on two columns; offered checked, but the size
@@ -79,6 +85,9 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await dialog.getByRole("button", { name: "J'ai conservé ma clé" }).click();
   await expect(dialog.getByText("Préférences à jour")).toBeVisible();
   await page.keyboard.press("Escape");
+  await expect(preferencesSwitch(page)).toBeChecked();
+  await expect(bookmarksSwitch(page)).not.toBeChecked();
+  await expect(page.getByText("4 sur 8, marquées d'un nuage")).toBeVisible();
 
   // A small cloud marks the preferences synchronized (the sorting of the
   // tags too, in the « Signets » card).
@@ -100,7 +109,7 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
 
   // The phone also synchronizes its input mode and the size of the text; the
   // laptop does not.
-  await openSync(phone);
+  await phone.getByRole("button", { name: "Choisir" }).click();
   await phone.getByRole("dialog").getByRole("checkbox", { name: /^Saisie/ }).click();
   await expect.poll(async () => (await syncStore(phone)).preferences).toContain("inputMode");
   await phone.getByRole("dialog").getByRole("checkbox", { name: "Taille du texte" }).click();
@@ -169,4 +178,26 @@ test("the bookmarks and the preferences: one key, enabled and stopped type by ty
   await expect(page.getByText("Synchronisation des préférences désactivée sur cet appareil", { exact: true })).toBeVisible();
   expect(await syncStore(page)).toMatchObject({ bookmarks: true, preferences: [] });
   await expect(page.locator("[data-synced]")).toHaveCount(0);
+
+  // On the card: the bookmarks on, the preferences off.
+  await page.keyboard.press("Escape");
+  await expect(bookmarksSwitch(page)).toBeChecked();
+  await expect(preferencesSwitch(page)).not.toBeChecked();
+  await expect(page.getByRole("status").filter({ hasText: "Synchronisé à l'instant" })).toBeVisible();
+  // The key exists: the preferences are added at once.
+  await preferencesSwitch(page).click();
+  await expect(page.getByText("Synchronisation des préférences activée", { exact: true })).toBeVisible();
+  await expect(preferencesSwitch(page)).toBeChecked();
+  expect((await syncStore(page)).preferences).toHaveLength(4);
+  // Switching off asks first; cancelled, the window closes.
+  await bookmarksSwitch(page).click();
+  await expect(dialog.getByRole("button", { name: "Désactiver sur cet appareil" })).toBeVisible();
+  await dialog.getByRole("button", { name: "Annuler" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(bookmarksSwitch(page)).toBeChecked();
+  // The key, at once.
+  await page.getByRole("button", { name: "Ma clé" }).click();
+  await expect(dialog.getByText("Votre clé de synchronisation")).toBeVisible();
+  await dialog.getByRole("button", { name: "Fermer", exact: true }).last().click(); // (Not the close button.)
+  await expect(dialog).toBeHidden();
 });

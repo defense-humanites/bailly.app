@@ -2,7 +2,7 @@ import { PREFERENCES_COOKIE_MAX_AGE } from "~/utils/preferences";
 
 /**
  * The types of data synchronized on this device, as the server knows them
- * (cf. `SyncButton`): the synchronization's settings are in IndexedDB, read
+ * (cf. `SyncButton`, `SyncCard`): the synchronization's settings are in IndexedDB, read
  * once the application is hydrated, so a cookie tells the server which
  * button to render. Without identifier, set only when the user enables the
  * synchronization (cf. `plugins/sync.client.ts`), removed when it is off.

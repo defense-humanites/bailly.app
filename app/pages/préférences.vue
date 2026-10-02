@@ -115,24 +115,20 @@
   Compact settings: a card per section, a row per setting (name and short
   help on the left, control on the right), so that they all show at once.
   One column (the reading width, centered) below `lg`; from `lg`, two
-  columns, aligned with the header (as the bookmarks page): General and
-  Search on the left, Reading (the tallest, with its preview) and Bookmarks
-  on the right.
+  columns, aligned with the header (as the bookmarks page): General, Search
+  and Synchronization on the left, Reading (the tallest, with its preview)
+  and Bookmarks on the right.
 -->
 <template>
   <div class="px-4 py-6 md:px-6 lg:pt-8 lg:pb-6">
     <div class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 lg:max-w-(--content-max-width) lg:grid-cols-2">
-      <!-- The title, and the synchronization of the preferences. -->
-      <div class="flex items-center justify-between gap-4 lg:col-span-2">
-        <h1 class="text-3xl leading-normal font-bold">
-          Préférences
-        </h1>
-        <SyncButton scope="preferences" />
-      </div>
+      <h1 class="text-3xl leading-normal font-bold lg:col-span-2">
+        Préférences
+      </h1>
 
       <!--
         Two columns from `lg`, balanced (the tallest card, Reading, with
-        Bookmarks; General and Search with the reset); below, one column in
+        Bookmarks; General, Search and Synchronization with the reset); below, one column in
         the order of the cards (`contents`, `order`).
       -->
       <div class="contents lg:flex lg:flex-col lg:gap-6">
@@ -222,6 +218,16 @@
           </SettingsRow>
         </UCard>
 
+        <!--
+          The synchronization of the bookmarks and of the preferences, type
+          by type (rather than a button by the title, as on the bookmarks
+          page: the same button on two pages for one key was puzzling).
+        -->
+        <SyncCard
+          class="order-5"
+          :ui="cardUi"
+        />
+
         <!-- A dangerous action: at the end, apart from the settings, confirmed. -->
         <UModal
           v-model:open="isResetConfirmationOpen"
@@ -236,7 +242,7 @@
             icon="i-lucide-rotate-ccw"
             color="error"
             variant="ghost"
-            class="order-5 justify-self-end lg:self-start"
+            class="order-6 justify-self-end lg:self-start"
           />
 
           <template #footer>

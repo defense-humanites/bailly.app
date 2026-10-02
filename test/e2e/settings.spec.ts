@@ -14,9 +14,11 @@ test.describe("settings", () => {
   test("compact: all the settings at once on a desktop screen", async ({ page, goto }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await goto("/préférences", { waitUntil: "hydration" });
-    const reset = page.getByRole("button", { name: "Réinitialiser les préférences" });
-    await expect(reset).toBeInViewport();
-    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(800);
+    // The synchronization below (with the reset), partly shown.
+    for (const name of ["Général", "Recherche", "Lecture", "Signets"]) {
+      await expect(page.getByRole("region", { name, exact: true })).toBeInViewport({ ratio: 1 });
+    }
+    await expect(page.getByRole("heading", { name: "Synchronisation" })).toBeInViewport();
   });
 
   test("two columns from lg, centered under the header; one below", async ({ page, goto }) => {
