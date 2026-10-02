@@ -134,10 +134,13 @@
     else input.blur();
   };
 
+  const toast = useToast();
+
   /**
    * Updates the tag properties (leaving a field or the edit mode, picking a
    * color): a failure is reported by a toast, and the stored values come
-   * back.
+   * back. A description removed (emptied, or by its clear button) is told
+   * by a toast, which can bring it back.
    */
   const onUpdateTag = async (): Promise<void> => {
     if (
@@ -146,6 +149,7 @@
       && tagDescription.value.trim() === (props.tag.description ?? "")
     ) return;
 
+    const removedDescription = props.tag.description && !tagDescription.value.trim() ? props.tag.description : undefined;
     const response = await bookmarksStore.updateTag(props.tag.key, {
       name: tagName.value,
       description: tagDescription.value,
@@ -156,7 +160,34 @@
       tagName.value = props.tag.name;
       tagDescription.value = props.tag.description ?? "";
       tagColor.value = props.tag.color;
+    } else if (removedDescription) {
+      toast.add({
+        title: "Description supprimée",
+        icon: "i-lucide-circle-check",
+        color: "success",
+        actions: [{
+          label: "Annuler",
+          color: "neutral",
+          variant: "outline",
+          onClick: () => {
+            void bookmarksStore.updateTag(props.tag.key, {
+              name: props.tag.name,
+              description: removedDescription,
+              color: IdbTags.isColorKey(props.tag.color) ? props.tag.color : undefined,
+            });
+          },
+        }],
+      });
     }
+  };
+
+  /**
+   * Removes the description (its field's clear button).
+   */
+  const clearDescription = (): void => {
+    tagDescription.value = "";
+    isAddingDescription.value = false;
+    void onUpdateTag();
   };
 
   /**
@@ -311,6 +342,12 @@
     if (field && field === document.activeElement) {
       if (event.key === "Enter" && event.shiftKey) return;
       event.preventDefault();
+      // Escape cancels: the description stored comes back (and an added one
+      // goes); leaving the field then changes nothing. Enter saves.
+      if (event.key === "Escape") {
+        tagDescription.value = props.tag.description ?? "";
+        if (!props.tag.description) isAddingDescription.value = false;
+      }
       field.blur();
       void onUpdateTag();
     } else if (input && input === document.activeElement) {
@@ -319,8 +356,8 @@
         void onSaveName(input);
         return;
       }
-      // Escape leaves the field; a name that cannot be saved is given up.
-      if (nameError.value || !tagName.value.trim()) tagName.value = props.tag.name;
+      // Escape cancels: the name stored comes back.
+      tagName.value = props.tag.name;
       input.blur();
       void onUpdateTag();
     } else if (event.key === "Escape" || !(event.target as Element | null)?.closest("button, a")) {
@@ -555,16 +592,6 @@
             />
           </UTooltip>
           <UButton
-            v-if="editableEditMode && !showsDescriptionField"
-            icon="i-lucide-text"
-            size="sm"
-            variant="subtle"
-            color="neutral"
-            aria-label="Ajouter une description"
-            :ui="{ base: 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
-            @click="addDescription"
-          />
-          <UButton
             v-if="editableEditMode"
             icon="i-lucide-trash-2"
             size="sm"
@@ -611,7 +638,9 @@
 
       <!--
         The description, under the name and aligned with it; in edit mode, a
-        field with the same text, spacing and size (text, never HTML).
+        field with the same text, spacing and size (text, never HTML), with a
+        button to remove it; without one, in edit mode, a link to add one, in
+        its place (the card grows by its line).
       -->
       <p
         v-if="tagDescription && !showsDescriptionField"
@@ -630,15 +659,36 @@
           aria-label="Description de l'étiquette"
           :aria-description="`${IdbTags.descriptionMaxLength} caractères au plus ; Maj+Entrée pour aller à la ligne`"
           placeholder="Description"
-          class="block w-full resize-none overflow-hidden rounded-lg bg-default/60 px-2 py-1 text-sm/5 text-tag-text placeholder:text-tag-text/60 hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300"
+          class="block w-full resize-none overflow-hidden rounded-lg bg-default/60 py-1 ps-2 pe-8 text-sm/5 text-tag-text placeholder:text-tag-text/60 hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300"
           @blur="onUpdateTag"
         />
+        <UTooltip text="Supprimer la description">
+          <UButton
+            icon="i-lucide-x"
+            size="xs"
+            variant="ghost"
+            color="neutral"
+            aria-label="Supprimer la description"
+            class="absolute end-1 top-1 text-tag-text/75 hover:bg-default hover:text-tag-text"
+            @click="clearDescription"
+          />
+        </UTooltip>
         <span
           v-if="descriptionLeft < 30"
           class="pointer-events-none absolute end-2 bottom-1 rounded bg-default/90 px-1 text-xs text-tag-text tabular-nums"
           aria-hidden="true"
         >{{ descriptionLeft }}</span>
       </div>
+      <UButton
+        v-else-if="editableEditMode"
+        label="Ajouter une description"
+        icon="i-lucide-plus"
+        size="sm"
+        variant="link"
+        color="neutral"
+        class="ms-10 mt-1 px-2 py-1 text-sm/5 font-normal text-tag-text/75 hover:text-tag-text"
+        @click="addDescription"
+      />
     </template>
 
     <!-- Content -->

@@ -109,13 +109,19 @@ test.describe("bookmarks page", () => {
     await expect(picked).toHaveAttribute("data-tag-color", "Teal");
   });
 
-  test("a description: added in the edit mode, shown under the name, the card keeping its size", async ({ page }) => {
+  test("a description: added in the edit mode, shown under the name, removed with an undo", async ({ page }) => {
     const group = card(page, "Vocabulaire homérique");
     const edit = page.getByRole("button", { name: "Modifier l'étiquette « Vocabulaire homérique et tragique »" });
     const height = () => group.evaluate(element => element.getBoundingClientRect().height);
 
-    // Without a description: nothing is shown, and a button adds one.
+    // Without a description: nothing is shown, and, in the edit mode, a link
+    // in its place adds one; Escape cancels it.
     await edit.click();
+    await group.getByRole("button", { name: "Ajouter une description" }).click();
+    await group.getByRole("textbox", { name: "Description de l'étiquette" }).fill("Brouillon");
+    await page.keyboard.press("Escape");
+    await expect(group.getByRole("textbox", { name: "Description de l'étiquette" })).toHaveCount(0);
+    await expect(group.getByRole("button", { name: "Ajouter une description" })).toBeVisible();
     await group.getByRole("button", { name: "Ajouter une description" }).click();
     const field = group.getByRole("textbox", { name: "Description de l'étiquette" });
     await expect(field).toBeFocused();
@@ -133,8 +139,22 @@ test.describe("bookmarks page", () => {
     await expect(field).toHaveValue("Pour l'examen\nde mardi.");
     expect(await height()).toBe(before);
 
-    // Emptied: the description goes.
+    // Escape cancels a change.
+    await field.fill("Autre");
+    await field.press("Escape");
+    await expect(field).toHaveValue("Pour l'examen\nde mardi.");
+
+    // Removed (its clear button, or emptied): told, and it can come back.
+    await group.getByRole("button", { name: "Supprimer la description" }).click();
+    await expect(group.getByRole("textbox", { name: "Description de l'étiquette" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Annuler" }).click();
+    // (The click in the toast, out of the card, left the edit mode.)
+    await expect(edit).toHaveAttribute("aria-pressed", "false");
+    await expect(group.getByText(/Pour l'examen\s+de mardi\./)).toBeVisible();
+    await edit.click();
     await field.fill("");
+    await field.press("Enter");
+    await expect(page.getByText("Description supprimée").first()).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(group.getByText("Pour l'examen")).toHaveCount(0);
   });
@@ -145,12 +165,14 @@ test.describe("bookmarks page", () => {
     const height = () => group.evaluate(element => element.getBoundingClientRect().height);
     const before = await height();
 
-    // Without a description: « Ajouter une description » does not rewrap the name.
+    // Without a description, the card grows by the line of « Ajouter une
+    // description » only.
     await page.getByRole("button", { name: "Modifier l'étiquette « Vocabulaire homérique et tragique »" }).click();
     const name = group.getByRole("textbox", { name: "Nom de l'étiquette" });
     await expect(name).toHaveValue("Vocabulaire homérique et tragique");
     expect(await name.evaluate(element => element.getBoundingClientRect().height)).toBe(32);
-    expect(await height()).toBe(before);
+    const add = (await group.getByRole("button", { name: "Ajouter une description" }).boundingBox())!;
+    expect(await height()).toBeCloseTo(before + add.height + 4, 0);
   });
 
   test("an empty tag: its text aligned with the name", async ({ page }) => {
@@ -268,7 +290,6 @@ test.describe("bookmarks page", () => {
     await expect(edit).toHaveAttribute("aria-pressed", "true");
     const after = (await edit.boundingBox())!;
     expect([after.x, after.y]).toEqual([before.x, before.y]);
-    await expect(card(page, "Vide").locator("[data-slot=header] button").last()).toHaveAccessibleName("Modifier l'étiquette « Vide »");
   });
 
   test("edit buttons: on hover or focus, not at rest", async ({ page }) => {
