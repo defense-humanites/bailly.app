@@ -125,13 +125,20 @@ test.describe("bookmarks page", () => {
     await group.getByRole("button", { name: "Ajouter une description" }).click();
     const field = group.getByRole("textbox", { name: "Description de l'étiquette" });
     await expect(field).toBeFocused();
+    // While focused: the keys and the count under the field.
     await field.fill("Pour l'examen");
+    await expect(group.getByText("pour aller à la ligne").first()).toBeVisible();
+    await expect(group.getByText("13/300")).toBeVisible();
+    await expect(field).toHaveAccessibleDescription(/Maj\+Entrée pour aller à la ligne/);
     await field.press("Shift+Enter"); // A line break.
     await field.pressSequentially("de mardi.");
     await field.press("Enter"); // Validates.
     await page.keyboard.press("Escape");
     await expect(group.getByText(/Pour l'examen\s+de mardi\./)).toBeVisible();
     await expect(group.getByRole("button", { name: "Ajouter une description" })).toHaveCount(0);
+    // The card: a group named by its name (a heading), described by it.
+    await expect(page.getByRole("heading", { level: 2, name: /^Vocabulaire homérique et tragique/ })).toBeVisible();
+    await expect(page.getByRole("group", { name: /^Vocabulaire homérique et tragique/ })).toHaveAccessibleDescription(/Pour l'examen\s+de mardi\./);
 
     // The edit mode keeps the size of the card (the fields replace the texts).
     const before = await height();

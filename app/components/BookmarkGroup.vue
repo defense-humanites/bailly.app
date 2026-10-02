@@ -49,7 +49,25 @@
   /**
    * The characters left in the description, shown near the limit.
    */
-  const descriptionLeft = computed(() => IdbTags.descriptionMaxLength - Array.from(tagDescription.value).length);
+  const descriptionLength = computed(() => Array.from(tagDescription.value).length);
+  const descriptionLeft = computed(() => IdbTags.descriptionMaxLength - descriptionLength.value);
+  /**
+   * Whether the description field has the focus (its keys and count show).
+   */
+  const isDescriptionFocused = ref(false);
+  /**
+   * Why the description could not be saved (Enter), until it changes.
+   */
+  const descriptionFailure = ref<string>();
+  watch(tagDescription, () => descriptionFailure.value = undefined);
+  const descriptionErrorId = useId();
+  const descriptionHintId = useId();
+  /**
+   * The card is a group named by its name (a heading) and described by its
+   * description, read with it by screen readers.
+   */
+  const nameHeadingId = useId();
+  const descriptionId = useId();
 
   // The description field grows with its text, as the description it
   // replaces (wrapped alike): the card keeps its size in the edit mode.
@@ -180,6 +198,39 @@
       });
     }
   };
+
+  /**
+   * Saves the description (Enter in its field): a failure is told on the
+   * field, which keeps the text and the focus; otherwise, it is left.
+   */
+  async function onSaveDescription(field: HTMLTextAreaElement): Promise<void> {
+    if (tagDescription.value.trim() === (props.tag.description ?? "")) {
+      field.blur();
+      return;
+    }
+    const removed = Boolean(props.tag.description) && !tagDescription.value.trim();
+    if (removed) {
+      // As the clear button (with its toast).
+      field.blur();
+      return;
+    }
+    const response = await bookmarksStore.updateTag(
+      props.tag.key,
+      { name: props.tag.name, description: tagDescription.value, color: IdbTags.isColorKey(props.tag.color) ? props.tag.color : undefined },
+      { quiet: true },
+    );
+    if (response.state === "error") descriptionFailure.value = response.message;
+    else field.blur();
+  }
+
+  /**
+   * Leaving the description field saves it (cf. `onUpdateTag`), unless a
+   * failure is told on it.
+   */
+  function onDescriptionBlur(): void {
+    isDescriptionFocused.value = false;
+    if (!descriptionFailure.value) void onUpdateTag();
+  }
 
   /**
    * Removes the description (its field's clear button).
@@ -342,14 +393,15 @@
     if (field && field === document.activeElement) {
       if (event.key === "Enter" && event.shiftKey) return;
       event.preventDefault();
-      // Escape cancels: the description stored comes back (and an added one
-      // goes); leaving the field then changes nothing. Enter saves.
-      if (event.key === "Escape") {
-        tagDescription.value = props.tag.description ?? "";
-        if (!props.tag.description) isAddingDescription.value = false;
+      if (event.key === "Enter") {
+        void onSaveDescription(field);
+        return;
       }
+      // Escape cancels: the description stored comes back (and an added one
+      // goes); leaving the field then changes nothing.
+      tagDescription.value = props.tag.description ?? "";
+      if (!props.tag.description) isAddingDescription.value = false;
       field.blur();
-      void onUpdateTag();
     } else if (input && input === document.activeElement) {
       event.preventDefault();
       if (event.key === "Enter") {
@@ -427,6 +479,9 @@
 <template>
   <UCard
     ref="bookmark-group"
+    role="group"
+    :aria-labelledby="nameHeadingId"
+    :aria-describedby="tagDescription && !showsDescriptionField ? descriptionId : undefined"
     class="group"
     :data-tag-color="tagColor"
     variant="bookmarkGroup"
@@ -460,7 +515,12 @@
               :name="icon"
               class="mx-2 mt-1 size-6 shrink-0"
             />
-            <span class="ml-2 min-w-0 grow py-0.5 pe-2 text-xl/7 font-bold wrap-break-word md:py-0 md:text-2xl/8">{{ tag.name }}<!--
+            <span
+              :id="nameHeadingId"
+              role="heading"
+              aria-level="2"
+              class="ml-2 min-w-0 grow py-0.5 pe-2 text-xl/7 font-bold wrap-break-word md:py-0 md:text-2xl/8"
+            >{{ tag.name }}<!--
               The active tag, marked after its name (as in an entry's panel).
             --><UBadge
               v-if="isActive"
@@ -644,40 +704,93 @@
       -->
       <p
         v-if="tagDescription && !showsDescriptionField"
+        :id="descriptionId"
         class="ms-10 mt-1 px-2 py-1 text-sm/5 whitespace-pre-line wrap-break-word text-tag-text"
         v-text="tagDescription"
       />
+      <!--
+        While it has the focus, the keys (Enter saves, Shift+Enter goes to the
+        line) and the count of its characters show under it, the card growing
+        by their line. A description that cannot be saved (Enter) is told on
+        the field, as a name: a red ring, the message in a bubble under it and
+        in a live region; the field keeps the text and the focus.
+      -->
       <div
         v-else-if="showsDescriptionField"
-        class="relative ms-10 mt-1"
+        class="ms-10 mt-1"
       >
-        <textarea
-          ref="description-input"
-          v-model="tagDescription"
-          rows="1"
-          :maxlength="IdbTags.descriptionMaxLength"
-          aria-label="Description de l'étiquette"
-          :aria-description="`${IdbTags.descriptionMaxLength} caractères au plus ; Maj+Entrée pour aller à la ligne`"
-          placeholder="Description"
-          class="block w-full resize-none overflow-hidden rounded-lg bg-default/60 py-1 ps-2 pe-8 text-sm/5 text-tag-text placeholder:text-tag-text/60 hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-tag-300"
-          @blur="onUpdateTag"
-        />
-        <UTooltip text="Supprimer la description">
-          <UButton
-            icon="i-lucide-x"
-            size="xs"
-            variant="ghost"
-            color="neutral"
-            aria-label="Supprimer la description"
-            class="absolute end-1 top-1 text-tag-text/75 hover:bg-default hover:text-tag-text"
-            @click="clearDescription"
-          />
-        </UTooltip>
+        <UPopover
+          :open="!!descriptionFailure"
+          :dismissible="false"
+          :content="{ side: 'bottom', align: 'start', sideOffset: 6, onOpenAutoFocus: (event: Event) => event.preventDefault(), onCloseAutoFocus: (event: Event) => event.preventDefault() }"
+          :ui="{ content: 'px-3 py-2 text-sm text-error' }"
+        >
+          <template #anchor>
+            <div class="relative">
+              <textarea
+                ref="description-input"
+                v-model="tagDescription"
+                rows="1"
+                :maxlength="IdbTags.descriptionMaxLength"
+                aria-label="Description de l'étiquette"
+                :aria-describedby="`${descriptionErrorId} ${descriptionHintId}`"
+                :aria-invalid="!!descriptionFailure"
+                placeholder="Description"
+                class="block w-full resize-none overflow-hidden rounded-lg bg-default/60 py-1 ps-2 pe-8 text-sm/5 text-tag-text placeholder:text-tag-text/60 hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2"
+                :class="descriptionFailure ? 'ring-2 ring-error focus-visible:ring-error' : 'focus-visible:ring-tag-300'"
+                @focus="isDescriptionFocused = true"
+                @blur="onDescriptionBlur"
+              />
+              <UTooltip text="Supprimer la description">
+                <UButton
+                  icon="i-lucide-x"
+                  size="xs"
+                  variant="ghost"
+                  color="neutral"
+                  aria-label="Supprimer la description"
+                  class="absolute end-1 top-1 text-tag-text/75 hover:bg-default hover:text-tag-text"
+                  @click="clearDescription"
+                />
+              </UTooltip>
+            </div>
+          </template>
+          <template #content>
+            <p aria-hidden="true">
+              {{ descriptionFailure }}
+            </p>
+          </template>
+        </UPopover>
         <span
-          v-if="descriptionLeft < 30"
-          class="pointer-events-none absolute end-2 bottom-1 rounded bg-default/90 px-1 text-xs text-tag-text tabular-nums"
-          aria-hidden="true"
-        >{{ descriptionLeft }}</span>
+          :id="descriptionErrorId"
+          role="status"
+          class="sr-only"
+        >{{ descriptionFailure }}</span>
+        <p
+          :id="descriptionHintId"
+          class="flex-wrap items-center gap-x-1.5 px-2 pt-1 text-xs text-tag-text/75"
+          :class="isDescriptionFocused ? 'flex' : 'sr-only'"
+        >
+          <span class="flex items-center gap-1"><UKbd
+            value="enter"
+            size="sm"
+            aria-hidden="true"
+          /> pour enregistrer</span>
+          <span aria-hidden="true">·</span>
+          <span class="flex items-center gap-1"><UKbd
+            value="shift"
+            size="sm"
+            aria-hidden="true"
+          /><UKbd
+            value="enter"
+            size="sm"
+            aria-hidden="true"
+          /> pour aller à la ligne</span>
+          <span class="sr-only">(Entrée pour enregistrer, Maj+Entrée pour aller à la ligne ;</span>
+          <span
+            class="ms-auto tabular-nums"
+            :class="{ 'font-semibold': descriptionLeft < 30 }"
+          ><span class="sr-only">au plus </span>{{ descriptionLength }}/{{ IdbTags.descriptionMaxLength }}<span class="sr-only"> caractères)</span></span>
+        </p>
       </div>
       <UButton
         v-else-if="editableEditMode"
