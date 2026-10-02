@@ -125,6 +125,11 @@ test("a wrong key is explained", async ({ goto, page }) => {
 
   await page.getByRole("textbox").fill("abaisser zzzz ");
   await expect(page.getByText("« zzzz » n'est pas un mot de la liste.")).toBeVisible();
+  // While a word is typed, as soon as no word starts like it.
+  await page.getByRole("textbox").fill("abaisser aba");
+  await expect(page.getByText("n'est pas un mot de la liste")).toHaveCount(0);
+  await page.getByRole("textbox").fill("abaisser abaq");
+  await expect(page.getByText("« abaq » n'est pas un mot de la liste.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Rejoindre" })).toBeDisabled();
 
   // Twelve valid words that no device synchronizes.
@@ -167,6 +172,9 @@ test("the key can be sent with Enter once its twelfth word is recognized (its fi
   const [hintBox, fieldBox] = await Promise.all([hint.boundingBox(), field.boundingBox()]);
   expect(hintBox!.x + hintBox!.width).toBeGreaterThan(fieldBox!.x + fieldBox!.width * 0.75);
   expect(hintBox!.y + hintBox!.height).toBeGreaterThan(fieldBox!.y + fieldBox!.height * 0.75);
+
+  // Screen readers are told too.
+  await expect(phone.getByRole("status").filter({ hasText: "Clé complète" })).toHaveText("Clé complète : appuyez sur Entrée pour rejoindre.");
 
   await field.press("Enter");
   await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();

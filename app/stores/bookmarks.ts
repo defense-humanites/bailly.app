@@ -18,6 +18,7 @@ import {
   type TagColorKey,
   type TagKey,
 } from "~/idb";
+import { comparableTagName } from "~/idb/merge";
 import { parseBookmarksFile, toBookmarksFile, type BookmarksFile } from "~/idb/transfer";
 import type { ApiExcerptsData, ApiResponse } from "#shared/types/api";
 import { MAX_EXCERPTS_URIS, toApiQuery } from "#shared/utils/api";
@@ -37,7 +38,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    */
   const initialized = ref(false);
   /**
-   * List of existing tags, sorted by position.
+   * List of existing tags, the pinned ones first (cf. `orderTags`).
    */
   const tags = ref<IdbTagWithKey[]>([]);
   /**
@@ -145,13 +146,19 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    * key) is found by its former key.
    */
   async function fetchTags(): Promise<void> {
+    const previousName = currentTag.value?.name;
     tags.value = await IdbTags.getAll();
     if (currentTag.value) return;
 
     const legacyCurrentTag = tags.value.find(
       tag => tag.legacyKey !== undefined && String(tag.legacyKey) === currentTagKey.value,
     );
-    currentTagKey.value = (legacyCurrentTag ?? tags.value[0])?.key ?? null;
+    // A tag fused into its homonym (created on another device, cf.
+    // `normalize`): the homonym stays current.
+    const homonym = previousName === undefined
+      ? undefined
+      : tags.value.find(tag => comparableTagName(tag.name) === comparableTagName(previousName));
+    currentTagKey.value = (legacyCurrentTag ?? homonym ?? tags.value[0])?.key ?? null;
   }
 
   async function fetchTaggedEntries(): Promise<void> {
@@ -203,9 +210,6 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
 
   /**
    * Creates a tag, which becomes the current one.
-   */
-  /**
-   * Creates a tag, which becomes the current one.
    * @param options.quiet Whether a failure is left to the caller to show
    * (no toast).
    */
@@ -243,7 +247,9 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   async function pinTag(key: TagKey, pinned: boolean): Promise<IdbResult<IdbTagWithKey>> {
     await initialize();
     const result = report(await IdbTags.pin(key, pinned));
-    if (result.state === "success") await fetchTags();
+    // After a failure too (e.g. the tag deleted meanwhile): the tags shown
+    // are those stored.
+    await fetchTags();
     return result;
   }
 

@@ -286,14 +286,16 @@
 
   const typedWords = computed(() => keyModule.value?.splitWords(joinText.value) ?? []);
   /**
-   * The first word typed that is not in the list (the last one only once
-   * followed by another).
+   * The first word typed that is not in the list: the last one too, while it
+   * is being typed, as soon as no word of the list starts like it (more
+   * letters would not make it one).
    */
   const unknownWord = computed(() => {
     const module = keyModule.value;
     if (!module) return null;
-    const complete = /\s$/.test(joinText.value) ? typedWords.value : typedWords.value.slice(0, -1);
-    return complete.find(word => !module.resolveWord(word)) ?? null;
+    const words = typedWords.value;
+    const typing = /\s$/.test(joinText.value) ? -1 : words.length - 1;
+    return words.find((word, i) => (i === typing ? !module.suggestWords(word, 1).length : !module.resolveWord(word))) ?? null;
   });
 
   /**
@@ -314,7 +316,11 @@
    * (the words may be separated by line breaks); Shift+Enter still does.
    */
   const onJoinEnter = (event: KeyboardEvent): void => {
-    if (!keyReady.value || event.shiftKey || event.isComposing || busy.value) return;
+    // Safari ends a composition with an Enter whose `isComposing` is false,
+    // but whose `keyCode` is 229 (its only sign).
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- See above.
+    const composing = event.isComposing || event.keyCode === 229;
+    if (!keyReady.value || event.shiftKey || composing || busy.value) return;
     event.preventDefault();
     (event.target as HTMLTextAreaElement).form?.requestSubmit();
   };
@@ -761,11 +767,13 @@
               </UTextarea>
             </UFormField>
             <p class="text-muted tabular-nums">
-              {{ typedWords.length }} mot{{ typedWords.length > 1 ? "s" : "" }} sur {{ SYNC_KEY_WORD_COUNT }}<span
-                v-if="keyReady"
-                class="sr-only"
-              > : Entrée pour valider</span>
+              {{ typedWords.length }} mot{{ typedWords.length > 1 ? "s" : "" }} sur {{ SYNC_KEY_WORD_COUNT }}
             </p>
+            <!-- For screen readers, the key drawn in the field, once ready. -->
+            <span
+              role="status"
+              class="sr-only"
+            >{{ keyReady ? "Clé complète : appuyez sur Entrée pour rejoindre." : "" }}</span>
           </form>
           <UAlert
             v-if="linkKey && (joinError ?? actionError)"

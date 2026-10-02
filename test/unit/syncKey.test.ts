@@ -58,3 +58,7 @@ test("errors are explained", () => {
   }
   throw new Error("No invalid combination found.");
 });
+
+test("the words of a text written with separate accents (decomposed) are whole", () => {
+  expect(splitWords("académie élève".normalize("NFD"))).toEqual(["académie", "élève"]);
+});

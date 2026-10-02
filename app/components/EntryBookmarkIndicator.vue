@@ -8,7 +8,7 @@
   const { tags, currentTagKey } = storeToRefs(bookmarksStore);
 
   /**
-   * The entry's tags, in the user's order.
+   * The entry's tags, in their order.
    */
   const entryTags = computed(() => {
     const keys = new Set(bookmarksStore.tagKeysOf(props.uri));
@@ -17,7 +17,7 @@
 
   /**
    * The tag shown: the current one if the entry has it, otherwise the first
-   * one in the user's order.
+   * one in their order.
    */
   const shownTag = computed(() =>
     entryTags.value.find(tag => tag.key === currentTagKey.value) ?? entryTags.value[0],

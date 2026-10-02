@@ -16,7 +16,7 @@ const logades = {
 };
 
 /**
- * Tags created in this order, thus in the user's order: Rouge, Ciel, Vert.
+ * Tags in their order (by name, none pinned): Ciel, Rouge, Vert.
  * The current tag is Ciel. λόγος and λογοτέχνης are favorites.
  */
 async function seed(page: Page): Promise<void> {

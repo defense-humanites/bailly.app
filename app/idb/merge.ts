@@ -11,8 +11,9 @@ import type { TagColorKey } from "./IdbTags";
  * - A deletion is a version like any other (`deleted`: a tombstone), so that
  *   it is not undone by a device that still has the record.
  * - The tags are not arranged by hand: a few can be pinned (`pinnedAt`, part
- *   of the tag's record), the others being sorted by the interface (a local
- *   preference, not synchronized).
+ *   of the tag's record), the others coming by name (cf. `orderTags`); the
+ *   interface may sort them otherwise, as this device's choice (not
+ *   synchronized).
  * - The entries are identified by their URI and keep their word, not their
  *   excerpt: each device keeps a copy of the excerpts apart (cf.
  *   `IdbStore.Excerpts`), so that the lockers stay small and the excerpts

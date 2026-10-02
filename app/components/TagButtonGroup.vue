@@ -36,7 +36,7 @@
 
   /**
    * All the tags, the current one first (marked « active »), then the others
-   * in the user's order: the entry can be added to (or removed from) them in
+   * in their order: the entry can be added to (or removed from) them in
    * the popover, where the names show in full.
    */
   const panelTags = computed(() => [

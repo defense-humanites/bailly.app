@@ -183,6 +183,17 @@ describe("normalize", () => {
   });
 });
 
+test("normalize: a pinned tag fused into its homonym (created first) loses its pinning; the kept one keeps its own", () => {
+  const tag = (key: string, name: string, created: number, pinned?: number): TagRecord =>
+    withoutUndefined({ key, name, description: "", color: "Blue", createdAt: stamp(created), pinnedAt: pinned === undefined ? undefined : stamp(pinned), updatedAt: stamp(pinned ?? created) });
+  const fuse = (...tags: TagRecord[]) => normalize(canonicalState({ ...emptyState(), tags })).tags.filter(record => !record.deleted);
+
+  // An accepted loss (rare: homonyms created on two devices before they
+  // synchronize): rewriting the kept tag would need a new stamp.
+  expect(fuse(tag("t1", "Homère", 1), tag("t2", "homère", 2, 3))).toEqual([tag("t1", "Homère", 1)]);
+  expect(fuse(tag("t1", "Homère", 1, 4), tag("t2", "homère", 2))).toEqual([tag("t1", "Homère", 1, 4)]);
+});
+
 test("the latest version of a record wins; at the same stamp, the deletion", () => {
   const star = (updatedAt: string, deleted?: true): StarredRecord =>
     withoutUndefined({ uri: "logos", word: "λόγος", updatedAt, deleted });

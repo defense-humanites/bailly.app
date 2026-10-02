@@ -224,6 +224,16 @@ test("after a merge, the current tag stays, whatever the order of the tags", asy
   expect(store.tags.map(tag => tag.name)).toEqual([tags.banquet.name, "Alcibiade", tags.theetete.name]);
   expect(store.currentTagKey).toBe(theetete.key);
 
+  // The current tag fused into its homonym, created first on another device:
+  // the homonym becomes the current one.
+  const lysis = unwrap(await store.createTag({ name: "Lysis" }));
+  expect(store.currentTagKey).toBe(lysis.key);
+  const homonym = { key: "earlier", name: "lysis", description: "", color: "Rose" as const, createdAt: "0000000000001-0000-a", updatedAt: stamp(2_500) };
+  unwrap(await store.mergeState({ ...emptyState(), tags: [homonym] }));
+  expect(store.tags.map(tag => tag.key)).not.toContain(lysis.key);
+  expect(store.currentTagKey).toBe("earlier");
+  store.setCurrentTag(theetete.key);
+
   // The current tag deleted on another device: the first tag becomes the current one.
   const deleted = (await IdbBookmarks.getState()).tags.map(tag => (tag.key === theetete.key ? { ...tag, deleted: true as const, updatedAt: stamp(3_000) } : tag));
   unwrap(await store.mergeState({ ...emptyState(), tags: deleted }));

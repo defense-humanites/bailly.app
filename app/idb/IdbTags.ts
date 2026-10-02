@@ -70,8 +70,8 @@ export class IdbTags {
       IdbTags.isColorKey(el),
     );
 
-    // If no color remains, only exclude those used by the first half of the
-    // tags (in their order).
+    // If no color remains, only exclude those used by the latest created
+    // half of the tags.
     const colorsExhausted = usedColorKeys.length === this.colorKeys.length;
     const excluded = colorsExhausted
       ? usedColorKeys.slice(0, Math.floor(usedColorKeys.length / 2))
@@ -273,10 +273,11 @@ export class IdbTags {
 
   /**
    * Returns all the distinct `Color` enum keys (e.g. 'Blue') that are already
-   * used by the existing tags, in their order.
+   * used by the existing tags, the latest created first.
    */
   static async getUsedColorKeys(): Promise<ColorKey[]> {
-    return [...new Set((await this.getAll()).map(tag => tag.color))];
+    const tags = (await this.getAll()).sort((a, b) => (a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0));
+    return [...new Set(tags.map(tag => tag.color))];
   }
 
   /**

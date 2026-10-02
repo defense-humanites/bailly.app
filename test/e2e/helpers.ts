@@ -77,8 +77,8 @@ export type AppRoot = Element & {
 /**
  * Adds bookmarks through the app's store (IndexedDB), then reloads the page
  * (and waits for its hydration).
- * @param tags Tags to create, in this order (a new tag goes first, and becomes
- * the current one), with their entries.
+ * @param tags Tags to create, in this order (a new tag becomes the current
+ * one), with their entries.
  * @param current The name of the tag to make current afterwards.
  */
 export async function seedBookmarks(
@@ -116,7 +116,7 @@ export function bookmarksState(page: Page): Promise<{ tags: string[]; tagged: nu
 }
 
 /**
- * The names of the tags to which an entry belongs, in the user's order.
+ * The names of the tags to which an entry belongs, in their order.
  */
 export function tagNamesOf(page: Page, uri: string): Promise<string[]> {
   return page.evaluate((uri) => {
