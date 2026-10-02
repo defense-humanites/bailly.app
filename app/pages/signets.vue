@@ -41,7 +41,7 @@
       id: groupId(tag.key),
       name: tag.name,
       color: tag.color,
-      icon: tag.pinnedAt === undefined ? "i-bailly-tag-filled" : "i-lucide-pin",
+      icon: tag.pinnedAt === undefined ? "i-bailly-tag-filled" : "i-bailly-pin-filled",
       count: bookmarksStore.entriesOf(tag.key).length,
       active: tag.key === currentTagKey.value,
     })),

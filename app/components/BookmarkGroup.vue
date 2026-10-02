@@ -188,7 +188,7 @@
    */
   const icon = computed((): string => {
     if (props.customIcon) return props.customIcon;
-    return props.editable && props.tag.pinnedAt !== undefined ? "i-lucide-pin" : "i-bailly-tag-filled";
+    return props.editable && props.tag.pinnedAt !== undefined ? "i-bailly-pin-filled" : "i-bailly-tag-filled";
   });
 
   const editableEditMode = computed(

@@ -401,7 +401,7 @@ test.describe("bookmarks page, sorting and pinning", () => {
     await pin.click();
     await expect(pin).toHaveAttribute("aria-pressed", "true");
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Gamma", "Alpha"]);
-    await expect(beta.locator("[data-slot=header] .iconify.i-lucide\\:pin").first()).toBeVisible();
+    await expect(beta.locator("[data-slot=header] .iconify.i-bailly\\:pin-filled").first()).toBeVisible();
     await sortBy("Par nom");
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Alpha", "Gamma"]);
     await pin.click();
