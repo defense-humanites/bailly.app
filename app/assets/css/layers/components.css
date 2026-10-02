@@ -203,6 +203,50 @@
 }
 
 /*
+ * A bookmarks' card reached from the table of contents (cf. `BookmarksToc`):
+ * outlined for a moment in its tag's color, the outline coming out of its
+ * edge, then fading; with reduced motion, it only fades.
+ */
+[data-toc-target] {
+  animation: toc-target 1.6s ease-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-name: toc-target-still;
+  }
+}
+
+@keyframes toc-target {
+  0% {
+    outline: 3px solid color-mix(in srgb, var(--tag-400) 0%, transparent);
+    outline-offset: 0;
+  }
+
+  20%,
+  45% {
+    outline: 3px solid var(--tag-400);
+    outline-offset: 5px;
+  }
+
+  100% {
+    outline: 3px solid color-mix(in srgb, var(--tag-400) 0%, transparent);
+    outline-offset: 5px;
+  }
+}
+
+@keyframes toc-target-still {
+  0%,
+  45% {
+    outline: 3px solid var(--tag-400);
+    outline-offset: 5px;
+  }
+
+  100% {
+    outline: 3px solid color-mix(in srgb, var(--tag-400) 0%, transparent);
+    outline-offset: 5px;
+  }
+}
+
+/*
  * The faded edges of the bookmarks' table of contents (cf. `BookmarksToc`):
  * registered lengths, so that they transition as its arrows fade.
  */

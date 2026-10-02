@@ -99,8 +99,25 @@
     if (SCROLL_KEYS.has(event.key) && !(event.target as Element | null)?.closest("input, textarea, [contenteditable]")) release();
   });
 
-  const follow = (key: string): void => {
-    followed = current.value = key;
+  /**
+   * Follows a link: its group is being read, and its card is outlined for a
+   * moment (`[data-toc-target]`, cf. `components.css`), started again if the
+   * same link is followed twice.
+   */
+  const follow = (group: TocGroup): void => {
+    followed = current.value = group.key;
+    const card = document.getElementById(group.id);
+    if (!card) return;
+    card.removeAttribute("data-toc-target");
+    // Restarts the animation (a reflow between removing and setting).
+    card.getBoundingClientRect();
+    card.setAttribute("data-toc-target", "");
+    const end = (event: AnimationEvent): void => {
+      if (event.target !== card) return;
+      card.removeAttribute("data-toc-target");
+      card.removeEventListener("animationend", end);
+    };
+    card.addEventListener("animationend", end);
   };
 
   /**
@@ -167,21 +184,6 @@
   };
 
   /**
-   * A vertical wheel scrolls the row sideways, as long as it can go that way
-   * (then the page scrolls).
-   */
-  function onWheel(event: WheelEvent): void {
-    const element = row.value;
-    stopRowScroll();
-    if (!element || !overflows.value || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-    const max = element.scrollWidth - element.clientWidth;
-    if ((event.deltaY < 0 && element.scrollLeft > 0) || (event.deltaY > 0 && element.scrollLeft < max - 1)) {
-      event.preventDefault();
-      element.scrollLeft += event.deltaY;
-    }
-  }
-
-  /**
    * The mark under the group being read: one line in the row that slides
    * from link to link (`translate`, `width`), in the group's color; placed at
    * once when it appears (`markSlides`), and without sliding with reduced
@@ -230,10 +232,12 @@
 
     Sticky under the header (whose bottom moves on small screens, cf.
     `--header-bottom`), on a single row of constant height (`--toc-height`,
-    cf. `signets.vue`) that scrolls sideways: to the edges of the screen
-    below `md`; from `md`, its edges fade where it overflows, with arrows
-    (fine pointer), both fading in and out. Once stuck, the header's background and border, across
-    the whole window (a pseudo-element; the page clips it sideways).
+    cf. `signets.vue`) that scrolls sideways (to the edges of the screen
+    below `md`), by a horizontal swipe or wheel only (a vertical one scrolls
+    the page, even over the row); its edges fade where it overflows, with
+    arrows for a fine pointer (a touch screen swipes), both fading in and
+    out. Once stuck, the header's background and border, across the whole
+    window (a pseudo-element; the page clips it sideways).
   -->
   <nav
     ref="nav"
@@ -243,12 +247,12 @@
   >
     <ul
       ref="row"
-      class="relative flex gap-2 overflow-x-auto py-2 transition-[--toc-fade-start,--toc-fade-end] duration-200 ease-out [scrollbar-width:none] max-md:-mx-4 max-md:px-4 md:-mx-1 md:px-1 md:[mask-image:linear-gradient(to_right,transparent,#000_var(--toc-fade-start),#000_calc(100%-var(--toc-fade-end)),transparent)]"
+      class="relative flex gap-2 overflow-x-auto py-2 transition-[--toc-fade-start,--toc-fade-end] duration-200 ease-out [scrollbar-width:none] max-md:-mx-4 max-md:px-4 md:-mx-1 md:px-1 [mask-image:linear-gradient(to_right,transparent,#000_var(--toc-fade-start),#000_calc(100%-var(--toc-fade-end)),transparent)]"
       :style="{
         '--toc-fade-start': canScrollStart ? `${EDGE}px` : '0px',
         '--toc-fade-end': canScrollEnd ? `${EDGE}px` : '0px',
       }"
-      @wheel="onWheel"
+      @wheel.passive="stopRowScroll"
       @pointerdown="stopRowScroll"
       @touchstart.passive="stopRowScroll"
     >
@@ -268,7 +272,7 @@
           :class="group.active
             ? 'bg-tag-text text-tag-100 hover:bg-tag-text/90'
             : 'bg-tag-100 text-tag-text ring ring-tag-300/60 hover:bg-tag-200/80'"
-          @click="follow(group.key)"
+          @click="follow(group)"
         >
           <UIcon
             :name="group.icon"
@@ -299,7 +303,7 @@
       variant="outline"
       tabindex="-1"
       aria-hidden="true"
-      class="absolute start-0 top-1/2 hidden -translate-y-1/2 bg-default transition-[opacity,visibility] duration-200 ease-out pointer-fine:md:flex"
+      class="absolute start-0 top-1/2 hidden -translate-y-1/2 bg-default transition-[opacity,visibility] duration-200 ease-out pointer-fine:flex max-md:-start-2"
       :class="canScrollStart ? 'visible opacity-100' : 'invisible opacity-0'"
       @click="scrollRowBy(-1)"
     />
@@ -310,7 +314,7 @@
       variant="outline"
       tabindex="-1"
       aria-hidden="true"
-      class="absolute end-0 top-1/2 hidden -translate-y-1/2 bg-default transition-[opacity,visibility] duration-200 ease-out pointer-fine:md:flex"
+      class="absolute end-0 top-1/2 hidden -translate-y-1/2 bg-default transition-[opacity,visibility] duration-200 ease-out pointer-fine:flex max-md:-end-2"
       :class="canScrollEnd ? 'visible opacity-100' : 'invisible opacity-0'"
       @click="scrollRowBy(1)"
     />

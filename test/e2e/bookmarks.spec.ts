@@ -393,6 +393,15 @@ test.describe("bookmarks page, table of contents", () => {
     expect(box!.height).toBe(48);
     expect(await toc.locator("ul").evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
 
+    // A vertical wheel over the row scrolls the page, not the row.
+    await toc.hover();
+    await page.mouse.wheel(0, 300);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+    expect(await toc.locator("ul").evaluate(element => element.scrollLeft)).toBe(0);
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
+
     const target = toc.getByRole("link", { name: /^Étiquette numéro 12,/ });
     await target.click();
     await expect(target).toHaveAttribute("aria-current", "location");
@@ -401,6 +410,9 @@ test.describe("bookmarks page, table of contents", () => {
     const headerBottom = await page.locator("header").first().evaluate(element => element.getBoundingClientRect().bottom);
     await expect.poll(async () => (await toc.boundingBox())!.y).toBeCloseTo(headerBottom, 0);
     await expect(target).toBeInViewport({ ratio: 1 });
+    // Its card outlined for a moment.
+    await expect(card(page, "Étiquette numéro 12")).toHaveAttribute("data-toc-target", "");
+    await expect(card(page, "Étiquette numéro 12")).not.toHaveAttribute("data-toc-target");
     // The mark slides under its link.
     await expect.poll(async () => {
       const [mark, link] = await Promise.all([toc.locator("[data-toc-mark]").boundingBox(), target.boundingBox()]);
@@ -413,6 +425,22 @@ test.describe("bookmarks page, table of contents", () => {
     await page.mouse.move(640, 400);
     await page.mouse.wheel(0, -100000);
     await expect(toc.getByRole("link", { name: /^Favoris/ })).toHaveAttribute("aria-current", "location");
+  });
+
+  // On a narrow window with a mouse too, arrows scroll the row.
+  test("arrows on a narrow window", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 390, height: 700 });
+    await goto("/signets", { waitUntil: "hydration" });
+    await seedBookmarks(page, {
+      tags: Array.from({ length: 8 }, (_, i) => ({ name: `Étiquette numéro ${i + 1}`, color: "Sky" })),
+    });
+    const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
+    const [previous, next] = [toc.locator("button").first(), toc.locator("button").last()];
+    await expect(next).toBeVisible();
+    await expect(previous).toBeHidden();
+    await next.click();
+    await expect.poll(() => toc.locator("ul").evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+    await expect(previous).toBeVisible();
   });
 
   // Scrolling the page, the row follows the group being read; with reduced
