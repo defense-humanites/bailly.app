@@ -11,7 +11,7 @@
   // `md:text-sm`): large enough to check the Greek diacritics as they are
   // typed, and, on mobile, the size below which iOS Safari zooms in when the
   // input gets the focus. The bar is thus 40px high, its buttons with it, in
-  // the 56px of the header.)
+  // the header (56px on mobile, `--header-height` from `md`).)
 
   type ResultItem = InputMenuItem & {
     /** The entry excerpt (or headword, for homonyms). */

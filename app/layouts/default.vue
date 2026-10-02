@@ -7,7 +7,7 @@
 <template>
   <div>
     <AppHeader />
-    <main class="px-safe pb-safe md:min-h-[calc(100dvh-(var(--spacing)*14))]">
+    <main class="px-safe pb-safe md:min-h-[calc(100dvh-var(--header-height))]">
       <slot />
     </main>
   </div>

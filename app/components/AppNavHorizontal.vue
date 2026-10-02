@@ -75,7 +75,7 @@
   -->
   <header
     ref="header"
-    class="sticky z-[99] border-b bg-bar backdrop-blur-sm transition-[top,border-color] duration-300 ease-out motion-reduce:transition-none md:top-0 md:h-14 md:px-safe-6 md:transition-[border-color]"
+    class="sticky z-[99] border-b bg-bar backdrop-blur-sm transition-[top,border-color] duration-300 ease-out motion-reduce:transition-none md:top-0 md:h-(--header-height) md:px-safe-6 md:transition-[border-color]"
     :class="[titleRowShown ? 'top-0' : '-top-12', scrolled && !extended ? 'border-default' : 'border-transparent']"
   >
     <nav

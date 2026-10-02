@@ -142,6 +142,12 @@
   }
 
   /*
+   * The height of the header from `md` (a single row): the search bar (40px)
+   * with 12px above and under it, not to stick to the browser's interface.
+   */
+  --header-height: 4rem;
+
+  /*
    * The bottom of the header, once the page is scrolled (cf.
    * `AppNavHorizontal`): below `md`, the search bar row (and its border),
    * and the title row too while it is shown; for what sticks under it.
@@ -149,7 +155,7 @@
   --header-bottom: calc(3.5rem + 1px);
 
   @variant md {
-    --header-bottom: 3.5rem;
+    --header-bottom: var(--header-height);
   }
 }
 

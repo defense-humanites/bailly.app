@@ -122,14 +122,16 @@ mort d'un homme qu'on lance (du haut d'un rocher).
     <!--
       The hero, framed like a title page: a thick and a thin rule, in the cloth of
       the icon. It fills the window under the header: on mobile, with equal
-      margins all around; from `md`, close to the header (0.5rem), its side and
-      bottom margins (4rem) matching the top one, header included. Its height
+      margins all around; from `md`, right under the header, so that the search
+      bar is as far from the frame as from the top of the window (cf.
+      `--header-height`), its side and bottom margins (4rem) matching the top
+      one, header included. Its height
       uses `svh`, so that it does not change when the mobile browser bars
       collapse; its content scales with the window height, and the frame grows
       rather than letting it overflow (e.g. a phone in landscape).
     -->
-    <div class="p-4 md:px-16 md:pt-2 md:pb-16">
-      <section class="flex min-h-[calc(100svh-(6.5rem+1px)-2rem)] flex-col items-center rounded-xl border-2 border-terracotta-700 px-3 pt-[clamp(1rem,3svh,3rem)] pb-[clamp(0.25rem,1svh,1rem)] text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[calc(100svh-3.5rem-0.5rem-4rem)] md:px-8 dark:border-terracotta-600 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-600)]">
+    <div class="p-4 md:px-16 md:pt-0 md:pb-16">
+      <section class="flex min-h-[calc(100svh-(6.5rem+1px)-2rem)] flex-col items-center rounded-xl border-2 border-terracotta-700 px-3 pt-[clamp(1rem,3svh,3rem)] pb-[clamp(0.25rem,1svh,1rem)] text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[calc(100svh-var(--header-height)-4rem)] md:px-8 dark:border-terracotta-600 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-600)]">
         <div class="my-auto flex w-full flex-col items-center">
           <UIcon
             name="i-bailly-bailly"
