@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { splitExcerpt } from "~/helpers";
   import type { NuxtLinkProps } from "#app";
   import type { CardProps } from "@nuxt/ui";
   import type { Entry, EntryData } from "#shared/types/api";
@@ -46,6 +47,11 @@
    */
   const greek = useGreek();
 
+  /**
+   * An excerpt split around its headword (or, not known yet, the word).
+   */
+  const excerptParts = (shown: DisplayedEntry) => splitExcerpt(shown.word, shown.excerpt || shown.word);
+
   const definitionHtml = (htmlDefinition: string): string =>
     greek.html(linkDefinition(htmlDefinition, { links: !props.link }));
 
@@ -88,8 +94,11 @@
       class="definition font-serif"
       :class="ui?.entry"
     >
-      <!-- A bookmark whose excerpt is not known yet: its word. -->
-      {{ greek.text(shown.excerpt || shown.word) }}
+      <!--
+        Its headword emphasized, as in the search results and the history
+        (cf. `splitExcerpt`); a bookmark whose excerpt is not known yet: its
+        word.
+      --><span class="font-semibold">{{ greek.text(excerptParts(shown).word) }}</span>{{ greek.text(excerptParts(shown).rest) }}
     </div>
   </DefineEntry>
 
