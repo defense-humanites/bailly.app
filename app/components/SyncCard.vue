@@ -16,12 +16,12 @@
 
   /**
    * A light Aegean blue, as the button of the bookmarks page (`secondary`),
-   * fading from the top right corner into the card background: told apart
-   * from the settings.
+   * in the top right corner only, around the card background (a rounded
+   * shape, from the bottom left corner): told apart from the settings.
    */
   const ui = computed(() => ({
     ...props.ui,
-    root: "[--sync-tint:color-mix(in_oklab,var(--ui-bg)_80%,var(--ui-color-secondary-500))] bg-default bg-[radial-gradient(ellipse_at_top_right,var(--sync-tint),var(--ui-bg)_75%)] ring-(--ui-color-secondary-200) divide-secondary/20 dark:ring-(--ui-color-secondary-900)",
+    root: "[--sync-tint:color-mix(in_oklab,var(--ui-bg)_84%,var(--ui-color-secondary-500))] dark:[--sync-tint:color-mix(in_oklab,var(--ui-bg)_80%,var(--ui-color-secondary-500))] bg-default bg-[radial-gradient(ellipse_at_bottom_left,var(--ui-bg)_55%,var(--sync-tint))] ring-(--ui-color-secondary-200) divide-secondary/20 dark:ring-(--ui-color-secondary-900)",
     body: `${props.ui.body ?? ""} divide-secondary/20`,
   }));
 
