@@ -207,6 +207,22 @@
   const isPinned = computed((): boolean => props.editable && props.tag.pinnedAt !== undefined);
 
   /**
+   * Pins the tag, or unpins it. A pinned tag moves to the top: the page
+   * follows it (smoothly, unless reduced motion), the user caring for it; an
+   * unpinned one, given up, is left to go.
+   */
+  async function togglePin(): Promise<void> {
+    const pinning = !isPinned.value;
+    const result = await bookmarksStore.pinTag(props.tag.key, pinning);
+    if (!pinning || result.state !== "success") return;
+    await nextTick();
+    const element = unrefElement(bookmarkGroup);
+    if (!(element instanceof HTMLElement)) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    element.scrollIntoView({ behavior: reduced ? "instant" : "smooth", block: "start" });
+  }
+
+  /**
    * Out of edit mode, the actions show on hover, on focus (they stay in the
    * tab order: transparent, not hidden) and always on a touch screen (which
    * has no hover).
@@ -533,7 +549,7 @@
               :aria-pressed="isPinned"
               :class="revealed"
               :ui="{ base: isPinned ? 'bg-default/90 hover:bg-default active:bg-default/75 ring-tag-300 text-tag-text' : 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
-              @click="bookmarksStore.pinTag(tag.key, !isPinned)"
+              @click="togglePin"
             />
           </UTooltip>
           <UButton

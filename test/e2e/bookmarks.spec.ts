@@ -359,6 +359,34 @@ test.describe("bookmarks page, long groups", () => {
   });
 });
 
+test.describe("bookmarks page, pinning and scrolling", () => {
+  // The page follows a tag pinned (to the top), not one unpinned.
+  test("a tag pinned is followed, a tag unpinned left to go", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1280, height: 700 });
+    await goto("/signets", { waitUntil: "hydration" });
+    await seedBookmarks(page, {
+      tags: Array.from({ length: 12 }, (_, i) => ({ name: `Étiquette ${String(i + 1).padStart(2, "0")}`, color: "Sky", entries: [logos] })),
+    });
+    const last = card(page, "Étiquette 12");
+    await last.scrollIntoViewIfNeeded();
+    const pin = page.getByRole("button", { name: "Épingler l'étiquette « Étiquette 12 »" });
+    await pin.click();
+    await expect(pin).toHaveAttribute("aria-pressed", "true");
+    // Followed: under the header and the table of contents, at the top.
+    await expect.poll(() => last.evaluate(element => Math.round(element.getBoundingClientRect().top))).toBeLessThan(250);
+    await expect(last).toBeInViewport();
+
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
+    await pin.click();
+    await expect(pin).toHaveAttribute("aria-pressed", "false");
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    await expect(last).not.toBeInViewport();
+  });
+});
+
 test.describe("bookmarks page, quotas", () => {
   // The number of tags in the new tag field, with the quota; beyond it, told
   // on the field.
