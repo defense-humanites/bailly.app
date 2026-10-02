@@ -486,7 +486,6 @@ test.describe("bookmarks page, sorting and pinning", () => {
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Gamma", "Alpha", "Bêta"]);
     await page.getByRole("button", { name: "Affichage" }).click();
     await expect(page.getByRole("menuitemcheckbox", { name: "Par ajout récent" })).toHaveAttribute("aria-checked", "true");
-    await expect(page.getByRole("menuitem", { name: "Toutes les préférences" })).toBeVisible();
     await page.keyboard.press("Escape");
 
     // Kept on the device.

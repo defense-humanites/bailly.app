@@ -9,8 +9,7 @@
   /**
    * The display of the bookmarks: the entries (excerpts or headwords alone)
    * and the sorting of the tags (the pinned ones staying first), the current
-   * choices checked; then the preferences page, where they are too (cf. its
-   * « Signets » card).
+   * choices checked (also on the preferences page, its « Signets » card).
    */
   const items = computed((): DropdownMenuItem[][] => [
     [
@@ -35,9 +34,7 @@
           sort.value = value;
         },
       })),
-      { type: "label", label: "Les étiquettes épinglées restent en tête.", class: "font-normal text-muted" },
     ],
-    [{ label: "Toutes les préférences", icon: "i-lucide-sliders-horizontal", to: encodeURI("/préférences") }],
   ]);
 </script>
 
