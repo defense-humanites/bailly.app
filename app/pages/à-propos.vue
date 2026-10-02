@@ -98,17 +98,19 @@ mort d'un homme qu'on lance (du haut d'un rocher).
   <div>
     <!--
       The hero, framed like a title page: a thick and a thin rule, in the cloth of
-      the icon. It fills the window under the header, with equal margins all
-      around (`svh`: it does not change height when the mobile browser bars
-      collapse); its content scales with the window height, and the frame grows
+      the icon. It fills the window under the header: on mobile, with equal
+      margins all around; from `md`, close to the header (0.5rem), its side and
+      bottom margins (4rem) matching the top one, header included. Its height
+      uses `svh`, so that it does not change when the mobile browser bars
+      collapse; its content scales with the window height, and the frame grows
       rather than letting it overflow (e.g. a phone in landscape).
     -->
-    <div class="p-4 md:p-6">
-      <section class="flex min-h-[calc(100svh-(6.5rem+1px)-2rem)] flex-col items-center rounded-xl border-2 border-terracotta-700 px-3 pt-[clamp(1rem,3svh,3rem)] pb-[clamp(0.25rem,1svh,1rem)] text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[calc(100svh-3.5rem-3rem)] md:px-8 dark:border-terracotta-600 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-600)]">
+    <div class="p-4 md:px-16 md:pt-2 md:pb-16">
+      <section class="flex min-h-[calc(100svh-(6.5rem+1px)-2rem)] flex-col items-center rounded-xl border-2 border-terracotta-700 px-3 pt-[clamp(1rem,3svh,3rem)] pb-[clamp(0.25rem,1svh,1rem)] text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[calc(100svh-3.5rem-0.5rem-4rem)] md:px-8 dark:border-terracotta-600 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-600)]">
         <div class="my-auto flex w-full flex-col items-center">
           <UIcon
             name="i-bailly-bailly"
-            class="mb-[clamp(0.75rem,2.5svh,1.25rem)] size-[clamp(3rem,8svh,5rem)] shrink-0 md:size-[clamp(4rem,14svh,8rem)]"
+            class="mb-[clamp(0.5rem,2svh,1.25rem)] size-[clamp(3rem,7svh,5rem)] shrink-0 md:size-[clamp(4rem,14svh,8rem)]"
           />
           <h1 class="max-w-3xl font-serif text-2xl/[1.2] font-bold text-balance max-[25rem]:text-[1.375rem]/[1.2] md:text-4xl/[1.2]">
             Le dictionnaire grec-français d'Anatole&nbsp;Bailly, à portée de recherche
@@ -160,7 +162,8 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           size="sm"
           trailing-icon="i-lucide-chevron-down"
           label="En savoir plus"
-          class="mt-[clamp(0.25rem,1.5svh,1.5rem)] shrink-0 text-muted"
+          class="hero-cue mt-[clamp(0.25rem,1.5svh,1.5rem)] shrink-0 flex-col gap-0 text-muted max-md:py-0"
+          :ui="{ trailingIcon: 'size-4 md:size-5' }"
         />
       </section>
     </div>
@@ -514,6 +517,33 @@ mort d'un homme qu'on lance (du haut d'un rocher).
 </template>
 
 <style scoped>
+/* The scroll invitation bounces a few times once the page is shown. */
+.hero-cue {
+  animation: hero-cue-bounce 1.4s ease-in-out 0.8s 2 both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes hero-cue-bounce {
+  0%,
+  25%,
+  55%,
+  85%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-0.5rem);
+  }
+
+  70% {
+    transform: translateY(-0.25rem);
+  }
+}
+
 /* The luminous gold of the icon. */
 .text-gilt {
   background: linear-gradient(#f2e2a4, #e8c967 55%, #cda43c);
