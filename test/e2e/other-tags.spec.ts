@@ -7,9 +7,9 @@ const logos = { word: "λόγος", uri: "logos", excerpt: "λόγος, ου (�
 const allTags = (page: Page) => page.getByRole("dialog", { name: "Toutes les étiquettes" });
 
 test.describe("the tags of an entry", () => {
-  test("every tag, the current one first (active), then in the user's order, selected if the entry has it", async ({ page, goto }) => {
+  test("every tag, the current one first (active), then in their order, selected if the entry has it", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
-    // In the user's order: Rouge, Ciel, Vert; the current tag is Ciel.
+    // In their order (by name): Ciel, Rouge, Vert; the current tag is Ciel.
     await seedBookmarks(page, {
       tags: [
         { name: "Vert", color: "Green", entries: [logos] },
@@ -41,7 +41,7 @@ test.describe("the tags of an entry", () => {
     // The current tag, from the panel or from its own button (named after it,
     // its state in aria-pressed, its action in a tooltip).
     await options.nth(0).click();
-    await expect.poll(() => tagNamesOf(page, "logos")).toEqual(["Rouge", "Ciel"]);
+    await expect.poll(() => tagNamesOf(page, "logos")).toEqual(["Ciel", "Rouge"]);
     await page.keyboard.press("Escape");
     await expect(allTags(page)).toBeHidden();
     const current = page.getByRole("button", { name: "Étiquette active : Ciel" });

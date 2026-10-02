@@ -394,7 +394,7 @@ test("a locker without bookmarks: they are added, the other sections kept", asyn
 });
 
 test("bookmarks written by a later version: not merged nor overwritten", async () => {
-  const later = { version: 2, state: { tags: [], tagged: [], starred: [], tagOrder: null, future: true } };
+  const later = { version: 2, state: { tags: [], tagged: [], starred: [], future: true } };
   await writeContent(serializeLocker({ bookmarks: later }));
 
   const laptop = device(fakeServer(db));

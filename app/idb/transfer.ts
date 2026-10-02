@@ -9,7 +9,6 @@ import {
   type BookmarksState,
   type StarredRecord,
   type TaggedRecord,
-  type TagOrder,
   type TagRecord,
   withoutTombstones,
 } from "./merge";
@@ -138,8 +137,19 @@ function validateTag(value: unknown, now: number): TagRecord | null {
     // the tag is kept, with a color it knows.
     color: IdbTags.isColorKey(value.color) ? value.color : IdbTags.colorKeys[0]!,
     createdAt: value.createdAt,
+    ...validatePinnedAt(value, common, now),
     ...common,
   };
+}
+
+/**
+ * The stamp of a tag's pinning, if valid and not after its latest change (cf.
+ * `TagRecord.pinnedAt`); otherwise none (the tag is kept, not pinned). Not on
+ * a tombstone.
+ */
+function validatePinnedAt(value: Record<string, unknown>, common: { updatedAt: string; deleted?: true }, now: number): { pinnedAt?: string } {
+  const { pinnedAt } = value;
+  return !common.deleted && isValidStamp(pinnedAt, now) && pinnedAt <= common.updatedAt ? { pinnedAt } : {};
 }
 
 /**
@@ -178,12 +188,6 @@ function validateStarred(value: unknown, now: number): StarredRecord | null {
   return common && entry ? { ...entry, ...validateAddedAt(value, common, now), ...common } : null;
 }
 
-function validateOrder(value: unknown, now: number): TagOrder | null {
-  if (!isObject(value) || !isValidStamp(value.updatedAt, now) || !Array.isArray(value.keys)) return null;
-  const keys = value.keys.filter((key): key is string => isText(key, { required: true }));
-  return { keys: [...new Set(keys)], updatedAt: value.updatedAt };
-}
-
 /**
  * Validates a state from the outside (a file, another device): invalid
  * records are left out, rather than refusing everything.
@@ -204,7 +208,6 @@ export function validateState(value: unknown, now: number = Date.now()): Bookmar
     tags: keep(value.tags.map(tag => validateTag(tag, now))),
     tagged: keep(value.tagged.map(record => validateTagged(record, now))),
     starred: keep(value.starred.map(record => validateStarred(record, now))),
-    tagOrder: value.tagOrder === null || value.tagOrder === undefined ? null : validateOrder(value.tagOrder, now),
   }, emptyState());
 }
 

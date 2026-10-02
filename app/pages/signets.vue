@@ -10,8 +10,6 @@
   const bookmarksStore = useBookmarksStore();
   const { initialized, tags, starredEntries, currentTagKey, currentTag } = storeToRefs(bookmarksStore);
 
-  const showButtonLabels = useButtonLabels();
-
   /**
    * From this number of tags, a table of contents under the header leads to
    * their cards (below, they all show at a glance).
@@ -62,7 +60,7 @@
         Aegean blue — `secondary`: the sea, and the sky of the "cloud" —, the
         page's main action), then a menu bar for the tags, in the style of an
         entry's toolbar (cf. `TagButtonGroup`): creating a tag, choosing the
-        active one, arranging them, and the file (export, import: less used,
+        active one, and the file (export, import: less used,
         within reach for whoever looks for it). Its fields are square-cornered,
         without the search bar's pill shape, their background telling them
         from its buttons (ghost). Below `md`, the field takes the bar's first
@@ -136,33 +134,6 @@
               </template>
             </USelectMenu>
           </div>
-
-          <!-- Order tags -->
-          <UModal
-            title="Arranger les étiquettes"
-            :close="{ variant: 'outline', class: 'shadow-none' }"
-          >
-            <UTooltip
-              text="Arranger"
-              :disabled="showButtonLabels"
-            >
-              <UButton
-                label="Arranger"
-                icon="i-lucide-list-ordered"
-                size="xl"
-                color="neutral"
-                variant="ghost"
-                class="h-11 rounded-none border-s border-default aria-expanded:bg-elevated md:rounded-lg md:border md:bg-default md:shadow-xs"
-                :ui="{ base: 'max-xl:px-2.5', label: 'max-xl:sr-only' }"
-              />
-            </UTooltip>
-            <template #body>
-              <TagListSortable
-                :tags="tags"
-                @reorder-tags="(orderedKeys) => bookmarksStore.reorderTags(orderedKeys)"
-              />
-            </template>
-          </UModal>
 
           <!-- Export, import -->
           <BookmarksMenu class="flex h-11 border-s border-default md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs" />

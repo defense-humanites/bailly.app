@@ -14,6 +14,7 @@ import {
   latestAddedFirst,
   orderTags,
   restoreRecords,
+  tagTombstone,
   type BookmarksState,
   type StarredRecord,
   type TaggedRecord,
@@ -43,6 +44,7 @@ const tagArb: fc.Arbitrary<TagRecord> = fc
     description: fc.constantFrom("", "notes"),
     color: fc.constantFrom("Blue" as const, "Rose" as const),
     createdAt: stampArb,
+    pinnedAt: fc.option(stampArb, { nil: undefined }),
     updatedAt: stampArb,
     deleted: deletedArb,
   })
@@ -73,10 +75,6 @@ const stateArb: fc.Arbitrary<BookmarksState> = fc.record({
   tags: fc.array(tagArb, { maxLength: 5 }),
   tagged: fc.array(taggedArb, { maxLength: 6 }),
   starred: fc.array(starredArb, { maxLength: 4 }),
-  tagOrder: fc.option(
-    fc.record({ keys: fc.shuffledSubarray(["t1", "t2", "t3", "t4"]), updatedAt: stampArb }),
-    { nil: null },
-  ),
 });
 
 /**
@@ -171,7 +169,6 @@ describe("normalize", () => {
         { tagKey: "t1", uri: "psyche", word: "ψυχή", updatedAt: stamp(4) },
       ],
       starred: [],
-      tagOrder: null,
     };
 
     const normalized = normalize(canonicalState(state));
@@ -196,11 +193,40 @@ test("the latest version of a record wins; at the same stamp, the deletion", () 
   expect(mergeStates(state([star(stamp(2))]), state([star(stamp(2), true)])).starred).toEqual([star(stamp(2), true)]);
 });
 
-test("orderTags: the unlisted tags first (latest created first), then the order", () => {
-  const tag = (key: string, time: number) => ({ key, createdAt: stamp(time) });
-  const tags = [tag("a", 1), tag("b", 2), tag("c", 3), tag("d", 4)];
-  expect(orderTags(tags, null).map(t => t.key)).toEqual(["d", "c", "b", "a"]);
-  expect(orderTags(tags, { keys: ["a", "gone", "b"], updatedAt: stamp(5) }).map(t => t.key)).toEqual(["d", "c", "a", "b"]);
+test("orderTags: the pinned tags first, in the order of their pinning, then the others by name", () => {
+  const tag = (key: string, name: string, pinned?: number) =>
+    withoutUndefined({ key, name, pinnedAt: pinned === undefined ? undefined : stamp(pinned) });
+  const tags = [
+    tag("a", "Sophocle"),
+    tag("b", "Œdipe"),
+    tag("c", "Platon", 5),
+    tag("d", "Élégie"),
+    tag("e", "homère"),
+    tag("f", "Aristote", 2),
+    tag("g", "Livre 10"),
+    tag("h", "Livre 9"),
+  ];
+  // French collation: case and diacritics ignored, numbers by value.
+  expect(orderTags(tags).map(t => t.name)).toEqual(
+    ["Aristote", "Platon", "Élégie", "homère", "Livre 9", "Livre 10", "Œdipe", "Sophocle"],
+  );
+});
+
+test("pinning and unpinning a tag are changes of its record, merged as a whole", () => {
+  const tag = (updatedAt: string, pinnedAt?: string): TagRecord =>
+    withoutUndefined({ key: "t1", name: "Homère", description: "", color: "Blue", createdAt: stamp(1), pinnedAt, updatedAt });
+  const state = (tags: TagRecord[]): BookmarksState => ({ ...emptyState(), tags });
+
+  // Pinned on a device, renamed earlier on another: the pinning wins.
+  expect(mergeStates(state([tag(stamp(3), stamp(3))]), state([{ ...tag(stamp(2)), name: "Iliade" }])).tags).toEqual([tag(stamp(3), stamp(3))]);
+  // Unpinned later: the tag is not pinned anymore.
+  expect(mergeStates(state([tag(stamp(3), stamp(3))]), state([tag(stamp(4))])).tags).toEqual([tag(stamp(4))]);
+  // A tombstone does not keep the pinning.
+  expect(tagTombstone(tag(stamp(3), stamp(3)), stamp(5))).not.toHaveProperty("pinnedAt");
+  // A tag brought back (a file, a key joined again) keeps it.
+  const local = state([tagTombstone(tag(stamp(3), stamp(3)), stamp(5))]);
+  expect(restoreRecords(local, state([tag(stamp(3), stamp(3))]), stamp(20)).tags).toEqual([tag(stamp(20), stamp(3))]);
+  expect(joinRecords(local, state([tag(stamp(3), stamp(3))]), stamp(20)).tags).toEqual([tag(stamp(20), stamp(3))]);
 });
 
 test("compact removes the old tombstones only", () => {
@@ -317,7 +343,6 @@ test("limitExcesses: the tags, the entries of each tag, and the favorites", () =
     tags: [tag("a", "Homère"), tag("b", "Platon"), tag("c", "Ancienne", true)],
     tagged: [entry("a", "x"), entry("a", "y"), entry("a", "z", true), entry("c", "x"), entry("c", "y"), entry("c", "z")],
     starred: [star("x"), star("y")],
-    tagOrder: null,
   };
   expect(limitExcesses(within, limits)).toEqual([]);
 
@@ -340,7 +365,6 @@ test("limitExcesses: the tags, the entries of each tag, and the favorites", () =
     tags: [tag("h", "homere"), tag("b", "Platon")],
     tagged: [entry("h", "x"), entry("b", "p")],
     starred: [star("x"), star("y")],
-    tagOrder: null,
   };
   expect(limitExcesses(beyond, limits, incoming)).toEqual([
     { kind: "tags", count: 3, local: ["Sophocle"] },
@@ -361,14 +385,12 @@ test("fitImport: the local bookmarks stay, the new ones added first are imported
     tags: [tag("a", "Homère", 1), tag("b", "Platon", 2)],
     tagged: [entry("a", "x", 10), entry("a", "y", 11)],
     starred: [star("s1", 20), star("s2", 21)],
-    tagOrder: null,
   };
   const imported: BookmarksState = {
     // "homere" is fused with "Homère"; one tag only has room ("Eschyle", created first).
     tags: [tag("h", "homere", 5), tag("e", "Eschyle", 3), tag("s", "Sophocle", 4)],
     tagged: [entry("h", "y", 1), entry("h", "v", 13), entry("h", "u", 12), entry("e", "p", 1), entry("s", "q", 1)],
     starred: [star("s1", 1), star("s4", 24), star("s3", 23)],
-    tagOrder: null,
   };
 
   const { state, skipped } = fitImport(local, imported, limits);

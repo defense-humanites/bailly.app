@@ -10,9 +10,9 @@ import type { TagColorKey } from "./IdbTags";
  *   versions of a record meet, the latest wins (last writer wins).
  * - A deletion is a version like any other (`deleted`: a tombstone), so that
  *   it is not undone by a device that still has the record.
- * - The order of the tags is a single record (`tagOrder`), written only when
- *   the user arranges them: the tags it does not list (created since, e.g. on
- *   another device) come first, the latest created first.
+ * - The tags are not arranged by hand: a few can be pinned (`pinnedAt`, part
+ *   of the tag's record), the others being sorted by the interface (a local
+ *   preference, not synchronized).
  * - The entries are identified by their URI and keep their word, not their
  *   excerpt: each device keeps a copy of the excerpts apart (cf.
  *   `IdbStore.Excerpts`), so that the lockers stay small and the excerpts
@@ -41,6 +41,13 @@ export type TagRecord = Versioned & {
   description: string;
   color: TagColorKey;
   createdAt: Stamp;
+  /**
+   * The stamp of the tag's pinning, if it is pinned (absent otherwise): the
+   * pinned tags come first, in the order of their pinning (cf. `orderTags`).
+   * Unpinning removes it, with a new `updatedAt`; it never follows
+   * `updatedAt`.
+   */
+  pinnedAt?: Stamp;
   /**
    * The key of the tag in the previous schema (numeric), to find the current
    * tag stored in the local storage before the migration.
@@ -77,23 +84,18 @@ export type StarredRecord = Versioned & {
   addedAt?: Stamp;
 };
 
-export type TagOrder = {
-  keys: TagKey[];
-  updatedAt: Stamp;
-};
-
 export type BookmarksState = {
   tags: TagRecord[];
   tagged: TaggedRecord[];
   starred: StarredRecord[];
-  tagOrder: TagOrder | null;
 };
 
-export const emptyState = (): BookmarksState => ({ tags: [], tagged: [], starred: [], tagOrder: null });
+export const emptyState = (): BookmarksState => ({ tags: [], tagged: [], starred: [] });
 
 /**
  * The tombstone of a tag: only what identifies it and makes it valid is kept
- * (not its name nor its description), with the stamp of its deletion.
+ * (not its name, its description nor its pinning), with the stamp of its
+ * deletion.
  */
 export const tagTombstone = (tag: TagRecord, updatedAt: Stamp): TagRecord => ({
   key: tag.key,
@@ -211,11 +213,6 @@ export function mergeRecords<T extends Versioned>(id: (record: T) => string, ...
     .map(([, record]) => record);
 }
 
-function mergeOrders(a: TagOrder | null, b: TagOrder | null): TagOrder | null {
-  if (!a || !b) return a ?? b;
-  return latest(a, b);
-}
-
 /**
  * Merges two states. Commutative, associative and idempotent.
  */
@@ -224,7 +221,6 @@ export function mergeStates(a: BookmarksState, b: BookmarksState): BookmarksStat
     tags: mergeRecords(recordId.tag, a.tags, b.tags),
     tagged: mergeRecords(recordId.tagged, a.tagged, b.tagged),
     starred: mergeRecords(recordId.starred, a.starred, b.starred),
-    tagOrder: mergeOrders(a.tagOrder, b.tagOrder),
   };
 }
 
@@ -509,7 +505,6 @@ export function restoreRecords(local: BookmarksState, imported: BookmarksState, 
     tags: restore(recordId.tag, reviveTag, local.tags, imported.tags),
     tagged: restore(recordId.tagged, reviveEntry, local.tagged, imported.tagged),
     starred: restore(recordId.starred, reviveEntry, local.starred, imported.starred),
-    tagOrder: imported.tagOrder,
   };
 }
 
@@ -538,7 +533,6 @@ export function joinRecords(local: BookmarksState, remote: BookmarksState, stamp
     tags: rejoin(recordId.tag, reviveTag, local.tags, remote.tags),
     tagged: rejoin(recordId.tagged, reviveEntry, local.tagged, remote.tagged),
     starred: rejoin(recordId.starred, reviveEntry, local.starred, remote.starred),
-    tagOrder: remote.tagOrder,
   };
 }
 
@@ -550,21 +544,27 @@ export function latestStamp(state: BookmarksState): Stamp | undefined {
     ...state.tags.map(tag => tag.updatedAt),
     ...state.tagged.map(record => record.updatedAt),
     ...state.starred.map(record => record.updatedAt),
-    state.tagOrder?.updatedAt,
   );
 }
 
 /**
- * Sorts the (live) tags for display: first those the order does not list, the
- * latest created first, then those it lists, in its order.
+ * Compares tag names for display: alphabetically, in French, regardless of
+ * case and diacritics.
  */
-export function orderTags<T extends Pick<TagRecord, "key" | "createdAt">>(tags: T[], order: TagOrder | null): T[] {
-  const position = new Map((order?.keys ?? []).map((key, index) => [key, index]));
-  const unlisted = tags
-    .filter(tag => !position.has(tag.key))
-    .sort((a, b) => (a.createdAt !== b.createdAt ? (a.createdAt > b.createdAt ? -1 : 1) : (a.key < b.key ? -1 : 1)));
-  const listed = tags
-    .filter(tag => position.has(tag.key))
-    .sort((a, b) => position.get(a.key)! - position.get(b.key)!);
-  return [...unlisted, ...listed];
+const tagNameCollator = new Intl.Collator("fr", { sensitivity: "base", numeric: true });
+
+/**
+ * Sorts the (live) tags for display: first the pinned ones, in the order of
+ * their pinning, then the others by name (the default order; the interface
+ * may sort them otherwise).
+ */
+export function orderTags<T extends Pick<TagRecord, "key" | "name" | "pinnedAt">>(tags: T[]): T[] {
+  const byKey = (a: T, b: T): number => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
+  const pinned = tags
+    .filter(tag => tag.pinnedAt !== undefined)
+    .sort((a, b) => (a.pinnedAt !== b.pinnedAt ? (a.pinnedAt! < b.pinnedAt! ? -1 : 1) : byKey(a, b)));
+  const others = tags
+    .filter(tag => tag.pinnedAt === undefined)
+    .sort((a, b) => tagNameCollator.compare(a.name, b.name) || byKey(a, b));
+  return [...pinned, ...others];
 }

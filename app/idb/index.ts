@@ -25,6 +25,5 @@ export type {
   StarredRecord,
   TaggedRecord,
   TagKey,
-  TagOrder,
   TagRecord,
 } from "./merge";

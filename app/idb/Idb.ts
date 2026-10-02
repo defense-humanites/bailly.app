@@ -2,7 +2,7 @@ import { openDB, type DBSchema, type IDBPDatabase, type IDBPObjectStore, type ID
 import type { Entry, EntryData } from "#shared/types/api";
 import type { PartialExcept } from "~/types";
 import { maxStamp, nextStamp, type Stamp } from "./clock";
-import type { StarredRecord, TaggedRecord, TagKey, TagOrder, TagRecord } from "./merge";
+import type { StarredRecord, TaggedRecord, TagKey, TagRecord } from "./merge";
 import type { PreferenceRecord } from "./preferenceRecords";
 import type { SyncablePreference } from "~/utils/preferences";
 import { randomNodeId, randomUuid } from "./random";
@@ -76,6 +76,10 @@ export type IdbTagWithKey = IdbTag & {
   key: TagKey;
   createdAt: Stamp;
   /**
+   * The stamp of the tag's pinning, if it is pinned (cf. `TagRecord`).
+   */
+  pinnedAt?: Stamp;
+  /**
    * The key of the tag before the migration to UUIDs (cf. `TagRecord`).
    */
   legacyKey?: number;
@@ -114,10 +118,6 @@ export enum IdbMetaKey {
    * The id of this device, in the stamps it issues.
    */
   Node = "node",
-  /**
-   * The order of the tags (`TagOrder`).
-   */
-  TagOrder = "tagOrder",
   /**
    * The synchronization settings (`IdbSyncConfig`), if enabled.
    */
@@ -163,7 +163,6 @@ export type IdbSyncConfig = {
 type IdbMetaValues = {
   [IdbMetaKey.Clock]: Stamp;
   [IdbMetaKey.Node]: string;
-  [IdbMetaKey.TagOrder]: TagOrder;
   [IdbMetaKey.Sync]: IdbSyncConfig;
   [IdbMetaKey.Preferences]: PreferenceRecord[];
 };
@@ -268,9 +267,10 @@ async function readLegacyData(transaction: UpgradeTransaction): Promise<LegacyDa
 
 /**
  * Writes the version 3 bookmarks in the version 4 stores: the tags get a
- * UUID (keeping their former key, cf. `TagRecord.legacyKey`), their order
- * becomes the `tagOrder` record, every record is stamped, and the excerpts
- * are kept apart (`IdbStore.Excerpts`).
+ * UUID (keeping their former key, cf. `TagRecord.legacyKey`), every record is
+ * stamped, and the excerpts are kept apart (`IdbStore.Excerpts`). Their
+ * former order is not kept: the tags are not arranged by hand anymore, and
+ * none is pinned.
  */
 async function writeMigratedData(transaction: UpgradeTransaction, legacy: LegacyData): Promise<void> {
   const node = randomNodeId();
@@ -292,12 +292,12 @@ async function writeMigratedData(transaction: UpgradeTransaction, legacy: Legacy
       updatedAt: createdAt,
       legacyKey: key,
     };
-    return { record, position: value.position };
+    return record;
   });
-  const newKeys = new Map(tags.map(({ record }) => [record.legacyKey!, record.key]));
+  const newKeys = new Map(tags.map(record => [record.legacyKey!, record.key]));
 
   const tagStore = transaction.objectStore(IdbStore.Tags);
-  for (const { record } of tags) await tagStore.put(record);
+  for (const record of tags) await tagStore.put(record);
 
   const excerpts = new Map<string, string>();
 
@@ -319,13 +319,6 @@ async function writeMigratedData(transaction: UpgradeTransaction, legacy: Legacy
   for (const [uri, excerpt] of excerpts) await excerptStore.put({ uri, excerpt });
 
   const meta = transaction.objectStore(IdbStore.Meta);
-  if (tags.length) {
-    const order: TagOrder = {
-      keys: [...tags].sort((a, b) => a.position - b.position).map(({ record }) => record.key),
-      updatedAt: stamp(),
-    };
-    await meta.put(order, IdbMetaKey.TagOrder);
-  }
   await meta.put(node, IdbMetaKey.Node);
   if (clock) await meta.put(clock, IdbMetaKey.Clock);
 }

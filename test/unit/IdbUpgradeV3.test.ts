@@ -26,7 +26,8 @@ function createV3Database(): Promise<void> {
       tags.createIndex("position", "position");
       tags.createIndex("position+color", ["position", "color"]);
 
-      // Keys 1 and 2; the second created tag was arranged first.
+      // Keys 1 and 2; the second created tag was arranged first (an order not
+      // kept: the tags are not arranged by hand anymore).
       tags.add({ name: "Banquet", description: "De l'amour", color: "Rose", position: 2 });
       // A color unknown to the current version (e.g. removed since).
       tags.add({ name: "Théétète", description: "", color: "Mauve", position: 1 });
@@ -47,7 +48,7 @@ function createV3Database(): Promise<void> {
 }
 
 // The database must not have been opened yet (hence a dedicated file).
-test("Upgrade from version 3: UUIDs, stamps, order and legacy keys", async () => {
+test("Upgrade from version 3: UUIDs, stamps and legacy keys", async () => {
   await createV3Database();
   Idb.configure();
 
@@ -56,12 +57,13 @@ test("Upgrade from version 3: UUIDs, stamps, order and legacy keys", async () =>
   expect([...db.objectStoreNames].sort()).toEqual(Object.values(IdbStore).sort());
 
   const tags = await IdbTags.getAll();
-  expect(tags.map(tag => [tag.name, tag.legacyKey])).toEqual([["Théétète", 2], ["Banquet", 1]]);
-  expect(tags[1]).toMatchObject({ description: "De l'amour", color: "Rose" });
-  expect(tags[0]!.color).toBe(IdbTags.colorKeys[0]);
+  // By name: none is pinned.
+  expect(tags.map(tag => [tag.name, tag.legacyKey, tag.pinnedAt])).toEqual([["Banquet", 1, undefined], ["Théétète", 2, undefined]]);
+  expect(tags[0]).toMatchObject({ description: "De l'amour", color: "Rose" });
+  expect(tags[1]!.color).toBe(IdbTags.colorKeys[0]);
   for (const tag of tags) expect(tag.key).toMatch(/^[0-9a-f-]{36}$/);
 
-  const [theetete, banquet] = tags;
+  const [banquet, theetete] = tags;
   expect((await IdbTaggedEntry.getAll()).map(entry => [entry.tagKey, entry.uri]).sort()).toEqual(
     [[banquet!.key, "erôs"], [theetete!.key, "epistêmê"]].sort(),
   );
@@ -73,7 +75,6 @@ test("Upgrade from version 3: UUIDs, stamps, order and legacy keys", async () =>
 
   // Everything is stamped, and the clock and the device id are set.
   const state = await IdbBookmarks.getState();
-  expect(state.tagOrder?.keys).toEqual([theetete!.key, banquet!.key]);
   for (const record of [...state.tags, ...state.tagged, ...state.starred]) expect(isStamp(record.updatedAt)).toBe(true);
   expect(isStamp(await db.get(IdbStore.Meta, IdbMetaKey.Clock))).toBe(true);
   expect(await db.get(IdbStore.Meta, IdbMetaKey.Node)).toMatch(/^[0-9a-f]{8}$/);
@@ -81,5 +82,5 @@ test("Upgrade from version 3: UUIDs, stamps, order and legacy keys", async () =>
   // New changes still work, and are stamped after the migrated records.
   const created = await IdbTags.add({ name: "Timée" });
   expect(created.state).toBe("success");
-  expect((await IdbTags.getAll()).map(tag => tag.name)).toEqual(["Timée", "Théétète", "Banquet"]);
+  expect((await IdbTags.getAll()).map(tag => tag.name)).toEqual(["Banquet", "Théétète", "Timée"]);
 });

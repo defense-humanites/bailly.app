@@ -30,12 +30,11 @@ test("deletions leave tombstones in the state", async () => {
   expect(state.tags[0]!.updatedAt > star!.updatedAt).toBe(true);
 });
 
-test("the order of the tags is part of the state", async () => {
+test("the pinning of the tags is part of the state", async () => {
   const a = unwrap(await IdbTags.add({ name: "Eschyle" }));
-  const b = unwrap(await IdbTags.add({ name: "Sophocle" }));
-  unwrap(await IdbTags.reorder([a.key, b.key]));
+  const pinned = unwrap(await IdbTags.pin(a.key, true));
 
-  expect((await IdbBookmarks.getState()).tagOrder?.keys).toEqual([a.key, b.key]);
+  expect((await IdbBookmarks.getState()).tags).toEqual([expect.objectContaining({ key: a.key, pinnedAt: pinned.pinnedAt })]);
 });
 
 test("merge applies a remote state", async () => {
@@ -47,7 +46,6 @@ test("merge applies a remote state", async () => {
     tagged: [{ tagKey: "remote-tag", uri: "philia", word: "φιλία", updatedAt: remoteStamp(1) }],
     // The favorite removed on the other device, later.
     starred: [{ uri: entries.alopex.uri, word: entries.alopex.word, updatedAt: remoteStamp(Date.now() + 60_000), deleted: true }],
-    tagOrder: null,
   };
 
   unwrap(await IdbBookmarks.merge(remote));
@@ -69,7 +67,6 @@ test("after a merge, local changes supersede the merged ones", async () => {
     tags: [],
     tagged: [],
     starred: [{ uri: entries.alopex.uri, word: entries.alopex.word, updatedAt: remoteStamp(ahead) }],
-    tagOrder: null,
   }));
 
   unwrap(await IdbStarred.remove(entries.alopex.uri));
@@ -87,7 +84,6 @@ test("merge fuses homonymous tags", async () => {
     tags: [{ key: "remote-tag", name: "homere", description: "", color: "Rose", createdAt: remoteStamp(Date.now() + 1_000), updatedAt: remoteStamp(Date.now() + 1_000) }],
     tagged: [{ tagKey: "remote-tag", uri: "philia", word: "φιλία", updatedAt: remoteStamp(Date.now() + 1_000) }],
     starred: [],
-    tagOrder: null,
   }));
 
   expect((await IdbTags.getAll()).map(tag => tag.key)).toEqual([local.key]);
@@ -128,7 +124,6 @@ test("restore brings the entries back in their order of addition, after the stam
       { uri: entries.rhinokeros.uri, word: entries.rhinokeros.word, updatedAt: remoteStamp(ahead - 2) },
       { uri: entries.alopex.uri, word: entries.alopex.word, updatedAt: remoteStamp(ahead - 1) },
     ],
-    tagOrder: null,
   };
   // Deleted here in the meantime.
   unwrap(await IdbStarred.add(entries.rhinokeros));
@@ -154,7 +149,6 @@ test("restore does not follow the stamps of the file's tombstones", async () => 
       { uri: entries.alopex.uri, word: entries.alopex.word, updatedAt: remoteStamp(Date.now() - 1000) },
       { uri: entries.rhinokeros.uri, word: "", updatedAt: remoteStamp(farAhead), deleted: true },
     ],
-    tagOrder: null,
   }));
   const [restored] = (await IdbBookmarks.getState()).starred;
   expect(restored!.uri).toBe(entries.alopex.uri);
@@ -193,7 +187,7 @@ test("join: this device's earlier deletions are forgotten, so that they delete n
   unwrap(await IdbStarred.add(entries.rhinokeros));
 
   // E.g. a locker the server emptied: nothing online.
-  unwrap(await IdbBookmarks.join({ tags: [], tagged: [], starred: [], tagOrder: null }));
+  unwrap(await IdbBookmarks.join({ tags: [], tagged: [], starred: [] }));
   expect((await IdbBookmarks.getState()).starred.map(record => record.uri)).toEqual([entries.rhinokeros.uri]);
 });
 
@@ -212,7 +206,6 @@ test("the tombstones old enough are forgotten", async () => {
     tags: [],
     tagged: [],
     starred: [{ uri: "older", word: "", updatedAt: remoteStamp(Date.now() - 200 * day), deleted: true }],
-    tagOrder: null,
   }));
   expect((await IdbBookmarks.getState()).starred.map(record => record.uri)).toEqual([entries.alopex.uri, "recent"].sort());
 });
@@ -228,7 +221,6 @@ test("a merge beyond the limits is not applied", async () => {
     tags: [],
     tagged: [],
     starred: [{ uri: "philia", word: "φιλία", updatedAt: remoteStamp(Date.now() + 60_000) }],
-    tagOrder: null,
   }));
 
   // To remove: this device's own favorites (the other device's is not here).
@@ -246,7 +238,6 @@ test("an import leaves out what exceeds the limits, and deletes nothing", async 
       { uri: "philia", word: "φιλία", updatedAt: remoteStamp(1) },
       { uri: "eros", word: "ἔρως", updatedAt: remoteStamp(2) },
     ],
-    tagOrder: null,
   };
 
   expect(await IdbBookmarks.previewRestore(imported)).toEqual({ tags: 0, entries: 1 });
@@ -261,7 +252,6 @@ test("the excerpts are kept apart: those known here stay, the missing ones are f
     tags: [],
     tagged: [],
     starred: [{ uri: "philia", word: "φιλία", updatedAt: remoteStamp(Date.now() + 60_000) }],
-    tagOrder: null,
   }));
 
   expect(await IdbStarred.get(entries.alopex.uri)).toMatchObject({ excerpt: entries.alopex.excerpt });

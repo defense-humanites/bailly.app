@@ -42,24 +42,36 @@ test("Update tag", async () => {
   expect(await IdbTags.update(banquetTagKey, { name: "theetete" })).toSatisfy(error); // Already used (case/diacritics are ignored).
 });
 
-test("Reorder tags", async () => {
-  const tagA = await IdbTags.add({ name: "Eschyle" });
-  const tagB = await IdbTags.add({ name: "Sophocle" });
-  const tagC = await IdbTags.add({ name: "Euripide" });
+test("Pin and unpin tags", async () => {
+  const a = unwrap(await IdbTags.add({ name: "Sophocle" }));
+  const b = unwrap(await IdbTags.add({ name: "Eschyle" }));
+  const c = unwrap(await IdbTags.add({ name: "Euripide" }));
+  const names = async () => (await IdbTags.getAll()).map(tag => tag.name);
 
-  const keys = { a: unwrap(tagA).key, b: unwrap(tagB).key, c: unwrap(tagC).key };
+  // Not pinned: by name.
+  expect(await names()).toEqual(["Eschyle", "Euripide", "Sophocle"]);
 
-  // Acceptable values.
-  expect(await IdbTags.reorder(Object.values(keys))).toSatisfy(success); // Same order.
-  expect(await IdbTags.reorder([keys.c, keys.a, keys.b])).toSatisfy(success);
+  // Pinned first, in the order of their pinning.
+  const pinnedA = unwrap(await IdbTags.pin(a.key, true));
+  expect(pinnedA.pinnedAt).toBeDefined();
+  expect(pinnedA.pinnedAt! > a.createdAt).toBe(true);
+  unwrap(await IdbTags.pin(c.key, true));
+  expect(await names()).toEqual(["Sophocle", "Euripide", "Eschyle"]);
 
-  // Wrong values.
-  expect(await IdbTags.reorder([keys.b, keys.a, keys.c, keys.a])).toSatisfy(error); // Too many keys.
-  expect(await IdbTags.reorder([keys.b, keys.a, keys.c, "unknown"])).toSatisfy(error); // Too many keys, including different keys.
-  expect(await IdbTags.reorder([keys.b, keys.a, "unknown"])).toSatisfy(error); // Different keys.
-  expect(await IdbTags.reorder([keys.b, keys.a])).toSatisfy(error); // Partial keys.
-  expect(await IdbTags.reorder([])).toSatisfy(error);
-  expect(await IdbTags.reorder([keys.b, keys.a])).toEqual({ state: "error", message: "Les étiquettes ont changé entre-temps : réessayez." });
+  // Pinning again changes nothing (not even its place).
+  expect(unwrap(await IdbTags.pin(a.key, true))).toEqual(pinnedA);
+  expect(await names()).toEqual(["Sophocle", "Euripide", "Eschyle"]);
+
+  // Unpinned: back among the others, the pinning removed.
+  const unpinned = unwrap(await IdbTags.pin(a.key, false));
+  expect(unpinned).not.toHaveProperty("pinnedAt");
+  expect(await names()).toEqual(["Euripide", "Eschyle", "Sophocle"]);
+  // Renaming keeps the pinning.
+  expect(unwrap(await IdbTags.update(c.key, { name: "Euripide (pièces)" })).pinnedAt).toBeDefined();
+
+  expect(await IdbTags.pin("unknown", true)).toSatisfy(error);
+  unwrap(await IdbTags.remove(b.key));
+  expect(await IdbTags.pin(b.key, true)).toSatisfy(error);
 });
 
 test("Delete tag", async () => {
@@ -112,7 +124,6 @@ test("Tag colors", async () => {
 
 test("Get tags", async () => {
   const banquetTag = await IdbTags.add(tags.banquet);
-  const banquetTagKey = unwrap(banquetTag).key;
 
   expect(await IdbTags.get(unwrap(banquetTag).name)).toBeTypeOf("object");
   expect(await IdbTags.get("unknown")).toBe(null);
@@ -122,8 +133,8 @@ test("Get tags", async () => {
   const theeteteTag = await IdbTags.add(tags.theetete);
   expect(await IdbTags.getAll()).toHaveLength(2);
 
-  await IdbTags.reorder([banquetTagKey, unwrap(theeteteTag).key]);
-  expect((await IdbTags.getAll()).map(tag => tag.name)).toEqual(["Banquet", "Théétète"]);
+  await IdbTags.pin(unwrap(theeteteTag).key, true);
+  expect((await IdbTags.getAll()).map(tag => tag.name)).toEqual(["Théétète", "Banquet"]);
 });
 
 test("Get entry tags / tag keys (involves IdbTaggedEntry)", async () => {
@@ -154,12 +165,12 @@ test("Get entry tags / tag keys (involves IdbTaggedEntry)", async () => {
 
   expect(updatedFooEntryTags).toHaveLength(2);
   expect(updatedFooEntryTagKeys).toHaveLength(2);
-  // In the user's order (the latest created tag first).
+  // In the order of the tags (none pinned: by name).
   expect(updatedFooEntryTags).toEqual([
-    expect.objectContaining({ key: theeteteTagKey, name: "Théétète", color: "Blue" }),
     expect.objectContaining({ key: banquetTagKey, name: "Banquet", color: "Rose" }),
+    expect.objectContaining({ key: theeteteTagKey, name: "Théétète", color: "Blue" }),
   ]);
-  expect(updatedFooEntryTagKeys).toEqual([theeteteTagKey, banquetTagKey]);
+  expect(updatedFooEntryTagKeys).toEqual([banquetTagKey, theeteteTagKey]);
 
   Idb.configure({ tagMaxItems: 1 });
   await IdbTaggedEntry.add({ word: "bar", uri: "bar", excerpt: "bar" }, theeteteTagKey);
@@ -175,17 +186,12 @@ test("Get entry tags / tag keys (involves IdbTaggedEntry)", async () => {
   expect(updatedBarEntryTagKeys).toEqual([banquetTagKey]);
 });
 
-test("New tags are placed first", async () => {
-  const a = unwrap(await IdbTags.add({ name: "Eschyle" }));
-  const b = unwrap(await IdbTags.add({ name: "Sophocle" }));
-  const c = unwrap(await IdbTags.add({ name: "Euripide" }));
-
-  expect((await IdbTags.getAll()).map(tag => tag.key)).toEqual([c.key, b.key, a.key]);
-
-  // Also once the tags have been arranged: the order does not list the new tag.
-  unwrap(await IdbTags.reorder([a.key, b.key, c.key]));
-  const d = unwrap(await IdbTags.add({ name: "Aristophane" }));
-  expect((await IdbTags.getAll()).map(tag => tag.key)).toEqual([d.key, a.key, b.key, c.key]);
+test("New tags are not pinned, and take their place by name", async () => {
+  const a = unwrap(await IdbTags.add({ name: "Sophocle" }));
+  unwrap(await IdbTags.pin(a.key, true));
+  const b = unwrap(await IdbTags.add({ name: "Eschyle" }));
+  expect(b).not.toHaveProperty("pinnedAt");
+  expect((await IdbTags.getAll()).map(tag => tag.key)).toEqual([a.key, b.key]);
 });
 
 test("Tag keys are UUIDs", async () => {
@@ -205,14 +211,6 @@ test("Update keeps omitted values", async () => {
   });
 
   expect(await IdbTags.update("unknown", { name: "Timée" })).toSatisfy(error); // Unknown tag.
-});
-
-test("Reorder rejects duplicate keys", async () => {
-  const a = unwrap(await IdbTags.add({ name: "Eschyle" }));
-  const b = unwrap(await IdbTags.add({ name: "Sophocle" }));
-  unwrap(await IdbTags.add({ name: "Euripide" }));
-
-  expect(await IdbTags.reorder([a.key, b.key, a.key])).toSatisfy(error);
 });
 
 test("the description of a tag is limited", async () => {

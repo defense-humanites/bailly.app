@@ -99,7 +99,7 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
     await page.reload();
     await waitForHydration(page);
     return (await bookmarksState(page)).tags;
-  }, { timeout: 15_000 }).toEqual(["Platon", "Homère"]);
+  }, { timeout: 15_000 }).toEqual(["Homère", "Platon"]);
 
   // The laptop deletes the bookmarks online: the phone stops synchronizing,
   // and keeps its bookmarks.
@@ -310,7 +310,7 @@ test("a synchronization beyond the limits waits until the device makes room", as
   await expect.poll(async () => (await bookmarksState(page)).starred).toBe(100); // Unchanged: the phone's favorite was left out.
 });
 
-test("the synchronization waits while the tags are being arranged", async ({ page, goto, browser, baseURL }) => {
+test("the synchronization waits while a tag is being edited", async ({ page, goto, browser, baseURL }) => {
   test.setTimeout(60_000);
   const syncNow = (target: Page) => target.evaluate(async () => {
     const root = document.querySelector("#__nuxt") as AppRoot;
@@ -332,9 +332,9 @@ test("the synchronization waits while the tags are being arranged", async ({ pag
   await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
   await phone.keyboard.press("Escape");
 
-  // The laptop arranges its tags while the phone adds a favorite.
-  await page.getByRole("button", { name: "Arranger" }).click();
-  await expect(page.getByRole("dialog", { name: "Arranger les étiquettes" })).toBeVisible();
+  // The laptop edits a tag while the phone adds a favorite.
+  await page.getByRole("button", { name: "Modifier l'étiquette « Homère »" }).click();
+  await expect(page.getByRole("textbox", { name: "Nom de l'étiquette" })).toBeVisible();
   await seedBookmarks(phone, { starred: [psuche] });
   // (Once its settings are loaded, after the reload.)
   await expect.poll(() => syncNow(phone)).toBe(true);
@@ -342,7 +342,7 @@ test("the synchronization waits while the tags are being arranged", async ({ pag
   await syncNow(page); // Deferred: nothing changes under the user's feet.
   expect((await bookmarksState(page)).starred).toBe(1);
 
-  // Once the window is closed, the laptop synchronizes, and the phone's
+  // Once the editing is over, the laptop synchronizes, and the phone's
   // favorite shows (without reloading).
   await page.keyboard.press("Escape");
   await expect(page.getByText(/ψυχή, ῆς/).first()).toBeVisible({ timeout: 15_000 });

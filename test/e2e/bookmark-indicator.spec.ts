@@ -47,7 +47,7 @@ async function indicator(container: Locator): Promise<{ starred: boolean; color:
 }
 
 test.describe("favorites and tags of the entries, in the history and the results", () => {
-  test("the current tag first, then the first one in the user's order, and a count of the others", async ({ page, goto }) => {
+  test("the current tag first, then the first one in their order, and a count of the others", async ({ page, goto }) => {
     await goto("/logotechnês", { waitUntil: "hydration" });
     await goto("/logades", { waitUntil: "hydration" });
     await goto("/logos", { waitUntil: "hydration" });
@@ -63,7 +63,7 @@ test.describe("favorites and tags of the entries, in the history and the results
     // λογοτέχνης: a single tag.
     expect(await indicator(links.nth(2))).toEqual({ starred: true, color: "Green", others: null });
     // For screen readers, the star comes before the tags' names (the chip is hidden).
-    await expect(links.nth(0).getByRole("link")).toHaveAccessibleName(/\(favori\)\s*\(étiquettes : Rouge, Ciel, Vert\)$/);
+    await expect(links.nth(0).getByRole("link")).toHaveAccessibleName(/\(favori\)\s*\(étiquettes : Ciel, Rouge, Vert\)$/);
   });
 
   test("in the results", async ({ page, goto }) => {

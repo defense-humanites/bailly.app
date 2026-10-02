@@ -6,7 +6,7 @@ const LOCAL_CHANGES = new Set([
   "unstarEntry",
   "createTag",
   "updateTag",
-  "reorderTags",
+  "pinTag",
   "removeTag",
   "tagEntry",
   "untagEntry",

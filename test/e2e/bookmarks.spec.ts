@@ -22,8 +22,8 @@ test.describe("bookmarks page", () => {
     await expect(card(page, "Vocabulaire homérique")).toBeVisible();
   });
 
-  test("tags: the newest first, a long name inside its card", async ({ page }) => {
-    expect((await bookmarksState(page)).tags).toEqual(["Vocabulaire homérique et tragique", "Vide"]);
+  test("tags: by name (none pinned), a long name inside its card", async ({ page }) => {
+    expect((await bookmarksState(page)).tags).toEqual(["Vide", "Vocabulaire homérique et tragique"]);
     const header = card(page, "Vocabulaire homérique").locator("[data-slot=header]");
     const inside = await header.evaluate((element) => {
       const name = [...element.querySelectorAll("span")].find(span => span.textContent.includes("Vocabulaire"))!;
@@ -73,7 +73,7 @@ test.describe("bookmarks page", () => {
     await expect(name).toHaveAccessibleDescription("Une étiquette doit être nommée.");
     await name.press("Escape");
     await expect(name).toHaveValue("Vide");
-    expect((await bookmarksState(page)).tags).toEqual(["Vocabulaire homérique et tragique", "Vide"]);
+    expect((await bookmarksState(page)).tags).toEqual(["Vide", "Vocabulaire homérique et tragique"]);
   });
 
   test("a tag's color, picked with the keyboard: the selected one focused, the arrows, its name shown", async ({ page }) => {
@@ -247,15 +247,6 @@ test.describe("bookmarks page", () => {
     await expect.poll(async () => (await bookmarksState(page)).starred).toBe(0);
   });
 
-  test("arranging the tags with the keyboard", async ({ page }) => {
-    await page.getByRole("button", { name: "Arranger" }).click();
-    const down = page.getByRole("button", { name: "Descendre « Vocabulaire homérique et tragique »" });
-    await down.focus();
-    await page.keyboard.press("Enter");
-    await expect.poll(async () => (await bookmarksState(page)).tags).toEqual(["Vide", "Vocabulaire homérique et tragique"]);
-    await expect(page.getByRole("dialog").locator("[aria-live=polite]")).toHaveText("« Vocabulaire homérique et tragique » est en position 2 sur 2.");
-  });
-
   test("edit buttons: on hover or focus, not at rest", async ({ page }) => {
     const actions = page.getByRole("button", { name: "Modifier l'étiquette « Vide »" }).locator("..");
     await page.mouse.move(0, 0);
@@ -344,23 +335,23 @@ test.describe("bookmarks page, long groups", () => {
 });
 
 test.describe("bookmarks page, table of contents", () => {
-  const tagNames = ["Un", "Deux", "Trois", "Quatre", "Cinq"];
+  const tagNames = ["Un", "Deux", "Trois"];
 
-  test("from six tags: a link per group, with its count, to its card", async ({ page, goto }) => {
+  test("from four tags: a link per group, with its count, to its card", async ({ page, goto }) => {
     await goto("/signets", { waitUntil: "hydration" });
     await seedBookmarks(page, {
       starred: [logos],
       tags: tagNames.map(name => ({ name, color: "Sky" })),
     });
-    // Five tags: no table of contents.
-    await expect(card(page, "Cinq")).toBeVisible();
+    // Three tags: no table of contents.
+    await expect(card(page, "Trois")).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Sommaire des signets" })).toHaveCount(0);
 
-    await seedBookmarks(page, { tags: [{ name: "Six", color: "Rose", entries: [anax, menis] }] });
+    await seedBookmarks(page, { tags: [{ name: "Quatre", color: "Rose", entries: [anax, menis] }] });
     const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
     const links = toc.getByRole("link");
-    // The favorites, then the tags in their order (the newest first).
-    const names = ["Favoris, 1 entrée", "Six, 2 entrées, étiquette active", "Cinq, 0 entrée", "Quatre, 0 entrée", "Trois, 0 entrée", "Deux, 0 entrée", "Un, 0 entrée"];
+    // The favorites, then the tags in their order (by name, none pinned).
+    const names = ["Favoris, 1 entrée", "Deux, 0 entrée", "Quatre, 2 entrées, étiquette active", "Trois, 0 entrée", "Un, 0 entrée"];
     await expect(links).toHaveCount(names.length);
     for (const [i, name] of names.entries()) await expect(links.nth(i)).toHaveAccessibleName(name);
 

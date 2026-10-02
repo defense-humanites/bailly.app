@@ -3,14 +3,13 @@ import {
   attempt,
   Idb,
   IdbError,
-  IdbMetaKey,
   IdbStore,
   type BaillyDB,
   type IdbResult,
   type IdbTagCreation,
   type IdbTagWithKey,
 } from "./Idb";
-import { comparableTagName, entryTombstone, orderTags, tagTombstone, type TagKey, type TagOrder, type TagRecord } from "./merge";
+import { comparableTagName, entryTombstone, orderTags, tagTombstone, type TagKey, type TagRecord } from "./merge";
 import { randomUuid } from "./random";
 import { Color, type ColorKey } from "~/enums";
 import { pickRandom } from "~/helpers";
@@ -18,20 +17,21 @@ import { pickRandom } from "~/helpers";
 export type TagColorKey = Exclude<ColorKey, "Yellow">;
 type TagsStore = IDBPObjectStore<BaillyDB, ArrayLike<StoreNames<BaillyDB>>, IdbStore.Tags, "readwrite">;
 
-const toTagWithKey = ({ key, name, description, color, createdAt, legacyKey }: TagRecord): IdbTagWithKey => ({
+const toTagWithKey = ({ key, name, description, color, createdAt, pinnedAt, legacyKey }: TagRecord): IdbTagWithKey => ({
   key,
   name,
   description,
   color,
   createdAt,
+  ...(pinnedAt === undefined ? {} : { pinnedAt }),
   ...(legacyKey === undefined ? {} : { legacyKey }),
 });
 
 /**
  * A collection of methods for managing tags.
  * @remarks Deleted tags leave a tombstone (cf. `merge.ts`), ignored when
- * reading. Their order is a single record (`IdbMetaKey.TagOrder`), written
- * when the user arranges them; the tags it does not list come first.
+ * reading. They are read in the order of `orderTags`: the pinned ones first,
+ * then the others by name.
  */
 export class IdbTags {
   /**
@@ -71,7 +71,7 @@ export class IdbTags {
     );
 
     // If no color remains, only exclude those used by the first half of the
-    // tags (sorted by position).
+    // tags (in their order).
     const colorsExhausted = usedColorKeys.length === this.colorKeys.length;
     const excluded = colorsExhausted
       ? usedColorKeys.slice(0, Math.floor(usedColorKeys.length / 2))
@@ -173,7 +173,7 @@ export class IdbTags {
   }
 
   /**
-   * Creates a tag, placed first (the order does not list it yet).
+   * Creates a tag (not pinned).
    * @param data The tag data. If no valid color is given, one is picked.
    * @returns The created tag with its key.
    */
@@ -263,31 +263,24 @@ export class IdbTags {
   }
 
   /**
-   * Gets all the tags, in the user's order.
+   * Gets all the tags, the pinned ones first (cf. `orderTags`).
    * @returns The tags with their keys.
    */
   static async getAll(): Promise<IdbTagWithKey[]> {
     const db = await Idb.getIndexedDB();
-    const tx = db.transaction([IdbStore.Tags, IdbStore.Meta]);
-    const [tags, order] = await Promise.all([
-      this.#liveTags(tx.objectStore(IdbStore.Tags)),
-      Idb.getMeta(tx.objectStore(IdbStore.Meta), IdbMetaKey.TagOrder),
-    ]);
-    await tx.done;
-
-    return orderTags(tags, order ?? null).map(toTagWithKey);
+    return orderTags(await this.#liveTags(db.transaction(IdbStore.Tags).objectStore(IdbStore.Tags))).map(toTagWithKey);
   }
 
   /**
    * Returns all the distinct `Color` enum keys (e.g. 'Blue') that are already
-   * used by the existing tags — sorted by tag position.
+   * used by the existing tags, in their order.
    */
   static async getUsedColorKeys(): Promise<ColorKey[]> {
     return [...new Set((await this.getAll()).map(tag => tag.color))];
   }
 
   /**
-   * Gets the tags to which an entry belongs, in the user's order.
+   * Gets the tags to which an entry belongs, in their order (cf. `getAll`).
    * @param uri The URI of the entry.
    * @returns The tags with their keys, or `null` if there are none.
    */
@@ -301,7 +294,7 @@ export class IdbTags {
   }
 
   /**
-   * Gets the keys of the tags to which an entry belongs, in the user's order.
+   * Gets the keys of the tags to which an entry belongs, in their order.
    * @param uri The URI of the entry.
    * @returns The tag keys, or `null` if there are none.
    */
@@ -339,32 +332,33 @@ export class IdbTags {
   }
 
   /**
-   * Reorders the existing tags.
-   * @param orderedKeys All the tag keys, in the new order.
-   * @returns The tags with their keys, in the new order.
+   * Pins a tag (it comes first, after those pinned before it) or unpins it.
+   * @param tagKey The key of the tag.
+   * @param pinned Whether the tag is to be pinned.
+   * @returns The tag with its key (unchanged if it already was so).
    */
-  static async reorder(orderedKeys: TagKey[]): Promise<IdbResult<IdbTagWithKey[]>> {
+  static async pin(tagKey: TagKey, pinned: boolean): Promise<IdbResult<IdbTagWithKey>> {
     return attempt(async () => {
       const db = await Idb.getIndexedDB();
       const tx = db.transaction([IdbStore.Tags, IdbStore.Meta], "readwrite");
-      const meta = tx.objectStore(IdbStore.Meta);
+      const store = tx.objectStore(IdbStore.Tags);
 
-      const tags = await this.#liveTags(tx.objectStore(IdbStore.Tags));
-      const storedKeys = new Set(tags.map(tag => tag.key));
-      if (
-        orderedKeys.length !== storedKeys.size
-        || new Set(orderedKeys).size !== orderedKeys.length
-        || !orderedKeys.every(key => storedKeys.has(key))
-      ) {
-        // E.g. a tag added or removed meanwhile, by a synchronization.
-        throw new IdbError("Les étiquettes ont changé entre-temps : réessayez.");
+      const storedTag = await store.get(tagKey);
+      if (!storedTag || storedTag.deleted) {
+        throw new IdbError("L'étiquette à épingler n'existe pas.");
+      }
+      if ((storedTag.pinnedAt !== undefined) === pinned) {
+        await tx.done;
+        return toTagWithKey(storedTag);
       }
 
-      const order: TagOrder = { keys: [...orderedKeys], updatedAt: await Idb.stamp(meta) };
-      await meta.put(order, IdbMetaKey.TagOrder);
+      const { pinnedAt: _pinnedAt, ...unpinned } = storedTag;
+      const updatedAt = await Idb.stamp(tx.objectStore(IdbStore.Meta));
+      const tag: TagRecord = pinned ? { ...unpinned, pinnedAt: updatedAt, updatedAt } : { ...unpinned, updatedAt };
+      await store.put(tag);
       await tx.done;
 
-      return orderTags(tags, order).map(toTagWithKey);
+      return toTagWithKey(tag);
     });
   }
 }
