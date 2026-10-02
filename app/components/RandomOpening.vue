@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { ApiEntryData, ApiRandomEntryData, ApiResponse, Entry, Siblings } from "#shared/types/api";
+  import type { ApiEntryData, ApiRandomEntryData, ApiResponse, Entry, RandomEntryParams, Siblings } from "#shared/types/api";
   import { toApiQuery } from "#shared/utils/api";
 
   type Shown = {
@@ -25,7 +25,7 @@
     failed.value = false;
     try {
       const random = await $api<ApiResponse<ApiRandomEntryData<"uri">>>("entry/random", {
-        query: toApiQuery({ fields: ["uri"], lengthRange: [400, 700] }),
+        query: toApiQuery({ fields: ["uri"], lengthRange: [400, 700] } satisfies RandomEntryParams<"uri">),
       });
       const { data } = await $api<ApiResponse<ApiEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>(
         `entry/${encodeURIComponent(random.data.entry.uri)}`,

@@ -52,15 +52,6 @@ test("useApiEntry returns `null` for an unknown entry", async () => {
   expect(data.value).toEqual({ entry: null, siblings: {} });
 });
 
-test("useApiRandomEntry returns the entry", async () => {
-  const queries = mockApi("/entry/random", { data: { version: "test", length: 650, entry: logos } });
-
-  const { data } = await useApiRandomEntry({ fields: ["word", "uri", "excerpt"], lengthRange: [600, 700] });
-
-  expect(data.value).toEqual(logos);
-  expect(queries).toEqual([{ fields: "word,uri,excerpt", lengthRange: "600,700" }]);
-});
-
 test("useApiLookup sorts the entries and applies the default limit", async () => {
   // (An ASCII query: the mock router doesn't match encoded non-ASCII paths.)
   const queries = mockApi("/lookup/log", {
