@@ -80,8 +80,9 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await expect(dialog.getByText("Préférences à jour")).toBeVisible();
   await page.keyboard.press("Escape");
 
-  // A small cloud marks the preferences synchronized.
-  await expect(page.locator("[data-synced]")).toHaveCount(3);
+  // A small cloud marks the preferences synchronized (the sorting of the
+  // tags too, in the « Signets » card).
+  await expect(page.locator("[data-synced]")).toHaveCount(4);
   // For screen readers, the controls say it.
   await expect(transliteration(page)).toHaveAccessibleName("Grec translittéré (réglage synchronisé avec vos autres appareils)");
   const { link, bookmarks } = await syncStore(page);

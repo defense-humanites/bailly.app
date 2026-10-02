@@ -30,12 +30,16 @@ test.describe("settings", () => {
     const general = await extent("[aria-labelledby=settings-general]");
     const reading = await extent("[aria-labelledby=settings-reading]");
     const search = await extent("[aria-labelledby=settings-search]");
+    const bookmarks = await extent("[aria-labelledby=settings-bookmarks]");
     // The header steps out of the content by the search bar's overhangs.
     const overhang = await rootLength(page, "--search-overhang");
     expect(Math.abs(general.left - nav.left - overhang)).toBeLessThanOrEqual(1);
     expect(Math.abs(nav.right - reading.right - overhang)).toBeLessThanOrEqual(1);
     expect(reading.top).toBe(general.top);
     expect(search.left).toBe(general.left);
+    // The bookmarks' settings under the reading ones (the columns balanced).
+    expect(bookmarks.left).toBe(reading.left);
+    expect(bookmarks.top).toBeGreaterThan(reading.top);
 
     await page.setViewportSize({ width: 900, height: 900 });
     const narrow = await extent("[aria-labelledby=settings-reading]");
