@@ -34,8 +34,7 @@
   const transliterateGreek = preference("transliterateGreek");
   const greek = useGreek();
   const readingWeight = preference("readingWeight");
-  // The bookmarks page's, also set there (cf. `BookmarksDisplayMenu`,
-  // `TagSortMenu`).
+  // The bookmarks page's, also set there (cf. `BookmarksDisplayMenu`).
   const bookmarksDisplay = preference("bookmarksDisplay");
   const tagSort = preference("tagSort");
 

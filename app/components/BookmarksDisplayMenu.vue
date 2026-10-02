@@ -1,23 +1,43 @@
 <script setup lang="ts">
   import type { DropdownMenuItem } from "@nuxt/ui";
+  import { TAG_SORT_LABELS, TAG_SORTS } from "~/utils/tagSort";
 
   const showButtonLabels = useButtonLabels();
   const display = useBookmarksDisplay();
+  const sort = useTagSort();
 
   /**
-   * The ways to show the entries, the current one checked.
+   * The display of the bookmarks: the entries (excerpts or headwords alone)
+   * and the sorting of the tags (the pinned ones staying first), the current
+   * choices checked; then the preferences page, where they are too (cf. its
+   * « Signets » card).
    */
   const items = computed((): DropdownMenuItem[][] => [
-    [{ type: "label", label: "Afficher les entrées" }],
-    BOOKMARKS_DISPLAYS.map(value => ({
-      type: "checkbox" as const,
-      label: BOOKMARKS_DISPLAY_LABELS[value],
-      description: value === "excerpts" ? "Le début de leur définition." : "Sur deux colonnes, l'extrait au survol.",
-      checked: display.value === value,
-      onUpdateChecked: () => {
-        display.value = value;
-      },
-    })),
+    [
+      { type: "label", label: "Entrées" },
+      ...BOOKMARKS_DISPLAYS.map(value => ({
+        type: "checkbox" as const,
+        label: BOOKMARKS_DISPLAY_LABELS[value],
+        description: value === "excerpts" ? "Le début de leur définition." : "Sur deux colonnes, l'extrait au survol.",
+        checked: display.value === value,
+        onUpdateChecked: () => {
+          display.value = value;
+        },
+      })),
+    ],
+    [
+      { type: "label", label: "Tri des étiquettes" },
+      ...TAG_SORTS.map(value => ({
+        type: "checkbox" as const,
+        label: TAG_SORT_LABELS[value],
+        checked: sort.value === value,
+        onUpdateChecked: () => {
+          sort.value = value;
+        },
+      })),
+      { type: "label", label: "Les étiquettes épinglées restent en tête.", class: "font-normal text-muted" },
+    ],
+    [{ label: "Toutes les préférences", icon: "i-lucide-sliders-horizontal", to: encodeURI("/préférences") }],
   ]);
 </script>
 
@@ -29,8 +49,9 @@
     >
       <!--
         An item of the bookmarks page's menu bar (cf. `signets.vue`), as
-        « Tri » (cf. `TagSortMenu`); its label doesn't tell the current
-        display (read from the device once hydrated).
+        « Fichier » (cf. `BookmarksMenu`). Its label doesn't tell the current
+        choices, read from the device once hydrated: the server's markup stays
+        the client's.
       -->
       <UTooltip
         text="Affichage"

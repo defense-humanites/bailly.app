@@ -477,15 +477,16 @@ test.describe("bookmarks page, sorting and pinning", () => {
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Alpha", "Bêta", "Gamma"]);
 
     const sortBy = async (label: string): Promise<void> => {
-      await page.getByRole("button", { name: "Tri" }).click();
+      await page.getByRole("button", { name: "Affichage" }).click();
       await page.getByRole("menuitemcheckbox", { name: label, exact: true }).click();
     };
     await sortBy("Par nombre d'entrées");
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Gamma", "Alpha"]);
     await sortBy("Par ajout récent");
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Gamma", "Alpha", "Bêta"]);
-    await page.getByRole("button", { name: "Tri" }).click();
+    await page.getByRole("button", { name: "Affichage" }).click();
     await expect(page.getByRole("menuitemcheckbox", { name: "Par ajout récent" })).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByRole("menuitem", { name: "Toutes les préférences" })).toBeVisible();
     await page.keyboard.press("Escape");
 
     // Kept on the device.

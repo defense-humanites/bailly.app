@@ -29,7 +29,7 @@
    */
   /**
    * The tags as shown (cards, table of contents): the pinned ones first, then
-   * the others as the user chose to sort them (cf. `TagSortMenu`).
+   * the others as the user chose to sort them (cf. `BookmarksDisplayMenu`).
    */
   const tagSort = useTagSort();
   const sortedTags = computed(() => sortTags(tags.value, tagSort.value, bookmarksStore.entriesOf));
@@ -84,10 +84,10 @@
         Aegean blue — `secondary`: the sea, and the sky of the "cloud" —, the
         page's main action), then a menu bar for the tags, in the style of an
         entry's toolbar (cf. `TagButtonGroup`): creating a tag, choosing the
-        active one, the display of the entries, sorting the tags, and the file (export, import: less used,
-        within reach for whoever looks for it). Its fields are square-cornered,
-        without the search bar's pill shape, their background telling them
-        from its buttons (ghost). Below `lg`, the field takes the bar's first
+        active one, the display (the entries, the sorting of the tags), and the
+        file (export, import: less used, within reach for whoever looks for
+        it). Its fields are square-cornered, without the search bar's pill
+        shape, their background telling them from its buttons (ghost). Below `lg`, the field takes the bar's first
         row. Icons only (square buttons) below `xl`, as the header menu (the
         labels stay for screen readers and show in tooltips; cf.
         `useButtonLabels`).
@@ -163,13 +163,10 @@
             </USelectMenu>
           </div>
 
-          <!-- Export, import -->
-          <!-- Display of the entries -->
+          <!-- Display: the entries, the sorting of the tags -->
           <BookmarksDisplayMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
 
-          <!-- Sorting -->
-          <TagSortMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
-
+          <!-- Export, import -->
           <BookmarksMenu class="flex h-11 border-s border-default max-lg:overflow-hidden max-lg:rounded-br-(--field-inner-radius) lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
         </div>
       </header>
