@@ -121,7 +121,7 @@
   on the right.
 -->
 <template>
-  <div class="px-4 py-6 md:px-6 lg:pt-10 lg:pb-6">
+  <div class="px-4 py-6 md:px-6 lg:pt-8 lg:pb-6">
     <div class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 lg:max-w-(--content-max-width) lg:grid-cols-2">
       <!-- The title, and the synchronization of the preferences. -->
       <div class="flex items-center justify-between gap-4 lg:col-span-2">

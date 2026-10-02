@@ -57,7 +57,7 @@
 </script>
 
 <template>
-  <div class="overflow-x-clip px-4 py-6 md:px-6 lg:py-12">
+  <div class="overflow-x-clip px-4 py-6 md:px-6 lg:pt-8 lg:pb-12">
     <!--
       Clipped sideways: the table of contents' background spans the window
       (cf. `BookmarksToc`). `clip` (not `hidden`) keeps it sticky.
