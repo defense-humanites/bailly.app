@@ -98,38 +98,45 @@ mort d'un homme qu'on lance (du haut d'un rocher).
   <div>
     <!--
       The hero, framed like a title page: a thick and a thin rule, in the cloth of
-      the icon, as wide as the header.
+      the icon. It fills the window under the header, with equal margins all
+      around (`svh`: it does not change height when the mobile browser bars
+      collapse); its content scales with the window height, and the frame grows
+      rather than letting it overflow (e.g. a phone in landscape).
     -->
-    <div class="mx-auto max-w-(--header-max-width) px-4 pt-4 md:px-6 md:pt-6">
-      <section class="flex flex-col items-center justify-center rounded-lg border-2 border-terracotta-700 px-4 py-12 text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[min(calc(100dvh-(var(--spacing)*14)-3rem),48rem)] md:px-8 md:py-16">
+    <div class="p-4 md:p-6">
+      <section class="flex min-h-[calc(100svh-(6.5rem+1px)-2rem)] flex-col items-center justify-center rounded-xl border-2 border-terracotta-700 px-3 py-[clamp(1.25rem,4svh,3rem)] text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[calc(100svh-3.5rem-3rem)] md:px-8">
         <UIcon
           name="i-bailly-bailly"
-          class="mb-4 size-32"
+          class="mb-[clamp(0.75rem,2.5svh,1.25rem)] size-[clamp(3rem,9svh,5rem)] shrink-0 md:size-[clamp(4rem,14svh,8rem)]"
         />
-        <h1 class="max-w-3xl font-serif text-[1.75rem]/[2.8125rem] font-bold text-balance md:text-4xl/[3.75rem]">
+        <h1 class="max-w-3xl font-serif text-2xl/[1.2] font-bold text-balance max-[25rem]:text-[1.375rem]/[1.2] md:text-4xl/[1.2]">
           Le dictionnaire grec-français d'Anatole&nbsp;Bailly, à portée de recherche
         </h1>
-        <p class="mt-5 max-w-2xl text-lg text-pretty text-muted md:text-xl">
+        <p class="mt-[clamp(0.75rem,2.5svh,1.25rem)] max-w-2xl text-base text-pretty text-muted md:text-xl">
           Le texte révisé du <em>Bailly 2020 Hugo&nbsp;Chávez</em>, dans une application libre et
           gratuite, pensée pour la lecture et la recherche, sans compte ni publicité.
         </p>
-        <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <div class="mt-[clamp(1.25rem,4svh,2rem)] flex flex-wrap justify-center gap-2 md:gap-3">
           <UButton
-            size="xl"
+            size="lg"
             icon="i-lucide-search"
             label="Chercher un mot"
+            class="max-sm:px-2.5 max-[23.5rem]:gap-1.5 max-[23.5rem]:px-2 md:text-base"
+            :ui="{ leadingIcon: 'md:size-6' }"
             @click="searchFocus.focus()"
           />
           <UButton
             to="/soutenir"
-            size="xl"
+            size="lg"
             color="neutral"
             variant="outline"
             icon="i-lucide-heart"
             label="Nous soutenir"
+            class="max-sm:px-2.5 max-[23.5rem]:gap-1.5 max-[23.5rem]:px-2 md:text-base"
+            :ui="{ leadingIcon: 'md:size-6' }"
           />
         </div>
-        <dl class="mt-12 grid w-full max-w-2xl grid-cols-3 gap-4 border-t border-terracotta-700/35 pt-6">
+        <dl class="mt-[clamp(1rem,4.5svh,3rem)] grid w-full max-w-2xl grid-cols-3 gap-4 border-t border-terracotta-700/35 pt-[clamp(0.75rem,2.5svh,1.5rem)]">
           <div
             v-for="figure in figures"
             :key="figure.label"
