@@ -214,23 +214,23 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                     v-for="input in searchInputs"
                     :key="input.mode"
                   >
-                    <span class="text-end text-xs text-dimmed">{{ input.mode }}</span>
+                    <span class="text-end text-[0.6875rem] text-dimmed sm:text-xs">{{ input.mode }}</span>
                     <span class="flex h-6 items-center rounded-full bg-default px-3 text-sm ring-1 ring-accented">{{ input.text }}</span>
                   </template>
                 </div>
-                <!-- As high as the inputs (rows of 1.5rem, gaps of 0.5rem): their middles at 12, 44 and 76. -->
+                <!-- A brace as high as the inputs (rows of 1.5rem, gaps of 0.5rem), its point at the middle (44). -->
                 <svg
-                  viewBox="0 0 48 88"
-                  class="h-22 w-10 shrink-0 text-dimmed sm:w-12"
+                  viewBox="0 0 16 88"
+                  class="ms-1 me-2 h-22 w-4 shrink-0 text-dimmed sm:ms-2 sm:me-3"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="1.25"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 >
-                  <path d="M4 12C20 12 18 44 32 44M4 44H32M4 76C20 76 18 44 32 44H42M38 40l4 4-4 4" />
+                  <path d="M2 2C6 2 8 4 8 9V36C8 41 10 44 14 44C10 44 8 47 8 52V79C8 84 6 86 2 86" />
                 </svg>
-                <span class="font-serif text-xl font-bold">φύσις</span>
+                <span class="font-serif text-lg font-bold sm:text-xl">φύσις</span>
               </div>
             </div>
             <h3 class="font-semibold">
