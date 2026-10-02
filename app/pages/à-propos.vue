@@ -16,6 +16,26 @@
   ];
 
   /**
+   * The search demonstration: the same word typed in each input mode.
+   */
+  const searchInputs = [
+    { mode: "grec", text: "ψυχη" },
+    { mode: "beta code", text: "yuxh" },
+    { mode: "translittération", text: "psuchê" },
+  ];
+
+  /**
+   * The bookmarks demonstration: as the table of contents of the bookmarks page
+   * shows them, the favorites (always filled) and some tags.
+   */
+  const bookmarkPills = [
+    { name: "Favoris", color: "Yellow", icon: "i-bailly-star-filled", count: 8, filled: true },
+    { name: "Homère", color: "Blue", icon: "i-bailly-tag-filled", count: 12, filled: false },
+    { name: "Tragédie", color: "Orange", icon: "i-bailly-tag-filled", count: 5, filled: false },
+    { name: "Vocabulaire", color: "Green", icon: "i-bailly-tag-filled", count: 23, filled: false },
+  ];
+
+  /**
    * The features, each shown with a small demonstration (in the template).
    */
   const features = {
@@ -113,12 +133,12 @@ mort d'un homme qu'on lance (du haut d'un rocher).
         <div class="my-auto flex w-full flex-col items-center">
           <UIcon
             name="i-bailly-bailly"
-            class="mb-[clamp(0.5rem,2svh,1.25rem)] size-[clamp(3rem,7svh,5rem)] shrink-0 md:size-[clamp(4rem,14svh,8rem)]"
+            class="mb-[clamp(0.5rem,2svh,1.25rem)] size-[clamp(3rem,7svh,5rem)] shrink-0 md:size-[clamp(4rem,13svh,8rem)]"
           />
-          <h1 class="max-w-3xl font-serif text-2xl/[1.2] font-bold text-balance max-[25rem]:text-[1.375rem]/[1.2] md:text-4xl/[1.2]">
+          <h1 class="max-w-3xl font-serif text-2xl/[1.3] font-bold text-balance max-[25rem]:text-[1.375rem]/[1.3] md:text-4xl/[1.3]">
             Le dictionnaire grec-français d'Anatole&nbsp;Bailly, à portée de recherche
           </h1>
-          <p class="mt-[clamp(0.75rem,2.5svh,1.25rem)] max-w-2xl text-base text-pretty text-muted md:text-xl">
+          <p class="mt-[clamp(0.5rem,2svh,1.25rem)] max-w-2xl text-base text-pretty text-muted md:text-xl">
             Le texte révisé du <em>Bailly 2020 Hugo&nbsp;Chávez</em>, dans une application libre et
             gratuite, pensée pour la lecture et la recherche, sans compte ni publicité.
           </p>
@@ -186,21 +206,31 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           <li class="flex flex-col rounded-lg bg-default p-5 ring-1 ring-default">
             <div
               aria-hidden="true"
-              class="mb-4 flex h-28 items-center justify-center rounded-md bg-page ring-1 ring-default"
+              class="mb-4 flex h-32 items-center justify-center rounded-md bg-page ring-1 ring-default"
             >
-              <div class="grid grid-cols-[auto_auto_auto] items-center gap-x-3 gap-y-2">
-                <span class="rounded-full bg-default px-3 py-0.5 text-sm ring-1 ring-accented">logos</span>
-                <UIcon
-                  name="i-lucide-arrow-right"
-                  class="size-4 text-dimmed"
-                />
-                <span class="font-serif text-lg font-bold">λόγος</span>
-                <span class="rounded-full bg-default px-3 py-0.5 text-sm ring-1 ring-accented">lo/gos</span>
-                <UIcon
-                  name="i-lucide-arrow-right"
-                  class="size-4 text-dimmed"
-                />
-                <span class="font-serif text-lg font-bold">λόγος</span>
+              <div class="flex items-center">
+                <div class="grid grid-cols-[auto_auto] items-center gap-x-1.5 gap-y-2 sm:gap-x-2">
+                  <template
+                    v-for="input in searchInputs"
+                    :key="input.mode"
+                  >
+                    <span class="text-end text-xs text-dimmed">{{ input.mode }}</span>
+                    <span class="flex h-6 items-center rounded-full bg-default px-3 text-sm ring-1 ring-accented">{{ input.text }}</span>
+                  </template>
+                </div>
+                <!-- The rows' middles: 0.75rem, 2.75rem and 4.75rem (rows of 1.5rem, gaps of 0.5rem). -->
+                <svg
+                  viewBox="0 0 48 96"
+                  class="h-24 w-10 shrink-0 text-dimmed sm:w-12"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.25"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M4 12C20 12 18 44 32 44M4 44H32M4 76C20 76 18 44 32 44H42M38 40l4 4-4 4" />
+                </svg>
+                <span class="font-serif text-xl font-bold">ψυχή</span>
               </div>
             </div>
             <h3 class="font-semibold">
@@ -213,7 +243,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           <li class="flex flex-col rounded-lg bg-default p-5 ring-1 ring-default">
             <div
               aria-hidden="true"
-              class="mb-4 flex h-28 items-center justify-center rounded-md bg-page ring-1 ring-default"
+              class="mb-4 flex h-32 items-center justify-center rounded-md bg-page ring-1 ring-default"
             >
               <div class="grid grid-cols-[auto_auto_auto] items-center gap-x-3 gap-y-2">
                 <span class="font-serif text-lg">ἦλθον</span>
@@ -246,35 +276,24 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           <li class="flex flex-col rounded-lg bg-default p-5 ring-1 ring-default">
             <div
               aria-hidden="true"
-              class="mb-4 flex h-28 items-center justify-center rounded-md bg-page ring-1 ring-default"
+              class="mb-4 flex h-32 items-center justify-center rounded-md bg-page ring-1 ring-default"
             >
-              <div class="flex max-w-60 flex-wrap items-center justify-center gap-2">
-                <span class="inline-flex items-center gap-1 rounded-full bg-default px-2.5 py-0.5 text-sm ring-1 ring-default"><UIcon
-                  name="i-bailly-star-filled"
-                  class="size-4 text-favorite"
-                />Favoris</span>
-                <span
-                  data-tag-color="Blue"
-                  class="inline-flex items-center gap-1 rounded-full bg-tag-100 px-2.5 py-0.5 text-sm text-tag-text ring-1 ring-tag-300/60"
-                ><UIcon
-                  name="i-bailly-tag-filled"
-                  class="size-4"
-                />Homère</span>
-                <span
-                  data-tag-color="Orange"
-                  class="inline-flex items-center gap-1 rounded-full bg-tag-100 px-2.5 py-0.5 text-sm text-tag-text ring-1 ring-tag-300/60"
-                ><UIcon
-                  name="i-bailly-tag-filled"
-                  class="size-4"
-                />Tragédie</span>
-                <span
-                  data-tag-color="Green"
-                  class="inline-flex items-center gap-1 rounded-full bg-tag-100 px-2.5 py-0.5 text-sm text-tag-text ring-1 ring-tag-300/60"
-                ><UIcon
-                  name="i-bailly-tag-filled"
-                  class="size-4"
-                />Vocabulaire</span>
-              </div>
+              <ul class="flex max-w-72 flex-wrap items-center justify-center gap-2">
+                <li
+                  v-for="pill in bookmarkPills"
+                  :key="pill.name"
+                  :data-tag-color="pill.color"
+                  class="flex h-8 items-center gap-1.5 rounded-full ps-2.5 pe-3 text-sm"
+                  :class="pill.filled ? 'bg-tag-text text-tag-100' : 'bg-tag-100 text-tag-text ring ring-tag-300/60 ring-inset'"
+                >
+                  <UIcon
+                    :name="pill.icon"
+                    class="size-4 shrink-0"
+                  />
+                  <span class="font-medium">{{ pill.name }}</span>
+                  <span class="tabular-nums opacity-75">{{ pill.count }}</span>
+                </li>
+              </ul>
             </div>
             <h3 class="font-semibold">
               {{ features.bookmarks.title }}
@@ -286,22 +305,28 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           <li class="flex flex-col rounded-lg bg-default p-5 ring-1 ring-default">
             <div
               aria-hidden="true"
-              class="mb-4 flex h-28 items-center justify-center rounded-md bg-page ring-1 ring-default"
+              class="mb-4 flex h-32 items-center justify-center rounded-md bg-page ring-1 ring-default"
             >
-              <div class="flex items-end gap-5">
+              <div class="flex flex-col items-center gap-2">
                 <div
-                  v-for="font in fontSpecimens.fonts"
-                  :key="font.name"
-                  class="flex flex-col items-center gap-1"
+                  v-for="(row, index) in [fontSpecimens.fonts.slice(0, 2), fontSpecimens.fonts.slice(2)]"
+                  :key="index"
+                  class="flex items-end gap-5"
                 >
-                  <svg
-                    :viewBox="`0 ${fontSpecimens.viewBoxTop} ${font.width} ${fontSpecimens.viewBoxHeight}`"
-                    :style="{ width: `${font.width / 1000 * 1.5}rem` }"
-                    class="h-[2.4rem] fill-current"
+                  <div
+                    v-for="font in row"
+                    :key="font.name"
+                    class="flex flex-col items-center"
                   >
-                    <path :d="font.d" />
-                  </svg>
-                  <span class="text-xs text-dimmed">{{ font.name }}</span>
+                    <svg
+                      :viewBox="`0 ${fontSpecimens.viewBoxTop} ${font.width} ${fontSpecimens.viewBoxHeight}`"
+                      :style="{ width: `${font.width / 1000 * 1.25}rem` }"
+                      class="h-8 fill-current"
+                    >
+                      <path :d="font.d" />
+                    </svg>
+                    <span class="text-xs text-dimmed">{{ font.name }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -336,15 +361,15 @@ mort d'un homme qu'on lance (du haut d'un rocher).
         text, centered too, without a path.
       -->
         <ol class="mt-10 space-y-12 md:mx-auto md:max-w-4xl md:space-y-24">
-          <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
+          <li class="relative flex flex-col items-center gap-6 md:min-h-[calc(14rem+0.875rem)] md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
             <!-- The winding path to the next work (from `md`). -->
             <div
               aria-hidden="true"
               class="contents"
             >
-              <div class="absolute top-56 bottom-0 left-28 hidden border-s-2 border-dashed border-(--rule-color)/60 md:block" />
+              <div class="absolute top-[calc(14rem+0.875rem)] bottom-0 left-28 hidden border-s-2 border-dashed border-(--rule-color)/60 md:block" />
               <div class="absolute top-full right-1/2 left-28 hidden h-12 rounded-bl-3xl border-b-2 border-s-2 border-dashed border-(--rule-color)/60 md:block" />
-              <div class="absolute top-[calc(100%+3rem-2px)] right-28 left-1/2 hidden h-12 rounded-tr-3xl border-e-2 border-t-2 border-dashed border-(--rule-color)/60 md:block" />
+              <div class="absolute top-[calc(100%+3rem-2px)] right-28 left-1/2 hidden h-[calc(3rem-0.875rem+2px)] rounded-tr-3xl border-e-2 border-t-2 border-dashed border-(--rule-color)/60 md:block" />
             </div>
             <div class="size-40 shrink-0 md:size-56">
               <div class="relative size-full overflow-hidden rounded-full bg-white border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)]">
@@ -373,15 +398,15 @@ mort d'un homme qu'on lance (du haut d'un rocher).
             </div>
           </li>
 
-          <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
+          <li class="relative flex flex-col items-center gap-6 md:min-h-[calc(14rem+0.875rem)] md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
             <!-- The winding path to the next work (from `md`). -->
             <div
               aria-hidden="true"
               class="contents"
             >
-              <div class="absolute top-56 right-28 bottom-0 hidden border-e-2 border-dashed border-(--rule-color)/60 md:block" />
+              <div class="absolute top-[calc(14rem+0.875rem)] right-28 bottom-0 hidden border-e-2 border-dashed border-(--rule-color)/60 md:block" />
               <div class="absolute top-full right-28 left-1/2 hidden h-12 rounded-br-3xl border-e-2 border-b-2 border-dashed border-(--rule-color)/60 md:block" />
-              <div class="absolute top-[calc(100%+3rem-2px)] right-1/2 left-28 hidden h-12 rounded-tl-3xl border-s-2 border-t-2 border-dashed border-(--rule-color)/60 md:block" />
+              <div class="absolute top-[calc(100%+3rem-2px)] right-1/2 left-28 hidden h-[calc(3rem-0.875rem+2px)] rounded-tl-3xl border-s-2 border-t-2 border-dashed border-(--rule-color)/60 md:block" />
             </div>
             <div class="size-40 shrink-0 md:size-56">
               <div
@@ -435,7 +460,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
             </div>
           </li>
 
-          <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
+          <li class="relative flex flex-col items-center gap-6 md:min-h-[calc(14rem+0.875rem)] md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
             <div class="size-40 shrink-0 md:size-56">
               <div
                 aria-hidden="true"
@@ -585,11 +610,11 @@ mort d'un homme qu'on lance (du haut d'un rocher).
     >
       <div
         aria-hidden="true"
-        class="absolute inset-x-0 top-3 h-[5px] border-y border-gold-300/70"
+        class="absolute inset-x-0 top-3 h-[6px] border-t-2 border-b border-gold-300/70"
       />
       <div
         aria-hidden="true"
-        class="absolute inset-x-0 bottom-3 h-[5px] border-y border-gold-300/70"
+        class="absolute inset-x-0 bottom-3 h-[6px] border-t border-b-2 border-gold-300/70"
       />
       <div class="mx-auto max-w-(--content-max-width) px-4 md:px-6">
         <h2
