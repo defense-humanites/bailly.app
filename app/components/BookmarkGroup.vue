@@ -327,6 +327,17 @@
   );
   const hiddenCount = computed((): number => props.entries.length - COLLAPSED_COUNT);
 
+  /**
+   * The quota of entries (cf. `utils/quotas.ts`), told under the entries
+   * near it.
+   */
+  const { tagMaxItems } = useRuntimeConfig().public;
+  const showsQuota = computed((): boolean => quotaShown(props.entries.length, tagMaxItems, "entries"));
+  const nearQuota = computed((): boolean => quotaNear(props.entries.length, tagMaxItems));
+  const quotaText = computed((): string => (props.entries.length >= tagMaxItems
+    ? `Liste pleine : ${tagMaxItems} entrées au plus.`
+    : `${props.entries.length} entrées sur ${tagMaxItems} au plus.`));
+
   const entryList = useTemplateRef<HTMLElement>("entry-list");
   const entryListId = useId();
   const expandToggle = useTemplateRef<{ $el: HTMLElement }>("expand-toggle");
@@ -673,6 +684,13 @@
         :ui="{ base: 'rounded-lg bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
         @click="toggleExpanded"
       />
+      <p
+        v-if="showsQuota"
+        class="mt-2 text-end text-xs text-tag-text"
+        :class="nearQuota ? 'font-semibold' : 'opacity-75'"
+      >
+        {{ quotaText }}
+      </p>
     </template>
   </UCard>
 </template>

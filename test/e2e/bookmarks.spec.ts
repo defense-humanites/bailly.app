@@ -203,7 +203,7 @@ test.describe("bookmarks page", () => {
   // No submit button: Enter adds the tag, as the key drawn in the field says.
   test("creating a tag with Enter, its hint named", async ({ page }) => {
     const field = page.getByRole("textbox", { name: "Nom de la nouvelle étiquette" });
-    await expect(field).toHaveAccessibleDescription("Entrée pour ajouter");
+    await expect(field).toHaveAccessibleDescription(/^Entrée pour ajouter/);
     await expect(field).toHaveAttribute("enterkeyhint", "done");
     await field.fill("Pindare");
     await field.press("Enter");
@@ -345,6 +345,18 @@ test.describe("bookmarks page, long groups", () => {
     await collapse.click();
     await expect(links).toHaveCount(6);
     await expect(toggle).toBeInViewport();
+  });
+});
+
+test.describe("bookmarks page, quotas", () => {
+  // The number of tags in the new tag field, with the quota; beyond it, told
+  // on the field.
+  test("the tags' quota in the new tag field", async ({ page, goto }) => {
+    await goto("/signets", { waitUntil: "hydration" });
+    await seedBookmarks(page, { tags: [{ name: "Un", color: "Sky" }, { name: "Deux", color: "Rose" }] });
+    const field = page.getByRole("textbox", { name: "Nom de la nouvelle étiquette" });
+    await expect(page.getByText("2/50", { exact: true })).toBeVisible();
+    await expect(field).toHaveAccessibleDescription(/\(2 étiquettes sur 50 au plus\)/);
   });
 });
 

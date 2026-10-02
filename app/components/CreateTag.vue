@@ -26,9 +26,18 @@
    * Why the name typed cannot be used, before Enter is pressed: taken by a tag
    * (case and diacritics ignored, as `IdbTags` does) or reserved.
    */
+  /**
+   * The quota of tags (cf. `utils/quotas.ts`): their number, shown at the
+   * end of the field.
+   */
+  const { maxTags } = useRuntimeConfig().public;
+  const showsQuota = computed((): boolean => quotaShown(tags.value.length, maxTags, "tags"));
+  const nearQuota = computed((): boolean => quotaNear(tags.value.length, maxTags));
+
   const conflict = computed((): string | undefined => {
     const name = comparableTagName(newTagName.value.trim());
     if (!name) return undefined;
+    if (tags.value.length >= maxTags) return `Vous avez atteint le nombre maximal d'étiquettes (${maxTags}).`;
     if (name === "favoris") return "Ce nom est réservé à la liste des favoris.";
     const homonym = tags.value.find(tag => comparableTagName(tag.name) === name);
     return homonym && `L'étiquette « ${homonym.name} » existe déjà.`;
@@ -90,7 +99,7 @@
         :aria-invalid="!!error"
         enterkeyhint="done"
         :maxlength="IdbTags.nameMaxLength"
-        :ui="{ base: 'h-full rounded-none shadow-none', leading: 'ps-1.5', trailing: 'pe-3' }"
+        :ui="{ base: 'h-full rounded-none shadow-none pe-24', leading: 'ps-1.5', trailing: 'gap-2 pe-3' }"
         @keydown.enter="createTag"
       >
         <!-- Color picker -->
@@ -114,6 +123,13 @@
 
         <!-- Enter adds the tag; or why it cannot -->
         <template #trailing>
+          <!-- The quota: « 12/50 » (cf. the hint for screen readers). -->
+          <span
+            v-if="showsQuota"
+            aria-hidden="true"
+            class="text-xs tabular-nums"
+            :class="nearQuota ? 'font-medium text-warning' : 'text-dimmed'"
+          >{{ tags.length }}/{{ maxTags }}</span>
           <UIcon
             v-if="error"
             name="i-lucide-circle-alert"
@@ -131,7 +147,7 @@
           <span
             :id="hintId"
             class="sr-only"
-          >Entrée pour ajouter</span>
+          >Entrée pour ajouter{{ showsQuota ? ` (${tags.length} étiquette${tags.length > 1 ? "s" : ""} sur ${maxTags} au plus)` : "" }}</span>
           <span
             :id="errorId"
             role="status"
