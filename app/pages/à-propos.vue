@@ -342,12 +342,12 @@ mort d'un homme qu'on lance (du haut d'un rocher).
               aria-hidden="true"
               class="contents"
             >
-              <div class="absolute top-56 bottom-0 left-28 hidden border-s-2 border-dashed border-primary/40 md:block" />
-              <div class="absolute top-full right-1/2 left-28 hidden h-12 rounded-bl-3xl border-b-2 border-s-2 border-dashed border-primary/40 md:block" />
-              <div class="absolute top-[calc(100%+3rem-2px)] right-28 left-1/2 hidden h-12 rounded-tr-3xl border-e-2 border-t-2 border-dashed border-primary/40 md:block" />
+              <div class="absolute top-56 bottom-0 left-28 hidden border-s-2 border-dashed border-(--rule-color)/60 md:block" />
+              <div class="absolute top-full right-1/2 left-28 hidden h-12 rounded-bl-3xl border-b-2 border-s-2 border-dashed border-(--rule-color)/60 md:block" />
+              <div class="absolute top-[calc(100%+3rem-2px)] right-28 left-1/2 hidden h-12 rounded-tr-3xl border-e-2 border-t-2 border-dashed border-(--rule-color)/60 md:block" />
             </div>
             <div class="size-40 shrink-0 md:size-56">
-              <div class="relative size-full overflow-hidden rounded-full bg-white shadow-2xl ring-4 ring-primary/10 md:ring-8">
+              <div class="relative size-full overflow-hidden rounded-full bg-white border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)]">
                 <img
                   src="/images/bailly-1935-rhiptos.webp"
                   width="480"
@@ -379,14 +379,14 @@ mort d'un homme qu'on lance (du haut d'un rocher).
               aria-hidden="true"
               class="contents"
             >
-              <div class="absolute top-56 right-28 bottom-0 hidden border-e-2 border-dashed border-primary/40 md:block" />
-              <div class="absolute top-full right-28 left-1/2 hidden h-12 rounded-br-3xl border-e-2 border-b-2 border-dashed border-primary/40 md:block" />
-              <div class="absolute top-[calc(100%+3rem-2px)] right-1/2 left-28 hidden h-12 rounded-tl-3xl border-s-2 border-t-2 border-dashed border-primary/40 md:block" />
+              <div class="absolute top-56 right-28 bottom-0 hidden border-e-2 border-dashed border-(--rule-color)/60 md:block" />
+              <div class="absolute top-full right-28 left-1/2 hidden h-12 rounded-br-3xl border-e-2 border-b-2 border-dashed border-(--rule-color)/60 md:block" />
+              <div class="absolute top-[calc(100%+3rem-2px)] right-1/2 left-28 hidden h-12 rounded-tl-3xl border-s-2 border-t-2 border-dashed border-(--rule-color)/60 md:block" />
             </div>
             <div class="size-40 shrink-0 md:size-56">
               <div
                 aria-hidden="true"
-                class="flex size-full items-center justify-center overflow-hidden rounded-full bg-default shadow-2xl ring-4 ring-primary/10 md:ring-8"
+                class="flex size-full items-center justify-center overflow-hidden rounded-full bg-default border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)]"
               >
                 <!-- eslint-disable vue/no-v-html -- A constant of this page. -->
                 <div
@@ -439,7 +439,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
             <div class="size-40 shrink-0 md:size-56">
               <div
                 aria-hidden="true"
-                class="flex size-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary/15 to-(--ui-bg) shadow-2xl ring-4 ring-primary/10 md:ring-8"
+                class="flex size-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary/15 to-(--ui-bg) border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)]"
               >
                 <div class="w-[11.2rem] shrink-0 space-y-1.5 max-md:scale-[0.715]">
                   <div class="flex items-center gap-1.5 rounded-full bg-default px-3 py-1.5 text-sm shadow-xs ring-1 ring-default">
