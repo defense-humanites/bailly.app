@@ -407,33 +407,16 @@
             v-show="editableEditMode"
             class="col-start-1 row-start-1 flex min-w-0 items-start"
           >
-            <TagColorPicker
-              v-model:open="isTagColorPopoverOpen"
-              :model-value="IdbTags.isColorKey(tagColor) ? tagColor : undefined"
-              label="Couleur de l'étiquette"
-              @update:model-value="onPickColor"
-            >
-              <template #trigger="{ icon: triggerIcon, attrs }">
-                <UButton
-                  v-bind="attrs"
-                  :icon="triggerIcon"
-                  size="xl"
-                  variant="ghost"
-                  color="neutral"
-                  :ui="{
-                    base: `h-8 w-10 justify-center rounded-l-full rounded-r-none ${isTagColorPopoverOpen ? 'bg-default/90 hover:bg-default/90 active:bg-default/90' : 'bg-default/60 hover:bg-default/90 active:bg-default/90'}`,
-                  }"
-                />
-              </template>
-            </TagColorPicker>
-
             <!--
-              A field on one line (Enter validates), in the name's text: its
-              height comes from the same padding and line height as the name
-              (32 px), rather than from a fixed height, in which each browser
-              centres the text its own way. A name that cannot be used is
-              told on the field, as for a new tag (cf. `CreateTag`): a red
-              ring, the message in a bubble under it and in a live region.
+              The color and the name, one field on one line (Enter validates),
+              in the name's text: its height comes from the same padding and
+              line height as the name (32 px), rather than from a fixed
+              height, in which each browser centres the text its own way.
+              Its ring goes round the whole field, color included: the focus
+              ring, whichever part has the keyboard focus (which part shows by
+              its lighter background), and the ring of a name that cannot be
+              used, told as for a new tag (cf. `CreateTag`): a red ring, the
+              message in a bubble under the field and in a live region.
             -->
             <UPopover
               :open="!!nameError"
@@ -442,17 +425,40 @@
               :ui="{ content: 'px-3 py-2 text-sm text-error' }"
             >
               <template #anchor>
-                <input
-                  ref="tag-name-input"
-                  v-model="tagName"
-                  type="text"
-                  aria-label="Nom de l'étiquette"
-                  :aria-describedby="nameErrorId"
-                  :aria-invalid="!!nameError"
-                  :maxlength="IdbTags.nameMaxLength"
-                  class="min-w-0 grow rounded-r-full bg-default/60 px-2 py-0.5 text-xl/7 font-bold text-tag-text hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2 md:py-0 md:text-2xl/8"
-                  :class="nameError ? 'ring-2 ring-error focus-visible:ring-error' : 'focus-visible:ring-tag-300'"
+                <div
+                  class="flex min-w-0 grow rounded-full"
+                  :class="nameError ? 'ring-2 ring-error' : 'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-tag-300'"
                 >
+                  <TagColorPicker
+                    v-model:open="isTagColorPopoverOpen"
+                    :model-value="IdbTags.isColorKey(tagColor) ? tagColor : undefined"
+                    label="Couleur de l'étiquette"
+                    @update:model-value="onPickColor"
+                  >
+                    <template #trigger="{ icon: triggerIcon, attrs }">
+                      <UButton
+                        v-bind="attrs"
+                        :icon="triggerIcon"
+                        size="xl"
+                        variant="ghost"
+                        color="neutral"
+                        :ui="{
+                          base: `h-8 w-10 justify-center rounded-l-full rounded-r-none focus-visible:outline-none focus-visible:bg-default/90 ${isTagColorPopoverOpen ? 'bg-default/90 hover:bg-default/90 active:bg-default/90' : 'bg-default/60 hover:bg-default/90 active:bg-default/90'}`,
+                        }"
+                      />
+                    </template>
+                  </TagColorPicker>
+                  <input
+                    ref="tag-name-input"
+                    v-model="tagName"
+                    type="text"
+                    aria-label="Nom de l'étiquette"
+                    :aria-describedby="nameErrorId"
+                    :aria-invalid="!!nameError"
+                    :maxlength="IdbTags.nameMaxLength"
+                    class="min-w-0 grow rounded-r-full bg-default/60 px-2 py-0.5 text-xl/7 font-bold text-tag-text hover:bg-default/90 focus:bg-default/90 focus:outline-none md:py-0 md:text-2xl/8"
+                  >
+                </div>
               </template>
               <template #content>
                 <p aria-hidden="true">

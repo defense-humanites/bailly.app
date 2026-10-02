@@ -61,8 +61,16 @@ test.describe("bookmarks page", () => {
   test("renaming a tag: a taken name told on the field", async ({ page }) => {
     await page.getByRole("button", { name: "Modifier l'étiquette « Vide »" }).click();
     const name = card(page, "Vide").getByRole("textbox", { name: "Nom de l'étiquette" });
+    // One field, the color included: its ring goes round both.
+    const field = name.locator("..");
+    await expect(field.getByRole("button", { name: /^Couleur de l'étiquette/ })).toBeVisible();
+    await expect(field).toHaveCSS("box-shadow", "none");
+    await name.focus();
+    await page.keyboard.press("Shift+Tab");
+    await expect(field).not.toHaveCSS("box-shadow", "none");
     await name.fill("vocabulaire homerique et tragique");
     await expect(name).toHaveAttribute("aria-invalid", "true");
+    await expect(field).not.toHaveCSS("box-shadow", "none");
     await expect(name).toHaveAccessibleDescription("L'étiquette « Vocabulaire homérique et tragique » existe déjà.");
     await expect(page.locator("[data-slot=content]").getByText("existe déjà")).toBeVisible();
     await name.press("Enter");
