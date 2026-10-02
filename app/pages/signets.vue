@@ -101,7 +101,7 @@
         <div
           role="group"
           aria-label="Étiquettes"
-          class="flex flex-wrap overflow-hidden rounded-lg border border-default bg-default shadow-xs lg:flex-nowrap lg:gap-2 lg:overflow-visible lg:border-0 lg:bg-transparent lg:shadow-none"
+          class="flex flex-wrap rounded-lg border border-default bg-default shadow-xs [--field-inner-radius:calc(var(--radius-lg)-1px)] lg:flex-nowrap lg:gap-2 lg:border-0 lg:bg-transparent lg:shadow-none"
         >
           <!--
             Below `lg`, one compact block on two lines (the field keeps a fair
@@ -111,7 +111,7 @@
             (each framed, slightly apart) on one line, the fields sharing the
             width left by the buttons.
           -->
-          <CreateTag class="h-11 min-w-0 basis-full border-default max-lg:border-b lg:basis-0 lg:grow lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
+          <CreateTag class="h-11 min-w-0 basis-full border-default max-lg:rounded-t-(--field-inner-radius) max-lg:border-b lg:basis-0 lg:grow lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
 
           <!--
             The active tag (the one an entry's toolbar adds it to in one
@@ -119,7 +119,10 @@
             before the bookmarks are loaded too (disabled, as when there is no
             tag): its place is kept.
           -->
-          <div class="flex h-11 min-w-0 grow border-default lg:basis-0 lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs">
+          <div
+            class="flex h-11 min-w-0 grow border-default max-lg:rounded-bl-(--field-inner-radius) lg:basis-0 lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
+            :class="FIELD_HALO"
+          >
             <USelectMenu
               :model-value="currentTagKey ?? undefined"
               :items="activeItems"
@@ -132,7 +135,7 @@
               :search-input="activeItems.length >= ACTIVE_FILTER_FROM && { placeholder: 'Filtrer…', ui: { base: 'rounded-none shadow-none' } }"
               aria-label="Étiquette active"
               class="h-full min-w-0 grow"
-              :ui="{ base: `h-full gap-2 rounded-none ps-3 shadow-none focus-visible:-outline-offset-3 ${FIELD_BACKGROUND}`, leading: 'static shrink-0 ps-0' }"
+              :ui="{ base: `h-full gap-2 rounded-none ps-3 shadow-none focus-visible:outline-transparent max-lg:rounded-bl-(--field-inner-radius) ${FIELD_BACKGROUND}`, leading: 'static shrink-0 ps-0' }"
               @update:model-value="(key: TagKey) => bookmarksStore.setCurrentTag(key)"
             >
               <template #leading>
@@ -160,7 +163,7 @@
           <!-- Sorting -->
           <TagSortMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
 
-          <BookmarksMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
+          <BookmarksMenu class="flex h-11 border-s border-default max-lg:overflow-hidden max-lg:rounded-br-(--field-inner-radius) lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
         </div>
       </header>
 
