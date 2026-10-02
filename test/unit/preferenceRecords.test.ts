@@ -11,6 +11,7 @@ import {
 } from "../../app/idb/preferenceRecords";
 import { IdbPreferences } from "../../app/idb";
 import { Idb, IdbMetaKey } from "../../app/idb/Idb";
+import type { Preferences } from "../../app/utils/preferences";
 
 const now = Date.now();
 const stampArb = fc
@@ -98,17 +99,20 @@ test("a value this version cannot apply is not applied", () => {
   expect(applicableValue({ key: "transliterateGreek", value: "yes", updatedAt: stamp })).toBeUndefined();
 });
 
-test("only the synchronizable preferences are stamped", () => {
+test("only the synchronizable preferences are stamped (the size and the weight of the text included)", () => {
   const stamp = formatStamp({ time: now, counter: 0, node: "a" });
-  expect(preferenceRecords({ readingFont: "book", readingSize: "large", transliterateGreek: true }, stamp)).toEqual([
+  const values = { readingFont: "book", readingSize: "large", readingWeight: "bold", transliterateGreek: true, theme: "dark" };
+  expect(preferenceRecords(values as Partial<Preferences>, stamp)).toEqual([
     { key: "readingFont", value: "book", updatedAt: stamp },
+    { key: "readingSize", value: "large", updatedAt: stamp },
+    { key: "readingWeight", value: "bold", updatedAt: stamp },
     { key: "transliterateGreek", value: true, updatedAt: stamp },
   ]);
 });
 
 test("IndexedDB: the changes are stamped, and the merges move the clock on", async () => {
   expect(await IdbPreferences.getRecords()).toEqual([]);
-  const [first] = await IdbPreferences.record({ readingFont: "bodoni", readingSize: "large" });
+  const [first] = await IdbPreferences.record({ readingFont: "bodoni" });
   expect(first).toMatchObject({ key: "readingFont", value: "bodoni" });
   const [second] = await IdbPreferences.record({ readingFont: "book" });
   expect(second!.updatedAt > first!.updatedAt).toBe(true);

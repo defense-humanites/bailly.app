@@ -62,8 +62,10 @@
    */
   const preferenceLabels: Record<SyncablePreference, { label: string; description?: string }> = {
     transliterateGreek: { label: "Grec translittéré" },
-    inflectedForms: { label: "Formes fléchies" },
     readingFont: { label: "Police" },
+    readingSize: { label: "Taille du texte" },
+    readingWeight: { label: "Graisse du texte" },
+    inflectedForms: { label: "Formes fléchies" },
     inputMode: { label: "Saisie", description: "Beta code ou translittération : selon le clavier de chaque appareil." },
   };
 
@@ -124,6 +126,12 @@
       disabled: last,
     };
   }));
+
+  /**
+   * The preferences on two columns, in the order of the preferences page
+   * (row by row); on one on a small screen.
+   */
+  const preferencesUi = { fieldset: "grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2" };
 
   /**
    * The types of data to synchronize once the window's is enabled: added to
@@ -612,6 +620,7 @@
             v-if="scope === 'preferences'"
             :model-value="chosenPreferences"
             :items="preferenceItems"
+            :ui="preferencesUi"
             legend="Préférences à synchroniser"
             @update:model-value="(keys) => setPreferences(keys as SyncablePreference[])"
           />
@@ -950,6 +959,7 @@
             v-if="scope === 'preferences'"
             :model-value="chosenPreferences"
             :items="preferenceItems"
+            :ui="preferencesUi"
             legend="Préférences synchronisées"
             :disabled="busy"
             @update:model-value="(keys) => setPreferences(keys as SyncablePreference[])"

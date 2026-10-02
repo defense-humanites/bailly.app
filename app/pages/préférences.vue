@@ -202,12 +202,15 @@
             class="w-48"
           />
         </SettingsRow>
-        <SettingsRow label="Taille du texte">
+        <SettingsRow
+          label="Taille du texte"
+          :synced="synced('readingSize')"
+        >
           <!-- A letter at each size, rather than words (too wide on mobile). -->
           <URadioGroup
             v-model="readingSize"
             :items="readingSizeItems"
-            legend="Taille du texte"
+            :legend="syncedLabel('Taille du texte', 'readingSize')"
             variant="table"
             orientation="horizontal"
             indicator="hidden"
@@ -223,11 +226,14 @@
             </template>
           </URadioGroup>
         </SettingsRow>
-        <SettingsRow label="Graisse du texte">
+        <SettingsRow
+          label="Graisse du texte"
+          :synced="synced('readingWeight')"
+        >
           <URadioGroup
             v-model="readingWeight"
             :items="readingWeightItems"
-            legend="Graisse du texte"
+            :legend="syncedLabel('Graisse du texte', 'readingWeight')"
             variant="table"
             orientation="horizontal"
             indicator="hidden"

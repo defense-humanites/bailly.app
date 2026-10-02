@@ -66,16 +66,24 @@ export function parsePreferences(value: unknown): Partial<Preferences> {
 
 /**
  * The preferences that can be synchronized across devices, if the user
- * chooses so (cf. `preferenceRecords.ts`): the others depend on the screen
- * (size, weight of the text) or on the device (theme).
+ * chooses so (cf. `preferenceRecords.ts`), in the order of the preferences
+ * page; the theme stays the device's (cf. the color mode).
  */
-export const SYNCABLE_PREFERENCES = ["transliterateGreek", "inflectedForms", "readingFont", "inputMode"] as const;
+export const SYNCABLE_PREFERENCES = [
+  "transliterateGreek",
+  "readingFont",
+  "readingSize",
+  "readingWeight",
+  "inflectedForms",
+  "inputMode",
+] as const;
 export type SyncablePreference = typeof SYNCABLE_PREFERENCES[number];
 
 /**
  * The preferences offered checked when the synchronization of the preferences
- * is enabled: the input mode depends on the keyboard (the transliteration
- * suits a computer's better than a touch screen).
+ * is enabled: the others are rather the device's, the size and the weight of
+ * the text depending on its screen, the input mode on its keyboard (the
+ * transliteration suits a computer's better than a touch screen).
  */
 export const DEFAULT_SYNCED_PREFERENCES: readonly SyncablePreference[] = ["transliterateGreek", "inflectedForms", "readingFont"];
 

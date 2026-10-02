@@ -58,11 +58,21 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await openSync(page);
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByText("Synchroniser vos préférences")).toBeVisible();
-  // Offered checked, but the input mode (it depends on the keyboard).
+  // In the order of the page, on two columns; offered checked, but the size
+  // and the weight of the text (they depend on the screen) and the input
+  // mode (on the keyboard).
+  const checkboxes = dialog.getByRole("checkbox");
+  await expect(checkboxes).toHaveCount(6);
+  const names = ["Grec translittéré", "Police", "Taille du texte", "Graisse du texte", "Formes fléchies", /^Saisie/];
+  for (const [i, name] of names.entries()) await expect(checkboxes.nth(i)).toHaveAccessibleName(name);
   await expect(dialog.getByRole("checkbox", { name: "Grec translittéré" })).toBeChecked();
   await expect(dialog.getByRole("checkbox", { name: "Formes fléchies" })).toBeChecked();
   await expect(dialog.getByRole("checkbox", { name: "Police" })).toBeChecked();
+  await expect(dialog.getByRole("checkbox", { name: "Taille du texte" })).not.toBeChecked();
+  await expect(dialog.getByRole("checkbox", { name: "Graisse du texte" })).not.toBeChecked();
   await expect(dialog.getByRole("checkbox", { name: /^Saisie/ })).not.toBeChecked();
+  const [first, second] = await Promise.all([checkboxes.nth(0).boundingBox(), checkboxes.nth(1).boundingBox()]);
+  expect(Math.abs(first!.y - second!.y)).toBeLessThan(2); // Side by side.
   await dialog.getByRole("button", { name: "Activer la synchronisation" }).click();
   await dialog.getByRole("button", { name: "J'ai conservé ma clé" }).click();
   await expect(dialog.getByText("Préférences à jour")).toBeVisible();
@@ -85,11 +95,16 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await expect(transliteration(phone)).toBeChecked();
   expect((await syncStore(phone)).preferences.sort()).toEqual(["inflectedForms", "readingFont", "transliterateGreek"]);
 
-  // The phone also synchronizes its input mode; the laptop does not.
+  // The phone also synchronizes its input mode and the size of the text; the
+  // laptop does not.
   await openSync(phone);
   await phone.getByRole("dialog").getByRole("checkbox", { name: /^Saisie/ }).click();
   await expect.poll(async () => (await syncStore(phone)).preferences).toContain("inputMode");
+  await phone.getByRole("dialog").getByRole("checkbox", { name: "Taille du texte" }).click();
+  await expect.poll(async () => (await syncStore(phone)).preferences).toContain("readingSize");
   await phone.keyboard.press("Escape");
+  await expect(phone.getByRole("group", { name: "Taille du texte (réglage synchronisé avec vos autres appareils)" })).toBeVisible();
+  await phone.locator("[data-slot=label]", { hasText: "Très grande" }).click();
   // (The label of a radio button of Nuxt UI takes the click.)
   await phone.locator("[data-slot=label]", { hasText: "Translittération" }).click();
   await expect(phone.getByRole("radio", { name: "Translittération" })).toBeChecked();
@@ -101,6 +116,7 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
     await expect(inflectedForms(page)).not.toBeChecked({ timeout: 2_000 });
   });
   await expect(page.getByRole("radio", { name: "Beta code" })).toBeChecked();
+  await expect(page.getByRole("radio", { name: "Très grande" })).not.toBeChecked();
 
   // A reset on the laptop reaches the phone, for the preferences synchronized.
   await page.getByRole("button", { name: "Réinitialiser les préférences" }).click();
