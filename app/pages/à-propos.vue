@@ -193,7 +193,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
       <!--
         Each work in a bubble, on the left then on the right, joined by a
         winding path (from `md`); on mobile, the bubble is centered above the
-        text, without a path.
+        text, centered too, without a path.
       -->
       <ol class="mt-10 space-y-12 md:mx-auto md:max-w-4xl md:space-y-24">
         <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
@@ -217,7 +217,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
               >
             </div>
           </div>
-          <div class="min-w-0 flex-1 self-stretch md:self-auto md:pt-6">
+          <div class="min-w-0 flex-1 self-stretch max-md:text-center md:self-auto md:pt-6">
             <h3 class="font-serif text-lg/8 font-bold">
               Le dictionnaire d'Anatole Bailly
             </h3>
@@ -256,7 +256,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
               <!-- eslint-enable vue/no-v-html -->
             </div>
           </div>
-          <div class="min-w-0 flex-1 self-stretch md:self-auto md:pt-6">
+          <div class="min-w-0 flex-1 self-stretch max-md:text-center md:self-auto md:pt-6">
             <h3 class="font-serif text-lg/8 font-bold">
               L'édition numérique <em>Bailly 2020 Hugo&nbsp;Chávez</em>
             </h3>
@@ -271,7 +271,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
               >édition PDF</a>, mise en page comme l'ouvrage d'origine, est disponible sur le site du
               projet.
             </p>
-            <div class="mt-4 flex flex-wrap gap-2 *:max-w-full">
+            <div class="mt-4 flex flex-wrap gap-2 *:max-w-full max-md:justify-center">
               <UButton
                 :to="reportTextError"
                 color="neutral"
@@ -325,7 +325,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
               </div>
             </div>
           </div>
-          <div class="min-w-0 flex-1 self-stretch md:self-auto md:pt-6">
+          <div class="min-w-0 flex-1 self-stretch max-md:text-center md:self-auto md:pt-6">
             <h3 class="font-serif text-lg/8 font-bold">
               L'application Bailly.app
             </h3>
@@ -334,7 +334,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
               l'analyse des formes fléchies, les signets et les réglages de lecture. L'application est
               un logiciel libre.
             </p>
-            <div class="mt-4 flex flex-wrap gap-2 *:max-w-full">
+            <div class="mt-4 flex flex-wrap gap-2 *:max-w-full max-md:justify-center">
               <UButton
                 to="mailto:contact@bailly.app"
                 color="neutral"
