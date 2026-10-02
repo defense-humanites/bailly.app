@@ -260,6 +260,17 @@ test.describe("bookmarks page", () => {
     await expect.poll(async () => (await bookmarksState(page)).starred).toBe(0);
   });
 
+  // The edit button toggles the mode from the same place, in the corner.
+  test("the edit button stays in its corner in both modes", async ({ page }) => {
+    const edit = page.getByRole("button", { name: "Modifier l'étiquette « Vide »" });
+    const before = (await edit.boundingBox())!;
+    await edit.click();
+    await expect(edit).toHaveAttribute("aria-pressed", "true");
+    const after = (await edit.boundingBox())!;
+    expect([after.x, after.y]).toEqual([before.x, before.y]);
+    await expect(card(page, "Vide").locator("[data-slot=header] button").last()).toHaveAccessibleName("Modifier l'étiquette « Vide »");
+  });
+
   test("edit buttons: on hover or focus, not at rest", async ({ page }) => {
     const actions = card(page, "Vide").getByRole("button", { name: /^(Épingler|Rendre active|Modifier) l'étiquette « Vide »$/ });
     await page.mouse.move(0, 0);
@@ -394,10 +405,10 @@ test.describe("bookmarks page, sorting and pinning", () => {
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Gamma", "Alpha", "Bêta"]);
 
     // A pinned tag comes first, whatever the sorting; a pin is its icon (on
-    // its card and in the table of contents), the last of its actions.
+    // its card and in the table of contents). The edit button comes last.
     const pin = page.getByRole("button", { name: "Épingler l'étiquette « Bêta »" });
     const beta = page.locator("main section > .group").filter({ hasText: "Bêta" });
-    await expect(beta.locator("[data-slot=header] button").last()).toHaveAccessibleName("Épingler l'étiquette « Bêta »");
+    await expect(beta.locator("[data-slot=header] button").last()).toHaveAccessibleName("Modifier l'étiquette « Bêta »");
     await pin.click();
     await expect(pin).toHaveAttribute("aria-pressed", "true");
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Gamma", "Alpha"]);

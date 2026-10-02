@@ -490,11 +490,12 @@
         </div>
 
         <!--
-          Actions: the edit button; out of edit mode, the choice of the active
-          tag (on the other tags) and, last, the pin (pressed on a pinned tag,
-          whose icon is a pin); in edit mode, the description and the tag
-          deletion. Out of edit mode, they show on hover, on focus and on a
-          touch screen (`revealed`).
+          Actions: out of edit mode, the choice of the active tag (on the
+          other tags) and the pin (pressed on a pinned tag, whose icon is a
+          pin); in edit mode, in their place, the description and the tag
+          deletion; last, in the corner and at the same place in both modes,
+          the edit button, which toggles the mode. Out of edit mode, they show
+          on hover, on focus and on a touch screen (`revealed`).
         -->
         <!--
           Their place is reserved for three buttons on a tag (two on the
@@ -517,6 +518,22 @@
               :aria-label="`Rendre active ${groupName}`"
               :ui="{ base: 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
               @click="bookmarksStore.setCurrentTag(tag.key)"
+            />
+          </UTooltip>
+          <UTooltip
+            v-if="editable && !editMode"
+            :text="isPinned ? 'Désépingler' : 'Épingler en tête'"
+          >
+            <UButton
+              icon="i-lucide-pin"
+              size="sm"
+              variant="subtle"
+              color="neutral"
+              :aria-label="`Épingler ${groupName}`"
+              :aria-pressed="isPinned"
+              :class="revealed"
+              :ui="{ base: isPinned ? 'bg-default/90 hover:bg-default active:bg-default/75 ring-tag-300 text-tag-text' : 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
+              @click="bookmarksStore.pinTag(tag.key, !isPinned)"
             />
           </UTooltip>
           <UButton
@@ -549,22 +566,6 @@
             :ui="{ base: editMode ? 'text-white bg-tag-400 hover:bg-tag-400 ring-tag-300/50' : 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
             @click="toggleEditMode"
           />
-          <UTooltip
-            v-if="editable && !editMode"
-            :text="isPinned ? 'Désépingler' : 'Épingler en tête'"
-          >
-            <UButton
-              icon="i-lucide-pin"
-              size="sm"
-              variant="subtle"
-              color="neutral"
-              :aria-label="`Épingler ${groupName}`"
-              :aria-pressed="isPinned"
-              :class="revealed"
-              :ui="{ base: isPinned ? 'bg-default/90 hover:bg-default active:bg-default/75 ring-tag-300 text-tag-text' : 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
-              @click="bookmarksStore.pinTag(tag.key, !isPinned)"
-            />
-          </UTooltip>
         </span>
 
         <UModal
