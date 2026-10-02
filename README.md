@@ -3,13 +3,13 @@
 > trouve dans le dépôt
 > [bailly-api](https://github.com/antoineboquet/bailly-api).
 
-<p style="text-align:center;"">
+<p align="center">
   <br><br><img width="192" height="192" src="app/assets/icons/bailly.svg" alt="Logo de l'application Bailly">
 </p>
 
-<p style="text-align:center;font-weight:bold;font-variant: small-caps;">
-  Une application web pour rendre accessible à tous<br>
-  le dictionnaire grec-français de référence d'Anatole Bailly.<br><br>
+<p align="center">
+  <strong>Uɴᴇ ᴀᴘᴘʟɪᴄᴀᴛɪᴏɴ ᴡᴇʙ ᴘᴏᴜʀ ʀᴇɴᴅʀᴇ ᴀᴄᴄᴇssɪʙʟᴇ ᴀ̀ ᴛᴏᴜs<br>
+  ʟᴇ ᴅɪᴄᴛɪᴏɴɴᴀɪʀᴇ ɢʀᴇᴄ-ғʀᴀɴᴄ̧ᴀɪs ᴅᴇ ʀᴇ́ғᴇ́ʀᴇɴᴄᴇ ᴅ'Aɴᴀᴛᴏʟᴇ Bᴀɪʟʟʏ.</strong><br><br>
 </p>
 
 ## Licence
