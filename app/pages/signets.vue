@@ -84,7 +84,7 @@
         Aegean blue — `secondary`: the sea, and the sky of the "cloud" —, the
         page's main action), then a menu bar for the tags, in the style of an
         entry's toolbar (cf. `TagButtonGroup`): creating a tag, choosing the
-        active one, sorting them, and the file (export, import: less used,
+        active one, the display of the entries, sorting the tags, and the file (export, import: less used,
         within reach for whoever looks for it). Its fields are square-cornered,
         without the search bar's pill shape, their background telling them
         from its buttons (ghost). Below `lg`, the field takes the bar's first
@@ -164,6 +164,9 @@
           </div>
 
           <!-- Export, import -->
+          <!-- Display of the entries -->
+          <BookmarksDisplayMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
+
           <!-- Sorting -->
           <TagSortMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
 

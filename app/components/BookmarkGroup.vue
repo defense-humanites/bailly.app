@@ -434,23 +434,31 @@
   });
 
   /**
-   * A long group is collapsed: it shows its first `COLLAPSED_COUNT` entries
-   * (three rows on two columns), and a button reveals the others, from the
-   * seventh entry on (to save room, even if it hides only one).
+   * How the entries are shown (cf. `useBookmarksDisplay`): their excerpts, or
+   * their headwords alone.
+   */
+  const display = useBookmarksDisplay();
+  const headwordsOnly = computed((): boolean => display.value === "headwords");
+
+  /**
+   * A long group is collapsed: it shows its first `collapsedCount` entries
+   * (three rows on two columns of excerpts, eight of headwords), and a
+   * button reveals the others, from the next entry on (to save room, even
+   * if it hides only one).
    * @remarks The cards keep a bounded height: on a grid (without masonry),
    * a row of cards takes the height of the highest one.
    */
-  const COLLAPSED_COUNT = 6;
-  const collapsible = computed((): boolean => props.entries.length > COLLAPSED_COUNT);
+  const collapsedCount = computed((): number => (headwordsOnly.value ? 16 : 6));
+  const collapsible = computed((): boolean => props.entries.length > collapsedCount.value);
   /**
    * Whether all the entries of a collapsible group are shown (for the visit:
    * in memory only).
    */
   const expanded = ref<boolean>(false);
   const shownEntries = computed((): IdbEntry[] =>
-    collapsible.value && !expanded.value ? props.entries.slice(0, COLLAPSED_COUNT) : props.entries,
+    collapsible.value && !expanded.value ? props.entries.slice(0, collapsedCount.value) : props.entries,
   );
-  const hiddenCount = computed((): number => props.entries.length - COLLAPSED_COUNT);
+  const hiddenCount = computed((): number => props.entries.length - collapsedCount.value);
 
   /**
    * The quota of entries (cf. `utils/quotas.ts`), told under the entries
@@ -479,7 +487,7 @@
     if (expanded.value) {
       // `detail` is 0 for a click from the keyboard (Enter, Space).
       if (event.detail === 0) {
-        entryList.value?.children.item(COLLAPSED_COUNT)?.querySelector("a")?.focus({ preventScroll: true });
+        entryList.value?.children.item(collapsedCount.value)?.querySelector("a")?.focus({ preventScroll: true });
       }
     } else {
       expandToggle.value?.$el.scrollIntoView({ block: "nearest" });
@@ -837,8 +845,51 @@
       </p>
     </template>
     <template v-else>
+      <!--
+        The headwords alone: on two columns (even on mobile: they are short),
+        each a link in the tag's colors, its excerpt in a tooltip; in edit
+        mode, its removal button at its end.
+      -->
+      <ul
+        v-if="headwordsOnly"
+        :id="entryListId"
+        ref="entry-list"
+        class="grid grid-cols-2 gap-2"
+      >
+        <li
+          v-for="entry in shownEntries"
+          :key="entry.uri"
+          class="relative flex min-w-0"
+        >
+          <UTooltip
+            :text="greek.text(entry.excerpt)"
+            :disabled="!entry.excerpt || editMode"
+            :delay-duration="500"
+            :content="{ side: 'top' }"
+            :ui="{ content: 'max-w-80 h-auto', text: 'line-clamp-4 whitespace-normal font-serif' }"
+          >
+            <NuxtLink
+              :to="entryRoute(entry.uri)"
+              :lang="greek.lang.value"
+              class="block min-w-0 grow truncate rounded-lg bg-default/75 px-3 py-1 font-serif text-[0.96875rem]/6 font-bold text-tag-text ring ring-tag-300/50 ring-inset transition-colors hover:ring-tag-400 focus-visible:outline-2 focus-visible:outline-tag-400"
+              :class="{ 'pe-9': editMode }"
+            >{{ greek.text(entry.word) }}</NuxtLink>
+          </UTooltip>
+          <UButton
+            v-if="editMode"
+            class="absolute end-1 top-1/2 -translate-y-1/2"
+            icon="i-lucide-x"
+            size="xs"
+            color="error"
+            variant="subtle"
+            :aria-label="`Retirer « ${greek.text(entry.word)} » ${favorites ? 'des favoris' : `de l'étiquette « ${tag.name} »`}`"
+            @click="onDeleteEntry(entry)"
+          />
+        </li>
+      </ul>
       <!-- Two columns when the card is wide enough (not on mobile). -->
       <div
+        v-else
         :id="entryListId"
         ref="entry-list"
         class="grid grid-cols-1 gap-3 @sm:grid-cols-2"

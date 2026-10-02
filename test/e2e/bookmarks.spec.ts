@@ -336,6 +336,36 @@ test.describe("bookmarks page", () => {
   });
 });
 
+test.describe("bookmarks page, headwords alone", () => {
+  // The display chosen on the device: the headwords alone, on two columns,
+  // each a link to its entry; up to 16 before « Voir les N autres ».
+  test("the entries as headwords, on two columns, more before collapsing", async ({ page, goto }) => {
+    await goto("/signets", { waitUntil: "hydration" });
+    const entries = Array.from({ length: 18 }, (_, i) => ({ word: `λόγος${i}`, uri: `logos-${i}`, excerpt: `λόγος${i}, parole` }));
+    await seedBookmarks(page, { tags: [{ name: "Homère", color: "Sky", entries }] });
+    const homer = card(page, "Homère");
+    await expect(homer.getByRole("link")).toHaveCount(6);
+
+    await page.getByRole("button", { name: "Affichage" }).click();
+    await page.getByRole("menuitemcheckbox", { name: /^Vedettes seules/ }).click();
+    const links = homer.getByRole("listitem").getByRole("link");
+    await expect(links).toHaveCount(16);
+    await expect(links.first()).toHaveText("λόγος17");
+    await expect(links.first()).toHaveAttribute("href", "/logos-17");
+    const [first, second] = await Promise.all([links.nth(0).boundingBox(), links.nth(1).boundingBox()]);
+    expect(second!.y).toBe(first!.y);
+    expect(second!.x).toBeGreaterThan(first!.x);
+    await expect(homer.getByRole("button", { name: "Voir les 2 autres" })).toBeVisible();
+
+    // Kept on the device; removable in the edit mode.
+    await page.reload();
+    await expect(homer.getByRole("listitem").getByRole("link")).toHaveCount(16);
+    await page.getByRole("button", { name: "Modifier l'étiquette « Homère »" }).click();
+    await homer.getByRole("button", { name: "Retirer « λόγος17 » de l'étiquette « Homère »" }).click();
+    await expect.poll(async () => (await bookmarksState(page)).tagged).toBe(17);
+  });
+});
+
 test.describe("bookmarks page, long groups", () => {
   // Added in this order: shown the latest first.
   const words = ["ἀγών", "βίος", "γένος", "δίκη", "ἔργον", "ζῷον", "ἦθος", "θεός", "ἵππος", "κόσμος"];
@@ -447,14 +477,14 @@ test.describe("bookmarks page, sorting and pinning", () => {
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Alpha", "Bêta", "Gamma"]);
 
     const sortBy = async (label: string): Promise<void> => {
-      await page.getByRole("button", { name: "Trier" }).click();
+      await page.getByRole("button", { name: "Tri" }).click();
       await page.getByRole("menuitemcheckbox", { name: label, exact: true }).click();
     };
     await sortBy("Par nombre d'entrées");
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Gamma", "Alpha"]);
     await sortBy("Par ajout récent");
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Gamma", "Alpha", "Bêta"]);
-    await page.getByRole("button", { name: "Trier" }).click();
+    await page.getByRole("button", { name: "Tri" }).click();
     await expect(page.getByRole("menuitemcheckbox", { name: "Par ajout récent" })).toHaveAttribute("aria-checked", "true");
     await page.keyboard.press("Escape");
 
