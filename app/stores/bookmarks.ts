@@ -178,7 +178,10 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   /**
    * Loads the data stored in IndexedDB.
    * @remarks The other actions await it, so that a pending initialization
-   * cannot overwrite their result.
+   * cannot overwrite their result. After a failure (e.g. the database could
+   * not be opened: private browsing, full storage, another tab's lock), the
+   * next call tries again, rather than the tab staying without bookmarks
+   * until it is reloaded.
    */
   async function initialize(): Promise<void> {
     initialization ??= (async () => {
@@ -189,7 +192,10 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
         refreshNewTagColor(),
       ]);
       initialized.value = true;
-    })();
+    })().catch((error: unknown) => {
+      initialization = undefined;
+      throw error;
+    });
 
     await initialization;
   }

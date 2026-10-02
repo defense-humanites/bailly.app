@@ -1,5 +1,5 @@
 import { createPinia } from "pinia";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { StorageKey } from "~/enums";
 import { IdbBookmarks, IdbTaggedEntry, IdbTags } from "~/idb";
 import { formatStamp } from "~/idb/clock";
@@ -25,6 +25,16 @@ test("initialize loads the stored data", async () => {
   expect(store.tags).toHaveLength(1);
   expect(store.tagKeysOf(entries.rhinokeros.uri)).toEqual([banquet.key]);
   expect(store.newTagColor).toBeTypeOf("string");
+});
+
+test("a failed initialization is tried again by the next call", async () => {
+  const store = newStore();
+  const getAll = vi.spyOn(IdbTags, "getAll").mockRejectedValueOnce(new Error("blocked"));
+  await expect(store.initialize()).rejects.toThrow("blocked");
+  expect(store.initialized).toBe(false);
+  await store.initialize();
+  expect(store.initialized).toBe(true);
+  getAll.mockRestore();
 });
 
 test("the current tag key is read from the local storage", async () => {
