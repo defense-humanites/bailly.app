@@ -25,6 +25,9 @@ export default defineConfig({
       await defineVitestProject({
         test: {
           name: "nuxt",
+          // Starting the Nuxt application (once per file) can take about
+          // 10 s on a busy machine, Vitest's default.
+          hookTimeout: 30_000,
           include: ["test/nuxt/*.{test,spec}.ts"],
           setupFiles: ["test/setup.nuxt.ts"],
           environment: "nuxt",
