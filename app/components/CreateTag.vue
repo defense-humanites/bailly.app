@@ -99,7 +99,7 @@
         :aria-invalid="!!error"
         enterkeyhint="done"
         :maxlength="IdbTags.nameMaxLength"
-        :ui="{ base: 'h-full rounded-none shadow-none pe-24', leading: 'ps-1.5', trailing: 'gap-2 pe-3' }"
+        :ui="{ base: `h-full rounded-none shadow-none pe-24 focus-visible:-outline-offset-3 ${FIELD_BACKGROUND}`, leading: 'ps-1.5', trailing: 'gap-2 pe-3' }"
         @keydown.enter="createTag"
       >
         <!-- Color picker -->

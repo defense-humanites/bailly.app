@@ -132,7 +132,7 @@
               :search-input="activeItems.length >= ACTIVE_FILTER_FROM && { placeholder: 'Filtrer…', ui: { base: 'rounded-none shadow-none' } }"
               aria-label="Étiquette active"
               class="h-full min-w-0 grow"
-              :ui="{ base: 'h-full gap-2 rounded-none ps-3 shadow-none', leading: 'static shrink-0 ps-0' }"
+              :ui="{ base: `h-full gap-2 rounded-none ps-3 shadow-none focus-visible:-outline-offset-3 ${FIELD_BACKGROUND}`, leading: 'static shrink-0 ps-0' }"
               @update:model-value="(key: TagKey) => bookmarksStore.setCurrentTag(key)"
             >
               <template #leading>
