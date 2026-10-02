@@ -29,7 +29,7 @@
    * shows them, the favorites (always filled) and some tags.
    */
   const bookmarkPills = [
-    { name: "Favoris", color: "Yellow", icon: "i-bailly-star-filled", count: 8, filled: true },
+    { name: "Favoris", color: "Yellow", icon: "i-bailly-star-filled", count: 8, filled: false },
     { name: "Homère", color: "Blue", icon: "i-bailly-tag-filled", count: 12, filled: false },
     { name: "Tragédie", color: "Orange", icon: "i-bailly-tag-filled", count: 5, filled: false },
     { name: "Vocabulaire", color: "Green", icon: "i-bailly-tag-filled", count: 23, filled: false },
