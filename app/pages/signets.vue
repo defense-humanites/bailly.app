@@ -68,10 +68,14 @@
       the room left); on two, `--content-max-width` at most (the header, wider
       by the search bar's overhangs, steps out of its edges).
       Where supported, the cards are laid out in lanes (masonry: each card
-      goes, in order, into the shortest column), otherwise on a grid.
+      goes, in order, into the shortest column), otherwise on a grid. Columns
+      whose heights differ by less than 2.5rem count as equal
+      (`flow-tolerance`, 1em by default): the order reads more regularly, and
+      a card that grows a little (a description added) seldom sends the
+      next ones to other columns.
     -->
     <section
-      class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-(--cards-gap) [--cards-gap:1.5rem] supports-[display:grid-lanes]:[display:grid-lanes] lg:max-w-(--content-max-width) lg:grid-cols-2"
+      class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-(--cards-gap) [--cards-gap:1.5rem] supports-[display:grid-lanes]:[display:grid-lanes] supports-[display:grid-lanes]:[flow-tolerance:2.5rem] lg:max-w-(--content-max-width) lg:grid-cols-2"
       :class="{ '[--toc-height:3rem]': showToc }"
       :aria-busy="!initialized"
     >

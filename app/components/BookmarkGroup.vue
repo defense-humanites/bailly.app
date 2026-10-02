@@ -155,12 +155,20 @@
   const toast = useToast();
 
   /**
+   * Whether the description is being saved (Enter): meanwhile, nothing else
+   * saves the tag, and Escape leaves the edit mode (as once it is saved)
+   * rather than cancelling what is being saved.
+   */
+  let savingDescription = false;
+
+  /**
    * Updates the tag properties (leaving a field or the edit mode, picking a
    * color): a failure is reported by a toast, and the stored values come
    * back. A description removed (emptied, or by its clear button) is told
    * by a toast, which can bring it back.
    */
   const onUpdateTag = async (): Promise<void> => {
+    if (savingDescription) return;
     if (
       tagName.value === props.tag.name
       && tagColor.value === props.tag.color
@@ -214,11 +222,13 @@
       field.blur();
       return;
     }
+    savingDescription = true;
     const response = await bookmarksStore.updateTag(
       props.tag.key,
       { name: props.tag.name, description: tagDescription.value, color: IdbTags.isColorKey(props.tag.color) ? props.tag.color : undefined },
       { quiet: true },
     );
+    savingDescription = false;
     if (response.state === "error") descriptionFailure.value = response.message;
     else field.blur();
   }
@@ -393,6 +403,10 @@
     if (field && field === document.activeElement) {
       if (event.key === "Enter" && event.shiftKey) return;
       event.preventDefault();
+      if (savingDescription) {
+        if (event.key === "Escape") exitEditMode();
+        return;
+      }
       if (event.key === "Enter") {
         void onSaveDescription(field);
         return;
@@ -607,8 +621,8 @@
         <!--
           Actions: out of edit mode, the choice of the active tag (on the
           other tags) and the pin (pressed on a pinned tag, whose icon is a
-          pin); in edit mode, in their place, the description and the tag
-          deletion; last, in the corner and at the same place in both modes,
+          pin); in edit mode, in their place, adding a description (none
+          yet) and the tag deletion; last, in the corner and at the same place in both modes,
           the edit button, which toggles the mode. Out of edit mode, they show
           on hover, on focus and on a touch screen (`revealed`).
         -->
@@ -649,6 +663,20 @@
               :class="revealed"
               :ui="{ base: isPinned ? 'bg-default/90 hover:bg-default active:bg-default/75 ring-tag-300 text-tag-text' : 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
               @click="togglePin"
+            />
+          </UTooltip>
+          <UTooltip
+            v-if="editableEditMode && !showsDescriptionField"
+            text="Ajouter une description"
+          >
+            <UButton
+              icon="i-lucide-text-cursor-input"
+              size="sm"
+              variant="subtle"
+              color="neutral"
+              aria-label="Ajouter une description"
+              :ui="{ base: 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
+              @click="addDescription"
             />
           </UTooltip>
           <UButton
@@ -699,8 +727,9 @@
       <!--
         The description, under the name and aligned with it; in edit mode, a
         field with the same text, spacing and size (text, never HTML), with a
-        button to remove it; without one, in edit mode, a link to add one, in
-        its place (the card grows by its line).
+        button to remove it. The card doesn't grow in edit mode (with
+        `grid-lanes`, the cards after it could change columns): a description
+        is added from the actions.
       -->
       <p
         v-if="tagDescription && !showsDescriptionField"
@@ -710,20 +739,21 @@
       />
       <!--
         While it has the focus, the keys (Enter saves, Shift+Enter goes to the
-        line) and the count of its characters show under it, the card growing
-        by their line. A description that cannot be saved (Enter) is told on
-        the field, as a name: a red ring, the message in a bubble under it and
-        in a live region; the field keeps the text and the focus.
+        line) and the count of its characters show in a bubble under it (over
+        the page: the card doesn't grow). A description that cannot be saved
+        (Enter) is told in its place, as for a name: a red ring, the message
+        in the bubble and in a live region; the field keeps the text and the
+        focus.
       -->
       <div
         v-else-if="showsDescriptionField"
         class="ms-10 mt-1"
       >
         <UPopover
-          :open="!!descriptionFailure"
+          :open="!!descriptionFailure || isDescriptionFocused"
           :dismissible="false"
           :content="{ side: 'bottom', align: 'start', sideOffset: 6, onOpenAutoFocus: (event: Event) => event.preventDefault(), onCloseAutoFocus: (event: Event) => event.preventDefault() }"
-          :ui="{ content: 'px-3 py-2 text-sm text-error' }"
+          :ui="{ content: 'px-3 py-2 text-sm' }"
         >
           <template #anchor>
             <div class="relative">
@@ -755,8 +785,34 @@
             </div>
           </template>
           <template #content>
-            <p aria-hidden="true">
+            <p
+              v-if="descriptionFailure"
+              aria-hidden="true"
+              class="text-error"
+            >
               {{ descriptionFailure }}
+            </p>
+            <p
+              v-else
+              aria-hidden="true"
+              class="flex items-center gap-x-1.5 text-xs text-muted"
+            >
+              <span class="flex items-center gap-1"><UKbd
+                value="enter"
+                size="sm"
+              /> pour enregistrer</span>
+              <span>·</span>
+              <span class="flex items-center gap-1"><UKbd
+                value="shift"
+                size="sm"
+              /><UKbd
+                value="enter"
+                size="sm"
+              /> pour aller à la ligne</span>
+              <span
+                class="ms-3 tabular-nums"
+                :class="{ 'font-semibold text-highlighted': descriptionLeft < 30 }"
+              >{{ descriptionLength }}/{{ IdbTags.descriptionMaxLength }}</span>
             </p>
           </template>
         </UPopover>
@@ -765,43 +821,12 @@
           role="status"
           class="sr-only"
         >{{ descriptionFailure }}</span>
-        <p
+        <!-- The keys and the count, for screen readers. -->
+        <span
           :id="descriptionHintId"
-          class="flex-wrap items-center gap-x-1.5 px-2 pt-1 text-xs text-tag-text/75"
-          :class="isDescriptionFocused ? 'flex' : 'sr-only'"
-        >
-          <span class="flex items-center gap-1"><UKbd
-            value="enter"
-            size="sm"
-            aria-hidden="true"
-          /> pour enregistrer</span>
-          <span aria-hidden="true">·</span>
-          <span class="flex items-center gap-1"><UKbd
-            value="shift"
-            size="sm"
-            aria-hidden="true"
-          /><UKbd
-            value="enter"
-            size="sm"
-            aria-hidden="true"
-          /> pour aller à la ligne</span>
-          <span class="sr-only">(Entrée pour enregistrer, Maj+Entrée pour aller à la ligne ;</span>
-          <span
-            class="ms-auto tabular-nums"
-            :class="{ 'font-semibold': descriptionLeft < 30 }"
-          ><span class="sr-only">au plus </span>{{ descriptionLength }}/{{ IdbTags.descriptionMaxLength }}<span class="sr-only"> caractères)</span></span>
-        </p>
+          class="sr-only"
+        >Entrée pour enregistrer, Maj+Entrée pour aller à la ligne ; {{ descriptionLength }} caractères sur {{ IdbTags.descriptionMaxLength }} au plus.</span>
       </div>
-      <UButton
-        v-else-if="editableEditMode"
-        label="Ajouter une description"
-        icon="i-lucide-plus"
-        size="sm"
-        variant="link"
-        color="neutral"
-        class="ms-10 mt-1 px-2 py-1 text-sm/5 font-normal text-tag-text/75 hover:text-tag-text"
-        @click="addDescription"
-      />
     </template>
 
     <!-- Content -->

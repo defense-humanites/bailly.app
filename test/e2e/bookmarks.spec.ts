@@ -114,8 +114,8 @@ test.describe("bookmarks page", () => {
     const edit = page.getByRole("button", { name: "Modifier l'étiquette « Vocabulaire homérique et tragique »" });
     const height = () => group.evaluate(element => element.getBoundingClientRect().height);
 
-    // Without a description: nothing is shown, and, in the edit mode, a link
-    // in its place adds one; Escape cancels it.
+    // Without a description: nothing is shown, and, in the edit mode, a
+    // button adds one; Escape cancels it.
     await edit.click();
     await group.getByRole("button", { name: "Ajouter une description" }).click();
     await group.getByRole("textbox", { name: "Description de l'étiquette" }).fill("Brouillon");
@@ -125,10 +125,11 @@ test.describe("bookmarks page", () => {
     await group.getByRole("button", { name: "Ajouter une description" }).click();
     const field = group.getByRole("textbox", { name: "Description de l'étiquette" });
     await expect(field).toBeFocused();
-    // While focused: the keys and the count under the field.
+    // While focused: the keys and the count in a bubble under the field.
     await field.fill("Pour l'examen");
-    await expect(group.getByText("pour aller à la ligne").first()).toBeVisible();
-    await expect(group.getByText("13/300")).toBeVisible();
+    const bubble = page.locator("[data-slot=content]");
+    await expect(bubble.getByText("pour aller à la ligne")).toBeVisible();
+    await expect(bubble.getByText("13/300")).toBeVisible();
     await expect(field).toHaveAccessibleDescription(/Maj\+Entrée pour aller à la ligne/);
     await field.press("Shift+Enter"); // A line break.
     await field.pressSequentially("de mardi.");
@@ -172,14 +173,13 @@ test.describe("bookmarks page", () => {
     const height = () => group.evaluate(element => element.getBoundingClientRect().height);
     const before = await height();
 
-    // Without a description, the card grows by the line of « Ajouter une
-    // description » only.
+    // Without a description, the card keeps its height too (with
+    // `grid-lanes`, the next cards could otherwise change columns).
     await page.getByRole("button", { name: "Modifier l'étiquette « Vocabulaire homérique et tragique »" }).click();
     const name = group.getByRole("textbox", { name: "Nom de l'étiquette" });
     await expect(name).toHaveValue("Vocabulaire homérique et tragique");
     expect(await name.evaluate(element => element.getBoundingClientRect().height)).toBe(32);
-    const add = (await group.getByRole("button", { name: "Ajouter une description" }).boundingBox())!;
-    expect(await height()).toBeCloseTo(before + add.height + 4, 0);
+    expect(await height()).toBe(before);
   });
 
   test("an empty tag: its text aligned with the name", async ({ page }) => {
