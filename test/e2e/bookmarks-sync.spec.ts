@@ -62,6 +62,11 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await expect(syncButton.getByText("Synchronisé", { exact: true })).toBeVisible();
   await expect(syncButton.getByText("Synchroniser", { exact: true })).toBeHidden();
   await expect(syncButton).not.toHaveClass(/button-relief/);
+  // The server renders it so at once (a cookie tells it).
+  await expect.poll(async () => (await page.context().cookies()).find(cookie => cookie.name === "bailly-sync")?.value)
+    .toBe(encodeURIComponent(JSON.stringify(["bookmarks"])));
+  expect(await (await page.reload())!.text()).toContain("aria-label=\"Synchronisation (activée)\"");
+  await waitForHydration(page);
 
   // Phone: has a favorite of its own, and joins with the 12 words (typed
   // without accents, in capitals).

@@ -16,9 +16,20 @@
   const { loaded, syncedBookmarks, syncedPreferences, status, error, errorSection } = storeToRefs(syncStore);
 
   /**
+   * Until the settings are loaded (on the server, and a moment once
+   * hydrated), whether the synchronization is on as a cookie tells (cf.
+   * `utils/syncHint.ts`): the right button shows at once.
+   */
+  const hint = useCookie<unknown>(SYNC_HINT_COOKIE, { ...syncHintCookieOptions, readonly: true });
+  const hinted = parseSyncHint(hint.value).includes(props.scope);
+
+  /**
    * Whether this device synchronizes the type of data of the page.
    */
-  const enabled = computed(() => (props.scope === "bookmarks" ? syncedBookmarks.value : syncedPreferences.value.length > 0));
+  const enabled = computed(() => {
+    if (!loaded.value) return hinted;
+    return props.scope === "bookmarks" ? syncedBookmarks.value : syncedPreferences.value.length > 0;
+  });
 
   const showButtonLabels = useButtonLabels();
 
@@ -50,11 +61,9 @@
     && (errorSection.value === null || errorSection.value === props.scope));
 
   /**
-   * The icon, after the state (a plain cloud until the settings are loaded,
-   * once the application is hydrated: the button doesn't change meanwhile).
+   * The icon, after the state.
    */
   const icon = computed((): string => {
-    if (!loaded.value) return "i-lucide-cloud";
     if (!enabled.value) return "i-lucide-cloud-upload";
     if (needsAttention.value) return "i-lucide-cloud-off";
     if (syncingShown.value) return "i-lucide-refresh-cw";
@@ -65,7 +74,6 @@
    * The state, for the tooltip and the accessible name.
    */
   const stateText = computed((): string | null => {
-    if (!loaded.value) return null;
     if (!enabled.value) return "désactivée";
     if (needsAttention.value) return "demande votre attention";
     return "activée";
@@ -77,12 +85,10 @@
    * The look and the visible label, after the state: an invitation while the
    * synchronization is off (solid Aegean blue, « Synchroniser »), calm once
    * it is on (subtle, « Synchronisé »), gold when it needs attention
-   * (« À vérifier »); until the settings are loaded (on the server, and once
-   * hydrated for a moment), the calm look and no visible label (its room
-   * kept). The accessible name stays « Synchronisation (…) ».
+   * (« À vérifier »), once the settings are loaded (before, as the cookie
+   * tells, cf. `hinted`). The accessible name stays « Synchronisation (…) ».
    */
   const look = computed((): { text: string; color: "secondary" | "warning"; variant: "solid" | "subtle" } => {
-    if (!loaded.value) return { text: "", color: "secondary", variant: "subtle" };
     if (!enabled.value) return { text: "Synchroniser", color: "secondary", variant: "solid" };
     if (needsAttention.value) return { text: "À vérifier", color: "warning", variant: "solid" };
     return { text: "Synchronisé", color: "secondary", variant: "subtle" };

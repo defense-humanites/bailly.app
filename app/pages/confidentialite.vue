@@ -96,7 +96,10 @@
         casier créé parmi de nombreux autres depuis une même adresse, le même jour,
         et jamais relu est effacé après trente jours&nbsp;; un usage ordinaire
         n'est pas concerné. Vous pouvez aussi effacer vos données en ligne à tout
-        moment, depuis la fenêtre de synchronisation.
+        moment, depuis la fenêtre de synchronisation. Un cookie, sans identifiant,
+        retient seulement que la synchronisation est activée sur cet appareil (et
+        pour quelles données), afin d'afficher d'emblée le bon bouton&nbsp;; il
+        est déposé quand vous l'activez et retiré quand vous la désactivez.
       </p>
 
       <p>

@@ -51,6 +51,20 @@ export default defineNuxtPlugin({
     const onBookmarksPage = (): boolean => router.currentRoute.value.path === BOOKMARKS_PATH;
     const isStale = (delay: number): boolean => Date.now() - (syncStore.lastSyncedAt ?? 0) >= delay;
 
+    // What the server must know to render the synchronization button (cf.
+    // `utils/syncHint.ts`), kept up to date once the settings are loaded.
+    const hint = useCookie<SyncScope[] | null>(SYNC_HINT_COOKIE, syncHintCookieOptions);
+    watch(
+      () => (syncStore.loaded ? [syncStore.syncedBookmarks, syncStore.syncedPreferences.length > 0] : null),
+      (state) => {
+        if (!state) return;
+        const scopes: SyncScope[] = [...(state[0] ? ["bookmarks" as const] : []), ...(state[1] ? ["preferences" as const] : [])];
+        const next = scopes.length ? scopes : null;
+        if (JSON.stringify(hint.value ?? null) !== JSON.stringify(next)) hint.value = next;
+      },
+      { immediate: true },
+    );
+
     onNuxtReady(async () => {
       await bookmarksStore.initialize();
       await syncStore.load();
