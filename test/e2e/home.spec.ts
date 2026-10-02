@@ -32,6 +32,23 @@ test.describe("home page", () => {
     await expect(searchInput(page)).toBeFocused();
   });
 
+  test("names the edition in a popover, after the title", async ({ page, goto }) => {
+    await goto("/", { waitUntil: "hydration" });
+    // The heading is named after its text only.
+    await expect(page.getByRole("heading", { level: 1 })).toHaveAccessibleName("Consultez le dictionnaire grec–français d'Anatole Bailly");
+    const button = page.getByRole("button", { name: "L'édition du texte" });
+    const edition = page.getByText("que ses auteurs ont intitulée");
+    // Hovered with a mouse: the popover opens, the focus stays where it was.
+    await button.hover();
+    await expect(edition).toBeVisible();
+    await expect(page.getByRole("link", { name: "En savoir plus" })).not.toBeFocused();
+    await page.mouse.move(0, 0);
+    await expect(edition).toBeHidden();
+    // Clicked: it opens too.
+    await button.click();
+    await expect(edition).toBeVisible();
+  });
+
   test("leads to the about page", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
     await page.getByRole("link", { name: /^D'où vient le texte/ }).click();
