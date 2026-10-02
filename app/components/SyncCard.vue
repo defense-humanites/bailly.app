@@ -21,7 +21,7 @@
    */
   const ui = computed(() => ({
     ...props.ui,
-    root: "[--sync-tint:color-mix(in_oklab,var(--ui-bg)_84%,var(--ui-color-secondary-500))] dark:[--sync-tint:color-mix(in_oklab,var(--ui-bg)_80%,var(--ui-color-secondary-500))] bg-default bg-[radial-gradient(ellipse_at_bottom_left,var(--ui-bg)_55%,var(--sync-tint))] ring-(--ui-color-secondary-200) divide-secondary/20 dark:ring-(--ui-color-secondary-900)",
+    root: "[--sync-tint:color-mix(in_oklab,var(--ui-bg)_84%,var(--ui-color-secondary-500))] dark:[--sync-tint:color-mix(in_oklab,var(--ui-bg)_80%,var(--ui-color-secondary-500))] bg-default bg-[radial-gradient(ellipse_at_bottom_left,var(--ui-bg)_55%,var(--sync-tint))] ring-secondary/20 divide-secondary/20",
     body: `${props.ui.body ?? ""} divide-secondary/20`,
   }));
 
