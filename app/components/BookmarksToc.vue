@@ -100,24 +100,55 @@
   });
 
   /**
-   * Follows a link: its group is being read, and its card is outlined for a
-   * moment (`[data-toc-target]`, cf. `components.css`), started again if the
-   * same link is followed twice.
+   * Calls back once the page's scroll (smooth, cf. `router.options.ts`)
+   * started by a link is over: at its end (`scrollend`, or at the latest
+   * after `SCROLL_WAIT` ms where it is not supported), or at once if the page
+   * doesn't scroll (its target already in place).
+   */
+  const SCROLL_WAIT = 1500;
+  function afterScroll(callback: () => void): void {
+    let scrolling = false;
+    let done = false;
+    const run = (): void => {
+      if (done) return;
+      done = true;
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scrollend", run);
+      clearTimeout(timeout);
+      callback();
+    };
+    const onScroll = (): void => {
+      scrolling = true;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scrollend", run);
+    const timeout = setTimeout(run, SCROLL_WAIT);
+    setTimeout(() => {
+      if (!scrolling) run();
+    }, 150);
+  }
+
+  /**
+   * Follows a link: its group is being read, and its card, once reached, is
+   * outlined for a moment (`[data-toc-target]`, cf. `components.css`),
+   * started again if the same link is followed twice.
    */
   const follow = (group: TocGroup): void => {
     followed = current.value = group.key;
-    const card = document.getElementById(group.id);
-    if (!card) return;
-    card.removeAttribute("data-toc-target");
-    // Restarts the animation (a reflow between removing and setting).
-    card.getBoundingClientRect();
-    card.setAttribute("data-toc-target", "");
-    const end = (event: AnimationEvent): void => {
-      if (event.target !== card) return;
+    afterScroll(() => {
+      const card = document.getElementById(group.id);
+      if (!card) return;
       card.removeAttribute("data-toc-target");
-      card.removeEventListener("animationend", end);
-    };
-    card.addEventListener("animationend", end);
+      // Restarts the animation (a reflow between removing and setting).
+      card.getBoundingClientRect();
+      card.setAttribute("data-toc-target", "");
+      const end = (event: AnimationEvent): void => {
+        if (event.target !== card) return;
+        card.removeAttribute("data-toc-target");
+        card.removeEventListener("animationend", end);
+      };
+      card.addEventListener("animationend", end);
+    });
   };
 
   /**

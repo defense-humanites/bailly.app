@@ -179,9 +179,13 @@ mort d'un homme qu'on lance (du haut d'un rocher).
             </div>
           </dl>
         </div>
-        <!-- The rest of the page is below the fold: an invitation to scroll. -->
+        <!--
+          The rest of the page is below the fold: an invitation to scroll
+          (smoothly, through the router: cf. `router.options.ts`; a plain
+          `#atouts` would be a native jump).
+        -->
         <UButton
-          to="#atouts"
+          :to="{ hash: '#atouts' }"
           variant="link"
           color="neutral"
           size="sm"
