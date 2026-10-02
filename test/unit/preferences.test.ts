@@ -47,3 +47,8 @@ test("takeLegacyStorage: the default values set nothing", () => {
   expect(takeLegacyStorage(localStorage)).toEqual({ preferences: {}, dismissed: [] });
   expect(localStorage.length).toBe(0);
 });
+
+test("parsePreferences: the bookmarks page's display and sorting", () => {
+  expect(parsePreferences({ bookmarksDisplay: "headwords", tagSort: "recent" })).toEqual({ bookmarksDisplay: "headwords", tagSort: "recent" });
+  expect(parsePreferences({ bookmarksDisplay: "grid", tagSort: "color" })).toEqual({});
+});

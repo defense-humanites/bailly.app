@@ -62,8 +62,8 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   // and the weight of the text (they depend on the screen) and the input
   // mode (on the keyboard).
   const checkboxes = dialog.getByRole("checkbox");
-  await expect(checkboxes).toHaveCount(6);
-  const names = ["Grec translittéré", "Police", "Taille du texte", "Graisse du texte", "Formes fléchies", /^Saisie/];
+  await expect(checkboxes).toHaveCount(8);
+  const names = ["Grec translittéré", "Police", "Taille du texte", "Graisse du texte", "Formes fléchies", /^Saisie/, /^Affichage des signets/, "Tri des étiquettes"];
   for (const [i, name] of names.entries()) await expect(checkboxes.nth(i)).toHaveAccessibleName(name);
   await expect(dialog.getByRole("checkbox", { name: "Grec translittéré" })).toBeChecked();
   await expect(dialog.getByRole("checkbox", { name: "Formes fléchies" })).toBeChecked();
@@ -71,6 +71,8 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await expect(dialog.getByRole("checkbox", { name: "Taille du texte" })).not.toBeChecked();
   await expect(dialog.getByRole("checkbox", { name: "Graisse du texte" })).not.toBeChecked();
   await expect(dialog.getByRole("checkbox", { name: /^Saisie/ })).not.toBeChecked();
+  await expect(dialog.getByRole("checkbox", { name: /^Affichage des signets/ })).not.toBeChecked();
+  await expect(dialog.getByRole("checkbox", { name: "Tri des étiquettes" })).toBeChecked();
   const [first, second] = await Promise.all([checkboxes.nth(0).boundingBox(), checkboxes.nth(1).boundingBox()]);
   expect(Math.abs(first!.y - second!.y)).toBeLessThan(2); // Side by side.
   await dialog.getByRole("button", { name: "Activer la synchronisation" }).click();
@@ -93,7 +95,7 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await expect(phone.getByText("Préférences à jour")).toBeVisible();
   await phone.keyboard.press("Escape");
   await expect(transliteration(phone)).toBeChecked();
-  expect((await syncStore(phone)).preferences.sort()).toEqual(["inflectedForms", "readingFont", "transliterateGreek"]);
+  expect((await syncStore(phone)).preferences.sort()).toEqual(["inflectedForms", "readingFont", "tagSort", "transliterateGreek"]);
 
   // The phone also synchronizes its input mode and the size of the text; the
   // laptop does not.
@@ -150,11 +152,12 @@ test("the bookmarks and the preferences: one key, enabled and stopped type by ty
   await dialog.getByRole("button", { name: "Synchroniser aussi vos préférences" }).click();
   await expect(dialog.getByText("Préférences à jour")).toBeVisible();
   expect(await syncStore(page)).toMatchObject({ bookmarks: true });
-  expect((await syncStore(page)).preferences).toHaveLength(3);
+  expect((await syncStore(page)).preferences).toHaveLength(4);
 
   // At least one preference stays checked.
   await dialog.getByRole("checkbox", { name: "Grec translittéré" }).click();
   await dialog.getByRole("checkbox", { name: "Formes fléchies" }).click();
+  await dialog.getByRole("checkbox", { name: "Tri des étiquettes" }).click();
   await expect(dialog.getByRole("checkbox", { name: "Police" })).toBeDisabled();
   await expect.poll(async () => (await syncStore(page)).preferences).toEqual(["readingFont"]);
 

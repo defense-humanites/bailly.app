@@ -9,7 +9,7 @@
    */
   const items = computed((): DropdownMenuItem[][] => [
     [{ type: "label", label: "Afficher les entrées" }],
-    (["excerpts", "headwords"] as const).map(value => ({
+    BOOKMARKS_DISPLAYS.map(value => ({
       type: "checkbox" as const,
       label: BOOKMARKS_DISPLAY_LABELS[value],
       description: value === "excerpts" ? "Le début de leur définition." : "Sur deux colonnes, l'extrait au survol.",

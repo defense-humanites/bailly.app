@@ -58,14 +58,6 @@ export enum StorageKey {
    */
   Dismissed = "bailly:dismissed",
   /**
-   * How the tags are sorted on the bookmarks page (cf. `utils/tagSort.ts`).
-   */
-  TagSort = "bailly:tagSort",
-  /**
-   * How the bookmarks' entries are shown (cf. `useBookmarksDisplay`).
-   */
-  BookmarksDisplay = "bailly:bookmarksDisplay",
-  /**
    * The theme (`system`, `light` or `dark`), managed by the color mode
    * module (cf. `colorMode.storageKey` in `nuxt.config.ts`).
    */

@@ -1,16 +1,5 @@
-import { StorageKey } from "~/enums";
-import { isTagSort, type TagSort } from "~/utils/tagSort";
-
 /**
- * How the tags are sorted on the bookmarks page, kept on the device (local
- * storage; nothing is written until it is chosen). Read once the application
- * is hydrated: the server, which cannot read it, renders the default.
+ * How the tags are sorted on the bookmarks page (cf. `utils/tagSort.ts`): a
+ * preference, which can be synchronized (cf. `utils/preferences.ts`).
  */
-export const useTagSort = () => useLocalStorage<TagSort>(StorageKey.TagSort, "name", {
-  writeDefaults: false,
-  initOnMounted: true,
-  serializer: {
-    read: (value: string) => (isTagSort(value) ? value : "name"),
-    write: (value: TagSort) => value,
-  },
-});
+export const useTagSort = () => usePreferences().preference("tagSort");
