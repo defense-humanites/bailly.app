@@ -104,7 +104,8 @@
   };
 
   /**
-   * Segmented controls, as in the search options.
+   * Segmented controls, as in the search options (a size below the default:
+   * more compact, still easy to hit).
    */
   const cardUi = { header: "py-3 sm:py-3", body: "@container divide-y divide-default py-1 sm:py-1" };
 
@@ -167,6 +168,7 @@
               :items="themeItems"
               legend="Thème"
               variant="table"
+              size="sm"
               orientation="horizontal"
               indicator="hidden"
               :ui="radioUi"
@@ -222,6 +224,7 @@
               :items="inputModeItems"
               :legend="syncedLabel('Mode de saisie', 'inputMode')"
               variant="table"
+              size="sm"
               orientation="horizontal"
               indicator="hidden"
               :ui="radioUi"
@@ -310,6 +313,7 @@
               :items="readingSizeItems"
               :legend="syncedLabel('Taille du texte', 'readingSize')"
               variant="table"
+              size="sm"
               orientation="horizontal"
               indicator="hidden"
               :ui="{ ...radioUi, item: 'flex-1 justify-center items-center px-4' }"
@@ -333,6 +337,7 @@
               :items="readingWeightItems"
               :legend="syncedLabel('Graisse du texte', 'readingWeight')"
               variant="table"
+              size="sm"
               orientation="horizontal"
               indicator="hidden"
               :ui="radioUi"
@@ -368,6 +373,7 @@
               :items="bookmarksDisplayItems"
               :legend="syncedLabel('Affichage des entrées', 'bookmarksDisplay')"
               variant="table"
+              size="sm"
               orientation="horizontal"
               indicator="hidden"
               :ui="radioUi"

@@ -15,13 +15,13 @@
   }>();
 
   /**
-   * A light Aegean blue (on the page's card background, so as opaque), as
-   * the button of the bookmarks page (`secondary`): told apart from the
-   * settings.
+   * A light Aegean blue, as the button of the bookmarks page (`secondary`),
+   * fading from the top right corner into the card background: told apart
+   * from the settings.
    */
   const ui = computed(() => ({
     ...props.ui,
-    root: "bg-[color-mix(in_oklab,var(--ui-bg)_90%,var(--ui-color-secondary-500))] ring-(--ui-color-secondary-200) divide-secondary/20 dark:bg-[color-mix(in_oklab,var(--ui-bg)_88%,var(--ui-color-secondary-500))] dark:ring-(--ui-color-secondary-900)",
+    root: "[--sync-tint:color-mix(in_oklab,var(--ui-bg)_80%,var(--ui-color-secondary-500))] bg-default bg-[radial-gradient(ellipse_at_top_right,var(--sync-tint),var(--ui-bg)_75%)] ring-(--ui-color-secondary-200) divide-secondary/20 dark:ring-(--ui-color-secondary-900)",
     body: `${props.ui.body ?? ""} divide-secondary/20`,
   }));
 
