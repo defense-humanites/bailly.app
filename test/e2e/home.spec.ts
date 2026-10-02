@@ -26,10 +26,29 @@ test.describe("home page", () => {
     await expect(page).toHaveURL(new RegExp(`${href}$`));
   });
 
-  test("« Chercher un mot » gives the focus to the search field", async ({ page, goto }) => {
+  test("gives the focus to the search field on opening, but not on a touch screen", async ({ page, goto, browser }) => {
     await goto("/", { waitUntil: "hydration" });
-    await page.getByRole("button", { name: "Chercher un mot" }).click();
     await expect(searchInput(page)).toBeFocused();
+
+    const touch = await browser.newContext({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 }, baseURL: page.url() });
+    const mobile = await touch.newPage();
+    await mobile.goto("/");
+    await expect(mobile.getByRole("region", { name: "Le Bailly ouvert au hasard" }).getByRole("status")).toHaveText(/^Entrée ouverte : /);
+    await expect(searchInput(mobile)).not.toBeFocused();
+    await touch.close();
+  });
+
+  test("offers the transliteration to those who don't read Greek, saved at once", async ({ page, goto }) => {
+    await goto("/", { waitUntil: "hydration" });
+    const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });
+    await expect(opening.getByRole("status")).toHaveText(/^Entrée ouverte : /);
+    const word = opening.locator(".definition").first();
+    await expect(word).toContainText(/\p{Script=Greek}/u);
+
+    await page.getByRole("switch", { name: "Vous ne lisez pas le grec ?" }).click();
+    await expect(word).not.toContainText(/\p{Script=Greek}/u);
+    const cookies = await page.context().cookies();
+    expect(decodeURIComponent(cookies.find(cookie => cookie.name === "bailly-preferences")?.value ?? "")).toContain("\"transliterateGreek\":true");
   });
 
   test("names the edition in a popover, after the title", async ({ page, goto }) => {

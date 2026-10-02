@@ -2,6 +2,17 @@
   const searchFocus = useSearchFocus();
 
   /**
+   * The search is the page's main action: its field gets the focus on
+   * opening, except with a coarse pointer (a touch screen), where it would
+   * bring up the virtual keyboard.
+   */
+  onMounted(() => {
+    if (!window.matchMedia("(pointer: coarse)").matches) searchFocus.focus();
+  });
+  const { preference } = usePreferences();
+  const transliterateGreek = preference("transliterateGreek");
+
+  /**
    * The edition's popover: opened by a click or a tap, and by hovering it with
    * a mouse (closed shortly after leaving it, so that the pointer can reach
    * the popover's link).
@@ -37,6 +48,14 @@
 <template>
   <div class="mx-auto grid max-w-(--content-max-width) items-center gap-10 px-4 py-8 md:px-6 md:py-12 lg:min-h-[calc(100dvh-(var(--spacing)*14))] lg:grid-cols-2 lg:gap-12 lg:py-10">
     <section class="@container flex flex-col items-start gap-5">
+      <UButton
+        to="/soutenir"
+        size="sm"
+        color="primary"
+        variant="soft"
+        icon="i-lucide-heart"
+        label="Nous soutenir"
+      />
       <!--
         The title on two lines from `lg`, its size following the column's
         width (`cqi`), so that the longest line, with the popover's button,
@@ -86,21 +105,35 @@
           class="underline decoration-dotted underline-offset-4 hover:text-primary"
         >D'où vient le texte&nbsp;?</NuxtLink>
       </p>
-      <div class="flex flex-wrap items-center gap-3">
-        <UButton
-          size="lg"
-          icon="i-lucide-search"
-          label="Chercher un mot"
-          @click="searchFocus.focus()"
+      <!--
+        For the readers who don't read Greek: the transliteration preference,
+        whose effect shows at once on the opened entry (and is saved).
+      -->
+      <div class="flex items-start gap-3 rounded-lg bg-default/60 px-4 py-3 ring-1 ring-default">
+        <USwitch
+          v-model="transliterateGreek"
+          aria-labelledby="translitteration"
+          aria-describedby="translitteration-aide"
+          class="mt-0.5"
         />
-        <UButton
-          to="/soutenir"
-          size="lg"
-          color="neutral"
-          variant="ghost"
-          icon="i-lucide-heart"
-          label="Nous soutenir"
-        />
+        <div class="text-sm">
+          <p
+            id="translitteration"
+            class="font-medium"
+          >
+            Vous ne lisez pas le grec ?
+          </p>
+          <p
+            id="translitteration-aide"
+            class="text-muted"
+          >
+            Affichez-le en caractères latins : <span lang="grc">λόγος</span> → <span lang="grc-Latn">lógos</span>.
+            Ce choix est enregistré dans vos <NuxtLink
+              :to="encodeURI('/préférences')"
+              class="underline decoration-dotted underline-offset-4 hover:text-primary"
+            >préférences</NuxtLink>.
+          </p>
+        </div>
       </div>
     </section>
 
