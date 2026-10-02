@@ -27,9 +27,16 @@
    * The table of contents: the favorites, then the tags in their order, with
    * their number of entries.
    */
+  /**
+   * The tags as shown (cards, table of contents): the pinned ones first, then
+   * the others as the user chose to sort them (cf. `TagSortMenu`).
+   */
+  const tagSort = useTagSort();
+  const sortedTags = computed(() => sortTags(tags.value, tagSort.value, bookmarksStore.entriesOf));
+
   const toc = computed((): TocGroup[] => [
     { key: "favorites", id: groupId("favorites"), name: "Favoris", color: "Yellow", icon: "i-bailly-star-filled", count: starredEntries.value.length, active: true },
-    ...tags.value.map(tag => ({
+    ...sortedTags.value.map(tag => ({
       key: tag.key,
       id: groupId(tag.key),
       name: tag.name,
@@ -73,7 +80,7 @@
         Aegean blue — `secondary`: the sea, and the sky of the "cloud" —, the
         page's main action), then a menu bar for the tags, in the style of an
         entry's toolbar (cf. `TagButtonGroup`): creating a tag, choosing the
-        active one, and the file (export, import: less used,
+        active one, sorting them, and the file (export, import: less used,
         within reach for whoever looks for it). Its fields are square-cornered,
         without the search bar's pill shape, their background telling them
         from its buttons (ghost). Below `md`, the field takes the bar's first
@@ -149,6 +156,9 @@
           </div>
 
           <!-- Export, import -->
+          <!-- Sorting -->
+          <TagSortMenu class="flex h-11 border-s border-default md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs" />
+
           <BookmarksMenu class="flex h-11 border-s border-default md:overflow-hidden md:rounded-lg md:border md:bg-default md:shadow-xs" />
         </div>
       </header>
@@ -182,7 +192,7 @@
 
         <!-- Tags -->
         <BookmarkGroup
-          v-for="tag in tags"
+          v-for="tag in sortedTags"
           :id="groupId(tag.key)"
           :key="tag.key"
           class="scroll-mt-[calc(var(--header-bottom)+var(--toc-height,0px)+var(--cards-gap))]"

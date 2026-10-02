@@ -7,13 +7,13 @@ import {
   type IdbResult,
   type IdbTagged,
 } from "./Idb";
-import { entryTombstone, latestAddedFirst, type TaggedRecord, type TagKey } from "./merge";
+import { entryAddedAt, entryTombstone, latestAddedFirst, type TaggedRecord, type TagKey } from "./merge";
 
 /**
  * A tagged entry as shown, with its excerpt if known (cf. `IdbExcerpt`).
  */
-const toTagged = ({ tagKey, word, uri }: TaggedRecord, excerpt: string | undefined): IdbTagged =>
-  ({ tagKey, word, uri, excerpt: excerpt ?? "" });
+const toTagged = (record: TaggedRecord, excerpt: string | undefined): IdbTagged =>
+  ({ tagKey: record.tagKey, word: record.word, uri: record.uri, excerpt: excerpt ?? "", addedAt: entryAddedAt(record) });
 
 /**
  * A collection of methods for managing tagged entries.

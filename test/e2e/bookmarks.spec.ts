@@ -248,11 +248,12 @@ test.describe("bookmarks page", () => {
   });
 
   test("edit buttons: on hover or focus, not at rest", async ({ page }) => {
-    const actions = page.getByRole("button", { name: "Modifier l'étiquette « Vide »" }).locator("..");
+    const actions = card(page, "Vide").getByRole("button", { name: /^(Épingler|Rendre active|Modifier) l'étiquette « Vide »$/ });
     await page.mouse.move(0, 0);
-    await expect(actions).toHaveCSS("opacity", "0");
+    await expect(actions).toHaveCount(3);
+    for (const action of await actions.all()) await expect(action).toHaveCSS("opacity", "0");
     await card(page, "Vide").hover();
-    await expect(actions).toHaveCSS("opacity", "1");
+    for (const action of await actions.all()) await expect(action).toHaveCSS("opacity", "1");
   });
 
   test("centered under the header, which steps out of it evenly", async ({ page }) => {
@@ -331,6 +332,54 @@ test.describe("bookmarks page, long groups", () => {
     await collapse.click();
     await expect(links).toHaveCount(6);
     await expect(toggle).toBeInViewport();
+  });
+});
+
+test.describe("bookmarks page, sorting and pinning", () => {
+  // The cards' names, in order (the favorites first).
+  const cardNames = (page: Page) => page.locator("main section > .group").evaluateAll(cards =>
+    cards.map(card => card.querySelector("[data-slot=header] span.font-bold")?.firstChild?.textContent?.trim() ?? "Favoris"));
+
+  test("the tags sorted as chosen on the device, the pinned ones first", async ({ page, goto }) => {
+    await goto("/signets", { waitUntil: "hydration" });
+    // Created in this order, Gamma's entry added last.
+    await seedBookmarks(page, {
+      tags: [
+        { name: "Bêta", color: "Rose", entries: [anax, menis] },
+        { name: "Alpha", color: "Green" },
+        { name: "Gamma", color: "Sky", entries: [logos] },
+      ],
+    });
+    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Alpha", "Bêta", "Gamma"]);
+
+    const sortBy = async (label: string): Promise<void> => {
+      await page.getByRole("button", { name: "Trier" }).click();
+      await page.getByRole("menuitemcheckbox", { name: label, exact: true }).click();
+    };
+    await sortBy("Par nombre d'entrées");
+    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Gamma", "Alpha"]);
+    await sortBy("Par ajout récent");
+    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Gamma", "Alpha", "Bêta"]);
+    await page.getByRole("button", { name: "Trier" }).click();
+    await expect(page.getByRole("menuitemcheckbox", { name: "Par ajout récent" })).toHaveAttribute("aria-checked", "true");
+    await page.keyboard.press("Escape");
+
+    // Kept on the device.
+    await page.reload();
+    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Gamma", "Alpha", "Bêta"]);
+
+    // A pinned tag comes first, whatever the sorting; its pin stays shown.
+    const pin = page.getByRole("button", { name: "Épingler l'étiquette « Bêta »" });
+    await pin.click();
+    await expect(pin).toHaveAttribute("aria-pressed", "true");
+    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Gamma", "Alpha"]);
+    await page.mouse.move(0, 0);
+    await expect(pin).toHaveCSS("opacity", "1");
+    await sortBy("Par nom");
+    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Alpha", "Gamma"]);
+    await pin.click();
+    await expect(pin).toHaveAttribute("aria-pressed", "false");
+    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Alpha", "Bêta", "Gamma"]);
   });
 });
 
@@ -468,7 +517,7 @@ test.describe("bookmarks page on a touch screen", () => {
     await goto("/signets", { waitUntil: "hydration" });
     await seedBookmarks(page, { tags: [{ name: "Homère", color: "Blue", entries: [anax, menis] }] });
     const edit = page.getByRole("button", { name: "Modifier l'étiquette « Homère »" });
-    await expect(edit.locator("..")).toHaveCSS("opacity", "1");
+    await expect(edit).toHaveCSS("opacity", "1");
     const columns = await card(page, "Homère").locator("[data-slot=body] .grid").evaluate(element => getComputedStyle(element).gridTemplateColumns.split(" ").length);
     expect(columns).toBe(1);
     await edit.tap();

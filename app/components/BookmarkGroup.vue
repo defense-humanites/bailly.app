@@ -9,7 +9,7 @@
     /**
      * The tag that the bookmark group represents.
      */
-    tag: Pick<IdbTagWithKey, "key" | "name"> & Partial<Pick<IdbTagWithKey, "description">> & { color: ColorKey };
+    tag: Pick<IdbTagWithKey, "key" | "name"> & Partial<Pick<IdbTagWithKey, "description" | "pinnedAt">> & { color: ColorKey };
     /**
      * The entries that are part of the group.
      */
@@ -198,6 +198,19 @@
   const isActive = computed((): boolean => props.editable && bookmarksStore.currentTagKey === props.tag.key);
 
   /**
+   * Whether the tag is pinned (it comes first, whatever the sorting).
+   */
+  const isPinned = computed((): boolean => props.editable && props.tag.pinnedAt !== undefined);
+
+  /**
+   * Out of edit mode, the actions show on hover, on focus (they stay in the
+   * tab order: transparent, not hidden) and always on a touch screen (which
+   * has no hover).
+   */
+  const revealed = computed((): string =>
+    editMode.value ? "" : "opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100");
+
+  /**
    * The group's name, for accessible names.
    */
   const groupName = computed(
@@ -369,13 +382,9 @@
         -->
         <div class="grid min-w-0 grow text-tag-text">
           <!-- Display tag data -->
-          <!--
-            In edit mode, « Ajouter une description » widens the actions: the
-            hidden name spreads under them, to keep its wrapping.
-          -->
           <div
             class="col-start-1 row-start-1 flex min-w-0 items-start"
-            :class="{ 'invisible': editableEditMode, '-me-8': editableEditMode && !showsDescriptionField }"
+            :class="{ invisible: editableEditMode }"
           >
             <UIcon
               :name="icon"
@@ -460,20 +469,36 @@
         </div>
 
         <!--
-          Actions: the edit button, out of edit mode the choice of the active
-          tag (on the other tags), and in edit mode the tag deletion. Out of
-          edit mode, they show on hover, on focus (they stay in the tab order:
-          transparent, not hidden) and always on a touch screen (which has no
-          hover).
+          Actions: the edit button; out of edit mode, the pin and the choice of
+          the active tag (on the other tags); in edit mode, the description and
+          the tag deletion. Out of edit mode, they show on hover, on focus and
+          on a touch screen (`revealed`), except the pin of a pinned tag,
+          always shown (pressed).
         -->
         <!--
-          Their place is reserved for two buttons: the name wraps alike in both
-          modes.
+          Their place is reserved for three buttons on a tag (two on the
+          favorites): the name wraps alike in both modes.
         -->
         <span
-          class="flex h-8 min-w-[4.75rem] shrink-0 items-center justify-end gap-3"
-          :class="editMode ? '' : 'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100'"
+          class="flex h-8 shrink-0 items-center justify-end gap-3"
+          :class="editable ? 'min-w-[7.5rem]' : 'min-w-[4.75rem]'"
         >
+          <UTooltip
+            v-if="editable && !editMode"
+            :text="isPinned ? 'Désépingler' : 'Épingler en tête'"
+          >
+            <UButton
+              icon="i-lucide-pin"
+              size="sm"
+              variant="subtle"
+              color="neutral"
+              :aria-label="`Épingler ${groupName}`"
+              :aria-pressed="isPinned"
+              :class="isPinned ? '' : revealed"
+              :ui="{ base: isPinned ? 'bg-default/90 hover:bg-default active:bg-default/75 ring-tag-300 text-tag-text' : 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
+              @click="bookmarksStore.pinTag(tag.key, !isPinned)"
+            />
+          </UTooltip>
           <UTooltip
             v-if="editable && !editMode && !isActive"
             text="Rendre active"
@@ -483,6 +508,7 @@
               size="sm"
               variant="subtle"
               color="neutral"
+              :class="revealed"
               :aria-label="`Rendre active ${groupName}`"
               :ui="{ base: 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
               @click="bookmarksStore.setCurrentTag(tag.key)"
@@ -512,6 +538,7 @@
             size="sm"
             variant="subtle"
             color="neutral"
+            :class="revealed"
             :aria-label="`Modifier ${groupName}`"
             :aria-pressed="editMode"
             :ui="{ base: editMode ? 'text-white bg-tag-400 hover:bg-tag-400 ring-tag-300/50' : 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"

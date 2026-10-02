@@ -54,9 +54,11 @@ export type IdbEntry = Pick<EntryData, "word" | "uri" | "excerpt">;
  */
 export type IdbEntryCreation = Entry<"word" | "uri" | "excerpt">;
 /**
- * An `IdbEntry` with the key of its associated tag.
+ * An `IdbEntry` with the key of its associated tag, and, as read, when it was
+ * added to it (cf. `entryAddedAt`; e.g. to sort the tags by their latest
+ * addition).
  */
-export type IdbTagged = IdbEntry & { tagKey: TagKey };
+export type IdbTagged = IdbEntry & { tagKey: TagKey; addedAt?: Stamp };
 /**
  * A tag used to identify collections of entries.
  */
