@@ -393,13 +393,15 @@ test.describe("bookmarks page, sorting and pinning", () => {
     await page.reload();
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Gamma", "Alpha", "Bêta"]);
 
-    // A pinned tag comes first, whatever the sorting; its pin stays shown.
+    // A pinned tag comes first, whatever the sorting; a pin is its icon (on
+    // its card and in the table of contents), the last of its actions.
     const pin = page.getByRole("button", { name: "Épingler l'étiquette « Bêta »" });
+    const beta = page.locator("main section > .group").filter({ hasText: "Bêta" });
+    await expect(beta.locator("[data-slot=header] button").last()).toHaveAccessibleName("Épingler l'étiquette « Bêta »");
     await pin.click();
     await expect(pin).toHaveAttribute("aria-pressed", "true");
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Gamma", "Alpha"]);
-    await page.mouse.move(0, 0);
-    await expect(pin).toHaveCSS("opacity", "1");
+    await expect(beta.locator("[data-slot=header] .iconify.i-lucide\\:pin").first()).toBeVisible();
     await sortBy("Par nom");
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Alpha", "Gamma"]);
     await pin.click();
