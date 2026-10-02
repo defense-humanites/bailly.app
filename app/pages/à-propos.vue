@@ -19,14 +19,14 @@
    * The search demonstration: the same word typed in each input mode.
    */
   const searchInputs = [
-    { mode: "grec", text: "ψυχη" },
-    { mode: "beta code", text: "yuxh" },
-    { mode: "translittération", text: "psuchê" },
+    { mode: "grec", text: "φυσις" },
+    { mode: "beta code", text: "fusis" },
+    { mode: "translittération", text: "phusis" },
   ];
 
   /**
-   * The bookmarks demonstration: as the table of contents of the bookmarks page
-   * shows them, the favorites (always filled) and some tags.
+   * The bookmarks demonstration: the favorites and some tags, as pills of the
+   * table of contents of the bookmarks page (filled there for an active group).
    */
   const bookmarkPills = [
     { name: "Favoris", color: "Yellow", icon: "i-bailly-star-filled", count: 8, filled: false },
@@ -218,10 +218,10 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                     <span class="flex h-6 items-center rounded-full bg-default px-3 text-sm ring-1 ring-accented">{{ input.text }}</span>
                   </template>
                 </div>
-                <!-- The rows' middles: 0.75rem, 2.75rem and 4.75rem (rows of 1.5rem, gaps of 0.5rem). -->
+                <!-- As high as the inputs (rows of 1.5rem, gaps of 0.5rem): their middles at 12, 44 and 76. -->
                 <svg
-                  viewBox="0 0 48 96"
-                  class="h-24 w-10 shrink-0 text-dimmed sm:w-12"
+                  viewBox="0 0 48 88"
+                  class="h-22 w-10 shrink-0 text-dimmed sm:w-12"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="1.25"
@@ -230,7 +230,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                 >
                   <path d="M4 12C20 12 18 44 32 44M4 44H32M4 76C20 76 18 44 32 44H42M38 40l4 4-4 4" />
                 </svg>
-                <span class="font-serif text-xl font-bold">ψυχή</span>
+                <span class="font-serif text-xl font-bold">φύσις</span>
               </div>
             </div>
             <h3 class="font-semibold">
@@ -362,14 +362,56 @@ mort d'un homme qu'on lance (du haut d'un rocher).
       -->
         <ol class="mt-10 space-y-12 md:mx-auto md:max-w-4xl md:space-y-24">
           <li class="relative flex flex-col items-center gap-6 md:min-h-[calc(14rem+0.875rem)] md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
-            <!-- The winding path to the next work (from `md`). -->
+            <!-- The line to the next work (from `md`): a smooth curve, faded at its ends. -->
             <div
               aria-hidden="true"
-              class="contents"
+              class="pointer-events-none absolute top-[calc(14rem+0.875rem)] right-28 -bottom-[5.125rem] left-28 hidden text-(--rule-color) md:block"
             >
-              <div class="absolute top-[calc(14rem+0.875rem)] bottom-0 left-28 hidden border-s-2 border-dashed border-(--rule-color)/60 md:block" />
-              <div class="absolute top-full right-1/2 left-28 hidden h-12 rounded-bl-3xl border-b-2 border-s-2 border-dashed border-(--rule-color)/60 md:block" />
-              <div class="absolute top-[calc(100%+3rem-2px)] right-28 left-1/2 hidden h-[calc(3rem-0.875rem+2px)] rounded-tr-3xl border-e-2 border-t-2 border-dashed border-(--rule-color)/60 md:block" />
+              <svg
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                class="size-full overflow-visible"
+              >
+                <defs>
+                  <linearGradient
+                    id="timeline-fade-1"
+                    gradientUnits="userSpaceOnUse"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="100"
+                  >
+                    <stop
+                      offset="0"
+                      stop-color="currentColor"
+                      stop-opacity="0"
+                    />
+                    <stop
+                      offset="0.2"
+                      stop-color="currentColor"
+                      stop-opacity="0.75"
+                    />
+                    <stop
+                      offset="0.8"
+                      stop-color="currentColor"
+                      stop-opacity="0.75"
+                    />
+                    <stop
+                      offset="1"
+                      stop-color="currentColor"
+                      stop-opacity="0"
+                    />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M0 0C0 27.6 8.1 50 18 50H82C91.9 50 100 72.4 100 100"
+                  fill="none"
+                  stroke="url(#timeline-fade-1)"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  vector-effect="non-scaling-stroke"
+                />
+              </svg>
             </div>
             <div class="size-40 shrink-0 md:size-56">
               <div class="relative size-full overflow-hidden rounded-full bg-white border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)]">
@@ -399,14 +441,56 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           </li>
 
           <li class="relative flex flex-col items-center gap-6 md:min-h-[calc(14rem+0.875rem)] md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
-            <!-- The winding path to the next work (from `md`). -->
+            <!-- The line to the next work (from `md`): a smooth curve, faded at its ends. -->
             <div
               aria-hidden="true"
-              class="contents"
+              class="pointer-events-none absolute top-[calc(14rem+0.875rem)] right-28 -bottom-[5.125rem] left-28 hidden text-(--rule-color) md:block"
             >
-              <div class="absolute top-[calc(14rem+0.875rem)] right-28 bottom-0 hidden border-e-2 border-dashed border-(--rule-color)/60 md:block" />
-              <div class="absolute top-full right-28 left-1/2 hidden h-12 rounded-br-3xl border-e-2 border-b-2 border-dashed border-(--rule-color)/60 md:block" />
-              <div class="absolute top-[calc(100%+3rem-2px)] right-1/2 left-28 hidden h-[calc(3rem-0.875rem+2px)] rounded-tl-3xl border-s-2 border-t-2 border-dashed border-(--rule-color)/60 md:block" />
+              <svg
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                class="size-full overflow-visible"
+              >
+                <defs>
+                  <linearGradient
+                    id="timeline-fade-2"
+                    gradientUnits="userSpaceOnUse"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="100"
+                  >
+                    <stop
+                      offset="0"
+                      stop-color="currentColor"
+                      stop-opacity="0"
+                    />
+                    <stop
+                      offset="0.2"
+                      stop-color="currentColor"
+                      stop-opacity="0.75"
+                    />
+                    <stop
+                      offset="0.8"
+                      stop-color="currentColor"
+                      stop-opacity="0.75"
+                    />
+                    <stop
+                      offset="1"
+                      stop-color="currentColor"
+                      stop-opacity="0"
+                    />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M100 0C100 27.6 91.9 50 82 50H18C8.1 50 0 72.4 0 100"
+                  fill="none"
+                  stroke="url(#timeline-fade-2)"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  vector-effect="non-scaling-stroke"
+                />
+              </svg>
             </div>
             <div class="size-40 shrink-0 md:size-56">
               <div
