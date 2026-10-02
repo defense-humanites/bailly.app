@@ -95,374 +95,429 @@ mort d'un homme qu'on lance (du haut d'un rocher).
 </script>
 
 <template>
-  <div class="mx-auto max-w-(--content-max-width) px-4 md:px-6">
-    <section class="flex flex-col items-center py-12 text-center md:py-20">
-      <UIcon
-        name="i-bailly-bailly"
-        class="mb-4 size-32"
-      />
-      <h1 class="max-w-3xl font-serif text-[1.75rem]/[2.8125rem] font-bold text-balance md:text-4xl/[3.75rem]">
-        Le dictionnaire grec-français d'Anatole&nbsp;Bailly, à portée de recherche
-      </h1>
-      <p class="mt-5 max-w-2xl text-lg text-pretty text-muted md:text-xl">
-        Le texte révisé du <em>Bailly 2020 Hugo&nbsp;Chávez</em>, dans une application libre et
-        gratuite, pensée pour la lecture et la recherche, sans compte ni publicité.
-      </p>
-      <div class="mt-8 flex flex-wrap justify-center gap-3">
-        <UButton
-          size="xl"
-          icon="i-lucide-search"
-          label="Chercher un mot"
-          @click="searchFocus.focus()"
+  <div>
+    <!--
+      The hero, framed like a title page: a thick and a thin rule, in the cloth of
+      the icon, as wide as the header.
+    -->
+    <div class="mx-auto max-w-(--header-max-width) px-4 pt-4 md:px-6 md:pt-6">
+      <section class="flex flex-col items-center justify-center rounded-lg border-2 border-terracotta-700 px-4 py-12 text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[min(calc(100dvh-(var(--spacing)*14)-3rem),48rem)] md:px-8 md:py-16">
+        <UIcon
+          name="i-bailly-bailly"
+          class="mb-4 size-32"
         />
-        <UButton
-          to="/soutenir"
-          size="xl"
-          color="neutral"
-          variant="outline"
-          icon="i-lucide-heart"
-          label="Nous soutenir"
-        />
-      </div>
-      <dl class="mt-12 grid w-full max-w-2xl grid-cols-3 gap-4 border-t border-default pt-6">
-        <div
-          v-for="figure in figures"
-          :key="figure.label"
-          class="flex flex-col-reverse"
-        >
-          <dt class="text-sm text-muted">
-            {{ figure.label }}
-          </dt>
-          <dd class="font-serif text-lg/8 font-bold md:text-2xl/9">
-            {{ figure.value }}
-          </dd>
+        <h1 class="max-w-3xl font-serif text-[1.75rem]/[2.8125rem] font-bold text-balance md:text-4xl/[3.75rem]">
+          Le dictionnaire grec-français d'Anatole&nbsp;Bailly, à portée de recherche
+        </h1>
+        <p class="mt-5 max-w-2xl text-lg text-pretty text-muted md:text-xl">
+          Le texte révisé du <em>Bailly 2020 Hugo&nbsp;Chávez</em>, dans une application libre et
+          gratuite, pensée pour la lecture et la recherche, sans compte ni publicité.
+        </p>
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          <UButton
+            size="xl"
+            icon="i-lucide-search"
+            label="Chercher un mot"
+            @click="searchFocus.focus()"
+          />
+          <UButton
+            to="/soutenir"
+            size="xl"
+            color="neutral"
+            variant="outline"
+            icon="i-lucide-heart"
+            label="Nous soutenir"
+          />
         </div>
-      </dl>
-    </section>
+        <dl class="mt-12 grid w-full max-w-2xl grid-cols-3 gap-4 border-t border-terracotta-700/35 pt-6">
+          <div
+            v-for="figure in figures"
+            :key="figure.label"
+            class="flex flex-col-reverse"
+          >
+            <dt class="text-sm text-muted">
+              {{ figure.label }}
+            </dt>
+            <dd class="font-serif text-lg/8 font-bold md:text-2xl/9">
+              {{ figure.value }}
+            </dd>
+          </div>
+        </dl>
+      </section>
+    </div>
 
-    <section
-      aria-labelledby="atouts"
-      class="py-10 md:py-14"
-    >
-      <h2
-        id="atouts"
-        class="mb-8 text-center text-2xl font-bold md:text-3xl"
+    <div class="mx-auto max-w-(--content-max-width) px-4 md:px-6">
+      <section
+        aria-labelledby="atouts"
+        class="py-10 md:py-14"
       >
-        Ce que l'application apporte au texte
-      </h2>
-      <ul class="grid gap-4 sm:grid-cols-2">
-        <li
-          v-for="feature in features"
-          :key="feature.title"
+        <h2
+          id="atouts"
+          class="mb-8 text-center text-2xl font-bold md:text-3xl"
         >
-          <UCard class="h-full">
-            <div class="flex items-center gap-3">
-              <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <UIcon
-                  :name="feature.icon"
-                  class="size-5"
-                />
+          Ce que l'application apporte au texte
+        </h2>
+        <ul class="grid gap-4 sm:grid-cols-2">
+          <li
+            v-for="feature in features"
+            :key="feature.title"
+          >
+            <UCard class="h-full">
+              <div class="flex items-center gap-3">
+                <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <UIcon
+                    :name="feature.icon"
+                    class="size-5"
+                  />
+                </div>
+                <h3 class="font-semibold text-balance">
+                  {{ feature.title }}
+                </h3>
               </div>
-              <h3 class="font-semibold text-balance">
-                {{ feature.title }}
-              </h3>
-            </div>
-            <p class="mt-3 text-muted">
-              {{ feature.text }}
-            </p>
-          </UCard>
-        </li>
-      </ul>
-    </section>
+              <p class="mt-3 text-muted">
+                {{ feature.text }}
+              </p>
+            </UCard>
+          </li>
+        </ul>
+      </section>
 
-    <section
-      aria-labelledby="origine"
-      class="py-10 md:py-14"
-    >
-      <h2
-        id="origine"
-        class="text-center text-2xl font-bold md:text-3xl"
+      <section
+        aria-labelledby="origine"
+        class="py-10 md:py-14"
       >
-        D'où vient le texte
-      </h2>
-      <p class="mx-auto mt-2 max-w-2xl text-center text-muted">
-        Trois ouvrages en un : le dictionnaire, son édition numérique, et l'application qui vous la
-        présente. Suivez l'entrée ῥιπτός de l'un à l'autre.
-      </p>
+        <h2
+          id="origine"
+          class="text-center text-2xl font-bold md:text-3xl"
+        >
+          D'où vient le texte
+        </h2>
+        <p class="mx-auto mt-2 max-w-2xl text-center text-muted">
+          Trois ouvrages en un : le dictionnaire, son édition numérique, et l'application qui vous la
+          présente. Suivez l'entrée ῥιπτός de l'un à l'autre.
+        </p>
 
-      <!--
+        <!--
         Each work in a bubble, on the left then on the right, joined by a
         winding path (from `md`); on mobile, the bubble is centered above the
         text, centered too, without a path.
       -->
-      <ol class="mt-10 space-y-12 md:mx-auto md:max-w-4xl md:space-y-24">
-        <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
-          <!-- The winding path to the next work (from `md`). -->
-          <div
-            aria-hidden="true"
-            class="contents"
-          >
-            <div class="absolute top-56 bottom-0 left-28 hidden border-s-2 border-dashed border-primary/40 md:block" />
-            <div class="absolute top-full right-1/2 left-28 hidden h-12 rounded-bl-3xl border-b-2 border-s-2 border-dashed border-primary/40 md:block" />
-            <div class="absolute top-[calc(100%+3rem-2px)] right-28 left-1/2 hidden h-12 rounded-tr-3xl border-e-2 border-t-2 border-dashed border-primary/40 md:block" />
-          </div>
-          <div class="size-40 shrink-0 md:size-56">
-            <div class="relative size-full overflow-hidden rounded-full bg-white shadow-2xl ring-4 ring-primary/10 md:ring-8">
-              <img
-                src="/images/bailly-1935-rhiptos.webp"
-                width="480"
-                height="480"
-                alt="L'entrée ῥιπτός dans l'édition de 1935 (fac-similé)."
-                class="size-full"
-              >
-            </div>
-          </div>
-          <div class="min-w-0 flex-1 self-stretch max-md:text-center md:self-auto md:pt-6">
-            <h3 class="font-serif text-lg/8 font-bold">
-              Le dictionnaire d'Anatole Bailly
-            </h3>
-            <p class="mt-2 text-muted">
-              L'ouvrage de référence des hellénistes francophones, paru en 1894 et maintes fois
-              réédité. Le texte de sa quatrième édition (1935) est passé dans le domaine public ; son
-              <a
-                href="https://archive.org/details/BaillyDictionnaireGrecFrancais"
-                target="_blank"
-                rel="noopener"
-              >fac-similé</a> est disponible sur l'<em>Internet Archive</em>.
-            </p>
-          </div>
-        </li>
-
-        <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
-          <!-- The winding path to the next work (from `md`). -->
-          <div
-            aria-hidden="true"
-            class="contents"
-          >
-            <div class="absolute top-56 right-28 bottom-0 hidden border-e-2 border-dashed border-primary/40 md:block" />
-            <div class="absolute top-full right-28 left-1/2 hidden h-12 rounded-br-3xl border-e-2 border-b-2 border-dashed border-primary/40 md:block" />
-            <div class="absolute top-[calc(100%+3rem-2px)] right-1/2 left-28 hidden h-12 rounded-tl-3xl border-s-2 border-t-2 border-dashed border-primary/40 md:block" />
-          </div>
-          <div class="size-40 shrink-0 md:size-56">
+        <ol class="mt-10 space-y-12 md:mx-auto md:max-w-4xl md:space-y-24">
+          <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
+            <!-- The winding path to the next work (from `md`). -->
             <div
               aria-hidden="true"
-              class="flex size-full items-center justify-center overflow-hidden rounded-full bg-default shadow-2xl ring-4 ring-primary/10 md:ring-8"
+              class="contents"
             >
-              <!-- eslint-disable vue/no-v-html -- A constant of this page. -->
+              <div class="absolute top-56 bottom-0 left-28 hidden border-s-2 border-dashed border-primary/40 md:block" />
+              <div class="absolute top-full right-1/2 left-28 hidden h-12 rounded-bl-3xl border-b-2 border-s-2 border-dashed border-primary/40 md:block" />
+              <div class="absolute top-[calc(100%+3rem-2px)] right-28 left-1/2 hidden h-12 rounded-tr-3xl border-e-2 border-t-2 border-dashed border-primary/40 md:block" />
+            </div>
+            <div class="size-40 shrink-0 md:size-56">
+              <div class="relative size-full overflow-hidden rounded-full bg-white shadow-2xl ring-4 ring-primary/10 md:ring-8">
+                <img
+                  src="/images/bailly-1935-rhiptos.webp"
+                  width="480"
+                  height="480"
+                  alt="L'entrée ῥιπτός dans l'édition de 1935 (fac-similé)."
+                  class="size-full"
+                >
+              </div>
+            </div>
+            <div class="min-w-0 flex-1 self-stretch max-md:text-center md:self-auto md:pt-6">
+              <h3 class="font-serif text-lg/8 font-bold">
+                Le dictionnaire d'Anatole Bailly
+              </h3>
+              <p class="mt-2 text-muted">
+                L'ouvrage de référence des hellénistes francophones, paru en 1894 et maintes fois
+                réédité. Le texte de sa quatrième édition (1935) est passé dans le domaine public ; son
+                <a
+                  href="https://archive.org/details/BaillyDictionnaireGrecFrancais"
+                  target="_blank"
+                  rel="noopener"
+                >fac-similé</a> est disponible sur l'<em>Internet Archive</em>.
+              </p>
+            </div>
+          </li>
+
+          <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
+            <!-- The winding path to the next work (from `md`). -->
+            <div
+              aria-hidden="true"
+              class="contents"
+            >
+              <div class="absolute top-56 right-28 bottom-0 hidden border-e-2 border-dashed border-primary/40 md:block" />
+              <div class="absolute top-full right-28 left-1/2 hidden h-12 rounded-br-3xl border-e-2 border-b-2 border-dashed border-primary/40 md:block" />
+              <div class="absolute top-[calc(100%+3rem-2px)] right-1/2 left-28 hidden h-12 rounded-tl-3xl border-s-2 border-t-2 border-dashed border-primary/40 md:block" />
+            </div>
+            <div class="size-40 shrink-0 md:size-56">
               <div
-                class="definition w-[10.4rem] shrink-0 font-serif [--reading-font-size:0.75rem] [--reading-font-weight:400] max-md:scale-[0.715]"
-                v-html="rhiptos"
-              />
+                aria-hidden="true"
+                class="flex size-full items-center justify-center overflow-hidden rounded-full bg-default shadow-2xl ring-4 ring-primary/10 md:ring-8"
+              >
+                <!-- eslint-disable vue/no-v-html -- A constant of this page. -->
+                <div
+                  class="definition w-[10.4rem] shrink-0 font-serif [--reading-font-size:0.75rem] [--reading-font-weight:400] max-md:scale-[0.715]"
+                  v-html="rhiptos"
+                />
               <!-- eslint-enable vue/no-v-html -->
+              </div>
             </div>
-          </div>
-          <div class="min-w-0 flex-1 self-stretch max-md:text-center md:self-auto md:pt-6">
-            <h3 class="font-serif text-lg/8 font-bold">
-              L'édition numérique <em>Bailly 2020 Hugo&nbsp;Chávez</em>
-            </h3>
-            <p class="mt-2 text-muted">
-              Gérard Gréco et son équipe ont numérisé le texte, l'ont corrigé à la main d'après les
-              ouvrages de référence, puis ont mis à jour les étymologies et la toponymie, et normalisé
-              les références. C'est leur texte que vous lisez ici. Une
-              <a
-                href="http://gerardgreco.free.fr/spip.php?article24"
-                target="_blank"
-                rel="noopener"
-              >édition PDF</a>, mise en page comme l'ouvrage d'origine, est disponible sur le site du
-              projet.
-            </p>
-            <div class="mt-4 flex flex-wrap gap-2 *:max-w-full max-md:justify-center">
-              <UButton
-                :to="reportTextError"
-                color="neutral"
-                variant="outline"
-                icon="i-lucide-flag"
-                label="Signaler une erreur"
-              />
-              <UButton
-                to="/documents/notice-édition-2020.pdf"
-                target="_blank"
-                color="neutral"
-                variant="ghost"
-                icon="i-lucide-file-text"
-                label="Notice de l'édition"
-              />
+            <div class="min-w-0 flex-1 self-stretch max-md:text-center md:self-auto md:pt-6">
+              <h3 class="font-serif text-lg/8 font-bold">
+                L'édition numérique <em>Bailly 2020 Hugo&nbsp;Chávez</em>
+              </h3>
+              <p class="mt-2 text-muted">
+                Gérard Gréco et son équipe ont numérisé le texte, l'ont corrigé à la main d'après les
+                ouvrages de référence, puis ont mis à jour les étymologies et la toponymie, et normalisé
+                les références. C'est leur texte que vous lisez ici. Une
+                <a
+                  href="http://gerardgreco.free.fr/spip.php?article24"
+                  target="_blank"
+                  rel="noopener"
+                >édition PDF</a>, mise en page comme l'ouvrage d'origine, est disponible sur le site du
+                projet.
+              </p>
+              <div class="mt-4 flex flex-wrap gap-2 *:max-w-full max-md:justify-center">
+                <UButton
+                  :to="reportTextError"
+                  color="neutral"
+                  variant="outline"
+                  icon="i-lucide-flag"
+                  label="Signaler une erreur"
+                />
+                <UButton
+                  to="/documents/notice-édition-2020.pdf"
+                  target="_blank"
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-lucide-file-text"
+                  label="Notice de l'édition"
+                />
+              </div>
+              <p class="mt-2 text-sm text-muted">
+                Les erreurs du texte se signalent à l'équipe de M.&nbsp;Gréco, en précisant l'entrée et la
+                version (Chávez).
+              </p>
             </div>
-            <p class="mt-2 text-sm text-muted">
-              Les erreurs du texte se signalent à l'équipe de M.&nbsp;Gréco, en précisant l'entrée et la
-              version (Chávez).
-            </p>
-          </div>
-        </li>
+          </li>
 
-        <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
-          <div class="size-40 shrink-0 md:size-56">
-            <div
-              aria-hidden="true"
-              class="flex size-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary/15 to-(--ui-bg) shadow-2xl ring-4 ring-primary/10 md:ring-8"
-            >
-              <div class="w-[11.2rem] shrink-0 space-y-1.5 max-md:scale-[0.715]">
-                <div class="flex items-center gap-1.5 rounded-full bg-default px-3 py-1.5 text-sm shadow-xs ring-1 ring-default">
-                  <UIcon
-                    name="i-lucide-search"
-                    class="size-3.5 text-muted"
-                  />
-                  <span class="font-serif text-[0.6875rem]/5">ῥιπτ</span>
-                  <span class="ms-auto rounded-full bg-elevated px-1.5 text-[0.625rem] text-muted">4</span>
-                </div>
-                <div class="rounded-md bg-default p-2 ring-1 ring-default">
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-serif text-[0.6875rem]/5 font-bold">ῥιπτός</span>
+          <li class="relative flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-12 md:even:flex-row-reverse">
+            <div class="size-40 shrink-0 md:size-56">
+              <div
+                aria-hidden="true"
+                class="flex size-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary/15 to-(--ui-bg) shadow-2xl ring-4 ring-primary/10 md:ring-8"
+              >
+                <div class="w-[11.2rem] shrink-0 space-y-1.5 max-md:scale-[0.715]">
+                  <div class="flex items-center gap-1.5 rounded-full bg-default px-3 py-1.5 text-sm shadow-xs ring-1 ring-default">
                     <UIcon
-                      name="i-bailly-star-filled"
-                      class="ms-auto size-3.5 text-favorite"
+                      name="i-lucide-search"
+                      class="size-3.5 text-muted"
                     />
+                    <span class="font-serif text-[0.6875rem]/5">ῥιπτ</span>
+                    <span class="ms-auto rounded-full bg-elevated px-1.5 text-[0.625rem] text-muted">4</span>
                   </div>
-                  <p class="line-clamp-2 font-serif text-[0.5625rem]/4 text-muted">
-                    ή, όν, jeté, lancé : μόρος, Soph. Tr. 357, mort d'un homme qu'on lance…
-                  </p>
+                  <div class="rounded-md bg-default p-2 ring-1 ring-default">
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-serif text-[0.6875rem]/5 font-bold">ῥιπτός</span>
+                      <UIcon
+                        name="i-bailly-star-filled"
+                        class="ms-auto size-3.5 text-favorite"
+                      />
+                    </div>
+                    <p class="line-clamp-2 font-serif text-[0.5625rem]/4 text-muted">
+                      ή, όν, jeté, lancé : μόρος, Soph. Tr. 357, mort d'un homme qu'on lance…
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="min-w-0 flex-1 self-stretch max-md:text-center md:self-auto md:pt-6">
-            <h3 class="font-serif text-lg/8 font-bold">
-              L'application Bailly.app
-            </h3>
-            <p class="mt-2 text-muted">
-              Nous ne modifions pas le texte : nous le rendons consultable, avec la recherche,
-              l'analyse des formes fléchies, les signets et les réglages de lecture. L'application est
-              un logiciel libre.
-            </p>
-            <div class="mt-4 flex flex-wrap gap-2 *:max-w-full max-md:justify-center">
-              <UButton
-                to="mailto:contact@bailly.app"
-                color="neutral"
-                variant="outline"
-                icon="i-lucide-message-circle"
-                label="Signaler un problème"
-              />
-              <UButton
-                to="https://github.com/defense-humanites/bailly.app"
-                target="_blank"
-                color="neutral"
-                variant="ghost"
-                icon="i-lucide-code"
-                label="Code source"
-              />
+            <div class="min-w-0 flex-1 self-stretch max-md:text-center md:self-auto md:pt-6">
+              <h3 class="font-serif text-lg/8 font-bold">
+                L'application Bailly.app
+              </h3>
+              <p class="mt-2 text-muted">
+                Nous ne modifions pas le texte : nous le rendons consultable, avec la recherche,
+                l'analyse des formes fléchies, les signets et les réglages de lecture. L'application est
+                un logiciel libre.
+              </p>
+              <div class="mt-4 flex flex-wrap gap-2 *:max-w-full max-md:justify-center">
+                <UButton
+                  to="mailto:contact@bailly.app"
+                  color="neutral"
+                  variant="outline"
+                  icon="i-lucide-message-circle"
+                  label="Signaler un problème"
+                />
+                <UButton
+                  to="https://github.com/defense-humanites/bailly.app"
+                  target="_blank"
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-lucide-code"
+                  label="Code source"
+                />
+              </div>
             </div>
-          </div>
-        </li>
-      </ol>
-    </section>
+          </li>
+        </ol>
+      </section>
 
-    <section
-      aria-labelledby="ressources"
-      class="py-10 md:py-14"
-    >
-      <h2
-        id="ressources"
-        class="mb-6 text-center text-2xl font-bold md:text-3xl"
+      <section
+        aria-labelledby="ressources"
+        class="py-10 md:py-14"
       >
-        Ressources
-      </h2>
-      <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        <li
-          v-for="resource in resources"
-          :key="resource.href"
+        <h2
+          id="ressources"
+          class="mb-6 text-center text-2xl font-bold md:text-3xl"
         >
-          <UButton
-            :to="resource.href"
-            target="_blank"
-            color="neutral"
-            variant="ghost"
-            icon="i-lucide-file-text"
-            trailing-icon="i-lucide-arrow-up-right"
-            :label="resource.title"
-            class="w-full"
-            :ui="{ trailingIcon: 'ms-auto' }"
-          />
-        </li>
-      </ul>
-    </section>
-
-    <section
-      aria-labelledby="credits"
-      class="py-10 md:py-14"
-    >
-      <h2
-        id="credits"
-        class="mb-6 text-center text-2xl font-bold md:text-3xl"
-      >
-        Crédits et licences
-      </h2>
-      <ul class="grid gap-4 lg:grid-cols-3">
-        <li
-          v-for="credit in credits"
-          :key="credit.title"
-          class="rounded-lg bg-elevated/50 p-4 text-sm"
-        >
-          <h3 class="font-semibold">
-            {{ credit.title }}
-          </h3>
-          <p class="mt-1">
-            {{ credit.authors }}
-          </p>
-          <p class="mt-1 text-muted">
-            {{ credit.licence }}
-          </p>
-          <p
-            v-if="credit.note"
-            class="mt-1 text-muted"
+          Ressources
+        </h2>
+        <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <li
+            v-for="resource in resources"
+            :key="resource.href"
           >
-            {{ credit.note }}
-          </p>
-          <p class="mt-2 flex gap-4">
-            <a
-              v-for="link in credit.links"
-              :key="link.href"
-              :href="link.href"
+            <UButton
+              :to="resource.href"
               target="_blank"
-              rel="noopener"
-            >{{ link.label }}</a>
-          </p>
-        </li>
-      </ul>
-    </section>
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-file-text"
+              trailing-icon="i-lucide-arrow-up-right"
+              :label="resource.title"
+              class="w-full"
+              :ui="{ trailingIcon: 'ms-auto' }"
+            />
+          </li>
+        </ul>
+      </section>
 
-    <section class="my-10 rounded-2xl bg-linear-to-br from-primary/15 to-primary/5 p-6 md:p-10">
-      <h2 class="font-serif text-lg/8 font-bold md:text-2xl/9">
-        Un dictionnaire libre, porté par une association
-      </h2>
-      <p class="mt-2 max-w-2xl text-muted">
-        Bailly.app est gratuit et le restera. Vos dons couvrent l'hébergement et le temps consacré à
-        l'application.
+      <section
+        aria-labelledby="credits"
+        class="py-10 md:py-14"
+      >
+        <h2
+          id="credits"
+          class="mb-6 text-center text-2xl font-bold md:text-3xl"
+        >
+          Crédits et licences
+        </h2>
+        <ul class="grid gap-4 lg:grid-cols-3">
+          <li
+            v-for="credit in credits"
+            :key="credit.title"
+            class="rounded-lg bg-elevated/50 p-4 text-sm"
+          >
+            <h3 class="font-semibold">
+              {{ credit.title }}
+            </h3>
+            <p class="mt-1">
+              {{ credit.authors }}
+            </p>
+            <p class="mt-1 text-muted">
+              {{ credit.licence }}
+            </p>
+            <p
+              v-if="credit.note"
+              class="mt-1 text-muted"
+            >
+              {{ credit.note }}
+            </p>
+            <p class="mt-2 flex gap-4">
+              <a
+                v-for="link in credit.links"
+                :key="link.href"
+                :href="link.href"
+                target="_blank"
+                rel="noopener"
+              >{{ link.label }}</a>
+            </p>
+          </li>
+        </ul>
+      </section>
+
+      <p class="pb-10 text-sm text-muted">
+        <UIcon
+          name="i-lucide-shield-check"
+          class="me-1 inline size-4 align-[-0.125em]"
+        />
+        Ce que l'application garde de vos données, et où :
+        <NuxtLink to="/confidentialite">confidentialité</NuxtLink>.
       </p>
-      <div class="mt-6 flex flex-wrap gap-3">
-        <UButton
-          to="/soutenir"
-          size="lg"
-          icon="i-lucide-heart"
-          label="Nous soutenir"
-        />
-        <UButton
-          to="mailto:contact@bailly.app"
-          size="lg"
-          color="neutral"
-          variant="outline"
-          icon="i-lucide-mail"
-          label="Nous écrire"
-        />
+    </div>
+
+    <section
+      aria-labelledby="soutien"
+      class="cloth relative py-16 text-center text-terracotta-100 md:py-20"
+    >
+      <div
+        aria-hidden="true"
+        class="absolute inset-x-0 top-3 h-[5px] border-y border-gold-300/70"
+      />
+      <div
+        aria-hidden="true"
+        class="absolute inset-x-0 bottom-3 h-[5px] border-y border-gold-300/70"
+      />
+      <div class="mx-auto max-w-(--content-max-width) px-4 md:px-6">
+        <h2
+          id="soutien"
+          class="text-gilt font-serif text-2xl/9 font-bold text-balance md:text-[1.75rem]/10"
+        >
+          Un dictionnaire libre, porté par une association
+        </h2>
+        <p class="mx-auto mt-3 max-w-2xl text-pretty">
+          Bailly.app est gratuit et le restera. Vos dons couvrent l'hébergement et le temps consacré à
+          l'application.
+        </p>
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          <UButton
+            to="/soutenir"
+            size="lg"
+            color="warning"
+            icon="i-lucide-heart"
+            label="Nous soutenir"
+            class="gilt-button text-terracotta-900"
+          />
+          <UButton
+            to="mailto:contact@bailly.app"
+            size="lg"
+            color="neutral"
+            variant="outline"
+            icon="i-lucide-mail"
+            label="Nous écrire"
+            class="bg-transparent text-gold-100 ring-gold-200/60 hover:bg-white/10"
+          />
+        </div>
       </div>
     </section>
-
-    <p class="pb-10 text-sm text-muted">
-      <UIcon
-        name="i-lucide-shield-check"
-        class="me-1 inline size-4 align-[-0.125em]"
-      />
-      Ce que l'application garde de vos données, et où :
-      <NuxtLink to="/confidentialite">confidentialité</NuxtLink>.
-    </p>
   </div>
 </template>
+
+<style scoped>
+/* The luminous gold of the icon. */
+.text-gilt {
+  background: linear-gradient(#f2e2a4, #e8c967 55%, #cda43c);
+  background-clip: text;
+  color: transparent;
+}
+
+/* A gilt button on the cloth. */
+.gilt-button {
+  background: linear-gradient(#f2e2a4, #e8c967 55%, #cda43c);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.35);
+
+  &:hover,
+  &:active {
+    background: linear-gradient(#f5e8b6, #ecd17c 55%, #d6af4a);
+  }
+}
+
+/* The binding cloth of the icon: terracotta, with faint fibers. */
+.cloth {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9 0.035' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.6 1.1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.18'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 -1.6 1.1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.08'/%3E%3C/svg%3E"),
+    linear-gradient(var(--color-terracotta-700), var(--color-terracotta-800));
+}
+</style>
