@@ -289,6 +289,29 @@
   });
 
   /**
+   * Whether the words typed make a key that can be tried: twelve words, each
+   * recognized (its first 4 letters suffice, cf. `resolveWord`), so that the
+   * key can be sent as soon as the last one is (its checksum is checked
+   * then).
+   */
+  const keyReady = computed(() => {
+    const module = keyModule.value;
+    return Boolean(module)
+      && typedWords.value.length === SYNC_KEY_WORD_COUNT
+      && typedWords.value.every(word => module!.resolveWord(word));
+  });
+
+  /**
+   * Enter sends the key once it is ready, instead of starting a new line
+   * (the words may be separated by line breaks); Shift+Enter still does.
+   */
+  const onJoinEnter = (event: KeyboardEvent): void => {
+    if (!keyReady.value || event.shiftKey || event.isComposing || busy.value) return;
+    event.preventDefault();
+    (event.target as HTMLTextAreaElement).form?.requestSubmit();
+  };
+
+  /**
    * The key of the link, while it has not been used: once joined (or once
    * the user goes elsewhere in the window), "J'ai déjà une clé" asks for the
    * words.
@@ -698,6 +721,12 @@
               help="Dans l'ordre, séparés par des espaces. Accents et majuscules sont facultatifs ; les 4 premières lettres de chaque mot suffisent."
               :error="joinError ?? actionError ?? (unknownWord ? `« ${unknownWord} » n'est pas un mot de la liste.` : undefined)"
             >
+              <!--
+                Once the key is ready, the key drawn at the bottom right says
+                that Enter sends it (a hint, not a button: the form's button
+                is there; always there, transparent until then, so that the
+                text keeps its width).
+              -->
               <UTextarea
                 v-model="joinText"
                 :rows="3"
@@ -705,12 +734,28 @@
                 autocomplete="off"
                 autocapitalize="none"
                 spellcheck="false"
+                :enterkeyhint="keyReady ? 'go' : 'enter'"
                 class="w-full"
-                :ui="{ base: 'text-base md:text-sm' }"
-              />
+                :ui="{ base: 'text-base md:text-sm', trailing: 'items-end pointer-events-none' }"
+                @keydown.enter="onJoinEnter"
+              >
+                <template #trailing>
+                  <UKbd
+                    value="enter"
+                    size="lg"
+                    aria-hidden="true"
+                    data-key-ready-hint
+                    class="transition-opacity"
+                    :class="keyReady ? 'opacity-100' : 'opacity-0'"
+                  />
+                </template>
+              </UTextarea>
             </UFormField>
             <p class="text-muted tabular-nums">
-              {{ typedWords.length }} mot{{ typedWords.length > 1 ? "s" : "" }} sur {{ SYNC_KEY_WORD_COUNT }}
+              {{ typedWords.length }} mot{{ typedWords.length > 1 ? "s" : "" }} sur {{ SYNC_KEY_WORD_COUNT }}<span
+                v-if="keyReady"
+                class="sr-only"
+              > : Entrée pour valider</span>
             </p>
           </form>
           <UAlert
@@ -984,7 +1029,7 @@
           form="sync-join"
           :label="enabled ? 'Remplacer la clé' : 'Rejoindre'"
           :loading="busy"
-          :disabled="typedWords.length !== SYNC_KEY_WORD_COUNT"
+          :disabled="!keyReady"
         />
       </template>
 

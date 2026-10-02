@@ -133,6 +133,45 @@ test("a wrong key is explained", async ({ goto, page }) => {
   await expect(page.getByText(/ne forment pas une clé valide|Cette clé n'est utilisée par aucun appareil/)).toBeVisible();
 });
 
+test("the key can be sent with Enter once its twelfth word is recognized (its first 4 letters)", async ({ page, goto, browser, baseURL }) => {
+  test.setTimeout(60_000);
+  await goto("/signets", { waitUntil: "hydration" });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await page.getByRole("tab", { name: "Ajouter un appareil" }).click();
+  await page.getByRole("button", { name: "Afficher la clé" }).click();
+  const keyWords = page.getByRole("list", { name: "Les douze mots de la clé" }).locator("li > span:last-child");
+  await expect(keyWords).toHaveCount(12);
+  // The first 4 letters of each word, without accents.
+  const prefixes = (await keyWords.allInnerTexts()).map(word => word.normalize("NFD").replace(/\p{M}/gu, "").slice(0, 4));
+
+  const phone = await newDevice(browser, baseURL);
+  await openSync(phone);
+  await phone.getByRole("button", { name: "J'ai déjà une clé" }).click();
+  const field = phone.getByRole("textbox");
+  const hint = phone.locator("[data-key-ready-hint]");
+  const join = phone.getByRole("button", { name: "Rejoindre" });
+
+  // Before the twelfth word, Enter starts a new line (a separator).
+  await field.pressSequentially(prefixes.slice(0, 11).join(" "));
+  await field.press("Enter");
+  await expect(field).toHaveValue(`${prefixes.slice(0, 11).join(" ")}\n`);
+  // Three letters of the twelfth: not recognized yet.
+  await field.pressSequentially(prefixes[11]!.slice(0, 3));
+  await expect(hint).toHaveCSS("opacity", "0");
+  await expect(join).toBeDisabled();
+  // The fourth: the key drawn at the bottom right says Enter sends it.
+  await field.pressSequentially(prefixes[11]!.slice(3));
+  await expect(hint).toHaveCSS("opacity", "1");
+  await expect(join).toBeEnabled();
+  const [hintBox, fieldBox] = await Promise.all([hint.boundingBox(), field.boundingBox()]);
+  expect(hintBox!.x + hintBox!.width).toBeGreaterThan(fieldBox!.x + fieldBox!.width * 0.75);
+  expect(hintBox!.y + hintBox!.height).toBeGreaterThan(fieldBox!.y + fieldBox!.height * 0.75);
+
+  await field.press("Enter");
+  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+});
+
 test("a failed first synchronization is reported, and leaves the device as it was", async ({ page, goto, browser, baseURL }) => {
   await goto("/signets", { waitUntil: "hydration" });
   await openSync(page);
