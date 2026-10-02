@@ -156,16 +156,18 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           :key="feature.title"
         >
           <UCard class="h-full">
-            <div class="mb-3 flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <UIcon
-                :name="feature.icon"
-                class="size-5"
-              />
+            <div class="flex items-center gap-3">
+              <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <UIcon
+                  :name="feature.icon"
+                  class="size-5"
+                />
+              </div>
+              <h3 class="font-semibold text-balance">
+                {{ feature.title }}
+              </h3>
             </div>
-            <h3 class="font-semibold">
-              {{ feature.title }}
-            </h3>
-            <p class="mt-1 text-muted">
+            <p class="mt-3 text-muted">
               {{ feature.text }}
             </p>
           </UCard>
