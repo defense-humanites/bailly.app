@@ -101,8 +101,8 @@
       <TagButtonGroup
         v-if="toolbar"
         :entry="shown"
-        class="relative float-right"
-        :class="[link ? 'right-3 top-3' : '-right-3 -top-3']"
+        class="float-right"
+        :class="[link ? 'ms-2 me-3 mt-3' : 'relative -top-3 -right-3']"
       />
 
       <NuxtLink

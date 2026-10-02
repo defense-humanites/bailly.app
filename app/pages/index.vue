@@ -1,45 +1,39 @@
+<script setup lang="ts">
+  const searchFocus = useSearchFocus();
+</script>
+
 <template>
-  <div class="mx-auto items-center px-6 sm:px-12 lg:flex lg:min-h-[calc(100dvh-(var(--spacing)*14))] lg:max-w-screen-lg lg:px-24 lg:pb-3 xl:px-0">
-    <section class="my-6 sm:my-12 flex flex-col gap-2 lg:gap-4 xl:gap-6">
-      <NuxtLink to="/soutenir">
-        <UBadge
-          class="rounded-full bg-primary/10 hover:bg-primary/15 text-primary transition-colors"
-          size="lg"
-          variant="soft"
-        >❤️ Nous soutenir</UBadge>
-      </NuxtLink>
-      <h1 class="font-serif text-2xl/9 font-bold xl:text-[1.75rem]/10">
-        Consultez le dictionnaire<br>grec&ndash;français d'Anatole&nbsp;Bailly
+  <div class="mx-auto grid max-w-(--content-max-width) items-center gap-10 px-4 py-8 md:px-6 md:py-12 lg:min-h-[calc(100dvh-(var(--spacing)*14))] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16 lg:py-10">
+    <section class="flex flex-col items-start gap-5">
+      <h1 class="font-serif text-[1.75rem]/[1.25] font-bold text-balance md:text-4xl/[1.25]">
+        Le dictionnaire grec-français d'Anatole&nbsp;Bailly
       </h1>
-      <p class="font-serif text-base/7 xl:text-lg/8">
-        Dans l'édition Bailly 2020 Hugo&nbsp;Chávez (<a href="/à-propos">à&nbsp;propos</a>).
+      <p class="text-lg text-pretty text-muted">
+        Dans l'édition révisée <em>Bailly 2020 Hugo&nbsp;Chávez</em>, libre et gratuite, pensée pour
+        la lecture et la recherche.
+        <NuxtLink
+          to="/à-propos"
+          class="underline decoration-dotted underline-offset-4 hover:text-primary"
+        >D'où vient le texte&nbsp;?</NuxtLink>
       </p>
+      <div class="flex flex-wrap items-center gap-3">
+        <UButton
+          size="lg"
+          icon="i-lucide-search"
+          label="Chercher un mot"
+          @click="searchFocus.focus()"
+        />
+        <UButton
+          to="/soutenir"
+          size="lg"
+          color="neutral"
+          variant="ghost"
+          icon="i-lucide-heart"
+          label="Nous soutenir"
+        />
+      </div>
     </section>
 
-    <aside
-      class="flex-1 mx-6 pb-6 sm:pb-12 lg:pb-0"
-      data-nosnippet
-    >
-      <ClientOnly>
-        <template #fallback>
-          <UCard class="h-96">
-            <div class="grid gap-6">
-              <USkeleton class="h-3 w-full" />
-              <USkeleton class="h-3 w-11/12" />
-              <USkeleton class="h-3 w-full" />
-              <USkeleton class="h-3 w-11/12" />
-              <USkeleton class="h-3 w-full" />
-              <USkeleton class="h-3 w-11/12" />
-              <USkeleton class="h-3 w-full" />
-              <USkeleton class="h-3 w-11/12" />
-              <USkeleton class="h-3 w-full" />
-              <USkeleton class="h-3 w-6/12" />
-            </div>
-          </UCard>
-        </template>
-
-        <RandomEntryCard />
-      </ClientOnly>
-    </aside>
+    <RandomOpening data-nosnippet />
   </div>
 </template>
