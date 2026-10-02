@@ -14,11 +14,11 @@ test.describe("settings", () => {
   test("compact: all the settings at once on a desktop screen", async ({ page, goto }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await goto("/préférences", { waitUntil: "hydration" });
-    // The synchronization below (with the reset), partly shown.
-    for (const name of ["Général", "Recherche", "Lecture", "Signets"]) {
+    // The search below (with the reset), partly shown.
+    for (const name of ["Synchronisation", "Général", "Lecture", "Signets"]) {
       await expect(page.getByRole("region", { name, exact: true })).toBeInViewport({ ratio: 1 });
     }
-    await expect(page.getByRole("heading", { name: "Synchronisation" })).toBeInViewport();
+    await expect(page.getByRole("heading", { name: "Recherche" })).toBeInViewport();
   });
 
   test("two columns from lg, centered under the header; one below", async ({ page, goto }) => {
@@ -29,6 +29,7 @@ test.describe("settings", () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await goto("/préférences", { waitUntil: "hydration" });
     const nav = await extent("header > nav");
+    const sync = await extent("[aria-labelledby=settings-sync]");
     const general = await extent("[aria-labelledby=settings-general]");
     const reading = await extent("[aria-labelledby=settings-reading]");
     const search = await extent("[aria-labelledby=settings-search]");
@@ -37,7 +38,10 @@ test.describe("settings", () => {
     const overhang = await rootLength(page, "--search-overhang");
     expect(Math.abs(general.left - nav.left - overhang)).toBeLessThanOrEqual(1);
     expect(Math.abs(nav.right - reading.right - overhang)).toBeLessThanOrEqual(1);
-    expect(reading.top).toBe(general.top);
+    // The synchronization first, on the left.
+    expect(reading.top).toBe(sync.top);
+    expect(general.left).toBe(sync.left);
+    expect(general.top).toBeGreaterThan(sync.top);
     expect(search.left).toBe(general.left);
     // The bookmarks' settings under the reading ones (the columns balanced).
     expect(bookmarks.left).toBe(reading.left);

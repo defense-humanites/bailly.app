@@ -115,8 +115,8 @@
   Compact settings: a card per section, a row per setting (name and short
   help on the left, control on the right), so that they all show at once.
   One column (the reading width, centered) below `lg`; from `lg`, two
-  columns, aligned with the header (as the bookmarks page): General, Search
-  and Synchronization on the left, Reading (the tallest, with its preview)
+  columns, aligned with the header (as the bookmarks page): Synchronization,
+  General and Search on the left, Reading (the tallest, with its preview)
   and Bookmarks on the right.
 -->
 <template>
@@ -128,14 +128,25 @@
 
       <!--
         Two columns from `lg`, balanced (the tallest card, Reading, with
-        Bookmarks; General, Search and Synchronization with the reset); below, one column in
+        Bookmarks; Synchronization, General and Search with the reset); below, one column in
         the order of the cards (`contents`, `order`).
       -->
       <div class="contents lg:flex lg:flex-col lg:gap-6">
+        <!--
+          The synchronization of the bookmarks and of the preferences, type
+          by type (rather than a button by the title, as on the bookmarks
+          page: the same button on two pages for one key was puzzling); first,
+          in the Aegean blue of that button.
+        -->
+        <SyncCard
+          class="order-1"
+          :ui="cardUi"
+        />
+
         <UCard
           as="section"
           aria-labelledby="settings-general"
-          class="order-1"
+          class="order-2"
           :ui="cardUi"
         >
           <template #header>
@@ -176,7 +187,7 @@
         <UCard
           as="section"
           aria-labelledby="settings-search"
-          class="order-3"
+          class="order-4"
           :ui="cardUi"
         >
           <template #header>
@@ -218,16 +229,6 @@
           </SettingsRow>
         </UCard>
 
-        <!--
-          The synchronization of the bookmarks and of the preferences, type
-          by type (rather than a button by the title, as on the bookmarks
-          page: the same button on two pages for one key was puzzling).
-        -->
-        <SyncCard
-          class="order-5"
-          :ui="cardUi"
-        />
-
         <!-- A dangerous action: at the end, apart from the settings, confirmed. -->
         <UModal
           v-model:open="isResetConfirmationOpen"
@@ -264,7 +265,7 @@
         <UCard
           as="section"
           aria-labelledby="settings-reading"
-          class="order-2"
+          class="order-3"
           :ui="cardUi"
         >
           <template #header>
@@ -342,7 +343,7 @@
         <UCard
           as="section"
           aria-labelledby="settings-bookmarks"
-          class="order-4"
+          class="order-5"
           :ui="cardUi"
         >
           <template #header>

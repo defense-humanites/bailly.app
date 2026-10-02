@@ -14,6 +14,17 @@
     ui: Record<string, string>;
   }>();
 
+  /**
+   * A light Aegean blue (on the page's card background, so as opaque), as
+   * the button of the bookmarks page (`secondary`): told apart from the
+   * settings.
+   */
+  const ui = computed(() => ({
+    ...props.ui,
+    root: "bg-[color-mix(in_oklab,var(--ui-bg)_90%,var(--ui-color-secondary-500))] ring-(--ui-color-secondary-200) divide-secondary/20 dark:bg-[color-mix(in_oklab,var(--ui-bg)_88%,var(--ui-color-secondary-500))] dark:ring-(--ui-color-secondary-900)",
+    body: `${props.ui.body ?? ""} divide-secondary/20`,
+  }));
+
   const syncStore = useSyncStore();
   const { loaded, enabled, syncedBookmarks, syncedPreferences, status, error, errorNeedsAction, errorSection } = storeToRefs(syncStore);
   const toast = useToast();
@@ -117,7 +128,7 @@
   <UCard
     as="section"
     aria-labelledby="settings-sync"
-    :ui="props.ui"
+    :ui="ui"
   >
     <template #header>
       <h2
@@ -126,7 +137,7 @@
       >
         <UIcon
           name="i-lucide-cloud"
-          class="size-5 shrink-0 text-muted"
+          class="size-5 shrink-0 text-secondary"
         />
         Synchronisation
       </h2>
@@ -137,6 +148,7 @@
       description="Étiquettes, entrées et épingles."
     >
       <USwitch
+        color="secondary"
         :model-value="bookmarksOn"
         :loading="busy === 'bookmarks'"
         aria-label="Synchroniser les signets"
@@ -161,6 +173,7 @@
         </template>
       </template>
       <USwitch
+        color="secondary"
         :model-value="preferencesOn"
         :loading="busy === 'preferences'"
         aria-label="Synchroniser les préférences"
