@@ -409,6 +409,31 @@ test.describe("bookmarks page, table of contents", () => {
     await page.mouse.wheel(0, -100000);
     await expect(toc.getByRole("link", { name: /^Favoris/ })).toHaveAttribute("aria-current", "location");
   });
+
+  // Scrolling the page, the row follows the group being read; with reduced
+  // motion, it never moves by itself.
+  for (const reducedMotion of ["no-preference", "reduce"] as const) {
+    test(`the row follows the reading (${reducedMotion})`, async ({ page, goto }) => {
+      await page.emulateMedia({ reducedMotion });
+      await page.setViewportSize({ width: 1280, height: 600 });
+      await goto("/signets", { waitUntil: "hydration" });
+      await seedBookmarks(page, {
+        tags: Array.from({ length: 24 }, (_, i) => ({ name: `Étiquette numéro ${i + 1}`, color: "Sky", entries: [anax] })),
+      });
+      const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
+      await page.mouse.move(640, 400);
+      await page.mouse.wheel(0, 100000);
+      await expect(toc.locator("[aria-current=location]")).toHaveAccessibleName(/^Étiquette numéro [1-4],/);
+      const row = toc.locator("ul");
+      if (reducedMotion === "reduce") {
+        await page.waitForTimeout(500);
+        expect(await row.evaluate(element => element.scrollLeft)).toBe(0);
+      } else {
+        await expect(toc.locator("[aria-current]")).toBeInViewport({ ratio: 1 });
+        expect(await row.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+      }
+    });
+  }
 });
 
 test.describe("bookmarks page on a touch screen", () => {

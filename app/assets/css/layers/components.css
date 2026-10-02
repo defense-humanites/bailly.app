@@ -201,3 +201,19 @@
     }
   }
 }
+
+/*
+ * The faded edges of the bookmarks' table of contents (cf. `BookmarksToc`):
+ * registered lengths, so that they transition as its arrows fade.
+ */
+@property --toc-fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --toc-fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}

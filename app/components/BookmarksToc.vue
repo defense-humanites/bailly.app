@@ -118,16 +118,46 @@
   const canScrollStart = computed((): boolean => overflows.value && !arrivedState.left);
   const canScrollEnd = computed((): boolean => overflows.value && !arrivedState.right);
 
-  const reducedMotion = usePreferredReducedMotion();
-  const behavior = computed((): ScrollBehavior => (reducedMotion.value === "reduce" ? "auto" : "smooth"));
+  const reducedMotion = computed((): boolean => usePreferredReducedMotion().value === "reduce");
 
   /**
    * The width of a faded edge (and of an arrow), in px.
    */
   const EDGE = 40;
 
+  /**
+   * Scrolls the row to a position, eased (`ROW_SCROLL_DURATION`, in ms; the
+   * browsers' own smooth scrolling of an element may be cut short, or
+   * skipped, while the page scrolls), at once with reduced motion. A new
+   * position, or the user scrolling the row, takes over.
+   */
+  const ROW_SCROLL_DURATION = 300;
+  let rowAnimation = 0;
+  const stopRowScroll = (): void => {
+    cancelAnimationFrame(rowAnimation);
+  };
+  function scrollRowTo(left: number): void {
+    const element = row.value;
+    if (!element) return;
+    stopRowScroll();
+    const to = Math.min(Math.max(left, 0), element.scrollWidth - element.clientWidth);
+    if (reducedMotion.value) {
+      element.scrollLeft = to;
+      return;
+    }
+    const from = element.scrollLeft;
+    const start = performance.now();
+    const step = (now: number): void => {
+      const progress = Math.min((now - start) / ROW_SCROLL_DURATION, 1);
+      element.scrollLeft = from + (to - from) * (1 - (1 - progress) ** 3);
+      if (progress < 1) rowAnimation = requestAnimationFrame(step);
+    };
+    rowAnimation = requestAnimationFrame(step);
+  }
+  onBeforeUnmount(stopRowScroll);
+
   const scrollRowBy = (direction: 1 | -1): void => {
-    row.value?.scrollBy({ left: direction * row.value.clientWidth * 0.75, behavior: behavior.value });
+    if (row.value) scrollRowTo(row.value.scrollLeft + direction * row.value.clientWidth * 0.75);
   };
 
   /**
@@ -136,6 +166,7 @@
    */
   function onWheel(event: WheelEvent): void {
     const element = row.value;
+    stopRowScroll();
     if (!element || !overflows.value || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
     const max = element.scrollWidth - element.clientWidth;
     if ((event.deltaY < 0 && element.scrollLeft > 0) || (event.deltaY > 0 && element.scrollLeft < max - 1)) {
@@ -145,17 +176,19 @@
   }
 
   /**
-   * The group being read stays in sight in the row.
+   * The group being read stays in sight in the row (not with reduced motion:
+   * the row then never moves by itself).
    */
   watch(current, (key) => {
+    if (reducedMotion.value) return;
     const element = row.value;
     const link = key && element?.querySelector<HTMLElement>(`[data-group="${key}"]`);
     if (!element || !link) return;
     const margin = overflows.value ? EDGE : 0;
     const start = link.offsetLeft - margin;
     const end = link.offsetLeft + link.offsetWidth + margin - element.clientWidth;
-    if (element.scrollLeft > start) element.scrollTo({ left: start, behavior: behavior.value });
-    else if (element.scrollLeft < end) element.scrollTo({ left: end, behavior: behavior.value });
+    if (element.scrollLeft > start) scrollRowTo(start);
+    else if (element.scrollLeft < end) scrollRowTo(end);
   });
 </script>
 
@@ -170,7 +203,7 @@
     `--header-bottom`), on a single row of constant height (`--toc-height`,
     cf. `signets.vue`) that scrolls sideways: to the edges of the screen
     below `md`; from `md`, its edges fade where it overflows, with arrows
-    (fine pointer). Once stuck, the header's background and border, across
+    (fine pointer), both fading in and out. Once stuck, the header's background and border, across
     the whole window (a pseudo-element; the page clips it sideways).
   -->
   <nav
@@ -181,13 +214,14 @@
   >
     <ul
       ref="row"
-      class="relative flex gap-2 overflow-x-auto py-2 [scrollbar-width:none] max-md:-mx-4 max-md:px-4 md:-mx-1 md:px-1"
+      class="relative flex gap-2 overflow-x-auto py-2 transition-[--toc-fade-start,--toc-fade-end] duration-200 ease-out [scrollbar-width:none] max-md:-mx-4 max-md:px-4 md:-mx-1 md:px-1 md:[mask-image:linear-gradient(to_right,transparent,#000_var(--toc-fade-start),#000_calc(100%-var(--toc-fade-end)),transparent)]"
       :style="{
-        '--fade-start': canScrollStart ? `${EDGE}px` : '0px',
-        '--fade-end': canScrollEnd ? `${EDGE}px` : '0px',
+        '--toc-fade-start': canScrollStart ? `${EDGE}px` : '0px',
+        '--toc-fade-end': canScrollEnd ? `${EDGE}px` : '0px',
       }"
-      :class="'md:[mask-image:linear-gradient(to_right,transparent,#000_var(--fade-start),#000_calc(100%-var(--fade-end)),transparent)]'"
       @wheel="onWheel"
+      @pointerdown="stopRowScroll"
+      @touchstart.passive="stopRowScroll"
     >
       <li
         v-for="group in groups"
@@ -219,25 +253,25 @@
 
     <!-- Arrows: a pointer's affordance (the keyboard goes from link to link). -->
     <UButton
-      v-show="canScrollStart"
       icon="i-lucide-chevron-left"
       size="sm"
       color="neutral"
       variant="outline"
       tabindex="-1"
       aria-hidden="true"
-      class="absolute start-0 top-1/2 hidden -translate-y-1/2 bg-default pointer-fine:md:flex"
+      class="absolute start-0 top-1/2 hidden -translate-y-1/2 bg-default transition-[opacity,visibility] duration-200 ease-out pointer-fine:md:flex"
+      :class="canScrollStart ? 'visible opacity-100' : 'invisible opacity-0'"
       @click="scrollRowBy(-1)"
     />
     <UButton
-      v-show="canScrollEnd"
       icon="i-lucide-chevron-right"
       size="sm"
       color="neutral"
       variant="outline"
       tabindex="-1"
       aria-hidden="true"
-      class="absolute end-0 top-1/2 hidden -translate-y-1/2 bg-default pointer-fine:md:flex"
+      class="absolute end-0 top-1/2 hidden -translate-y-1/2 bg-default transition-[opacity,visibility] duration-200 ease-out pointer-fine:md:flex"
+      :class="canScrollEnd ? 'visible opacity-100' : 'invisible opacity-0'"
       @click="scrollRowBy(1)"
     />
   </nav>
