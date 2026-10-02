@@ -44,10 +44,13 @@ export type ApiLookupParams<K extends keyof QueryableFields> = Pick<
   | "limit"
   | "skipMorpheus"
 >;
-export type ApiRandomEntryParams<K extends keyof QueryableFields> = Pick<
-  ApiParams<K>,
-  "fields" | "lengthRange"
->;
+export type ApiRandomEntryParams<
+  K extends keyof QueryableFields,
+  S extends keyof QueryableFields = K
+> =
+  & Pick<ApiParams<K>, "fields" | "lengthRange">
+  & Partial<Pick<ApiParams<K>, "siblings">>
+  & { siblingsFields?: NonEmptyArray<keyof Pick<QueryableFields, S>> };
 
 export type ApiResponse = {
   data: {
@@ -67,12 +70,15 @@ export interface ApiEntryResponse<
 }
 
 export interface ApiRandomEntryResponse<
-  K extends keyof QueryableFields
+  K extends keyof QueryableFields,
+  S extends keyof QueryableFields = K
 > extends ApiResponse {
   data: {
     version: string;
     length: number;
     entry: PartialExcept<Entry<K>, K | "children">;
+    /** Only with `siblings=true`: those of `GET /entry/:uri` for the drawn entry. */
+    siblings?: Siblings<S>;
   };
 }
 
