@@ -26,7 +26,7 @@
   <div class="pointer-events-none sticky top-(--header-bottom) z-20 h-0 transition-[top] duration-300 ease-out motion-reduce:transition-none">
     <nav
       aria-label="Navigation de l'entrée"
-      class="pointer-events-auto flex h-10 items-center gap-2 border-b border-default bg-bar px-2 backdrop-blur-sm transition-[opacity,translate,visibility] duration-200 ease-out motion-reduce:transition-none"
+      class="pointer-events-auto flex h-10 items-center gap-2 border-b border-default bg-bar px-2 transition-[opacity,translate,visibility] duration-200 ease-out motion-reduce:transition-none"
       :class="shown ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-1 opacity-0'"
     >
       <UButton

@@ -235,7 +235,7 @@
     ref="nav"
     aria-label="Sommaire des signets"
     class="sticky top-(--header-bottom) z-10 col-span-full transition-[top] duration-300 ease-out before:pointer-events-none before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-screen before:-translate-x-1/2 before:border-b before:transition-colors before:duration-300 motion-reduce:transition-none md:transition-none"
-    :class="stuck ? 'before:border-default before:bg-bar before:backdrop-blur-sm' : 'before:border-transparent'"
+    :class="stuck ? 'before:border-default before:bg-bar' : 'before:border-transparent'"
   >
     <ul
       ref="row"

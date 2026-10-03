@@ -111,7 +111,7 @@ export default defineAppConfig({
             root: "bg-default ring ring-default",
           },
           bookmarkGroup: {
-            root: "border border-neutral-400/25 bg-neutral-400/15 backdrop-blur-[2px]",
+            root: "border border-neutral-400/25 bg-neutral-400/15",
           },
         },
       },

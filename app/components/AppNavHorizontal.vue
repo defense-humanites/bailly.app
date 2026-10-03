@@ -45,12 +45,12 @@
     bar): fixed tracks for the title and the menu, the search bar taking the
     space left up to `--search-width`, a little wider than the column under it
     (cf. `grid-cols-header` and `--search-overhang`).
-    The header is anchored (top and sides), on an almost opaque background:
+    The header is anchored (top and sides), on an opaque background:
     the content doesn't show around it. Its bottom border only appears once
     the content scrolls under it.
   -->
   <header
-    class="fixed inset-x-0 top-0 z-[99] overflow-hidden border-b [scrollbar-gutter:stable] bg-bar backdrop-blur-sm transition-[border-color] duration-300 ease-out motion-reduce:transition-none md:h-(--header-height) md:px-safe-6"
+    class="fixed inset-x-0 top-0 z-[99] overflow-hidden border-b [scrollbar-gutter:stable] bg-bar transition-[border-color] duration-300 ease-out motion-reduce:transition-none md:h-(--header-height) md:px-safe-6"
     :class="[scrolled && !extended ? 'border-default' : 'border-transparent']"
   >
     <nav

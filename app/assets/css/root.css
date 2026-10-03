@@ -32,12 +32,14 @@
   /* The page (the cards, panels and fields are on `--ui-bg`, lighter). */
   --app-page-bg: var(--ui-color-neutral-100);
   /*
-   * The sticky bars (header, compact bar of an entry, reader's bar): the
-   * page's background, nearly opaque, so that they blend with the page, only
-   * their border and the blur of what scrolls under them marking them (as in
-   * the dark theme).
+   * The sticky bars (header, compact bar of an entry, reader's bar, the
+   * bookmarks' table of contents): the page's background, opaque, so that
+   * they blend with the page, only their border marking them (as in the dark
+   * theme). Without the blur of what scrolls under them: in the pages'
+   * scroller (cf. `usePageScroller`), Safari (macOS) made the bookmarks'
+   * table of contents flicker with it.
    */
-  --app-bar-bg: color-mix(in srgb, var(--app-page-bg) 95%, transparent);
+  --app-bar-bg: var(--app-page-bg);
   /* The favorites (the star). */
   --app-favorite: var(--color-gold-400);
 }
