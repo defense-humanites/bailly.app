@@ -373,8 +373,8 @@
               <!-- Whole (contained, on the scan's paper): its first and last lines not cut. -->
               <img
                 src="/images/bailly-1935-rhinokeros.webp"
-                width="646"
-                height="484"
+                width="644"
+                height="483"
                 alt="L'entrée ῥινόκερως dans l'édition de 1935 (fac-similé)."
                 loading="lazy"
                 decoding="async"
