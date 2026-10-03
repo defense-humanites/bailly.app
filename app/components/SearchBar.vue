@@ -195,58 +195,16 @@
     clearTimeout(slowTimer);
   });
 
-  /**
-   * Focuses the input without scrolling the page: it is always in view, in
-   * the sticky header (cf. `onTouchEnd`).
-   */
-  const focusInput = (): void => {
-    (menu.value?.inputRef as HTMLInputElement | undefined)?.focus({ preventScroll: true });
-  };
-
   const clear = (): void => {
     query.value = "";
-    focusInput();
+    (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
   };
 
   // Another component may ask for the focus (e.g. the about page's "Search a
   // word" button).
-  watch(useSearchFocus().request, focusInput);
-
-  /**
-   * Whether the browser is Safari on iOS or iPadOS (or another browser there:
-   * all of them WebKit); iPadOS tells a Mac, with a touch screen.
-   * @remarks There, the results don't open when the input gets the focus: the
-   * page then moved down under the opening keyboard (the header out of
-   * view). They open as the user types, or with a second tap.
-   */
-  const iOS = import.meta.client
-    && (/iP(?:hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1));
-
-  /**
-   * Where a touch on the input started (a tap, unless it moved).
-   */
-  let touchStart: { x: number; y: number } | null = null;
-
-  const onTouchStart = (event: TouchEvent): void => {
-    const touch = event.touches[0];
-    touchStart = touch ? { x: touch.clientX, y: touch.clientY } : null;
-  };
-
-  /**
-   * On iOS, focusing an input of a sticky header scrolled the page back to
-   * the top (WebKit bringing it into view where it would be in the flow; the
-   * header is now fixed, cf. `AppNavHorizontal`): a tap on the input, not
-   * yet focused, focuses it here without scrolling (the keyboard still
-   * opens: it is the tap's doing).
-   */
-  const onTouchEnd = (event: TouchEvent): void => {
-    const input = menu.value?.inputRef as HTMLInputElement | undefined;
-    const touch = event.changedTouches[0];
-    if (!iOS || !input || event.target !== input || document.activeElement === input || !touchStart || !touch) return;
-    if (Math.hypot(touch.clientX - touchStart.x, touch.clientY - touchStart.y) > 10) return;
-    event.preventDefault();
-    focusInput();
-  };
+  watch(useSearchFocus().request, () => {
+    (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
+  });
 
   // The results' Greek may be transliterated (a preference).
   const greek = useGreek();
@@ -439,8 +397,6 @@
     class="group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
     @keydown.capture="onKeydown"
     @input.capture="onComposedInput"
-    @touchstart.capture.passive="onTouchStart"
-    @touchend.capture="onTouchEnd"
   >
     <UInputMenu
       ref="menu"
@@ -448,7 +404,7 @@
       class="w-full"
       :model-value="query"
       mode="autocomplete"
-      :open-on-focus="hasQuery && !iOS"
+      :open-on-focus="hasQuery"
       :open-on-click="hasQuery"
       value-key="text"
       :items="items"
