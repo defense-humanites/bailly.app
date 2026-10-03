@@ -28,14 +28,23 @@
    * On a page whose top is a cover (`headerCover` in its meta: the about
    * page's hero), the header's items are hidden (transparent) while the page
    * is at its top, the header keeping its height and background (which frame
-   * the cover); they show once the page scrolls, and meanwhile when hovered
-   * or focused (e.g. with the keyboard). Only from `md` (on one row) and
-   * with a fine pointer: the two rows' header, and a touch screen, which
-   * can't reveal it by hovering, always show them. Rendered so by the server
-   * (the page opens at its top; the conditions are media queries): no flash.
+   * the cover). They fade in as the page scrolls, over its first
+   * `COVER_REVEAL` pixels (the opacity follows the scroll, its transition
+   * smoothing a wheel's steps), and show meanwhile when hovered, focused
+   * (e.g. with the keyboard) or while one of their panels is open (the
+   * results, the history, the search options: `aria-expanded`). Only from
+   * `md` (on one row) and with a fine pointer: the two rows' header, and a
+   * touch screen, which can't reveal it by hovering, always show them.
+   * Rendered so by the server (the page opens at its top; the conditions are
+   * media queries): no flash.
    */
+  const COVER_REVEAL = 128;
   const route = useRoute();
-  const covered = computed((): boolean => route.meta.headerCover === true && !scrolled.value);
+  const coverOpacity = computed((): number | null => {
+    if (route.meta.headerCover !== true) return null;
+    const opacity = Math.min(1, Math.max(0, y.value) / COVER_REVEAL);
+    return opacity < 1 ? opacity : null;
+  });
 
   /**
    * A bar stuck under the header draws the border under both.
@@ -68,7 +77,12 @@
   >
     <nav
       class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 transition-opacity duration-300 ease-out max-md:px-safe-2 motion-reduce:transition-none md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:pb-0"
-      :class="covered && 'md:pointer-fine:pointer-events-none md:pointer-fine:opacity-0 md:pointer-fine:group-hover/header:pointer-events-auto md:pointer-fine:group-hover/header:opacity-100 md:pointer-fine:focus-within:pointer-events-auto md:pointer-fine:focus-within:opacity-100'"
+      :class="coverOpacity !== null && [
+        'md:pointer-fine:opacity-(--cover-opacity) md:pointer-fine:group-hover/header:opacity-100 md:pointer-fine:focus-within:opacity-100 md:pointer-fine:has-[[aria-expanded=true]]:opacity-100',
+        // Not clickable while invisible (but when hovered, or focused).
+        coverOpacity === 0 && 'md:pointer-fine:pointer-events-none md:pointer-fine:group-hover/header:pointer-events-auto md:pointer-fine:focus-within:pointer-events-auto md:pointer-fine:has-[[aria-expanded=true]]:pointer-events-auto',
+      ]"
+      :style="coverOpacity !== null ? { '--cover-opacity': coverOpacity } : undefined"
     >
       <!--
         The title is a menu link as well: same padding as the menu (without
