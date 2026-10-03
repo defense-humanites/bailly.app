@@ -73,8 +73,11 @@ export function validatePreferenceRecords(value: unknown, now: number = Date.now
  */
 export function boundPreferenceRecords(records: PreferenceRecord[]): PreferenceRecord[] {
   if (records.length <= MAX_PREFERENCE_RECORDS) return records;
-  const known = records.filter(record => isSyncablePreference(record.key));
-  const others = records.filter(record => !isSyncablePreference(record.key))
+  // (The flags of the known preferences too, cf. `isSyncedFlag`.)
+  const isKnown = (key: string): boolean => isSyncablePreference(key)
+    || (key.startsWith(SYNCED_FLAG_PREFIX) && isSyncablePreference(key.slice(SYNCED_FLAG_PREFIX.length)));
+  const known = records.filter(record => isKnown(record.key));
+  const others = records.filter(record => !isKnown(record.key))
     .sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : a.updatedAt < b.updatedAt ? 1 : 0))
     .slice(0, Math.max(0, MAX_PREFERENCE_RECORDS - known.length));
   return mergePreferenceRecords(known, others);

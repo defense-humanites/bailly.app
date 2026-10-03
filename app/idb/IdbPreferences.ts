@@ -72,8 +72,13 @@ export class IdbPreferences {
     const tx = db.transaction(IdbStore.Meta, "readwrite");
     const meta = tx.objectStore(IdbStore.Meta);
     const stamp = how.chosen ? await Idb.stamp(meta) : formatStamp({ time: 0, counter: 0, node: "0" });
-    const changed = [...syncedFlagRecords(list, stamp), ...(how.chosen ? preferenceRecords(how.added, stamp) : [])];
-    const stored = (await Idb.getMeta(meta, IdbMetaKey.Preferences)) ?? [];
+    const stored: PreferenceRecord[] = (await Idb.getMeta(meta, IdbMetaKey.Preferences)) ?? [];
+    // A choice stamps the flags that change only (all if none is kept): two
+    // choices made on two devices meanwhile merge flag by flag.
+    const flags = syncedFlagRecords(list, stamp).filter(flag => !how.chosen
+      || !stored.some(record => isSyncedFlag(record.key))
+      || !stored.some(record => record.key === flag.key && record.value === flag.value));
+    const changed = [...flags, ...(how.chosen ? preferenceRecords(how.added, stamp) : [])];
     await meta.put(mergePreferenceRecords(stored, changed), IdbMetaKey.Preferences);
     await tx.done;
   }

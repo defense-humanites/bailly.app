@@ -153,3 +153,19 @@ test("the list of the preferences synchronized: a flag per preference, the lates
   await IdbPreferences.forgetList();
   expect(syncedListOf(await IdbPreferences.getRecords())).toBeNull();
 });
+
+test("two choices of the list made meanwhile on two devices merge flag by flag", async () => {
+  await IdbPreferences.forgetList();
+  await IdbPreferences.recordList(["readingFont", "readingSize"], { chosen: true, added: {} });
+  const base = await IdbPreferences.getRecords();
+  // A device removes the size; another one, without having seen it, adds the
+  // input mode: only the flags that change are stamped.
+  await IdbPreferences.recordList(["readingFont"], { chosen: true, added: {} });
+  const laptop = (await IdbPreferences.getRecords()).filter(record => record.key.startsWith("synced:"));
+  await IdbPreferences.forgetList();
+  await IdbPreferences.merge(base);
+  await IdbPreferences.recordList(["readingFont", "readingSize", "inputMode"], { chosen: true, added: {} });
+  const phone = (await IdbPreferences.getRecords()).filter(record => record.key.startsWith("synced:"));
+  expect(syncedListOf(mergePreferenceRecords(laptop, phone))).toEqual(["readingFont", "inputMode"]);
+  await IdbPreferences.forgetList();
+});

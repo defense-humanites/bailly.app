@@ -65,7 +65,7 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByText("Synchroniser vos préférences")).toBeVisible();
   // Those offered, summed up; their boxes on request.
-  await expect(dialog.getByText("Seront synchronisées : le thème, le grec translittéré, la police, les formes fléchies et le tri des étiquettes.")).toBeVisible();
+  await expect(dialog.getByText("Avec une nouvelle clé, seront synchronisées : le thème, le grec translittéré, la police, les formes fléchies et le tri des étiquettes ; avec une clé déjà utilisée, celles de vos autres appareils.")).toBeVisible();
   await expect(dialog.getByRole("checkbox")).toHaveCount(0);
   await dialog.getByRole("button", { name: "Personnaliser" }).click();
   // In the order of the page, on two columns; offered checked, but the size

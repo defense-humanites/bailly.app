@@ -633,7 +633,8 @@
               Les mêmes que vos autres appareils, s'ils en synchronisent ; sinon : {{ chosenSummary }}.
             </template>
             <template v-else>
-              Seront synchronisées : {{ chosenSummary }}.
+              Avec une nouvelle clé, seront synchronisées : {{ chosenSummary }} ; avec une clé déjà utilisée,
+              celles de vos autres appareils.
             </template>
             Vous pourrez modifier ce choix ensuite, pour tous vos appareils. Les indications que vous masquez le
             seront aussi sur vos autres appareils.

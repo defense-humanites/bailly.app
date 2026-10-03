@@ -266,15 +266,23 @@ export const useSyncStore = defineStore("sync", () => {
    * Adopts the list of the preferences synchronized received (shared by the
    * devices of the key, cf. `syncedListOf`), if this device synchronizes
    * preferences and its list differs: the values of the preferences it gives
-   * are applied, those it adds merged at the next synchronization.
-   * @returns Whether preferences were added (to be merged).
+   * are applied, those it adds merged at the next synchronization. If the
+   * key's devices have none (e.g. preferences added to a key of bookmarks),
+   * this device's is recorded, older than any choice (two devices adding
+   * them at once, without having met, get both lists), to be sent.
+   * @returns Whether a synchronization is to follow (preferences added, or
+   * the list to be sent).
    */
   async function adoptSyncedList(): Promise<boolean> {
     if (!config) return false;
     const current = sectionsOf(config).preferences;
     if (!current.length) return false;
     const list = syncedListOf(await IdbPreferences.getRecords());
-    if (!list?.length || (list.length === current.length && list.every(key => current.includes(key)))) return false;
+    if (list === null) {
+      await IdbPreferences.recordList(current, { chosen: false });
+      return true;
+    }
+    if (!list.length || (list.length === current.length && list.every(key => current.includes(key)))) return false;
     config = { ...config, preferences: [...list] };
     await Idb.writeMeta(IdbMetaKey.Sync, config);
     syncedPreferences.value = list;
@@ -606,7 +614,7 @@ export const useSyncStore = defineStore("sync", () => {
    * server had emptied the locker (the key is valid, but only this device's
    * data are online now).
    */
-  async function activate(secret: Uint8Array<ArrayBuffer>, sections: SyncSections): Promise<IdbResult<{ emptied: boolean }>> {
+  async function activate(secret: Uint8Array<ArrayBuffer>, sections: SyncSections, { fresh = false }: { fresh?: boolean } = {}): Promise<IdbResult<{ emptied: boolean }>> {
     clearTimeout(timer);
     const previousStatus = status.value;
     status.value = "syncing";
@@ -617,10 +625,13 @@ export const useSyncStore = defineStore("sync", () => {
     // joined at the next synchronization (cf. `IdbSyncConfig.joining`).
     if (sections.preferences.length) {
       await stampUnstamped(sections.preferences);
-      // The list chosen, unless the other devices of the key have theirs (a
-      // list kept with another key forgotten).
+      // A list kept with another key, forgotten. A new key's list is this
+      // device's (no other device has one); joining a key, the list of its
+      // devices is adopted once merged, or, if they have none, this device's
+      // recorded then (cf. `adoptSyncedList`): not before, so that it cannot
+      // meet theirs.
       if (!config || !hasKey(secret)) await IdbPreferences.forgetList();
-      await IdbPreferences.recordList(sections.preferences, { chosen: false });
+      if (fresh) await IdbPreferences.recordList(sections.preferences, { chosen: true, added: {} });
     }
     const merged: SyncSection[] = [];
     const progress = { refilled: false, sections: [] as string[] };
@@ -700,7 +711,7 @@ export const useSyncStore = defineStore("sync", () => {
    * @param sections The types of data to synchronize.
    */
   async function enable(sections: SyncSections): Promise<IdbResult> {
-    const result = await activate(crypto.getRandomValues(new Uint8Array(16)), sections);
+    const result = await activate(crypto.getRandomValues(new Uint8Array(16)), sections, { fresh: true });
     return result.state === "success" ? { state: "success", data: undefined } : result;
   }
 
@@ -807,11 +818,11 @@ export const useSyncStore = defineStore("sync", () => {
       // The list, shared: chosen here (its additions with this device's
       // values), or, preferences added to the key, unless the other devices
       // have theirs.
+      // (Preferences added to the key: the list of its devices, or this
+      // device's, once merged, cf. `adoptSyncedList`.)
       if (current.preferences.length) {
         const values: Partial<Preferences> = Object.fromEntries(added.map(key => [key, preferences.preference(key).value]));
         await IdbPreferences.recordList(sections.preferences, { chosen: true, added: values });
-      } else {
-        await IdbPreferences.recordList(sections.preferences, { chosen: false });
       }
     }
     const value: IdbSyncConfig = { ...latest, bookmarks: sections.bookmarks, preferences: [...sections.preferences] };
