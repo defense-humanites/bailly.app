@@ -17,8 +17,11 @@ export function useDismissed(id: string): WritableComputedRef<boolean> {
       const others = dismissed.value.filter(item => item !== id);
       dismissed.value = value ? [...others, id] : others;
       if (value) {
+        // (Dismissed here whatever happens; not recorded if IndexedDB fails.)
         void IdbPreferences.recordDismissed([id]).then(() => {
           useSyncStore().noticeDismissed();
+        }).catch((e: unknown) => {
+          console.error(e);
         });
       }
     },
