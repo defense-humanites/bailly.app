@@ -1155,6 +1155,7 @@
           label="Annuler"
           color="neutral"
           variant="outline"
+          class="me-auto"
           @click="back"
         />
         <UButton
