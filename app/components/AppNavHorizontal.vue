@@ -76,7 +76,7 @@
     :class="[scrolled && !extended ? 'border-default' : 'border-transparent']"
   >
     <nav
-      class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 transition-opacity duration-300 ease-out max-md:px-safe-2 motion-reduce:transition-none md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:pb-0"
+      class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 transition-opacity duration-150 ease-out max-md:px-safe-2 motion-reduce:transition-none md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:pb-0"
       :class="coverOpacity !== null && [
         'md:pointer-fine:opacity-(--cover-opacity) md:pointer-fine:group-hover/header:opacity-100 md:pointer-fine:focus-within:opacity-100 md:pointer-fine:has-[[aria-expanded=true]]:opacity-100',
         // Not clickable while invisible (but when hovered, or focused).
