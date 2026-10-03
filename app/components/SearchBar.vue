@@ -245,31 +245,9 @@
 
   const inputElement = (): HTMLInputElement | undefined => menu.value?.inputRef as HTMLInputElement | undefined;
 
-  /**
-   * Where a touch on the input started (a tap, unless it moved).
-   */
-  let touchStart: { x: number; y: number } | null = null;
-
-  const onTouchStart = (event: TouchEvent): void => {
-    const touch = event.touches[0];
-    touchStart = touch && event.target === inputElement() ? { x: touch.clientX, y: touch.clientY } : null;
-  };
-
-  /**
-   * A tap on the input, not yet focused: the page is held before the focus
-   * (which follows the touch's end), and released if the focus didn't come.
-   */
-  const onTouchEnd = (event: TouchEvent): void => {
-    const input = inputElement();
-    const touch = event.changedTouches[0];
-    if (!iOS || !input || !touchStart || !touch || document.activeElement === input) return;
-    if (Math.hypot(touch.clientX - touchStart.x, touch.clientY - touchStart.y) > 10) return;
-    holdPage();
-    setTimeout(() => {
-      if (document.activeElement !== inputElement()) releasePage();
-    }, 500);
-  };
-
+  // Held as the input gets the focus, before the keyboard opens (not as it is
+  // touched: the page moving between the touch and the focus, iOS cancelled
+  // the focus).
   const onFocusIn = (event: FocusEvent): void => {
     if (event.target === inputElement()) holdPage();
   };
@@ -478,8 +456,6 @@
     class="group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
     @keydown.capture="onKeydown"
     @input.capture="onComposedInput"
-    @touchstart.capture.passive="onTouchStart"
-    @touchend.capture.passive="onTouchEnd"
     @focusin="onFocusIn"
     @focusout="onFocusOut"
   >
