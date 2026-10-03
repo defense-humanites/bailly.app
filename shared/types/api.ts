@@ -79,10 +79,14 @@ export type EntryParams<F extends EntryField, S extends EntryField = F> = {
   siblingsFields?: S[];
 };
 
-export type RandomEntryParams<F extends EntryField> = {
+export type RandomEntryParams<F extends EntryField, S extends EntryField = F> = {
   fields: F[];
   /** The range of the definition length (in characters). */
   lengthRange?: [number, number?];
+  /** Also return the previous and next entries. */
+  siblings?: boolean;
+  /** The fields of the previous and next entries (by default, `fields`). */
+  siblingsFields?: S[];
 };
 
 export type LookupParams<F extends EntryField> = {
@@ -113,9 +117,10 @@ export type ApiEntryData<F extends EntryField, S extends EntryField = F> = {
 /**
  * `GET /entry/random`.
  */
-export type ApiRandomEntryData<F extends EntryField> = {
+export type ApiRandomEntryData<F extends EntryField, S extends EntryField = F> = {
   length: number;
   entry: Entry<F>;
+  siblings?: Siblings<S>;
 };
 
 /**

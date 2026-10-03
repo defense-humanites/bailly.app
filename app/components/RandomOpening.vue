@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import type { ApiEntryData, ApiRandomEntryData, ApiResponse, Entry, RandomEntryParams, Siblings } from "#shared/types/api";
+  import type { ApiRandomEntryData, ApiResponse, Entry, RandomEntryParams, Siblings } from "#shared/types/api";
   import { toApiQuery } from "#shared/utils/api";
 
   type Shown = {
@@ -15,31 +15,24 @@
   const failed = ref(false);
 
   /**
-   * Opens the dictionary at random: a random entry, then the entry with its
-   * neighbors (`/entry/random` doesn't give them). Fetched once the page is
-   * mounted, so that each visit draws a new entry; the frame keeps its place
-   * meanwhile.
+   * Opens the dictionary at random: a random entry with its neighbors, in a
+   * single request. Fetched once the page is mounted, so that each visit
+   * draws a new entry; the frame keeps its place meanwhile.
    */
   async function draw(): Promise<void> {
     loading.value = true;
     failed.value = false;
     try {
-      const random = await $api<ApiResponse<ApiRandomEntryData<"uri">>>("entry/random", {
-        query: toApiQuery({ fields: ["uri"], lengthRange: [400, 700] } satisfies RandomEntryParams<"uri">),
+      const { data } = await $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>("entry/random", {
+        query: toApiQuery({
+          fields: ["word", "uri", "excerpt", "htmlDefinition"],
+          lengthRange: [400, 700],
+          siblings: true,
+          siblingsFields: ["word", "uri", "excerpt"],
+        } satisfies RandomEntryParams<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">),
       });
-      const { data } = await $api<ApiResponse<ApiEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>(
-        `entry/${encodeURIComponent(random.data.entry.uri)}`,
-        {
-          query: toApiQuery({
-            fields: ["word", "uri", "excerpt", "htmlDefinition"],
-            siblings: true,
-            siblingsFields: ["word", "uri", "excerpt"],
-          }),
-        },
-      );
-      const entry = data.entry as Shown["entry"];
       // A group of homonyms: its first entry.
-      shown.value = { entry: entry.children?.[0] ?? entry, siblings: data.siblings ?? {} };
+      shown.value = { entry: data.entry.children?.[0] ?? data.entry, siblings: data.siblings ?? {} };
     } catch {
       failed.value = true;
     } finally {

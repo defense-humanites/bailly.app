@@ -13,11 +13,13 @@ test.describe("home page", () => {
     await expect(previous).toBeVisible();
     await expect(next).toBeVisible();
 
-    // Another draw, without reloading the page.
+    // Another draw, without reloading the page: the entry and its neighbors
+    // in a single request.
     const requests: string[] = [];
-    page.on("request", request => request.url().includes("/entry/random") && requests.push(request.url()));
+    page.on("request", request => request.url().includes("/entry/") && requests.push(request.url()));
     await opening.getByRole("button", { name: "Ouvrir à une autre page" }).click();
     await expect.poll(() => requests.length).toBe(1);
+    expect(requests[0]).toContain("/entry/random");
     await expect(opening.getByRole("status")).toHaveText(/^Entrée ouverte : /);
 
     // A neighbor leads to its page.

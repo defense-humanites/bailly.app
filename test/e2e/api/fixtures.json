@@ -318,44 +318,6 @@
    }
   }
  },
- "/entry/apotrechô?fields=word,uri,excerpt,htmlDefinition&siblings=true&siblingsFields=word,uri,excerpt": {
-  "data": {
-   "$query": {
-    "fields": [
-     "word",
-     "uri",
-     "excerpt",
-     "htmlDefinition"
-    ],
-    "siblings": true,
-    "siblingsFields": [
-     "word",
-     "uri",
-     "excerpt"
-    ],
-    "q": "apotrechô"
-   },
-   "version": "2023-02-28",
-   "entry": {
-    "word": "ἀποτρέχω",
-    "uri": "apotrechô",
-    "excerpt": "ἀπο·τρέχω (f. ἀποθρέξομαι, ou ἀποδραμοῦμαι, ao. 2 ἀπέδραμον, pf. inus.) 1 s’éloigner en courant, Hdt. 4, 203 ; Xén. An. 5, 2, 6, etc. ; Plat. Theæt. …",
-    "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">ἀπο·τρέχω</span></span> (<span class=\"ital\">f.</span>\n<span class=\"grec\"><span data-linked-self>ἀποθρέξομαι</span>,</span> <span class=\"ital\">ou</span>\n<span class=\"grec\"><span data-linked-self>ἀποδραμοῦμαι</span>,</span> <span class=\"ital\">ao.\n2</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"apedramon\">ἀπέδραμον</span>,</span> <span class=\"ital\">pf. inus.</span>)\n<div class=\"pp\"><span class=\"ppa\">1</span> s’éloigner en courant,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">4, 203 ;</span>\n<span class=\"aut\">Xén.</span> <span class=\"oeuv\">An.</span>\n<span class=\"refch\">5, 2, 6,</span> <span class=\"ital\">etc. ;</span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Theæt.</span> <span class=\"refpa\">171</span><span class=\"refpb\">d</span>, <span class=\"ital\">etc. ;</span> <span class=\"ital\">d’où en gén.</span> s’éloigner (par mer <span class=\"ital\">ou</span> par terre) <span class=\"aut\">Pol.</span>\n<span class=\"refch\">3, 22, 7 ;</span> <span class=\"refch\">3, 24,\n11,</span> <span class=\"ital\">etc.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> courir fort,\n<span class=\"ital\">ou sel. d’autres,</span> lutter à la course,\n<span class=\"aut\">Ar.</span> <span class=\"oeuv\">Nub.</span>\n<span class=\"refch\">1005</span> ||</div>\n<div class=\"fleche\"><span class=\"flechea\">E</span> <span class=\"ital\">Fut.</span> <span class=\"grec\">-θρέξομαι,</span>\n<span class=\"aut\">Ar.</span> <span class=\"ital\">l. c. ou</span>\n<span class=\"grec\">-δραμοῦμαι,</span> <span class=\"aut\">Xén.</span>\n<span class=\"oeuv\">An.</span> <span class=\"refch\">7, 6, 5 ;</span>\n<span class=\"grec\">-θρέξω,</span> <span class=\"aut\">Plat.\ncom.</span> <span class=\"refch\">2-2, 695 Mein.</span></div>\n"
-   },
-   "siblings": {
-    "previous": {
-     "word": "ἀποτρέπω",
-     "uri": "apotrepô",
-     "excerpt": "ἀπο·τρέπω : 1 détourner, écarter : τινά, Il. 11, 758 ; 15, 276, qqn ; ἔγχεος ὁρμήν, Hés. Sc. 456, détourner l’essor d’une javeline ; fig. βλάϐην, ξυμ…"
-    },
-    "next": {
-     "word": "ἀπότρεψις",
-     "uri": "apotrepsis",
-     "excerpt": "ἀπότρεψις, εως, ion. ιος (ἡ) aversion, dégoût, Hpc. 425, 35. Étym. ἀποτρέπω. "
-    }
-   }
-  }
- },
  "/entry/chliainô?fields=word,uri,excerpt,htmlDefinition&siblings=true&siblingsFields=word,uri,excerpt": {
   "data": {
    "$query": {
@@ -702,21 +664,45 @@
    "siblings": {}
   }
  },
- "/entry/random?fields=uri&lengthRange=400,700": {
+ "/entry/random?fields=word,uri,excerpt,htmlDefinition&lengthRange=400,700&siblings=true&siblingsFields=word,uri,excerpt": {
   "data": {
    "$query": {
     "fields": [
-     "uri"
+     "word",
+     "uri",
+     "excerpt",
+     "htmlDefinition"
     ],
     "lengthRange": [
      400,
      700
+    ],
+    "siblings": true,
+    "siblingsFields": [
+     "word",
+     "uri",
+     "excerpt"
     ]
    },
    "version": "2023-02-28",
    "length": 410,
    "entry": {
-    "uri": "apotrechô"
+    "word": "ἀποτρέχω",
+    "uri": "apotrechô",
+    "excerpt": "ἀπο·τρέχω (f. ἀποθρέξομαι, ou ἀποδραμοῦμαι, ao. 2 ἀπέδραμον, pf. inus.) 1 s’éloigner en courant, Hdt. 4, 203 ; Xén. An. 5, 2, 6, etc. ; Plat. Theæt. …",
+    "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">ἀπο·τρέχω</span></span> (<span class=\"ital\">f.</span>\n<span class=\"grec\"><span data-linked-self>ἀποθρέξομαι</span>,</span> <span class=\"ital\">ou</span>\n<span class=\"grec\"><span data-linked-self>ἀποδραμοῦμαι</span>,</span> <span class=\"ital\">ao.\n2</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"apedramon\">ἀπέδραμον</span>,</span> <span class=\"ital\">pf. inus.</span>)\n<div class=\"pp\"><span class=\"ppa\">1</span> s’éloigner en courant,\n<span class=\"aut\">Hdt.</span> <span class=\"refch\">4, 203 ;</span>\n<span class=\"aut\">Xén.</span> <span class=\"oeuv\">An.</span>\n<span class=\"refch\">5, 2, 6,</span> <span class=\"ital\">etc. ;</span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Theæt.</span> <span class=\"refpa\">171</span><span class=\"refpb\">d</span>, <span class=\"ital\">etc. ;</span> <span class=\"ital\">d’où en gén.</span> s’éloigner (par mer <span class=\"ital\">ou</span> par terre) <span class=\"aut\">Pol.</span>\n<span class=\"refch\">3, 22, 7 ;</span> <span class=\"refch\">3, 24,\n11,</span> <span class=\"ital\">etc.</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> courir fort,\n<span class=\"ital\">ou sel. d’autres,</span> lutter à la course,\n<span class=\"aut\">Ar.</span> <span class=\"oeuv\">Nub.</span>\n<span class=\"refch\">1005</span> ||</div>\n<div class=\"fleche\"><span class=\"flechea\">E</span> <span class=\"ital\">Fut.</span> <span class=\"grec\">-θρέξομαι,</span>\n<span class=\"aut\">Ar.</span> <span class=\"ital\">l. c. ou</span>\n<span class=\"grec\">-δραμοῦμαι,</span> <span class=\"aut\">Xén.</span>\n<span class=\"oeuv\">An.</span> <span class=\"refch\">7, 6, 5 ;</span>\n<span class=\"grec\">-θρέξω,</span> <span class=\"aut\">Plat.\ncom.</span> <span class=\"refch\">2-2, 695 Mein.</span></div>\n"
+   },
+   "siblings": {
+    "previous": {
+     "word": "ἀποτρέπω",
+     "uri": "apotrepô",
+     "excerpt": "ἀπο·τρέπω : 1 détourner, écarter : τινά, Il. 11, 758 ; 15, 276, qqn ; ἔγχεος ὁρμήν, Hés. Sc. 456, détourner l’essor d’une javeline ; fig. βλάϐην, ξυμ…"
+    },
+    "next": {
+     "word": "ἀπότρεψις",
+     "uri": "apotrepsis",
+     "excerpt": "ἀπότρεψις, εως, ion. ιος (ἡ) aversion, dégoût, Hpc. 425, 35. Étym. ἀποτρέπω. "
+    }
    }
   }
  },
