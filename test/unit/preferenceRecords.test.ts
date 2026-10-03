@@ -6,6 +6,8 @@ import {
   MAX_PREFERENCE_RECORDS,
   mergePreferenceRecords,
   preferenceRecords,
+  syncedFlagRecords,
+  syncedListOf,
   validatePreferenceRecords,
   type PreferenceRecord,
 } from "../../app/idb/preferenceRecords";
@@ -125,4 +127,29 @@ test("IndexedDB: the changes are stamped, and the merges move the clock on", asy
   expect(await Idb.readMeta(IdbMetaKey.Clock)).toBe(later);
   const [next] = await IdbPreferences.record({ readingFont: "bodoni" });
   expect(next!.updatedAt > later).toBe(true);
+});
+
+test("the list of the preferences synchronized: a flag per preference, the latest choice of each", async () => {
+  expect(syncedListOf([])).toBeNull();
+  const older = formatStamp({ time: 0, counter: 0, node: "0" });
+  const later = formatStamp({ time: now, counter: 0, node: "b" });
+  // By default (enabling): any choice of another device wins.
+  const merged = mergePreferenceRecords(
+    syncedFlagRecords(["readingFont", "transliterateGreek"], older),
+    syncedFlagRecords(["readingFont", "inputMode"], later),
+  );
+  expect(syncedListOf(merged)).toEqual(["readingFont", "inputMode"]);
+
+  // Recorded here: by default, a list kept is not replaced; chosen, it is,
+  // with the values of the preferences added.
+  await IdbPreferences.forgetList();
+  await IdbPreferences.recordList(["readingFont"], { chosen: true, added: {} });
+  await IdbPreferences.recordList(["tagSort"], { chosen: false });
+  expect(syncedListOf(await IdbPreferences.getRecords())).toEqual(["readingFont"]);
+  await IdbPreferences.recordList(["readingFont", "readingSize"], { chosen: true, added: { readingSize: "large" } });
+  const records = await IdbPreferences.getRecords();
+  expect(syncedListOf(records)).toEqual(["readingFont", "readingSize"]);
+  expect(records.find(record => record.key === "readingSize")?.value).toBe("large");
+  await IdbPreferences.forgetList();
+  expect(syncedListOf(await IdbPreferences.getRecords())).toBeNull();
 });

@@ -1,6 +1,6 @@
 import { MAX_LOCKER_BLOB_LENGTH } from "#shared/utils/sync";
 import { canonical, compact, emptyState, TOMBSTONE_MAX_AGE, withoutTombstones, type BookmarksState, type LimitExcess } from "~/idb/merge";
-import { mergePreferenceRecords, type PreferenceRecord } from "~/idb/preferenceRecords";
+import { isSyncedFlag, mergePreferenceRecords, type PreferenceRecord } from "~/idb/preferenceRecords";
 import { exportState } from "~/idb/transfer";
 import type { SyncablePreference } from "~/utils/preferences";
 import { decryptText, encryptText, type SyncCredentials } from "./crypto";
@@ -270,19 +270,21 @@ export async function synchronize(
     }
 
     // The preferences: those this device synchronizes are merged, the others
-    // passed on.
+    // passed on; the list of those synchronized (cf. `isSyncedFlag`), shared,
+    // always merged.
     if (preferences) {
       try {
         const remote = readPreferencesSection(sections, now);
-        const synced = new Set<string>(preferences.keys);
+        const keys = new Set<string>(preferences.keys);
+        const synced = (key: string): boolean => keys.has(key) || isSyncedFlag(key);
         checkCancelled();
         const local = exists
-          ? await preferences.mergeRecords(remote.filter(record => synced.has(record.key)))
+          ? await preferences.mergeRecords(remote.filter(record => synced(record.key)))
           : await preferences.readRecords();
         checkCancelled();
         const merged = mergePreferenceRecords(
-          remote.filter(record => !synced.has(record.key)),
-          local.filter(record => synced.has(record.key)),
+          remote.filter(record => !synced(record.key)),
+          local.filter(record => synced(record.key)),
         );
         const changed = canonical(merged) !== canonical(remote);
         if (changed) sections.preferences = preferencesSection(merged);

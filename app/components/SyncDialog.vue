@@ -54,9 +54,9 @@
       upToDate: "Préférences à jour",
       synced: "Préférences synchronisées.",
       intro: "Retrouvez vos préférences sur tous vos appareils (ordinateur, téléphone…), sans créer de compte.",
-      joined: "Les préférences choisies seront les mêmes sur cet appareil et sur vos autres appareils : le réglage le plus récent l'emporte.",
+      joined: "Cet appareil synchronisera les mêmes préférences que vos autres appareils, chacune avec son réglage le plus récent.",
       add: "Synchroniser aussi vos préférences",
-      addDescription: "Avec la clé de vos signets : les préférences choisies seront les mêmes sur vos appareils.",
+      addDescription: "Avec la clé de vos signets : les mêmes préférences que vos autres appareils, s'ils en synchronisent, chacune avec son réglage le plus récent.",
       disabled: "Synchronisation des préférences désactivée sur cet appareil",
       stopDevice: "Vos préférences restent réglées sur cet appareil, et en ligne pour vos autres appareils.",
       stopDeviceKept: "Vos préférences restent réglées sur cet appareil, et en ligne pour vos autres appareils.",
@@ -627,7 +627,13 @@
             be chosen later.
           -->
           <p v-if="scope === 'preferences'">
-            Seront synchronisées : {{ chosenSummary }}. Vous pourrez modifier ce choix ensuite.
+            <template v-if="enabled">
+              Les mêmes que vos autres appareils, s'ils en synchronisent ; sinon : {{ chosenSummary }}.
+            </template>
+            <template v-else>
+              Seront synchronisées : {{ chosenSummary }}.
+            </template>
+            Vous pourrez modifier ce choix ensuite, pour tous vos appareils.
             <button
               type="button"
               class="font-medium text-highlighted underline decoration-dotted underline-offset-3 hover:text-secondary focus-visible:outline-2 focus-visible:outline-secondary"
@@ -1024,7 +1030,8 @@
             @update:model-value="(keys) => setPreferences(keys as SyncablePreference[])"
           />
           <p class="text-muted">
-            Les mêmes sur vos autres appareils, et marquées d'un nuage sur cette page.
+            Ce choix vaut pour tous vos appareils synchronisés. Les préférences synchronisées sont marquées d'un
+            nuage sur cette page.
           </p>
         </template>
 

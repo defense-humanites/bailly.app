@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { IdbBookmarks, Idb, IdbError, IdbMetaKey, IdbPreferences, type IdbResult, type IdbSyncConfig } from "~/idb";
 import type { BookmarksState, LimitExcess } from "~/idb/merge";
-import { applicableValue, type PreferenceRecord } from "~/idb/preferenceRecords";
+import { applicableValue, syncedListOf, type PreferenceRecord } from "~/idb/preferenceRecords";
 import { formatStamp } from "~/idb/clock";
 import { fromBase64url, toBase64url } from "~/sync/base64url";
 import { deriveCredentials, type SyncCredentials } from "~/sync/crypto";
@@ -237,6 +237,27 @@ export const useSyncStore = defineStore("sync", () => {
   }
 
   /**
+   * Adopts the list of the preferences synchronized received (shared by the
+   * devices of the key, cf. `syncedListOf`), if this device synchronizes
+   * preferences and its list differs: the values of the preferences it gives
+   * are applied, those it adds merged at the next synchronization.
+   * @returns Whether preferences were added (to be merged).
+   */
+  async function adoptSyncedList(): Promise<boolean> {
+    if (!config) return false;
+    const current = sectionsOf(config).preferences;
+    if (!current.length) return false;
+    const list = syncedListOf(await IdbPreferences.getRecords());
+    if (!list?.length || (list.length === current.length && list.every(key => current.includes(key)))) return false;
+    config = { ...config, preferences: [...list] };
+    await Idb.writeMeta(IdbMetaKey.Sync, config);
+    syncedPreferences.value = list;
+    settingsChanged();
+    await applyPreferences(list);
+    return list.some(key => !current.includes(key));
+  }
+
+  /**
    * Explains the limits a merge would exceed, and what to remove on this
    * device (cf. `describeLimitExcesses`).
    * @param retried Who retries: the next synchronization (by default), or the
@@ -254,6 +275,7 @@ export const useSyncStore = defineStore("sync", () => {
    */
   async function forget(): Promise<void> {
     await Idb.writeMeta(IdbMetaKey.Sync, undefined);
+    await IdbPreferences.forgetList();
     await setConfig(null);
     clearQuota();
     status.value = "idle";
@@ -405,6 +427,8 @@ export const useSyncStore = defineStore("sync", () => {
       await Idb.writeMeta(IdbMetaKey.Sync, config);
       lastSyncedAt.value = config.lastSyncedAt;
       settingsChanged();
+      // The list of the other devices, adopted (its additions merged next).
+      if (merged.includes("preferences") && await adoptSyncedList()) schedule(0);
       if (!failure) {
         status.value = "idle";
         return;
@@ -562,7 +586,13 @@ export const useSyncStore = defineStore("sync", () => {
     // joined, even if sending its own fails, or if another type could not be
     // merged: the key is kept, the sending retried, and a type not merged yet
     // joined at the next synchronization (cf. `IdbSyncConfig.joining`).
-    if (sections.preferences.length) await stampUnstamped(sections.preferences);
+    if (sections.preferences.length) {
+      await stampUnstamped(sections.preferences);
+      // The list chosen, unless the other devices of the key have theirs (a
+      // list kept with another key forgotten).
+      if (!config || !hasKey(secret)) await IdbPreferences.forgetList();
+      await IdbPreferences.recordList(sections.preferences, { chosen: false });
+    }
     const merged: SyncSection[] = [];
     const progress = { refilled: false, sections: [] as string[] };
     const failure = await attempt(await deriveCredentials(secret), sections, {
@@ -602,6 +632,8 @@ export const useSyncStore = defineStore("sync", () => {
     // A budget spent with a former key no longer concerns this one.
     clearQuota();
     settingsChanged();
+    // The list of the other devices, adopted (its additions merged next).
+    if (merged.includes("preferences") && await adoptSyncedList()) schedule(0);
     errorNeedsAction.value = needsAction(failure);
     errorSection.value = failure instanceof SyncPartialError ? failure.section : null;
     const received = merged.includes("bookmarks")
@@ -742,10 +774,23 @@ export const useSyncStore = defineStore("sync", () => {
 
     const added = sections.preferences.filter(key => !current.preferences.includes(key));
     if (added.length) await stampUnstamped(added);
+    if (sections.preferences.length) {
+      // The list, shared: chosen here (its additions with this device's
+      // values), or, preferences added to the key, unless the other devices
+      // have theirs.
+      if (current.preferences.length) {
+        const values: Partial<Preferences> = Object.fromEntries(added.map(key => [key, preferences.preference(key).value]));
+        await IdbPreferences.recordList(sections.preferences, { chosen: true, added: values });
+      } else {
+        await IdbPreferences.recordList(sections.preferences, { chosen: false });
+      }
+    }
     const value: IdbSyncConfig = { ...latest, bookmarks: sections.bookmarks, preferences: [...sections.preferences] };
     await Idb.writeMeta(IdbMetaKey.Sync, value);
     await setConfig(value);
     settingsChanged();
+    // Preferences removed from the list: the other devices told soon.
+    if (!added.length && current.preferences.length && sections.preferences.length) schedule(0);
 
     // Preferences added: synchronized now.
     if (added.length && !(await sync({ force: true }))) {

@@ -1,7 +1,7 @@
-import { maxStamp } from "./clock";
+import { formatStamp, maxStamp } from "./clock";
 import { Idb, IdbMetaKey, IdbStore } from "./Idb";
-import { mergePreferenceRecords, preferenceRecords, type PreferenceRecord } from "./preferenceRecords";
-import { isSyncablePreference, type Preferences } from "~/utils/preferences";
+import { isSyncedFlag, mergePreferenceRecords, preferenceRecords, syncedFlagRecords, type PreferenceRecord } from "./preferenceRecords";
+import { isSyncablePreference, type Preferences, type SyncablePreference } from "~/utils/preferences";
 
 /**
  * The stamps of the synchronizable preferences set on this device (cf.
@@ -50,6 +50,54 @@ export class IdbPreferences {
     }
     await tx.done;
     return changed;
+  }
+
+  /**
+   * Records the list of the preferences synchronized (cf. `syncedFlagRecords`):
+   * - chosen by the user (`chosen`): stamped now, as the values of the
+   *   preferences it adds (`added`), so that this device's win;
+   * - by default (enabling, joining): with a stamp older than any change, so
+   *   that the list of the other devices, if any, wins (a list already
+   *   recorded here is kept too).
+   */
+  static async recordList(list: readonly SyncablePreference[], how: { chosen: true; added: Partial<Preferences> } | { chosen: false }): Promise<void> {
+    const recording = IdbPreferences.#writeList(list, how);
+    IdbPreferences.#pending = recording.catch(() => undefined);
+    return recording;
+  }
+
+  static async #writeList(list: readonly SyncablePreference[], how: { chosen: true; added: Partial<Preferences> } | { chosen: false }): Promise<void> {
+    await IdbPreferences.#pending;
+    const db = await Idb.getIndexedDB();
+    const tx = db.transaction(IdbStore.Meta, "readwrite");
+    const meta = tx.objectStore(IdbStore.Meta);
+    const stamp = how.chosen ? await Idb.stamp(meta) : formatStamp({ time: 0, counter: 0, node: "0" });
+    const changed = [...syncedFlagRecords(list, stamp), ...(how.chosen ? preferenceRecords(how.added, stamp) : [])];
+    const stored = (await Idb.getMeta(meta, IdbMetaKey.Preferences)) ?? [];
+    await meta.put(mergePreferenceRecords(stored, changed), IdbMetaKey.Preferences);
+    await tx.done;
+  }
+
+  /**
+   * Forgets the list of the preferences synchronized (another key, or none:
+   * that of its devices, if any, will be adopted).
+   */
+  static async forgetList(): Promise<void> {
+    const forgetting = IdbPreferences.#forgetList();
+    IdbPreferences.#pending = forgetting.catch(() => undefined);
+    return forgetting;
+  }
+
+  static async #forgetList(): Promise<void> {
+    await IdbPreferences.#pending;
+    const db = await Idb.getIndexedDB();
+    const tx = db.transaction(IdbStore.Meta, "readwrite");
+    const meta = tx.objectStore(IdbStore.Meta);
+    const stored: PreferenceRecord[] = (await Idb.getMeta(meta, IdbMetaKey.Preferences)) ?? [];
+    if (stored.some(record => isSyncedFlag(record.key))) {
+      await meta.put(stored.filter(record => !isSyncedFlag(record.key)), IdbMetaKey.Preferences);
+    }
+    await tx.done;
   }
 
   /**

@@ -111,9 +111,8 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await expect(transliteration(phone)).toBeChecked();
   expect((await syncStore(phone)).preferences.sort()).toEqual(["inflectedForms", "readingFont", "tagSort", "transliterateGreek"]);
 
-  // The phone also synchronizes its input mode and the size of the text; the
-  // laptop does not: the preferences alone (the state and the actions are
-  // on the card).
+  // The phone also synchronizes the input mode and the size of the text: the
+  // preferences alone (the state and the actions are on the card).
   await phone.getByRole("button", { name: "Choisir" }).click();
   await expect(phone.getByRole("dialog").getByRole("heading", { name: "Préférences synchronisées" })).toBeVisible();
   await expect(phone.getByRole("dialog").getByRole("button", { name: "Synchroniser maintenant" })).toHaveCount(0);
@@ -128,14 +127,17 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await phone.locator("[data-slot=label]", { hasText: "Translittération" }).click();
   await expect(phone.getByRole("radio", { name: "Translittération" })).toBeChecked();
 
-  // A change on the phone reaches the laptop; its input mode does not.
+  // A change on the phone reaches the laptop; the list of the preferences
+  // synchronized too, shared: the laptop synchronizes the input mode and the
+  // size of the text as well, and gets the phone's.
   await inflectedForms(phone).click();
   await expect(inflectedForms(phone)).not.toBeChecked();
   await untilReloaded(page, async () => {
     await expect(inflectedForms(page)).not.toBeChecked({ timeout: 2_000 });
+    await expect(page.getByRole("radio", { name: "Translittération" })).toBeChecked({ timeout: 2_000 });
   });
-  await expect(page.getByRole("radio", { name: "Beta code" })).toBeChecked();
-  await expect(page.getByRole("radio", { name: "Très grande" })).not.toBeChecked();
+  await expect(page.getByRole("radio", { name: "Très grande" })).toBeChecked();
+  expect((await syncStore(page)).preferences.sort()).toEqual(["inflectedForms", "inputMode", "readingFont", "readingSize", "tagSort", "transliterateGreek"]);
 
   // A reset on the laptop reaches the phone, for the preferences synchronized.
   await page.getByRole("button", { name: "Rétablir les réglages par défaut" }).click();
@@ -191,11 +193,12 @@ test("the bookmarks and the preferences: one key, enabled and stopped type by ty
   await expect(bookmarksSwitch(page)).toBeChecked();
   await expect(preferencesSwitch(page)).not.toBeChecked();
   await expect(page.getByRole("status").filter({ hasText: "Synchronisé à l'instant" })).toBeVisible();
-  // The key exists: the preferences are added at once.
+  // The key exists: the preferences are added at once, those of its list
+  // (shared, cf. above: the font only).
   await preferencesSwitch(page).click();
   await expect(page.getByText("Synchronisation des préférences activée", { exact: true })).toBeVisible();
   await expect(preferencesSwitch(page)).toBeChecked();
-  expect((await syncStore(page)).preferences).toHaveLength(4);
+  await expect.poll(async () => (await syncStore(page)).preferences).toEqual(["readingFont"]);
   // Switching off asks first; cancelled, the window closes.
   await bookmarksSwitch(page).click();
   await expect(dialog.getByRole("button", { name: "Désactiver sur cet appareil" })).toBeVisible();

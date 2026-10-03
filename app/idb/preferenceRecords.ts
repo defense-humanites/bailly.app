@@ -2,7 +2,7 @@ import type { Stamp } from "./clock";
 import { isStamp, stampTime } from "./clock";
 import { mergeRecords } from "./merge";
 import { MAX_FUTURE_DRIFT } from "./transfer";
-import { isSyncablePreference, parsePreferences, type Preferences, type SyncablePreference } from "~/utils/preferences";
+import { isSyncablePreference, parsePreferences, SYNCABLE_PREFERENCES, type Preferences, type SyncablePreference } from "~/utils/preferences";
 
 /**
  * The synchronizable preferences, in a form that merges without conflicts
@@ -95,4 +95,32 @@ export function preferenceRecords(values: Partial<Preferences>, stamp: Stamp): P
   return (Object.entries(values) as [string, PreferenceValue | undefined][])
     .filter((entry): entry is [SyncablePreference, PreferenceValue] => isSyncablePreference(entry[0]) && entry[1] !== undefined)
     .map(([key, value]) => ({ key, value, updatedAt: stamp }));
+}
+
+/**
+ * The list of the preferences synchronized, shared by the devices of a key
+ * (choosing it on one device chooses it on all): a record per synchronizable
+ * preference, `synced:<key>`, whether it is synchronized, merged as the
+ * others (the latest choice of each wins). Merged by every device that
+ * synchronizes preferences, whichever they are.
+ */
+export const SYNCED_FLAG_PREFIX = "synced:";
+
+export const isSyncedFlag = (key: string): boolean => key.startsWith(SYNCED_FLAG_PREFIX);
+
+/**
+ * The records of a list of preferences synchronized, with a stamp.
+ */
+export function syncedFlagRecords(list: readonly SyncablePreference[], stamp: Stamp): PreferenceRecord[] {
+  return SYNCABLE_PREFERENCES.map(key => ({ key: `${SYNCED_FLAG_PREFIX}${key}`, value: list.includes(key), updatedAt: stamp }));
+}
+
+/**
+ * The list of the preferences synchronized that records give, if they give
+ * one (in the order of `SYNCABLE_PREFERENCES`).
+ */
+export function syncedListOf(records: readonly PreferenceRecord[]): SyncablePreference[] | null {
+  const flags = records.filter(record => isSyncedFlag(record.key));
+  if (!flags.length) return null;
+  return SYNCABLE_PREFERENCES.filter(key => flags.some(flag => flag.key === `${SYNCED_FLAG_PREFIX}${key}` && flag.value === true));
 }
