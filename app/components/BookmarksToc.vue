@@ -239,11 +239,7 @@
   >
     <ul
       ref="row"
-      class="relative flex gap-2 overflow-x-auto py-2 transition-[--toc-fade-start,--toc-fade-end] duration-200 ease-out [scrollbar-width:none] max-md:-mx-4 max-md:px-4 md:-mx-1 md:px-1 [mask-image:linear-gradient(to_right,transparent,#000_var(--toc-fade-start),#000_calc(100%-var(--toc-fade-end)),transparent)]"
-      :style="{
-        '--toc-fade-start': canScrollStart ? `${EDGE}px` : '0px',
-        '--toc-fade-end': canScrollEnd ? `${EDGE}px` : '0px',
-      }"
+      class="relative flex gap-2 overflow-x-auto py-2 [scrollbar-width:none] max-md:-mx-4 max-md:px-4 md:-mx-1 md:px-1"
       @wheel.passive="stopRowScroll"
       @pointerdown="stopRowScroll"
       @touchstart.passive="stopRowScroll"
@@ -286,6 +282,24 @@
         :style="{ translate: `${mark.left}px 0`, width: `${mark.width}px` }"
       />
     </ul>
+
+    <!--
+      The faded edges, over the row, as wide as it (to the edges of the screen
+      below `md`): the page's background fading out. (Not a mask on the row:
+      in the pages' scroller, Safari (macOS) made the row flicker with it.)
+    -->
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-y-0 start-0 bg-linear-to-r from-(--app-page-bg) to-transparent transition-opacity duration-200 ease-out max-md:-start-4 md:-start-1"
+      :class="canScrollStart ? 'opacity-100' : 'opacity-0'"
+      :style="{ width: `${EDGE}px` }"
+    />
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-y-0 end-0 bg-linear-to-l from-(--app-page-bg) to-transparent transition-opacity duration-200 ease-out max-md:-end-4 md:-end-1"
+      :class="canScrollEnd ? 'opacity-100' : 'opacity-0'"
+      :style="{ width: `${EDGE}px` }"
+    />
 
     <!-- Arrows: a pointer's affordance (the keyboard goes from link to link). -->
     <UButton
