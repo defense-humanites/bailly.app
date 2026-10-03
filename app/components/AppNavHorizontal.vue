@@ -54,7 +54,7 @@
     :class="[scrolled && !extended ? 'border-default' : 'border-transparent']"
   >
     <nav
-      class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 max-md:px-safe-4 md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:pb-0"
+      class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 max-md:px-safe-2 md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:pb-0"
     >
       <!--
         The title is a menu link as well: same padding and hover effect as the

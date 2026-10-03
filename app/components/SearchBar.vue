@@ -421,7 +421,7 @@
       spellcheck="false"
       enterkeyhint="search"
       :lang="transliterating ? 'grc-Latn' : 'grc'"
-      :content="{ align: 'start', collisionPadding: 12, reference: groupElement }"
+      :content="{ align: 'start', collisionPadding: 8, reference: groupElement }"
       :ui="{
         root: 'has-focus-visible:z-auto',
         base: 'shadow-xs text-base/6 focus-visible:outline-transparent',
