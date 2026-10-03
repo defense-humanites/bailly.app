@@ -11,6 +11,8 @@ const SCROLL_WAIT = 1500;
  * once if the page doesn't scroll (its target already in place).
  */
 export function afterScroll(callback: () => void): void {
+  // The pages' scroller (cf. `usePageScroller`).
+  const scroller = document.getElementById("page") ?? window;
   let scrolling = false;
   let done = false;
   const onScroll = (): void => {
@@ -19,13 +21,13 @@ export function afterScroll(callback: () => void): void {
   const run = (): void => {
     if (done) return;
     done = true;
-    window.removeEventListener("scroll", onScroll);
-    window.removeEventListener("scrollend", run);
+    scroller.removeEventListener("scroll", onScroll);
+    scroller.removeEventListener("scrollend", run);
     clearTimeout(timeout);
     callback();
   };
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("scrollend", run);
+  scroller.addEventListener("scroll", onScroll, { passive: true });
+  scroller.addEventListener("scrollend", run);
   const timeout = setTimeout(run, SCROLL_WAIT);
   setTimeout(() => {
     if (!scrolling) run();

@@ -126,3 +126,12 @@ export function tagNamesOf(page: Page, uri: string): Promise<string[]> {
     return store.tags.filter(tag => keys.has(tag.key)).map(tag => tag.name);
   }, uri);
 }
+
+/**
+ * The horizontal center of the pages' content: that of their scroller, less
+ * its scrollbar's room (cf. `PageScroller`).
+ */
+export const pageCenter = (page: Page): Promise<number> => page.evaluate(() => {
+  const scroller = document.getElementById("page")!;
+  return scroller.getBoundingClientRect().left + scroller.clientWidth / 2;
+});

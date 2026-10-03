@@ -65,7 +65,8 @@
    */
   const currentId = ref<string>();
   const bar = useTemplateRef<HTMLElement>("bar");
-  const { y } = useWindowScroll();
+  const scroller = usePageScroller();
+  const { y } = usePageScroll();
 
   const updateCurrent = (): void => {
     const elements = sections.value
@@ -73,7 +74,8 @@
       .filter((element): element is HTMLElement => element !== null);
     if (!elements.length) return;
 
-    const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    const box = scroller.value;
+    const atBottom = box ? box.clientHeight + box.scrollTop >= box.scrollHeight - 2 : false;
     const readingLine = window.innerHeight / 4;
     let current = elements[0]!;
     for (const element of elements) {
@@ -139,7 +141,7 @@
       v-if="sections.length > 1"
       ref="bar"
       aria-label="Accès rapide aux entrées"
-      class="sticky top-(--header-bottom) z-10 -mx-2 mb-6 flex gap-2 overflow-x-auto bg-bar px-2 py-2 backdrop-blur-sm transition-[top] duration-300 ease-out motion-reduce:transition-none"
+      class="sticky top-(--header-bottom) z-10 -mx-2 mb-6 flex gap-2 overflow-x-auto bg-bar px-2 py-2 transition-[top] duration-300 ease-out motion-reduce:transition-none"
     >
       <UButton
         v-for="{ id, entry } in sections"

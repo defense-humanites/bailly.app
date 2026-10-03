@@ -100,7 +100,7 @@
   const title = useTemplateRef<HTMLElement>("title");
   const compactBar = useTemplateRef<ComponentPublicInstance>("compactBar");
   const compactBarShown = ref(false);
-  const { y } = useWindowScroll();
+  const { y } = usePageScroll();
 
   const updateCompactBar = (): void => {
     const barTop = (compactBar.value?.$el as HTMLElement | undefined)?.getBoundingClientRect().top;

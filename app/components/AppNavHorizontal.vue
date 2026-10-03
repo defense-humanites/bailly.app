@@ -17,7 +17,7 @@
     props.items.map(item => ({ ...item, tooltip: { disabled: showLabels.value } })),
   );
 
-  const { y } = useWindowScroll();
+  const { y } = usePageScroll();
 
   /**
    * Whether the content scrolls under the header (its border then appears).
@@ -33,25 +33,24 @@
 <template>
   <!--
     Below `md`, two rows: the title and the menu, then the search bar. From
-    `md`, a single row. The header is fixed at the top, a block of its height
-    (`--header-bottom`) keeping its place in the flow: in a sticky header, the
-    search bar, focused on iOS, scrolled the page back to the top (WebKit
-    bringing it into view where it would be in the flow), even with
-    `focus({ preventScroll })` once it had a text. Below `md`, the title row
-    used to scroll away with the page and slide back when scrolling up (an
-    offset of the sticky header): to bring back if a fixed header allows it.
+    `md`, a single row. The header is fixed at the top, the pages scrolling
+    under it in their own box (cf. `usePageScroller`), as on the former
+    application: the window never scrolls. Below `md`, the title row used to
+    scroll away with the page and slide back when scrolling up: to bring
+    back if it can be done without scrolling the window. The header keeps the
+    room of the pages' scrollbar (`scrollbar-gutter`, hence `overflow-hidden`,
+    nothing overflowing it): both are as wide, on the same grid.
     The single row's content is at most `--header-max-width` wide, on a grid shared
     with the single-column layout (whose column thus lies under the search
     bar): fixed tracks for the title and the menu, the search bar taking the
     space left up to `--search-width`, a little wider than the column under it
     (cf. `grid-cols-header` and `--search-overhang`).
-    The header is anchored (top and sides), on an almost opaque background:
+    The header is anchored (top and sides), on an opaque background:
     the content doesn't show around it. Its bottom border only appears once
     the content scrolls under it.
   -->
-  <div class="h-(--header-bottom)" />
   <header
-    class="fixed inset-x-0 top-0 z-[99] border-b bg-bar backdrop-blur-sm transition-[border-color] duration-300 ease-out motion-reduce:transition-none md:h-(--header-height) md:px-safe-6"
+    class="fixed inset-x-0 top-0 z-[99] overflow-hidden border-b [scrollbar-gutter:stable] bg-bar transition-[border-color] duration-300 ease-out motion-reduce:transition-none md:h-(--header-height) md:px-safe-6"
     :class="[scrolled && !extended ? 'border-default' : 'border-transparent']"
   >
     <nav

@@ -62,6 +62,7 @@ test.describe("entry page", () => {
       await page.setViewportSize({ width, height: 700 });
       await goto("/logos", { waitUntil: "hydration" });
       await expect(bar).toBeHidden();
+      await page.mouse.move(200, 400);
       await page.mouse.wheel(0, 1500);
       await expect(bar).toBeVisible();
       await expect(bar).toContainText("λόγος");
@@ -78,6 +79,7 @@ test.describe("entry page", () => {
         document.querySelector("main article section [data-slot=root]")!,
       ].map(element => [Math.round(element.getBoundingClientRect().left), Math.round(element.getBoundingClientRect().right)]));
       expect(barX).toEqual(cardX);
+      await page.mouse.move(200, 400);
       await page.mouse.wheel(0, -3000);
       await expect(bar).toBeHidden();
     }

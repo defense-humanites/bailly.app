@@ -437,12 +437,12 @@ test.describe("bookmarks page, pinning and scrolling", () => {
     await expect(last).toHaveAttribute("data-card-highlight", "");
 
     await page.evaluate(() => {
-      window.scrollTo(0, 0);
+      document.getElementById("page")!.scrollTo(0, 0);
     });
     await pin.click();
     await expect(pin).toHaveAttribute("aria-pressed", "false");
     await page.waitForTimeout(500);
-    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    expect(await page.evaluate(() => document.getElementById("page")!.scrollTop)).toBe(0);
     await expect(last).not.toBeInViewport();
   });
 });
@@ -562,10 +562,10 @@ test.describe("bookmarks page, table of contents", () => {
     // A vertical wheel over the row scrolls the page, not the row.
     await toc.hover();
     await page.mouse.wheel(0, 300);
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+    await expect.poll(() => page.evaluate(() => document.getElementById("page")!.scrollTop)).toBeGreaterThan(0);
     expect(await toc.locator("ul").evaluate(element => element.scrollLeft)).toBe(0);
     await page.evaluate(() => {
-      window.scrollTo(0, 0);
+      document.getElementById("page")!.scrollTo(0, 0);
     });
 
     const target = toc.getByRole("link", { name: /^Étiquette numéro 12,/ });

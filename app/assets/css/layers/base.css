@@ -16,6 +16,20 @@
    * foreign to a dictionary, was removed; a paper grain was tried and set
    * aside for now (cf. the project's decisions).
    */
+  /*
+   * The window doesn't scroll: the pages scroll in the layout's `main` (cf.
+   * `usePageScroller`).
+   */
+  html {
+    overflow: hidden;
+  }
+
+  @media print {
+    html {
+      overflow: visible;
+    }
+  }
+
   body {
     background-color: var(--app-page-bg);
     /* Cf. `--app-min-width` (root.css). */

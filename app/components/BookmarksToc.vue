@@ -50,7 +50,9 @@
   function measure(): void {
     if (!nav.value) return;
     const box = nav.value.getBoundingClientRect();
-    stuck.value = window.scrollY > 0 && box.top <= Number.parseFloat(getComputedStyle(nav.value).top) + 0.5;
+    const scrollerTop = scroller.value?.getBoundingClientRect().top ?? 0;
+    stuck.value = (scroller.value?.scrollTop ?? 0) > 0
+      && box.top <= scrollerTop + Number.parseFloat(getComputedStyle(nav.value).top) + 0.5;
     if (followed) {
       current.value = followed;
       return;
@@ -64,7 +66,8 @@
     current.value = read?.key;
   }
 
-  const { y } = useWindowScroll();
+  const scroller = usePageScroller();
+  const { y } = usePageScroll();
   const { height } = useWindowSize();
   const scheduled = useRafFn(() => {
     measure();
@@ -225,22 +228,20 @@
     below `md`), by a horizontal swipe or wheel only (a vertical one scrolls
     the page, even over the row); its edges fade where it overflows, with
     arrows for a fine pointer (a touch screen swipes), both fading in and
-    out. Once stuck, the header's background and border, across the whole
-    window (a pseudo-element; the page clips it sideways).
+    out. Once stuck, the header's background and border, across the pages'
+    scroller (a pseudo-element, `100cqw` wide: as wide as it, cf.
+    `PageScroller`; no ancestor clips it, which made it flicker in Safari,
+    in the scroller).
   -->
   <nav
     ref="nav"
     aria-label="Sommaire des signets"
-    class="sticky top-(--header-bottom) z-10 col-span-full transition-[top] duration-300 ease-out before:pointer-events-none before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-screen before:-translate-x-1/2 before:border-b before:transition-colors before:duration-300 motion-reduce:transition-none md:transition-none"
-    :class="stuck ? 'before:border-default before:bg-bar before:backdrop-blur-sm' : 'before:border-transparent'"
+    class="sticky top-(--header-bottom) z-10 col-span-full before:pointer-events-none before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-[100cqw] before:-translate-x-1/2 before:border-b before:transition-colors before:duration-300 motion-reduce:before:transition-none"
+    :class="stuck ? 'before:border-default before:bg-bar' : 'before:border-transparent'"
   >
     <ul
       ref="row"
-      class="relative flex gap-2 overflow-x-auto py-2 transition-[--toc-fade-start,--toc-fade-end] duration-200 ease-out [scrollbar-width:none] max-md:-mx-4 max-md:px-4 md:-mx-1 md:px-1 [mask-image:linear-gradient(to_right,transparent,#000_var(--toc-fade-start),#000_calc(100%-var(--toc-fade-end)),transparent)]"
-      :style="{
-        '--toc-fade-start': canScrollStart ? `${EDGE}px` : '0px',
-        '--toc-fade-end': canScrollEnd ? `${EDGE}px` : '0px',
-      }"
+      class="relative flex gap-2 overflow-x-auto py-2 [scrollbar-width:none] max-md:-mx-4 max-md:px-4 md:-mx-1 md:px-1"
       @wheel.passive="stopRowScroll"
       @pointerdown="stopRowScroll"
       @touchstart.passive="stopRowScroll"
@@ -283,6 +284,24 @@
         :style="{ translate: `${mark.left}px 0`, width: `${mark.width}px` }"
       />
     </ul>
+
+    <!--
+      The faded edges, over the row, as wide as it (to the edges of the screen
+      below `md`): the page's background fading out. (Not a mask on the row:
+      in the pages' scroller, Safari (macOS) made the row flicker with it.)
+    -->
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-y-0 start-0 bg-linear-to-r from-(--app-page-bg) to-transparent transition-opacity duration-200 ease-out max-md:-start-4 md:-start-1"
+      :class="canScrollStart ? 'opacity-100' : 'opacity-0'"
+      :style="{ width: `${EDGE}px` }"
+    />
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-y-0 end-0 bg-linear-to-l from-(--app-page-bg) to-transparent transition-opacity duration-200 ease-out max-md:-end-4 md:-end-1"
+      :class="canScrollEnd ? 'opacity-100' : 'opacity-0'"
+      :style="{ width: `${EDGE}px` }"
+    />
 
     <!-- Arrows: a pointer's affordance (the keyboard goes from link to link). -->
     <UButton

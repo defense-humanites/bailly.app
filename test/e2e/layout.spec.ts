@@ -1,6 +1,6 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
 import type { Page } from "@playwright/test";
-import { resultsExtent, rootLength, searchInput, searchResults, xExtent } from "./helpers";
+import { pageCenter, resultsExtent, rootLength, searchInput, searchResults, xExtent } from "./helpers";
 
 /**
  * The header's inner box (inside its border and
@@ -51,11 +51,11 @@ for (const width of [320, 390, 768, 900, 1000, 1024, 1279, 1280, 1440, 1920]) {
     test("entry column: centered, under the search bar, which overhangs it evenly", async ({ page, goto }) => {
       await goto("/logos", { waitUntil: "hydration" });
       const bar = await xExtent(page, "header .group\\/search");
-      const column = await xExtent(page, "main > div > div");
+      const column = await xExtent(page, "main > div > div > div");
       // At most the reading width (37rem).
       expect(column[1] - column[0]).toBeLessThanOrEqual(592.5);
       if (width < 1024) {
-        expect(Math.abs((column[0] + column[1]) / 2 - width / 2)).toBeLessThan(1);
+        expect(Math.abs((column[0] + column[1]) / 2 - await pageCenter(page))).toBeLessThan(1);
       }
       // From md, the bar is centered above the column, overhanging it on
       // both sides once there is room for it (by 3rem at most).
@@ -68,6 +68,25 @@ for (const width of [320, 390, 768, 900, 1000, 1024, 1279, 1280, 1440, 1920]) {
   });
 }
 
+test("the pages scroll under the header, not the window; back, at the same place", async ({ page, goto }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await goto("/logos", { waitUntil: "hydration" });
+  const scroller = page.locator("#page");
+  await scroller.evaluate((element) => {
+    element.scrollTo(0, 800);
+  });
+  await page.evaluate(async () => {
+    const app = (window as unknown as { useNuxtApp: () => { $router: { push: (path: string) => Promise<unknown> } } }).useNuxtApp();
+    await app.$router.push("/logades");
+  });
+  await expect(page).toHaveURL(/\/logades$/);
+  await expect.poll(() => scroller.evaluate(element => element.scrollTop)).toBe(0);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/logos$/);
+  await expect.poll(() => scroller.evaluate(element => element.scrollTop)).toBe(800);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+});
+
 test("the header is anchored, its border shown once the page is scrolled", async ({ page, goto }) => {
   await page.setViewportSize({ width: 1280, height: 600 });
   await goto("/logos", { waitUntil: "hydration" });
@@ -79,6 +98,8 @@ test("the header is anchored, its border shown once the page is scrolled", async
   expect(atTop).toMatchObject({ top: 0, left: 0, right: 1280 });
   expect(atTop.border).toBe("rgba(0, 0, 0, 0)");
 
+  // Over the pages' scroller (the header doesn't scroll them).
+  await page.mouse.move(640, 400);
   await page.mouse.wheel(0, 400);
   await expect.poll(async () => (await state()).border).not.toBe("rgba(0, 0, 0, 0)");
   expect(await state()).toMatchObject({ top: 0, left: 0, right: 1280 });
@@ -87,6 +108,9 @@ test("the header is anchored, its border shown once the page is scrolled", async
 test("from md, the search bar widens up to the reading width and its overhangs, and never narrows", async ({ page, goto }) => {
   await page.setViewportSize({ width: 768, height: 800 });
   await goto("/logos", { waitUntil: "hydration" });
+  // Overlay scrollbars (phones, macOS), not this browser's classic ones: the
+  // breakpoints, of the window's width, then fall where the header's does.
+  await page.addStyleTag({ content: "#page, header { scrollbar-width: none; }" });
   const widest = await rootLength(page, "--reading-width") + 2 * await rootLength(page, "--search-overhang");
   let previous = 0;
   for (let width = 768; width <= 1920; width += 16) {
@@ -133,7 +157,12 @@ test("the audience measurement is loaded on the production host only", async ({ 
 test("the application is at least 20rem wide", async ({ page, goto }) => {
   await page.setViewportSize({ width: 300, height: 700 });
   await goto("/logos", { waitUntil: "hydration" });
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeGreaterThanOrEqual(320);
+  // The pages' scroller scrolls sideways (cf. `PageScroller`), its content
+  // and its scrollbar's room 20rem wide.
+  expect(await page.evaluate(() => {
+    const scroller = document.getElementById("page")!;
+    return scroller.scrollWidth + scroller.offsetWidth - scroller.clientWidth;
+  })).toBeGreaterThanOrEqual(320);
 });
 
 test("the results list stays as wide as the bar on mobile", async ({ page, goto }) => {
@@ -159,10 +188,10 @@ test.describe("safe areas", () => {
     expect(h.scroll).toBe(0);
     expect(h.title.left).toBeGreaterThanOrEqual(47 + 24);
     expect(h.lastMenuLink.right).toBeLessThanOrEqual(844 - 47 - 24);
-    const column = await xExtent(page, "main > div > div");
+    const column = await xExtent(page, "main > div > div > div");
     expect(column[0]).toBeGreaterThanOrEqual(47 + 24);
-    expect(Math.abs((column[0] + column[1]) / 2 - 844 / 2)).toBeLessThan(1);
-    const paddingBottom = await page.locator("main").evaluate(element => getComputedStyle(element).paddingBottom);
+    expect(Math.abs((column[0] + column[1]) / 2 - await pageCenter(page))).toBeLessThan(1);
+    const paddingBottom = await page.locator("main > div").first().evaluate(element => getComputedStyle(element).paddingBottom);
     expect(paddingBottom).toBe(`${24 + 21}px`);
   });
 });
