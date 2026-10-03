@@ -424,7 +424,7 @@
       :content="{ align: 'start', collisionPadding: 8, reference: groupElement }"
       :ui="{
         root: 'has-focus-visible:z-auto',
-        base: 'shadow-xs text-base/6 focus-visible:outline-transparent wide:py-2.5 wide:text-lg/6',
+        base: 'shadow-xs text-base/6 focus-visible:outline-transparent',
         content: contentClass,
         // The homonyms' indent comes from their label (`data-nested`), not from
         // an item class: the input menu reuses its items by position without

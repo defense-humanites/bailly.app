@@ -57,38 +57,40 @@
       class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 max-md:px-safe-2 md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:pb-0"
     >
       <!--
-        The title is a menu link as well: same padding and hover effect as the
-        menu, so that it lines up with the search bar as the menu does, and as
-        high as the menu links whatever its font size (`py-1.5`, `md:py-0.5`).
+        The title is a menu link as well: same padding as the menu (without
+        its hover background), so that it lines up with the search bar as the
+        menu does, and as high as the menu links whatever its font size
+        (`py-1.5`, `md:py-0.5`). The logo keeps its size at every width
+        (`max-w-none`, its label not clipped): the title's track, a little
+        narrower from `lg`, would shrink it.
         From `md`, the menus' items lose their vertical padding (`py-2`), which
         would make the row higher than the header and push it down.
       -->
       <UNavigationMenu
         aria-label="Accueil"
         :items="[{ label: 'Bailly.app', to: '/', active: false }]"
-        :ui="{ item: 'md:py-0', link: 'cursor-pointer py-1.5 md:py-0.5 hover:before:bg-(--app-page-hover)/50' }"
+        :ui="{ item: 'md:py-0', link: 'cursor-pointer py-1.5 md:py-0.5 hover:before:bg-transparent', linkLabel: 'overflow-visible' }"
       >
         <template #item-label>
           <img
             src="../assets/images/bailly-app-light.svg"
             alt="Bailly.app"
-            class="h-7 w-auto wide:h-8 dark:hidden"
+            class="h-7 w-auto max-w-none dark:hidden"
           >
           <img
             src="../assets/images/bailly-app-dark.svg"
             alt="Bailly.app"
-            class="h-7 w-auto hidden wide:h-8 dark:block"
+            class="h-7 w-auto max-w-none hidden dark:block"
           >
         </template>
       </UNavigationMenu>
       <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:max-w-(--search-width) md:justify-self-center lg:justify-self-start" />
       <UNavigationMenu
-        class="md:col-start-3 md:row-start-1 md:justify-self-end"
+        class="header-menu md:col-start-3 md:row-start-1 md:justify-self-end"
         :items="menuItems"
         :ui="{
           item: 'md:py-0',
-          link: 'max-md:p-2.5 wide:text-base hover:before:bg-(--app-page-hover)/50',
-          linkLeadingIcon: 'wide:size-6',
+          link: 'max-md:p-2.5 hover:before:bg-(--app-page-hover)/50 aria-[current=page]:before:bg-transparent',
           linkLabel: 'max-xl:sr-only',
         }"
       />

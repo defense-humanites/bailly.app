@@ -60,12 +60,6 @@
 
   --color-vernis: #1a1613;
 
-  /*
-   * Where the header widens and its items grow (cf. `--header-extra`): the
-   * width of the header at its new maximum, with its side padding.
-   */
-  --breakpoint-wide: 84rem;
-
   --font-sans: Inter, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", IFAOGrec;
   --font-serif: "Bailly Book", "IFAOGrec", ui-serif, Georgia, Cambria,

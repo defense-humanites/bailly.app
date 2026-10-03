@@ -125,14 +125,7 @@
     var(--header-title-width) + var(--reading-width) + var(--header-menu-width-labels)
     + 2 * var(--header-gap-wide)
   );
-  /*
-   * From `wide` (84rem), where the room allows it, the header widens (its
-   * title and menu tracks, by `--header-extra` each: the search bar and the
-   * column under it keep their place) and its items grow (cf.
-   * `AppNavHorizontal`, `SearchBar`). The pages keep their width.
-   */
-  --header-extra: 0rem;
-  --header-max-width: calc(var(--content-max-width) + 2 * var(--search-overhang) + 2 * var(--header-extra));
+  --header-max-width: calc(var(--content-max-width) + 2 * var(--search-overhang));
   /*
    * Below `lg`, the bar is capped at the width it has when `lg` starts: the
    * room left by the header's tracks and gaps, which widen there (60px more
@@ -158,12 +151,6 @@
 
   @variant xl {
     --header-menu-width: var(--header-menu-width-labels);
-  }
-
-  @variant wide {
-    --header-extra: 3rem;
-    --header-title-track: calc(var(--header-title-width) + var(--header-extra));
-    --header-menu-width: calc(var(--header-menu-width-labels) + var(--header-extra));
   }
 
   /*

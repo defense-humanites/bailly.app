@@ -6,6 +6,27 @@
    */
 
   /*
+   * The header menu's current page (cf. `AppNavHorizontal`): a trait in the
+   * primary color at the bottom edge of its row, as an open tab (the language
+   * of the bookmarks' table of contents, which marks so the group being
+   * read). The link is centered in the row: 3rem high below `md` (the title
+   * and the menu), `--header-height` from `md`.
+   */
+  .header-menu a[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0.5rem;
+    bottom: calc((100% - 3rem) / 2);
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background-color: var(--ui-primary);
+
+    @variant md {
+      bottom: calc((100% - var(--header-height)) / 2);
+    }
+  }
+
+  /*
    * The solid buttons' relief (cf. app.config.ts): a slight light at the top,
    * a thin darker edge, a short shadow, and the label slightly engraved (a
    * shade under it, a light one in the dark theme, where the label is dark).
