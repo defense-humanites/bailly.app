@@ -58,14 +58,14 @@
   const isOpen = ref(false);
   const requested = ref(false);
   const dialogScope = ref<SyncScope>("preferences");
-  const startView = ref<"status" | "stop" | "key">();
+  const startView = ref<"status" | "stop" | "key" | "preferences">();
   const linkSecret = ref<Uint8Array<ArrayBuffer> | null>(null);
 
   watch(isOpen, (value) => {
     if (value) requested.value = true;
   });
 
-  const openDialog = (scope: SyncScope, view?: "status" | "stop" | "key"): void => {
+  const openDialog = (scope: SyncScope, view?: "status" | "stop" | "key" | "preferences"): void => {
     // The key of a link only counts when the link is opened.
     linkSecret.value = null;
     dialogScope.value = scope;
@@ -163,7 +163,7 @@
             type="button"
             class="font-medium text-default underline decoration-dotted underline-offset-3 hover:text-highlighted focus-visible:outline-2 focus-visible:outline-inverted"
             aria-haspopup="dialog"
-            @click="openDialog('preferences')"
+            @click="openDialog('preferences', 'preferences')"
           >
             Choisir
           </button>
@@ -231,8 +231,8 @@
       <UButton
         label="Ma clé"
         icon="i-lucide-key-round"
-        color="neutral"
-        variant="outline"
+        color="secondary"
+        variant="subtle"
         aria-haspopup="dialog"
         @click="openDialog(mainScope, 'key')"
       />

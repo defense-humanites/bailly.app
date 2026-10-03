@@ -19,9 +19,11 @@
     /**
      * Where the window opens, once the type of data is synchronized (cf.
      * the card of the preferences page): its state (by default), its
-     * stopping, or the key. Opened there, « Annuler », « Retour » close it.
+     * stopping, the key, or the preferences synchronized (alone: the state
+     * and the actions are on the card). Opened there, « Annuler », « Retour »
+     * close it.
      */
-    startView?: "status" | "stop" | "key";
+    startView?: "status" | "stop" | "key" | "preferences";
   }>();
 
   /**
@@ -77,7 +79,7 @@
     tagSort: { label: "Tri des étiquettes" },
   };
 
-  type View = "intro" | "join" | "key" | "status" | "stop" | "delete";
+  type View = "intro" | "join" | "key" | "status" | "stop" | "delete" | "preferences";
 
   /**
    * The number of words of a key (cf. `~/sync/key`, loaded only to join: it
@@ -133,6 +135,29 @@
       disabled: last,
     };
   }));
+
+  /**
+   * The preferences chosen, as a sentence (e.g. « la police, le grec
+   * translittéré et le tri des étiquettes »).
+   */
+  const preferencePhrases: Record<SyncablePreference, string> = {
+    transliterateGreek: "le grec translittéré",
+    readingFont: "la police",
+    readingSize: "la taille du texte",
+    readingWeight: "la graisse du texte",
+    inflectedForms: "les formes fléchies",
+    inputMode: "la saisie",
+    bookmarksDisplay: "l'affichage des signets",
+    tagSort: "le tri des étiquettes",
+  };
+  const chosenSummary = computed((): string => new Intl.ListFormat("fr", { type: "conjunction" })
+    .format(SYNCABLE_PREFERENCES.filter(key => chosenPreferences.value.includes(key)).map(key => preferencePhrases[key])));
+
+  /**
+   * Whether the preferences' boxes are shown before enabling (cf. the
+   * intro).
+   */
+  const customizing = ref(false);
 
   /**
    * The preferences on two columns, in the order of the preferences page
@@ -231,6 +256,7 @@
     status: props.scope === "bookmarks" ? "Synchronisation des signets" : "Synchronisation des préférences",
     stop: "Arrêter la synchronisation ?",
     delete: "Supprimer vos données en ligne ?",
+    preferences: "Préférences synchronisées",
   }));
 
   /**
@@ -528,6 +554,7 @@
     actionError.value = null;
     linkKey.value = props.linkSecret ?? null;
     stopScope.value = "device";
+    customizing.value = false;
     chosenPreferences.value = syncedPreferences.value.length ? [...syncedPreferences.value] : [...DEFAULT_SYNCED_PREFERENCES];
     if (linkKey.value) view.value = "join";
     else if (props.startView === "key" && enabled.value) {
@@ -540,6 +567,7 @@
         words.value = value;
       });
     } else if (props.startView === "stop" && scopeEnabled.value) view.value = "stop";
+    else if (props.startView === "preferences" && scopeEnabled.value) view.value = "preferences";
     else view.value = scopeEnabled.value ? "status" : "intro";
     openedOn.value = view.value;
   }, { immediate: true });
@@ -593,9 +621,27 @@
             personne ne peut les lire, pas même Bailly.app.
           </p>
 
-          <!-- The preferences to synchronize. -->
+          <!--
+            The preferences to synchronize: those offered (by default),
+            summed up; their boxes on request (« Personnaliser »), as they can
+            be chosen later.
+          -->
+          <p v-if="scope === 'preferences'">
+            Seront synchronisées : {{ chosenSummary }}. Vous pourrez modifier ce choix ensuite.
+            <button
+              type="button"
+              class="font-medium text-highlighted underline decoration-dotted underline-offset-3 hover:text-secondary focus-visible:outline-2 focus-visible:outline-secondary"
+              :aria-expanded="customizing"
+              aria-controls="sync-preferences-choice"
+              @click="customizing = !customizing"
+            >
+              Personnaliser
+            </button>
+          </p>
           <UCheckboxGroup
-            v-if="scope === 'preferences'"
+            v-if="scope === 'preferences' && customizing"
+            id="sync-preferences-choice"
+            color="secondary"
             :model-value="chosenPreferences"
             :items="preferenceItems"
             :ui="preferencesUi"
@@ -607,13 +653,13 @@
           <button
             v-if="enabled"
             type="button"
-            class="flex w-full items-start gap-3 rounded-lg bg-primary/10 p-4 text-start ring-1 ring-primary/25 transition-colors hover:bg-primary/15 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-75"
+            class="flex w-full items-start gap-3 rounded-lg bg-secondary/10 p-4 text-start ring-1 ring-secondary/25 transition-colors hover:bg-secondary/15 focus-visible:outline-2 focus-visible:outline-secondary disabled:cursor-wait disabled:opacity-75"
             :disabled="busy"
             @click="addScope"
           >
             <UIcon
               :name="busy ? 'i-lucide-loader-circle' : 'i-lucide-cloud-upload'"
-              class="mt-0.5 size-6 shrink-0 text-primary"
+              class="mt-0.5 size-6 shrink-0 text-secondary"
               :class="{ 'animate-spin': busy }"
             />
             <span>
@@ -624,7 +670,9 @@
 
           <!--
             The two ways in, as tiles: each explains itself, and is large and
-            apart enough not to be touched for the other.
+            apart enough not to be touched for the other. The first (a new
+            key) in the synchronization's Aegean blue (`secondary`, as its
+            button and card), the other neutral.
           -->
           <div
             v-else
@@ -632,13 +680,13 @@
           >
             <button
               type="button"
-              class="flex items-start gap-3 rounded-lg bg-primary/10 p-4 text-start ring-1 ring-primary/25 transition-colors hover:bg-primary/15 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-75"
+              class="flex items-start gap-3 rounded-lg bg-secondary/10 p-4 text-start ring-1 ring-secondary/25 transition-colors hover:bg-secondary/15 focus-visible:outline-2 focus-visible:outline-secondary disabled:cursor-wait disabled:opacity-75"
               :disabled="busy"
               @click="enable"
             >
               <UIcon
                 :name="busy ? 'i-lucide-loader-circle' : 'i-lucide-cloud-upload'"
-                class="mt-0.5 size-6 shrink-0 text-primary"
+                class="mt-0.5 size-6 shrink-0 text-secondary"
                 :class="{ 'animate-spin': busy }"
               />
               <span>
@@ -649,13 +697,13 @@
             </button>
             <button
               type="button"
-              class="flex items-start gap-3 rounded-lg bg-secondary/10 p-4 text-start ring-1 ring-secondary/25 transition-colors hover:bg-secondary/15 focus-visible:outline-2 focus-visible:outline-secondary disabled:opacity-75"
+              class="flex items-start gap-3 rounded-lg bg-elevated/50 p-4 text-start ring-1 ring-default transition-colors hover:bg-elevated focus-visible:outline-2 focus-visible:outline-inverted disabled:opacity-75"
               :disabled="busy"
               @click="view = 'join'"
             >
               <UIcon
                 name="i-lucide-key-round"
-                class="mt-0.5 size-6 shrink-0 text-secondary"
+                class="mt-0.5 size-6 shrink-0 text-muted"
               />
               <span>
                 <span class="block font-semibold text-highlighted">J'ai déjà une clé</span>
@@ -716,6 +764,7 @@
               -->
               <UTextarea
                 v-model="joinText"
+                color="secondary"
                 :rows="3"
                 autoresize
                 autocomplete="off"
@@ -760,6 +809,7 @@
         <template v-else-if="view === 'key'">
           <UTabs
             v-model="keyTab"
+            color="secondary"
             :items="keyTabs"
             :content="false"
             class="w-full"
@@ -785,6 +835,7 @@
                 Ne les affichez pas si quelqu'un peut voir votre écran.
               </p>
               <UButton
+                color="secondary"
                 label="Afficher la clé"
                 icon="i-lucide-eye"
                 @click="keyRevealed = true"
@@ -838,6 +889,7 @@
             </p>
             <div class="flex flex-col gap-2">
               <UButton
+                color="secondary"
                 label="Télécharger le kit de récupération"
                 icon="i-lucide-file-down"
                 variant="outline"
@@ -845,6 +897,7 @@
                 @click="downloadRecoveryKit"
               />
               <UButton
+                color="secondary"
                 :label="copied ? 'Clé copiée' : 'Copier la clé'"
                 :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
                 variant="outline"
@@ -853,6 +906,7 @@
               />
               <UButton
                 v-if="canShare"
+                color="secondary"
                 label="Partager"
                 icon="i-lucide-share"
                 variant="outline"
@@ -937,6 +991,7 @@
           <!-- The preferences synchronized, changed at once. -->
           <UCheckboxGroup
             v-if="scope === 'preferences'"
+            color="secondary"
             :model-value="chosenPreferences"
             :items="preferenceItems"
             :ui="preferencesUi"
@@ -949,10 +1004,35 @@
           </p>
         </template>
 
+        <!-- The preferences synchronized, alone (from the preferences page's card) -->
+        <template v-else-if="view === 'preferences'">
+          <UAlert
+            v-if="actionError"
+            color="error"
+            variant="subtle"
+            icon="i-lucide-circle-alert"
+            :title="actionError"
+          />
+          <!-- (Its legend is the window's title.) -->
+          <UCheckboxGroup
+            color="secondary"
+            :model-value="chosenPreferences"
+            :items="preferenceItems"
+            :ui="{ ...preferencesUi, legend: 'sr-only' }"
+            legend="Préférences synchronisées"
+            :disabled="busy"
+            @update:model-value="(keys) => setPreferences(keys as SyncablePreference[])"
+          />
+          <p class="text-muted">
+            Les mêmes sur vos autres appareils, et marquées d'un nuage sur cette page.
+          </p>
+        </template>
+
         <!-- Stop: on this device only, or everywhere -->
         <template v-else-if="view === 'stop'">
           <URadioGroup
             v-model="stopScope"
+            color="secondary"
             :items="stopItems"
             variant="card"
             legend="Arrêter la synchronisation"
@@ -992,29 +1072,34 @@
         />
         <UButton
           v-if="sameKey && scopeEnabled"
+          color="secondary"
           label="Voir la synchronisation"
           @click="view = 'status'"
         />
         <UButton
           v-else-if="sameKey"
+          color="secondary"
           :label="texts.add"
           :loading="busy"
           @click="addScope"
         />
         <UButton
           v-else-if="linkKey && enabled"
+          color="secondary"
           label="Remplacer la clé"
           :loading="busy"
           @click="join"
         />
         <UButton
           v-else-if="linkKey"
+          color="secondary"
           label="Activer"
           :loading="busy"
           @click="join"
         />
         <UButton
           v-else
+          color="secondary"
           type="submit"
           form="sync-join"
           :label="enabled ? 'Remplacer la clé' : 'Rejoindre'"
@@ -1026,7 +1111,7 @@
       <template v-else-if="view === 'key'">
         <UButton
           :label="keyFromStatus ? (openedOn === 'key' ? 'Fermer' : 'Retour') : 'J\'ai conservé ma clé'"
-          :color="keyFromStatus ? 'neutral' : 'primary'"
+          :color="keyFromStatus ? 'neutral' : 'secondary'"
           :variant="keyFromStatus ? 'outline' : 'solid'"
           @click="keyFromStatus ? back() : (view = 'status')"
         />
@@ -1041,9 +1126,18 @@
           @click="view = 'stop'"
         />
         <UButton
+          color="secondary"
           label="Ma clé"
           icon="i-lucide-key-round"
           @click="showKey(true, 'device')"
+        />
+      </template>
+
+      <template v-else-if="view === 'preferences'">
+        <UButton
+          color="secondary"
+          label="Fermer"
+          @click="open = false"
         />
       </template>
 
@@ -1055,6 +1149,7 @@
           @click="back"
         />
         <UButton
+          color="secondary"
           :label="stopScope === 'device' ? 'Désactiver sur cet appareil' : 'Continuer…'"
           :loading="busy"
           @click="stop"

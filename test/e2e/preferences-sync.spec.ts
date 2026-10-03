@@ -64,6 +64,10 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await preferencesSwitch(page).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByText("Synchroniser vos préférences")).toBeVisible();
+  // Those offered, summed up; their boxes on request.
+  await expect(dialog.getByText("Seront synchronisées : le grec translittéré, la police, les formes fléchies et le tri des étiquettes.")).toBeVisible();
+  await expect(dialog.getByRole("checkbox")).toHaveCount(0);
+  await dialog.getByRole("button", { name: "Personnaliser" }).click();
   // In the order of the page, on two columns; offered checked, but the size
   // and the weight of the text (they depend on the screen) and the input
   // mode (on the keyboard).
@@ -108,8 +112,11 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   expect((await syncStore(phone)).preferences.sort()).toEqual(["inflectedForms", "readingFont", "tagSort", "transliterateGreek"]);
 
   // The phone also synchronizes its input mode and the size of the text; the
-  // laptop does not.
+  // laptop does not: the preferences alone (the state and the actions are
+  // on the card).
   await phone.getByRole("button", { name: "Choisir" }).click();
+  await expect(phone.getByRole("dialog").getByRole("heading", { name: "Préférences synchronisées" })).toBeVisible();
+  await expect(phone.getByRole("dialog").getByRole("button", { name: "Synchroniser maintenant" })).toHaveCount(0);
   await phone.getByRole("dialog").getByRole("checkbox", { name: /^Saisie/ }).click();
   await expect.poll(async () => (await syncStore(phone)).preferences).toContain("inputMode");
   await phone.getByRole("dialog").getByRole("checkbox", { name: "Taille du texte" }).click();
