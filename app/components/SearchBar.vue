@@ -206,6 +206,87 @@
     (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
   });
 
+  /*
+   * On iOS, the opening keyboard scrolls the page to bring the focused input
+   * into view, even in the fixed header (which disappears meanwhile), and
+   * whatever `focus({ preventScroll })`. The page is thus held still while
+   * the input has the focus: the body fixed where it was scrolled (nothing to
+   * scroll then, as on the former application, whose page never scrolled),
+   * then released at the same place. Only on iOS: the elements stuck under
+   * the header (e.g. an entry's compact bar) go back to their place
+   * meanwhile.
+   */
+
+  /**
+   * Whether the browser is Safari on iOS or iPadOS (or another browser there:
+   * all of them WebKit); iPadOS tells a Mac, with a touch screen.
+   */
+  const iOS = import.meta.client
+    && (/iP(?:hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1));
+
+  /**
+   * Where the page was scrolled when it was held still (`null`: it isn't).
+   */
+  let heldScroll: number | null = null;
+
+  const holdPage = (): void => {
+    if (!iOS || heldScroll !== null) return;
+    heldScroll = window.scrollY;
+    Object.assign(document.body.style, { position: "fixed", top: `-${heldScroll}px`, left: "0", right: "0" });
+  };
+
+  const releasePage = (): void => {
+    if (heldScroll === null) return;
+    const top = heldScroll;
+    heldScroll = null;
+    Object.assign(document.body.style, { position: "", top: "", left: "", right: "" });
+    window.scrollTo({ top, behavior: "instant" });
+  };
+
+  const inputElement = (): HTMLInputElement | undefined => menu.value?.inputRef as HTMLInputElement | undefined;
+
+  /**
+   * Where a touch on the input started (a tap, unless it moved).
+   */
+  let touchStart: { x: number; y: number } | null = null;
+
+  const onTouchStart = (event: TouchEvent): void => {
+    const touch = event.touches[0];
+    touchStart = touch && event.target === inputElement() ? { x: touch.clientX, y: touch.clientY } : null;
+  };
+
+  /**
+   * A tap on the input, not yet focused: the page is held before the focus
+   * (which follows the touch's end), and released if the focus didn't come.
+   */
+  const onTouchEnd = (event: TouchEvent): void => {
+    const input = inputElement();
+    const touch = event.changedTouches[0];
+    if (!iOS || !input || !touchStart || !touch || document.activeElement === input) return;
+    if (Math.hypot(touch.clientX - touchStart.x, touch.clientY - touchStart.y) > 10) return;
+    holdPage();
+    setTimeout(() => {
+      if (document.activeElement !== inputElement()) releasePage();
+    }, 500);
+  };
+
+  const onFocusIn = (event: FocusEvent): void => {
+    if (event.target === inputElement()) holdPage();
+  };
+
+  const onFocusOut = (event: FocusEvent): void => {
+    if (event.target === inputElement()) releasePage();
+  };
+
+  // Another page opening (e.g. a result) releases the page first: the router
+  // then scrolls it.
+  const removeNavigationGuard = useRouter().beforeEach(releasePage);
+
+  onBeforeUnmount(() => {
+    removeNavigationGuard();
+    releasePage();
+  });
+
   // The results' Greek may be transliterated (a preference).
   const greek = useGreek();
 
@@ -397,6 +478,10 @@
     class="group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
     @keydown.capture="onKeydown"
     @input.capture="onComposedInput"
+    @touchstart.capture.passive="onTouchStart"
+    @touchend.capture.passive="onTouchEnd"
+    @focusin="onFocusIn"
+    @focusout="onFocusOut"
   >
     <UInputMenu
       ref="menu"
