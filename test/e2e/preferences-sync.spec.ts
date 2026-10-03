@@ -86,9 +86,10 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   const [first, second] = await Promise.all([checkboxes.nth(0).boundingBox(), checkboxes.nth(1).boundingBox()]);
   expect(Math.abs(first!.y - second!.y)).toBeLessThan(2); // Side by side.
   await dialog.getByRole("button", { name: "Activer la synchronisation" }).click();
+  // The key kept: the window closes, a toast confirming the synchronization.
   await dialog.getByRole("button", { name: "J'ai conservé ma clé" }).click();
-  await expect(dialog.getByText("Préférences à jour")).toBeVisible();
-  await page.keyboard.press("Escape");
+  await expect(page.getByText("Synchronisation activée sur cet appareil.", { exact: true })).toBeVisible();
+  await expect(dialog).toBeHidden();
   await expect(preferencesSwitch(page)).toBeChecked();
   await expect(bookmarksSwitch(page)).not.toBeChecked();
   await expect(page.getByText("5 sur 9, marquées d'un nuage")).toBeVisible();
@@ -173,8 +174,7 @@ test("the bookmarks and the preferences: one key, enabled and stopped type by ty
   await openSync(page);
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
   await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
-  await expect(page.getByText("Signets à jour")).toBeVisible();
-  await page.keyboard.press("Escape");
+  await expect(page.getByText("Synchronisation activée sur cet appareil.", { exact: true })).toBeVisible();
 
   // Then the preferences, with the same key: through the link of the
   // preferences (e.g. scanned from another device that synchronizes them).

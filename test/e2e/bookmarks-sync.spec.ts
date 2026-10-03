@@ -56,8 +56,9 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await page.getByRole("list", { name: "Les douze mots de la clé" }).click();
   await expect(page.getByText("Clé copiée", { exact: true })).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(words.join(" "));
+  // The key kept: the window closes, a toast confirming the synchronization.
   await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
-  await expect(page.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(page.getByText("Synchronisation activée sur cet appareil.", { exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(syncButton.getByText("Synchronisé", { exact: true })).toBeVisible();
   await expect(syncButton.getByText("Synchroniser", { exact: true })).toBeHidden();
@@ -259,8 +260,9 @@ test("a device keeps the key once the online bookmarks are merged, even if sendi
   await seedBookmarks(page, { starred: [logos] });
   await openSync(page);
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  // The key kept: the window closes, a toast confirming the synchronization.
   await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
-  await expect(page.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(page.getByText("Synchronisation activée sur cet appareil.", { exact: true })).toBeVisible();
   const link = await syncLink(page);
 
   // The phone reads the online bookmarks, but cannot send its own.
@@ -292,8 +294,9 @@ test("joining beyond the limits is refused until the device makes room", async (
   await seedBookmarks(page, { starred: hundred });
   await openSync(page);
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  // The key kept: the window closes, a toast confirming the synchronization.
   await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
-  await expect(page.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(page.getByText("Synchronisation activée sur cet appareil.", { exact: true })).toBeVisible();
   const link = await syncLink(page);
 
   // The phone has a favorite of its own: 101 once brought together.

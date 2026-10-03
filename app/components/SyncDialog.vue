@@ -500,6 +500,21 @@
   const stopText = computed((): string =>
     otherEnabled.value ? `${texts.value.stopDeviceKept} ${texts.value.otherStays}` : texts.value.stopDevice);
 
+  /**
+   * The key kept, once the synchronization is enabled: the window closes, a
+   * toast confirming it (its state's view would only repeat it), unless the
+   * first synchronization failed meanwhile, or found the device's clock wrong
+   * (its state's view explains it).
+   */
+  const keyKept = (): void => {
+    if (scopeError.value || clockWrong.value) {
+      view.value = "status";
+      return;
+    }
+    toast.add({ title: "Synchronisation activée sur cet appareil.", icon: "i-lucide-circle-check", color: "success" });
+    open.value = false;
+  };
+
   const disable = () => run(async () => {
     const other = otherEnabled.value;
     await syncStore.disable(props.scope);
@@ -1107,7 +1122,7 @@
           :label="keyFromStatus ? (openedOn === 'key' ? 'Fermer' : 'Retour') : 'J\'ai conservé ma clé'"
           :color="keyFromStatus ? 'neutral' : 'secondary'"
           :variant="keyFromStatus ? 'outline' : 'solid'"
-          @click="keyFromStatus ? back() : (view = 'status')"
+          @click="keyFromStatus ? back() : keyKept()"
         />
       </template>
 
@@ -1151,22 +1166,23 @@
       </template>
 
       <!--
-        The deletion is not where « Révoquer cette clé… » was: a double click
-        can't confirm it.
+        « Retour », then the deletion, as the other confirmations (« Annuler »
+        / the action): the deletion is not where « Révoquer cette clé… » was,
+        so that a double click can't confirm it.
       -->
       <template v-else-if="view === 'delete'">
-        <UButton
-          label="Supprimer définitivement"
-          color="error"
-          class="me-auto"
-          :loading="busy"
-          @click="deleteRemote"
-        />
         <UButton
           label="Retour"
           color="neutral"
           variant="outline"
+          class="me-auto"
           @click="view = 'key'"
+        />
+        <UButton
+          label="Supprimer définitivement"
+          color="error"
+          :loading="busy"
+          @click="deleteRemote"
         />
       </template>
     </template>
