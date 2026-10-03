@@ -202,7 +202,8 @@
 
   // Another component may ask for the focus (e.g. the about page's "Search a
   // word" button).
-  watch(useSearchFocus().request, () => {
+  watch(useSearchFocus().request, ({ ifEmpty }) => {
+    if (ifEmpty && hasQuery.value) return;
     (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
   });
 

@@ -4,10 +4,11 @@
   /**
    * The search is the page's main action: its field gets the focus on
    * opening, except with a coarse pointer (a touch screen), where it would
-   * bring up the virtual keyboard.
+   * bring up the virtual keyboard, and when it holds a search (e.g. back from
+   * an entry), whose results would open again over the page.
    */
   onMounted(() => {
-    if (!window.matchMedia("(pointer: coarse)").matches) searchFocus.focus();
+    if (!window.matchMedia("(pointer: coarse)").matches) searchFocus.focus({ ifEmpty: true });
   });
   const { preference } = usePreferences();
   const transliterateGreek = preference("transliterateGreek");

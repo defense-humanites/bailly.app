@@ -38,6 +38,19 @@ test.describe("home page", () => {
     await touch.close();
   });
 
+  test("leaves the focus where it is when the search field holds a search", async ({ page, goto }) => {
+    await goto("/", { waitUntil: "hydration" });
+    await searchInput(page).fill("logos");
+    await page.keyboard.press("Escape");
+    await page.getByRole("link", { name: "À propos", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${encodeURI("/à-propos")}$`));
+    await page.getByRole("link", { name: "Bailly.app" }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(searchInput(page)).toHaveValue("λογος");
+    await expect(searchInput(page)).not.toBeFocused();
+  });
+
   test("offers the transliteration to those who don't read Greek, saved at once", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
     const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });

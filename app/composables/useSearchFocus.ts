@@ -3,13 +3,17 @@
  * word" button): the search bar watches the requests.
  */
 export function useSearchFocus() {
-  const request = useState("search-focus-request", () => 0);
+  const request = useState("search-focus-request", () => ({ count: 0, ifEmpty: false }));
 
   return {
-    /** Incremented on each request. */
+    /** Renewed on each request. */
     request: readonly(request),
-    focus: (): void => {
-      request.value++;
+    /**
+     * @param options.ifEmpty Only if the field is empty (not when it holds a
+     * search, whose results the focus would open again).
+     */
+    focus: (options: { ifEmpty?: boolean } = {}): void => {
+      request.value = { count: request.value.count + 1, ifEmpty: options.ifEmpty ?? false };
     },
   };
 }
