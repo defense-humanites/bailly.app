@@ -376,7 +376,7 @@
    * as wide as the bar (cf. `groupElement`).
    */
   const contentClass = computed((): string => [
-    "w-(--reka-combobox-trigger-width) max-h-[min(32rem,var(--reka-combobox-content-available-height))] ring-primary/25 shadow-xl shadow-primary/10",
+    "w-(--reka-combobox-trigger-width) max-h-[min(32rem,var(--reka-combobox-content-available-height))]",
     highlightChosen.value ? "" : "[&_[data-highlighted]]:before:bg-transparent! [&_[data-highlighted]]:text-default!",
   ].join(" "));
 </script>
@@ -395,7 +395,7 @@
   -->
   <UFieldGroup
     ref="group"
-    class="group/search rounded-full shadow-md shadow-primary/15 outline-primary/25 has-[input:focus-visible]:outline-3"
+    class="group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
     @keydown.capture="onKeydown"
     @input.capture="onComposedInput"
   >
@@ -424,15 +424,15 @@
       :content="{ align: 'start', collisionPadding: 8, reference: groupElement }"
       :ui="{
         root: 'has-focus-visible:z-auto',
-        base: 'shadow-none text-base/6 focus-visible:outline-transparent',
+        base: 'shadow-xs text-base/6 focus-visible:outline-transparent',
         content: contentClass,
         // The homonyms' indent comes from their label (`data-nested`), not from
         // an item class: the input menu reuses its items by position without
         // updating their class, which then stuck to the next results.
-        item: 'items-start has-[[data-nested]]:ps-5 data-highlighted:not-data-disabled:before:bg-primary/10',
+        item: 'items-start has-[[data-nested]]:ps-5',
         itemLabel: 'whitespace-normal line-clamp-2',
         itemTrailingIcon: 'hidden',
-        label: 'text-sm [font-variant-caps:all-small-caps] tracking-wider text-muted',
+        label: 'text-xs uppercase tracking-wide text-muted',
       }"
       @update:open="open = $event"
       @update:model-value="onInput"
@@ -455,7 +455,7 @@
         <UIcon
           v-else
           name="i-lucide-search"
-          class="size-5 shrink-0 text-primary"
+          class="size-5 shrink-0 text-dimmed"
         />
       </template>
 

@@ -287,19 +287,19 @@
 
     <!--
       The faded edges, over the row, as wide as it (to the edges of the screen
-      below `md`): the page's background fading out (the bars' once stuck). (Not a mask on the row:
+      below `md`): the page's background fading out. (Not a mask on the row:
       in the pages' scroller, Safari (macOS) made the row flicker with it.)
     -->
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute inset-y-0 start-0 bg-linear-to-r to-transparent transition-opacity duration-200 ease-out max-md:-start-4 md:-start-1"
-      :class="[canScrollStart ? 'opacity-100' : 'opacity-0', stuck ? 'from-bar' : 'from-page']"
+      class="pointer-events-none absolute inset-y-0 start-0 bg-linear-to-r from-(--app-page-bg) to-transparent transition-opacity duration-200 ease-out max-md:-start-4 md:-start-1"
+      :class="canScrollStart ? 'opacity-100' : 'opacity-0'"
       :style="{ width: `${EDGE}px` }"
     />
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute inset-y-0 end-0 bg-linear-to-l to-transparent transition-opacity duration-200 ease-out max-md:-end-4 md:-end-1"
-      :class="[canScrollEnd ? 'opacity-100' : 'opacity-0', stuck ? 'from-bar' : 'from-page']"
+      class="pointer-events-none absolute inset-y-0 end-0 bg-linear-to-l from-(--app-page-bg) to-transparent transition-opacity duration-200 ease-out max-md:-end-4 md:-end-1"
+      :class="canScrollEnd ? 'opacity-100' : 'opacity-0'"
       :style="{ width: `${EDGE}px` }"
     />
 
