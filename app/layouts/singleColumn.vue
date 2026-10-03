@@ -12,7 +12,7 @@
 <template>
   <div>
     <AppHeader />
-    <PageScroller class="px-safe-4 pt-6 pb-safe-6 md:px-safe-6 lg:pt-12 lg:pb-safe-12">
+    <PageScroller class="px-safe-4 pt-6 pb-safe-6 md:px-safe-6 lg:pt-8 lg:pb-safe-12">
       <div class="mx-auto max-w-(--reading-width) lg:grid lg:max-w-(--header-max-width) lg:grid-cols-header">
         <div class="min-w-0 lg:col-start-2 lg:col-end-3 lg:ms-[calc((min(100%,var(--search-width))-var(--reading-width))/2)] lg:max-w-(--reading-width)">
           <slot />
