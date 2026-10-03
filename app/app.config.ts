@@ -122,5 +122,14 @@ export default defineAppConfig({
         wrapper: "w-auto",
       },
     },
+    /*
+     * Off, a switch a shade darker in the light theme (neutral 300 rather
+     * than `bg-accented`, 200): more visible on the light cards.
+     */
+    switch: {
+      slots: {
+        base: "data-[state=unchecked]:bg-(--ui-color-neutral-300) dark:data-[state=unchecked]:bg-accented",
+      },
+    },
   },
 });
