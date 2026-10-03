@@ -81,8 +81,9 @@
       >
         <!--
           The entry lies on the page's background, not on a card: the hovered
-          buttons of its toolbar (`bg-elevated`, as dark as the page in the
-          light theme) take a lighter shade, as they do in the dark theme.
+          buttons of its toolbar take the cards' background (`bg-default`),
+          a shade lighter than the page in both themes (`bg-elevated` is as
+          dark as the page in the light theme, much lighter in the dark one).
         -->
         <div
           v-if="position === 'main'"
@@ -95,7 +96,7 @@
             toolbar
             link
             :ui="{
-              root: 'h-full flex overflow-hidden bg-transparent shadow-none ring-0 rounded-none [--ui-bg-elevated:var(--ui-bg)] dark:[--ui-bg-elevated:var(--ui-color-neutral-800)]',
+              root: 'h-full flex overflow-hidden bg-transparent shadow-none ring-0 rounded-none [--ui-bg-elevated:var(--ui-bg)]',
               body: 'h-full mask-b-from-80%',
             }"
           />
