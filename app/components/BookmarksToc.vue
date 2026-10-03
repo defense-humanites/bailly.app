@@ -50,7 +50,9 @@
   function measure(): void {
     if (!nav.value) return;
     const box = nav.value.getBoundingClientRect();
-    stuck.value = window.scrollY > 0 && box.top <= Number.parseFloat(getComputedStyle(nav.value).top) + 0.5;
+    const scrollerTop = scroller.value?.getBoundingClientRect().top ?? 0;
+    stuck.value = (scroller.value?.scrollTop ?? 0) > 0
+      && box.top <= scrollerTop + Number.parseFloat(getComputedStyle(nav.value).top) + 0.5;
     if (followed) {
       current.value = followed;
       return;
@@ -64,7 +66,8 @@
     current.value = read?.key;
   }
 
-  const { y } = useWindowScroll();
+  const scroller = usePageScroller();
+  const { y } = usePageScroll();
   const { height } = useWindowSize();
   const scheduled = useRafFn(() => {
     measure();

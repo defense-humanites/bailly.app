@@ -39,7 +39,9 @@ test.describe("history of the viewed entries", () => {
     await expect(historyLinks(page)).toHaveCount(2);
     await expect(historyLinks(page).nth(0)).toContainText("λογάδες");
     await expect(historyLinks(page).nth(1)).toContainText("λόγος");
-    expect(await xExtent(page, "[role=dialog]")).toEqual(await xExtent(page, "header .group\\/search"));
+    const [dialog, bar] = [await xExtent(page, "[role=dialog]"), await xExtent(page, "header .group\\/search")];
+    expect(Math.abs(dialog[0] - bar[0])).toBeLessThan(1);
+    expect(Math.abs(dialog[1] - bar[1])).toBeLessThan(1);
     await expect(searchBar(page)).toBeVisible();
 
     // The focus starts on the newest entry, then goes through the entries

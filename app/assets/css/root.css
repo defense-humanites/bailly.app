@@ -148,15 +148,21 @@
   --header-height: 4rem;
 
   /*
-   * The bottom of the header (cf. `AppNavHorizontal`), fixed: below `md`,
-   * its two rows (the title and the menu, 3rem; the search bar, 3.5rem) and
-   * its border; for its place in the flow and what sticks under it.
+   * The height of the fixed header (cf. `AppNavHorizontal`): below `md`, its
+   * two rows (the title and the menu, 3rem; the search bar, 3.5rem) and its
+   * border. The pages' scroller starts under it (cf. `layouts/default.vue`).
    */
-  --header-bottom: calc(6.5rem + 1px);
+  --header-total: calc(6.5rem + 1px);
 
   @variant md {
-    --header-bottom: var(--header-height);
+    --header-total: var(--header-height);
   }
+
+  /*
+   * Where what sticks under the header sticks: in the pages' scroller, its
+   * top (`0`, set there); outside of it, under the header.
+   */
+  --header-bottom: var(--header-total);
 }
 
 /*

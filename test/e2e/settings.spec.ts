@@ -1,6 +1,6 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
 import { PREVIEW_ENTRIES } from "../../app/utils/previewEntries";
-import { rootLength } from "./helpers";
+import { pageCenter, rootLength } from "./helpers";
 
 test.describe("settings", () => {
   test("the former address, « /paramètres », redirects to the preferences", async ({ page }) => {
@@ -49,7 +49,7 @@ test.describe("settings", () => {
 
     await page.setViewportSize({ width: 900, height: 900 });
     const narrow = await extent("[aria-labelledby=settings-reading]");
-    expect(Math.abs((narrow.left + narrow.right) / 2 - 450)).toBeLessThanOrEqual(1);
+    expect(Math.abs((narrow.left + narrow.right) / 2 - await pageCenter(page))).toBeLessThanOrEqual(1);
   });
 
   test("no horizontal scroll on mobile", async ({ page, goto }) => {
