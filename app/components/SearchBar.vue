@@ -215,6 +215,9 @@
   /**
    * Whether the browser is Safari on iOS or iPadOS (or another browser there:
    * all of them WebKit); iPadOS tells a Mac, with a touch screen.
+   * @remarks There, the results don't open when the input gets the focus: the
+   * page then moved down under the opening keyboard (the header out of
+   * view). They open as the user types, or with a second tap.
    */
   const iOS = import.meta.client
     && (/iP(?:hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1));
@@ -494,7 +497,7 @@
       class="w-full"
       :model-value="query"
       mode="autocomplete"
-      :open-on-focus="hasQuery"
+      :open-on-focus="hasQuery && !iOS"
       :open-on-click="hasQuery"
       value-key="text"
       :items="items"

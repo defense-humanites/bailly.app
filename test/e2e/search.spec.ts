@@ -242,6 +242,8 @@ test.describe("on iOS", () => {
   test("with a text, the page kept where it is while the keyboard opens", async ({ page, goto }) => {
     await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
     await searchInput(page).fill("logos");
+    await page.keyboard.press("Escape");
+    await expect(searchResults(page)).toBeHidden();
     await searchInput(page).blur();
     await page.evaluate(() => {
       window.scrollTo(0, 1500);
@@ -253,6 +255,9 @@ test.describe("on iOS", () => {
       window.scrollTo(0, 0);
     });
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(1500);
+    // The results open with a second tap (not with the focus, cf. `iOS`).
+    await expect(searchResults(page)).toBeHidden();
+    await searchInput(page).tap();
     await expect(searchResults(page).getByRole("option").first()).toBeVisible();
   });
 });
