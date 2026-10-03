@@ -162,7 +162,8 @@
               :ui="{ leadingIcon: 'md:size-6' }"
             />
           </div>
-          <dl class="mt-[clamp(0.75rem,3.5svh,3rem)] grid w-full max-w-2xl grid-cols-3 gap-4 border-t border-terracotta-700/35 dark:border-terracotta-600/40 pt-[clamp(0.75rem,2.5svh,1.5rem)]">
+          <!-- Left out on a short window, as the cue's label: the icon keeps its size. -->
+          <dl class="mt-[clamp(0.75rem,3.5svh,3rem)] [@media(max-height:45rem)]:hidden grid w-full max-w-2xl grid-cols-3 gap-4 border-t border-terracotta-700/35 dark:border-terracotta-600/40 pt-[clamp(0.75rem,2.5svh,1.5rem)]">
             <div
               v-for="figure in figures"
               :key="figure.label"
@@ -368,13 +369,16 @@
           </p>
 
           <article class="flex flex-col gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-8 lg:flex lg:col-start-1 lg:row-start-2">
-            <div class="mx-auto aspect-[4/3] w-full max-w-sm bg-white overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
+            <div class="mx-auto aspect-[4/3] w-full max-w-sm bg-[#fbfbfb] overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
+              <!-- Whole (contained, on the scan's paper): its first and last lines not cut. -->
               <img
                 src="/images/bailly-1935-rhinokeros.webp"
-                width="596"
-                height="448"
+                width="646"
+                height="484"
                 alt="L'entrée ῥινόκερως dans l'édition de 1935 (fac-similé)."
-                class="size-full object-cover"
+                loading="lazy"
+                decoding="async"
+                class="size-full object-contain"
               >
             </div>
             <div class="min-w-0 max-md:text-center">
@@ -400,6 +404,8 @@
                 width="560"
                 height="420"
                 alt="L'entrée ῥινόκερως dans l'édition PDF de 2020."
+                loading="lazy"
+                decoding="async"
                 class="size-full object-cover"
               >
             </div>
