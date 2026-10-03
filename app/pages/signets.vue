@@ -76,27 +76,27 @@
       :aria-busy="!initialized"
     >
       <!--
-        The header: the title and the synchronization (a solid button, in the
-        Aegean blue — `secondary`: the sea, and the sky of the "cloud" —, the
-        page's main action), then a menu bar for the tags, in the style of an
-        entry's toolbar (cf. `TagButtonGroup`): creating a tag, choosing the
-        active one, the display (the entries, the sorting of the tags), and the
-        file (export, import: less used, within reach for whoever looks for
-        it). Its fields are square-cornered, without the search bar's pill
+        The header: the title (for screen readers only), then a menu bar, in
+        the style of an entry's toolbar (cf. `TagButtonGroup`): creating a
+        tag, choosing the active one, the display (the entries, the sorting of
+        the tags), the files (export, import: less used, within reach for
+        whoever looks for it) and, last, the synchronization (in the Aegean
+        blue — `secondary`: the sea, and the sky of the "cloud" —, the page's
+        main action, cf. `SyncButton`). Its fields are square-cornered, without the search bar's pill
         shape, their background telling them from its buttons (ghost). Below `lg`, the field takes the bar's first
         row. Icons only (square buttons) below `xl`, as the header menu (the
         labels stay for screen readers and show in tooltips; cf.
         `useButtonLabels`).
       -->
-      <header class="col-span-full flex flex-col gap-5 xl:mb-2">
-        <div class="flex items-center gap-x-3">
-          <h1 class="grow font-sans text-3xl font-bold leading-normal">
-            Mes signets
-          </h1>
-
-          <!-- Synchronization (its state, and its window) -->
-          <SyncButton scope="bookmarks" />
-        </div>
+      <header class="col-span-full flex flex-col xl:mb-2">
+        <!--
+          The title for screen readers only, as on the preferences page: the
+          header's menu already shows the page, and the bookmarks take the
+          room.
+        -->
+        <h1 class="sr-only">
+          Mes signets
+        </h1>
 
         <div
           role="group"
@@ -120,7 +120,7 @@
             tag): its place is kept.
           -->
           <div
-            class="flex h-11 min-w-0 grow border-default max-lg:rounded-bl-(--field-inner-radius) lg:basis-0 lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
+            class="flex h-11 min-w-0 grow basis-24 border-default max-lg:rounded-bl-(--field-inner-radius) lg:basis-0 lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
             :class="FIELD_HALO"
           >
             <USelectMenu
@@ -163,7 +163,13 @@
           <BookmarksDisplayMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
 
           <!-- Export, import -->
-          <BookmarksMenu class="flex h-11 border-s border-default max-lg:overflow-hidden max-lg:rounded-br-(--field-inner-radius) lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
+          <BookmarksMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
+
+          <!-- Synchronization (its state, and its window) -->
+          <SyncButton
+            scope="bookmarks"
+            class="flex h-11 border-s border-default max-lg:overflow-hidden max-lg:rounded-br-(--field-inner-radius) lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
+          />
         </div>
       </header>
 

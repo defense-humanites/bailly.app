@@ -63,15 +63,15 @@
 
   /**
    * The look and the visible label, after the state: an invitation while the
-   * synchronization is off (solid Aegean blue, « Synchroniser »), calm once
-   * it is on (subtle, « Synchronisé »), gold when it needs attention
-   * (« À vérifier »), once the settings are loaded (before, as the cookie
+   * synchronization is off (a soft Aegean blue, « Synchroniser »), calm once
+   * it is on (ghost, the blue text only, « Synchronisé »), gold when it needs
+   * attention (« À vérifier »), once the settings are loaded (before, as the cookie
    * tells, cf. `hinted`). The accessible name stays « Synchronisation (…) ».
    */
-  const look = computed((): { text: string; color: "secondary" | "warning"; variant: "solid" | "subtle" } => {
-    if (!enabled.value) return { text: "Synchroniser", color: "secondary", variant: "solid" };
-    if (needsAttention.value) return { text: "À vérifier", color: "warning", variant: "solid" };
-    return { text: "Synchronisé", color: "secondary", variant: "subtle" };
+  const look = computed((): { text: string; color: "secondary" | "warning"; variant: "soft" | "ghost" } => {
+    if (!enabled.value) return { text: "Synchroniser", color: "secondary", variant: "soft" };
+    if (needsAttention.value) return { text: "À vérifier", color: "warning", variant: "soft" };
+    return { text: "Synchronisé", color: "secondary", variant: "ghost" };
   });
 
   /**
@@ -80,6 +80,15 @@
    * close).
    */
   const LABELS = ["Synchroniser", "À vérifier", "Synchronisé"];
+
+  /**
+   * Pressed while its window is open, as the bar's other buttons
+   * (`aria-expanded`): the shade of its hover.
+   */
+  const PRESSED = {
+    secondary: { soft: "aria-expanded:bg-secondary/15", ghost: "aria-expanded:bg-secondary/10" },
+    warning: { soft: "aria-expanded:bg-warning/15", ghost: "aria-expanded:bg-warning/10" },
+  } as const;
 
   const tooltip = computed((): string => {
     if (!stateText.value) return label;
@@ -117,6 +126,8 @@
 <template>
   <div>
     <!--
+      An item of the bookmarks page's menu bar (cf. `signets.vue`), as
+      « Fichiers » (cf. `BookmarksMenu`): square-cornered, as high as the bar.
       Icon only below `xl`, as the other actions of the page (the label stays
       for screen readers, and shows in the tooltip).
     -->
@@ -125,9 +136,11 @@
       :disabled="showButtonLabels && !needsAttention"
     >
       <UButton
-        size="2xl"
+        size="xl"
         :color="look.color"
         :variant="look.variant"
+        class="h-full rounded-none"
+        :class="PRESSED[look.color][look.variant]"
         :aria-label="stateText ? `${label} (${stateText})` : label"
         :ui="{ base: 'max-xl:px-2.5' }"
         aria-haspopup="dialog"

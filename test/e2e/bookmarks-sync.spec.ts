@@ -36,10 +36,11 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   // Laptop: enables the synchronization, and reads its key.
   await goto("/signets", { waitUntil: "hydration" });
   await seedBookmarks(page, { starred: [logos], tags: [{ name: "Homère", color: "Blue", entries: [logos] }] });
-  // The button invites to synchronize (solid), then tells it is done (calm).
+  // The button invites to synchronize (soft), then tells it is done (calm:
+  // ghost).
   const syncButton = page.getByRole("button", { name: /^Synchronisation/ });
   await expect(syncButton.getByText("Synchroniser", { exact: true })).toBeVisible();
-  await expect(syncButton).toHaveClass(/button-relief/);
+  await expect(syncButton).toHaveClass(/(^| )bg-secondary\/10( |$)/);
   await openSync(page);
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
   // The key is kept first; the words and the QR code are in the other tab.
@@ -61,7 +62,7 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await page.keyboard.press("Escape");
   await expect(syncButton.getByText("Synchronisé", { exact: true })).toBeVisible();
   await expect(syncButton.getByText("Synchroniser", { exact: true })).toBeHidden();
-  await expect(syncButton).not.toHaveClass(/button-relief/);
+  await expect(syncButton).not.toHaveClass(/(^| )bg-secondary\/10( |$)/);
   // The server renders it so at once (a cookie tells it).
   await expect.poll(async () => (await page.context().cookies()).find(cookie => cookie.name === "bailly-sync")?.value)
     .toBe(encodeURIComponent(JSON.stringify(["bookmarks"])));
