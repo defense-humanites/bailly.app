@@ -1,4 +1,10 @@
 <script setup lang="ts">
+  /*
+   * The hero is a cover: the header's items are hidden while the page is at
+   * its top (cf. `AppNavHorizontal`), its height and background framing it.
+   */
+  definePageMeta({ headerCover: true });
+
   useSeoMeta({
     title: "À propos",
     description: "Le dictionnaire grec-français d'Anatole Bailly, révisé par Gérard Gréco et son équipe : une application libre et gratuite pour le consulter.",
