@@ -45,6 +45,12 @@ test.describe("search bar", () => {
         await expect(input).toHaveValue("λογος");
         await expect(searchResults(page).getByRole("option").filter({ hasText: "λόγος" }).first()).toBeVisible();
         await input.fill("");
+        // A diacritic at once, before the next letter.
+        await compose("lo");
+        await expect(input).toHaveValue("λο");
+        await compose("/");
+        await expect(input).toHaveValue("λό");
+        await input.fill("");
         // A dead key: the mark composed is left alone, until its letter.
         await compose("^");
         await expect(input).toHaveValue("^");

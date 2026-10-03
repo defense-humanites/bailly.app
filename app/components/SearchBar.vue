@@ -106,15 +106,16 @@
 
   /**
    * Whether the input may be converted while the input method composes: when
-   * it has Latin letters (the Beta Code being converted as it is typed, the
-   * only ones are those just typed). The keyboards of Android compose whole
-   * words (ended by a space or a suggestion, never in a search): their Beta
-   * Code is converted letter by letter (rewriting the input ends the
-   * composition; the keyboard starts another one with the next letter). A
-   * dead key (a desktop keyboard) composes a lone mark, left alone until its
-   * letter comes.
+   * it has Beta Code (Latin letters, diacritics `/\=()+|`, capital mark
+   * `*`; it being converted as it is typed, only what was just typed). The
+   * keyboards of Android compose whole words (ended by a space or a
+   * suggestion, never in a search): their Beta Code is converted character
+   * by character (rewriting the input ends the composition; the keyboard
+   * starts another one with the next character). A dead key (a desktop
+   * keyboard: `^`, `¨`, `´`, `` ` ``, `~`, `'`, `"`…, none of them Beta Code)
+   * composes a lone mark, left alone until its letter comes.
    */
-  const convertibleWhileComposing = (value: string): boolean => /[a-z]/i.test(value);
+  const convertibleWhileComposing = (value: string): boolean => /[a-z/\\=()+|*]/i.test(value);
 
   /**
    * Converts the input (Beta Code, or Greek) into Greek, keeping the caret
