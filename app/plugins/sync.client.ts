@@ -8,6 +8,7 @@ const LOCAL_CHANGES = new Set([
   "updateTag",
   "pinTag",
   "removeTag",
+  "revive",
   "tagEntry",
   "untagEntry",
   "importBookmarks",
