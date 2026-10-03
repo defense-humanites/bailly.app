@@ -742,7 +742,7 @@
       <p
         v-if="tagDescription && !showsDescriptionField"
         :id="descriptionId"
-        class="ms-10 mt-1 px-2 py-1 text-sm/5 whitespace-pre-line wrap-break-word text-tag-text"
+        class="ms-10 mt-1 px-2 py-1 text-base/6 whitespace-pre-line wrap-break-word text-tag-text"
         v-text="tagDescription"
       />
       <!--
@@ -774,7 +774,7 @@
                 :aria-describedby="`${descriptionErrorId} ${descriptionHintId}`"
                 :aria-invalid="!!descriptionFailure"
                 placeholder="Description"
-                class="block w-full resize-none overflow-hidden rounded-lg bg-default/60 py-1 ps-2 pe-8 text-sm/5 text-tag-text placeholder:text-tag-text/60 hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2"
+                class="block w-full resize-none overflow-hidden rounded-lg bg-default/60 py-1 ps-2 pe-8 text-base/6 text-tag-text placeholder:text-tag-text/60 hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2"
                 :class="descriptionFailure ? 'ring-2 ring-error focus-visible:ring-error' : 'focus-visible:ring-tag-300'"
                 @focus="isDescriptionFocused = true"
                 @blur="onDescriptionBlur"
