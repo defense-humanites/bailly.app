@@ -236,4 +236,23 @@ test.describe("on iOS", () => {
     await searchInput(page).pressSequentially("logos");
     await expect(searchInput(page)).toHaveValue("λογος");
   });
+
+  // Whatever scrolls the page right after the focus (other browsers, the
+  // results opening) is undone.
+  test("with a text, the page kept where it is while the keyboard opens", async ({ page, goto }) => {
+    await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
+    await searchInput(page).fill("logos");
+    await searchInput(page).blur();
+    await page.evaluate(() => {
+      window.scrollTo(0, 1500);
+    });
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(1500);
+    await searchInput(page).tap();
+    await expect(searchInput(page)).toBeFocused();
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(1500);
+    await expect(searchResults(page).getByRole("option").first()).toBeVisible();
+  });
 });
