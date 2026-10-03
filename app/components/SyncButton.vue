@@ -64,14 +64,15 @@
   /**
    * The look and the visible label, after the state: an invitation while the
    * synchronization is off (a soft Aegean blue, « Synchroniser »), calm once
-   * it is on (ghost, the blue text only, « Synchronisé »), gold when it needs
+   * it is on (as the bar's other buttons, its icon only in blue,
+   * « Synchronisé »), gold when it needs
    * attention (« À vérifier »), once the settings are loaded (before, as the cookie
    * tells, cf. `hinted`). The accessible name stays « Synchronisation (…) ».
    */
-  const look = computed((): { text: string; color: "secondary" | "warning"; variant: "soft" | "ghost" } => {
+  const look = computed((): { text: string; color: "secondary" | "warning" | "neutral"; variant: "soft" | "ghost" } => {
     if (!enabled.value) return { text: "Synchroniser", color: "secondary", variant: "soft" };
     if (needsAttention.value) return { text: "À vérifier", color: "warning", variant: "soft" };
-    return { text: "Synchronisé", color: "secondary", variant: "ghost" };
+    return { text: "Synchronisé", color: "neutral", variant: "ghost" };
   });
 
   /**
@@ -88,6 +89,7 @@
   const PRESSED = {
     secondary: { soft: "aria-expanded:bg-secondary/15", ghost: "aria-expanded:bg-secondary/10" },
     warning: { soft: "aria-expanded:bg-warning/15", ghost: "aria-expanded:bg-warning/10" },
+    neutral: { soft: "aria-expanded:bg-elevated", ghost: "aria-expanded:bg-elevated" },
   } as const;
 
   const tooltip = computed((): string => {
@@ -121,6 +123,9 @@
     linkSecret.value = null;
     isSyncOpen.value = true;
   };
+
+  // For the page's invitations (e.g. the bookmarks' introduction).
+  defineExpose({ open: openSync, enabled });
 </script>
 
 <template>
@@ -157,7 +162,7 @@
             <UIcon
               :name="icon"
               class="size-6 shrink-0"
-              :class="{ 'animate-spin motion-reduce:animate-none': icon === 'i-lucide-refresh-cw' }"
+              :class="{ 'animate-spin motion-reduce:animate-none': icon === 'i-lucide-refresh-cw', 'text-secondary': look.color === 'neutral' }"
             />
           </UChip>
         </template>
