@@ -237,9 +237,7 @@ test.describe("on iOS", () => {
     await expect(searchInput(page)).toHaveValue("λογος");
   });
 
-  // Whatever scrolls the page right after the focus (other browsers, the
-  // results opening) is undone.
-  test("with a text, the page kept where it is while the keyboard opens", async ({ page, goto }) => {
+  test("with a text, the results not opened by the focus", async ({ page, goto }) => {
     await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
     await searchInput(page).fill("logos");
     await page.keyboard.press("Escape");
@@ -251,10 +249,7 @@ test.describe("on iOS", () => {
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(1500);
     await searchInput(page).tap();
     await expect(searchInput(page)).toBeFocused();
-    await page.evaluate(() => {
-      window.scrollTo(0, 0);
-    });
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(1500);
+    expect(await page.evaluate(() => window.scrollY)).toBe(1500);
     // The results open with a second tap (not with the focus, cf. `iOS`).
     await expect(searchResults(page)).toBeHidden();
     await searchInput(page).tap();

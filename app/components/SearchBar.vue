@@ -227,22 +227,17 @@
    */
   let touchStart: { x: number; y: number } | null = null;
 
-  /**
-   * Where the page was scrolled when the input was touched, not yet focused.
-   */
-  let scrollBeforeFocus: number | null = null;
-
   const onTouchStart = (event: TouchEvent): void => {
     const touch = event.touches[0];
     touchStart = touch ? { x: touch.clientX, y: touch.clientY } : null;
-    if (document.activeElement !== menu.value?.inputRef) scrollBeforeFocus = window.scrollY;
   };
 
   /**
-   * On iOS, focusing an input of a sticky header scrolls the page back to the
-   * top (WebKit brings it into view where it would be in the flow): a tap on
-   * the input, not yet focused, focuses it here without scrolling (the
-   * keyboard still opens: it is the tap's doing).
+   * On iOS, focusing an input of a sticky header scrolled the page back to
+   * the top (WebKit bringing it into view where it would be in the flow; the
+   * header is now fixed, cf. `AppNavHorizontal`): a tap on the input, not
+   * yet focused, focuses it here without scrolling (the keyboard still
+   * opens: it is the tap's doing).
    */
   const onTouchEnd = (event: TouchEvent): void => {
     const input = menu.value?.inputRef as HTMLInputElement | undefined;
@@ -252,48 +247,6 @@
     event.preventDefault();
     focusInput();
   };
-
-  /**
-   * On iOS, the page is moreover kept where it was for a moment once the
-   * input has the focus: whatever scrolls it meanwhile (the focus in other
-   * browsers, or with a text in the input, which opens the results; the
-   * keyboard opening) is undone, unless the user scrolls, the input loses
-   * the focus or another page opens (e.g. a result: at its top).
-   */
-  let keptScroll: number | null = null;
-  let keptScrollTimer: ReturnType<typeof setTimeout> | undefined;
-
-  /**
-   * How long (in ms) the page is kept where it was once the input has the
-   * focus (the keyboard opening).
-   */
-  const KEEP_SCROLL_DURATION = 1_000;
-
-  const onFocusIn = (event: FocusEvent): void => {
-    if (!iOS || event.target !== menu.value?.inputRef) return;
-    keptScroll = scrollBeforeFocus ?? window.scrollY;
-    scrollBeforeFocus = null;
-    clearTimeout(keptScrollTimer);
-    keptScrollTimer = setTimeout(() => {
-      keptScroll = null;
-    }, KEEP_SCROLL_DURATION);
-  };
-
-  useEventListener(import.meta.client ? window : undefined, "scroll", () => {
-    if (keptScroll !== null && Math.abs(window.scrollY - keptScroll) > 1) window.scrollTo(0, keptScroll);
-  }, { passive: true });
-
-  const releaseScroll = (): void => {
-    keptScroll = null;
-  };
-
-  useEventListener(import.meta.client ? window : undefined, "touchmove", releaseScroll, { passive: true });
-  const removeNavigationGuard = useRouter().beforeEach(releaseScroll);
-
-  onBeforeUnmount(() => {
-    clearTimeout(keptScrollTimer);
-    removeNavigationGuard();
-  });
 
   // The results' Greek may be transliterated (a preference).
   const greek = useGreek();
@@ -488,8 +441,6 @@
     @input.capture="onComposedInput"
     @touchstart.capture.passive="onTouchStart"
     @touchend.capture="onTouchEnd"
-    @focusin="onFocusIn"
-    @focusout="releaseScroll"
   >
     <UInputMenu
       ref="menu"
