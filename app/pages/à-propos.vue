@@ -401,8 +401,8 @@
             <div class="mx-auto aspect-[4/3] w-full max-w-sm bg-white overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
               <img
                 src="/images/bailly-2020-rhinokeros.webp"
-                width="560"
-                height="420"
+                width="720"
+                height="540"
                 alt="L'entrée ῥινόκερως dans l'édition PDF de 2020."
                 loading="lazy"
                 decoding="async"
@@ -461,7 +461,7 @@
               aria-hidden="true"
               class="mx-auto flex aspect-[4/3] w-full max-w-sm items-center justify-center bg-primary/10 overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none"
             >
-              <div class="w-56 space-y-2">
+              <div class="w-[85%] max-w-72 space-y-2">
                 <div class="flex items-center gap-2 rounded-full bg-default px-3 py-1.5 text-sm shadow-xs ring-1 ring-default">
                   <UIcon
                     name="i-lucide-search"
