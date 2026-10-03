@@ -116,7 +116,8 @@
    * Keyboard: the left and right arrows lead to the previous and next
    * entries, while the focus is on the page itself or its text: not on a
    * link, a button or a control (e.g. the search input, a menu, a panel),
-   * which may use them, nor with a modifier (e.g. Alt+← goes back in the
+   * which may use them (but the pages' scroller, focusable, cf.
+   * `PageScroller`), nor with a modifier (e.g. Alt+← goes back in the
    * history of Windows and Linux browsers).
    */
   useEventListener("keydown", (event: KeyboardEvent) => {
@@ -124,7 +125,7 @@
     const sibling = { ArrowLeft: siblings.previous, ArrowRight: siblings.next }[event.key];
     if (!sibling) return;
     const target = event.target as HTMLElement | null;
-    if (target?.closest("a, button, input, textarea, select, summary, [contenteditable], [tabindex], [role=dialog], [role=listbox], [role=menu], [role=radiogroup], [role=slider], [role=tablist]")) return;
+    if (target?.closest("a, button, input, textarea, select, summary, [contenteditable], [tabindex]:not(#page), [role=dialog], [role=listbox], [role=menu], [role=radiogroup], [role=slider], [role=tablist]")) return;
     event.preventDefault();
     void navigateTo(`/${sibling.uri}`);
   });

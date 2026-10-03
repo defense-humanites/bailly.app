@@ -7,9 +7,28 @@
   const scroller = usePageScroller();
   let forget: (() => void) | undefined;
 
+  /**
+   * Gives the focus to the scroller on each new page (not on opening, nor
+   * while a field is being typed in, e.g. the search bar): the keyboard
+   * (Space, arrows, Page Down) scrolls it at once, the window no longer
+   * scrolling (cf. `usePageScroller`).
+   */
+  const focusScroller = (): void => {
+    const active = document.activeElement;
+    if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || (active instanceof HTMLElement && active.isContentEditable)) return;
+    main.value?.focus({ preventScroll: true });
+  };
+
+  const route = useRoute();
+  watch(() => route.path, () => {
+    void nextTick(focusScroller);
+  });
+
   onMounted(() => {
     scroller.value = main.value;
     if (main.value) forget = rememberPageScroll(main.value);
+    // Another layout's page (but not on opening).
+    if (!useNuxtApp().isHydrating) focusScroller();
   });
 
   onBeforeUnmount(() => {
@@ -33,7 +52,8 @@
   <main
     id="page"
     ref="main"
-    class="absolute inset-x-0 top-(--header-total) bottom-0 overflow-y-auto [container-type:inline-size] [--header-bottom:0px] [scrollbar-gutter:stable] print:static print:overflow-visible"
+    tabindex="-1"
+    class="absolute inset-x-0 top-(--header-total) bottom-0 overflow-y-auto outline-none [container-type:inline-size] [--header-bottom:0px] [scrollbar-gutter:stable] print:static print:overflow-visible"
   >
     <div
       v-bind="$attrs"
