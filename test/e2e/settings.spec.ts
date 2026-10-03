@@ -20,7 +20,7 @@ test.describe("settings", () => {
     }
     await expect(page.getByRole("heading", { name: "Recherche" })).toBeInViewport();
     // The reset under the bookmarks' settings (the shorter column), at its end.
-    const reset = page.getByRole("button", { name: "Réinitialiser les préférences" });
+    const reset = page.getByRole("button", { name: "Rétablir les réglages par défaut" });
     await expect(reset).toBeInViewport({ ratio: 1 });
     const [card, button] = await Promise.all([page.getByRole("region", { name: "Signets", exact: true }).boundingBox(), reset.boundingBox()]);
     expect(button!.y).toBeGreaterThan(card!.y + card!.height);
@@ -94,20 +94,20 @@ test.describe("settings", () => {
     // Reset: the defaults, and no cookie anymore.
     await goto("/préférences", { waitUntil: "hydration" });
     // Confirmed first: cancelling keeps the settings.
-    await page.getByRole("button", { name: "Réinitialiser les préférences" }).click();
+    await page.getByRole("button", { name: "Rétablir les réglages par défaut" }).click();
     // Cancelling and resetting at both ends of the window.
     const dialog = page.getByRole("dialog");
     const [cancel, confirm, box] = await Promise.all([
       dialog.getByRole("button", { name: "Annuler" }).boundingBox(),
-      dialog.getByRole("button", { name: "Réinitialiser", exact: true }).boundingBox(),
+      dialog.getByRole("button", { name: "Rétablir", exact: true }).boundingBox(),
       dialog.boundingBox(),
     ]);
     expect(cancel!.x - box!.x).toBeLessThan(40);
     expect(box!.x + box!.width - (confirm!.x + confirm!.width)).toBeLessThan(40);
     await dialog.getByRole("button", { name: "Annuler" }).click();
     await expect(preview).toHaveCSS("font-size", "18.5px");
-    await page.getByRole("button", { name: "Réinitialiser les préférences" }).click();
-    await page.getByRole("dialog").getByRole("button", { name: "Réinitialiser", exact: true }).click();
+    await page.getByRole("button", { name: "Rétablir les réglages par défaut" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Rétablir", exact: true }).click();
     await expect(page.getByRole("dialog")).toBeHidden();
     await expect(preview).toHaveCSS("font-size", "15.5px");
     expect((await context.cookies()).find(cookie => cookie.name === "bailly-preferences")).toBeUndefined();

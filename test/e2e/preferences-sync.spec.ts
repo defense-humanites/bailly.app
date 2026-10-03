@@ -138,9 +138,9 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await expect(page.getByRole("radio", { name: "Très grande" })).not.toBeChecked();
 
   // A reset on the laptop reaches the phone, for the preferences synchronized.
-  await page.getByRole("button", { name: "Réinitialiser les préférences" }).click();
-  await expect(page.getByText("Les préférences synchronisées seront aussi réinitialisées sur vos autres appareils.")).toBeVisible();
-  await page.getByRole("button", { name: "Réinitialiser", exact: true }).click();
+  await page.getByRole("button", { name: "Rétablir les réglages par défaut" }).click();
+  await expect(page.getByText("aussi sur vos autres appareils pour les préférences synchronisées")).toBeVisible();
+  await page.getByRole("button", { name: "Rétablir", exact: true }).click();
   await expect(transliteration(page)).not.toBeChecked();
   await untilReloaded(phone, async () => {
     await expect(transliteration(phone)).not.toBeChecked({ timeout: 2_000 });

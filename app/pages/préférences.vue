@@ -365,19 +365,21 @@
 
         <!--
           A dangerous action: at the end, apart from the settings, discreet
-          (neutral), confirmed. In its window, « Annuler » and « Réinitialiser »
-          at both ends: not to be hit for the other.
+          (neutral), confirmed; named after what it does (not « Réinitialiser
+          les préférences »: the synchronization, on the page, is left as it
+          is). In its window, « Annuler » and « Rétablir » at both ends: not to
+          be hit for the other.
         -->
         <UModal
           v-model:open="isResetConfirmationOpen"
-          title="Réinitialiser les préférences ?"
+          title="Rétablir les réglages par défaut ?"
           :description="syncStore.syncedPreferences.length
-            ? 'Le thème, la lecture, la recherche et les signets retrouveront leurs réglages par défaut. Les préférences synchronisées seront aussi réinitialisées sur vos autres appareils.'
-            : 'Le thème, la lecture, la recherche et les signets retrouveront leurs réglages par défaut.'"
+            ? 'Le thème, la lecture, la recherche et les signets retrouveront leurs réglages par défaut, aussi sur vos autres appareils pour les préférences synchronisées. La synchronisation reste telle quelle.'
+            : 'Le thème, la lecture, la recherche et les signets retrouveront leurs réglages par défaut. La synchronisation reste telle quelle.'"
           :ui="{ footer: 'justify-between' }"
         >
           <UButton
-            label="Réinitialiser les préférences"
+            label="Rétablir les réglages par défaut"
             icon="i-lucide-rotate-ccw"
             color="neutral"
             variant="ghost"
@@ -392,7 +394,7 @@
               @click="isResetConfirmationOpen = false"
             />
             <UButton
-              label="Réinitialiser"
+              label="Rétablir"
               color="error"
               @click="reset"
             />
