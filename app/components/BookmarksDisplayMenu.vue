@@ -46,7 +46,7 @@
     >
       <!--
         An item of the bookmarks page's menu bar (cf. `signets.vue`), as
-        « Fichier » (cf. `BookmarksMenu`). Its label doesn't tell the current
+        « Fichiers » (cf. `BookmarksMenu`). Its label doesn't tell the current
         choices, read from the device once hydrated: the server's markup stays
         the client's.
       -->

@@ -187,11 +187,11 @@
         shows in the tooltip).
       -->
       <UTooltip
-        text="Fichier"
+        text="Fichiers"
         :disabled="showButtonLabels"
       >
         <UButton
-          label="Fichier"
+          label="Fichiers"
           icon="i-lucide-archive"
           size="xl"
           color="neutral"
