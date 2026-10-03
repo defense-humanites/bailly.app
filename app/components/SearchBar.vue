@@ -100,21 +100,21 @@
   });
 
   /**
-   * Whether the input method is composing, and the text it composes.
+   * Whether the input method is composing.
    */
   let composing = false;
-  let composed = "";
 
   /**
    * Whether the input may be converted while the input method composes: when
-   * the text composed has Latin letters. The keyboards of Android compose
-   * whole words (ended by a space or a suggestion, never in a search): their
-   * Beta Code is converted as it is typed (rewriting the input ends the
+   * it has Latin letters (the Beta Code being converted as it is typed, the
+   * only ones are those just typed). The keyboards of Android compose whole
+   * words (ended by a space or a suggestion, never in a search): their Beta
+   * Code is converted letter by letter (rewriting the input ends the
    * composition; the keyboard starts another one with the next letter). A
    * dead key (a desktop keyboard) composes a lone mark, left alone until its
    * letter comes.
    */
-  const convertibleWhileComposing = (): boolean => /[a-z]/i.test(composed);
+  const convertibleWhileComposing = (value: string): boolean => /[a-z]/i.test(value);
 
   /**
    * Converts the input (Beta Code, or Greek) into Greek, keeping the caret
@@ -126,7 +126,7 @@
     if (typeof value !== "string") return;
 
     // Transliterated input is converted when looked up (cf. `toLookupQuery`).
-    if ((composing && !convertibleWhileComposing()) || transliterating.value) {
+    if ((composing && !convertibleWhileComposing(value)) || transliterating.value) {
       query.value = value;
       return;
     }
@@ -144,17 +144,27 @@
 
   const onCompositionStart = (): void => {
     composing = true;
-    composed = "";
-  };
-
-  const onCompositionUpdate = (event: CompositionEvent): void => {
-    composed = event.data;
   };
 
   const onCompositionEnd = (event: CompositionEvent): void => {
     composing = false;
-    composed = "";
     onInput((event.target as HTMLInputElement).value);
+  };
+
+  /**
+   * The input typed while the input method composes: the input menu passes
+   * it on only on Android, as its browser says (not Samsung Internet, e.g.,
+   * whose compositions don't tell their text), and otherwise waits for the
+   * end of the composition. It is converted here meanwhile, and shows the
+   * results as typing does.
+   */
+  const onComposedInput = (event: Event): void => {
+    if (!(event instanceof InputEvent) || !(event.isComposing || composing)) return;
+    const input = menu.value?.inputRef as HTMLInputElement | undefined;
+    if (event.target !== input) return;
+    composing = true;
+    onInput(input.value);
+    open.value = true;
   };
 
   /**
@@ -385,6 +395,7 @@
     ref="group"
     class="group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
     @keydown.capture="onKeydown"
+    @input.capture="onComposedInput"
   >
     <UInputMenu
       ref="menu"
@@ -424,7 +435,6 @@
       @update:open="open = $event"
       @update:model-value="onInput"
       @compositionstart="onCompositionStart"
-      @compositionupdate="onCompositionUpdate"
       @compositionend="onCompositionEnd"
     >
       <!-- The clear button replaces the search icon once the input isn't empty. -->
