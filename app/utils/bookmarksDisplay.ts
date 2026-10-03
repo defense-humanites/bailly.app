@@ -8,5 +8,5 @@ export type BookmarksDisplay = typeof BOOKMARKS_DISPLAYS[number];
 
 export const BOOKMARKS_DISPLAY_LABELS: Record<BookmarksDisplay, string> = {
   excerpts: "Extraits",
-  headwords: "Vedettes seules",
+  headwords: "Vedettes",
 };

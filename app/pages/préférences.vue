@@ -119,11 +119,13 @@
   One column (the reading width, centered) below `lg`; from `lg`, two
   columns, aligned with the header (as the bookmarks page): Synchronization,
   General and Search on the left, Reading (the tallest, with its preview),
-  Bookmarks and the reset on the right.
+  Bookmarks and the reset on the right. From `lg`, the cards are centered
+  vertically in the window (without a visible title, they would seem crowded
+  at its top).
 -->
 <template>
-  <div class="px-4 py-6 md:px-6 lg:pt-8 lg:pb-6">
-    <div class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-6 lg:max-w-(--content-max-width) lg:grid-cols-2">
+  <div class="px-4 py-6 md:px-6 lg:flex lg:min-h-[calc(100dvh-var(--header-total))] lg:flex-col lg:justify-center lg:pt-8 lg:pb-6">
+    <div class="mx-auto grid w-full max-w-(--reading-width) grid-cols-1 items-start gap-6 lg:max-w-(--content-max-width) lg:grid-cols-2">
       <!--
         The title for screen readers only: the header's menu already shows
         the page (its link in the primary color), and the cards take the room.
@@ -342,7 +344,7 @@
           </template>
           <SettingsRow
             label="Affichage des entrées"
-            description="Leur extrait, ou leur seule vedette."
+            description="Leur extrait, ou leur vedette."
             :synced="synced('bookmarksDisplay')"
           >
             <URadioGroup

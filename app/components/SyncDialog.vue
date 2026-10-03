@@ -76,7 +76,7 @@
     readingWeight: { label: "Graisse du texte" },
     inflectedForms: { label: "Formes fléchies" },
     inputMode: { label: "Saisie", description: "Beta code ou translittération : selon le clavier de chaque appareil." },
-    bookmarksDisplay: { label: "Affichage des signets", description: "Extraits ou vedettes seules : selon l'écran de chaque appareil." },
+    bookmarksDisplay: { label: "Affichage des signets", description: "Extraits ou vedettes : selon l'écran de chaque appareil." },
     tagSort: { label: "Tri des étiquettes" },
   };
 
