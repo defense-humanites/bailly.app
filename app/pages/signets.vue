@@ -49,6 +49,16 @@
   const showToc = computed((): boolean => initialized.value && tags.value.length >= TOC_FROM);
 
   /**
+   * The introduction to the bookmarks, until the user dismisses it (on every
+   * device whose preferences are synchronized, cf. `useDismissed`); with an
+   * invitation to synchronize them while they aren't.
+   */
+  const introDismissed = useDismissed("bookmarksIntro");
+  // (Its exposed `enabled` is unwrapped on the component's instance.)
+  const syncButton = useTemplateRef<{ open: () => void; enabled: boolean }>("syncButton");
+  const syncEnabled = computed((): boolean => syncButton.value?.enabled ?? false);
+
+  /**
    * The tags to choose the active one from, in their order; from
    * `ACTIVE_FILTER_FROM` tags, the menu can be filtered.
    */
@@ -167,6 +177,7 @@
 
           <!-- Synchronization (its state, and its window) -->
           <SyncButton
+            ref="syncButton"
             scope="bookmarks"
             class="flex h-11 border-s border-default max-lg:overflow-hidden max-lg:rounded-br-(--field-inner-radius) lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
           />
@@ -182,6 +193,33 @@
           v-if="showToc"
           :groups="toc"
         />
+
+        <!--
+          The introduction, before the favorites: what the bookmarks are, and
+          an invitation to synchronize them (the Aegean blue of the
+          synchronization). Dismissed by its close button.
+        -->
+        <UAlert
+          v-if="!introDismissed"
+          class="col-span-full"
+          color="secondary"
+          variant="subtle"
+          icon="i-lucide-bookmark"
+          title="Vos signets"
+          :ui="{ description: 'text-default opacity-100' }"
+          :actions="syncEnabled ? [] : [{ label: 'Synchroniser mes signets', icon: 'i-lucide-cloud-upload', color: 'secondary', variant: 'solid', size: 'sm', onClick: () => syncButton?.open() }]"
+          close
+          @update:open="introDismissed = true"
+        >
+          <template #description>
+            Depuis la barre d'outils d'une entrée, ajoutez-la à vos favoris ou rangez-la sous
+            une étiquette : vous la retrouverez ici.
+            <template v-if="!syncEnabled">
+              Vos signets restent sur cet appareil ; synchronisez-les pour les retrouver sur vos
+              autres appareils.
+            </template>
+          </template>
+        </UAlert>
 
         <!-- Favorites -->
         <BookmarkGroup

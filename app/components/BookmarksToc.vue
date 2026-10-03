@@ -36,7 +36,8 @@
    * The group being read: the card that last went under the table of
    * contents (the one a link brings there), or the one whose link was
    * followed, until the user scrolls by themselves (a card near the page's
-   * bottom can't reach the table of contents).
+   * bottom can't reach the table of contents). Before any card went under
+   * it (e.g. under the bookmarks' introduction), the first one.
    */
   const current = ref<string>();
   let followed: string | undefined;
@@ -63,7 +64,7 @@
       const top = document.getElementById(group.id)?.getBoundingClientRect().top;
       if (top !== undefined && top <= line && (!read || top > read.top)) read = { key: group.key, top };
     }
-    current.value = read?.key;
+    current.value = read?.key ?? props.groups[0]?.key;
   }
 
   const scroller = usePageScroller();

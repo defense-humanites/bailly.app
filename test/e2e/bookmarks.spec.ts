@@ -204,6 +204,27 @@ test.describe("bookmarks page", () => {
     await expect(excerpt).toHaveCSS("font-weight", "400");
   });
 
+  // An introduction before the favorites, with an invitation to synchronize,
+  // until the user dismisses it (with the other dismissed notices).
+  test("an introduction, until dismissed", async ({ page }) => {
+    const intro = page.locator("main [data-slot=root]").filter({ has: page.getByText("Vos signets", { exact: true }) });
+    await expect(intro).toBeVisible();
+    const top = async (locator: typeof intro) => (await locator.boundingBox())!.y;
+    expect(await top(intro)).toBeLessThan(await top(card(page, "Favoris")));
+    // The invitation opens the synchronization's window.
+    await intro.getByRole("button", { name: "Synchroniser mes signets" }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toBeHidden();
+
+    await intro.locator("[data-slot=close]").click();
+    await expect(intro).toBeHidden();
+    expect(await page.evaluate(() => localStorage.getItem("bailly:dismissed"))).toBe("[\"bookmarksIntro\"]");
+    await page.reload();
+    await expect(card(page, "Favoris")).toBeVisible();
+    await expect(page.getByText("Vos signets", { exact: true })).toHaveCount(0);
+  });
+
   // The synchronization's button, in the menu bar, keeps its pressed look
   // while its dialog is open (`aria-expanded`), as the bar's menus.
   test("the synchronization's button stays pressed while its window is open", async ({ page }) => {
@@ -347,7 +368,7 @@ test.describe("bookmarks page, headwords alone", () => {
     await expect(homer.getByRole("link")).toHaveCount(6);
 
     await page.getByRole("button", { name: "Affichage" }).click();
-    await page.getByRole("menuitemcheckbox", { name: /^Vedettes seules/ }).click();
+    await page.getByRole("menuitemcheckbox", { name: /^Vedettes/ }).click();
     const links = homer.getByRole("listitem").getByRole("link");
     await expect(links).toHaveCount(16);
     await expect(links.first()).toHaveText("λόγος17");
