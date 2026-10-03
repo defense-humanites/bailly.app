@@ -73,7 +73,7 @@ test.describe("home page", () => {
     // Hovered with a mouse: the popover opens, the focus stays where it was.
     await button.hover();
     await expect(edition).toBeVisible();
-    await expect(page.getByRole("link", { name: "En savoir plus" })).not.toBeFocused();
+    await expect(page.getByRole("link", { name: "En savoir plus", exact: true })).not.toBeFocused();
     await page.mouse.move(0, 0);
     await expect(edition).toBeHidden();
     // Clicked: it opens too.
@@ -83,7 +83,7 @@ test.describe("home page", () => {
 
   test("leads to the about page", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
-    await page.getByRole("link", { name: /^D'où vient le texte/ }).click();
+    await page.getByRole("link", { name: "en savoir plus", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`${encodeURI("/à-propos")}$`));
   });
 });

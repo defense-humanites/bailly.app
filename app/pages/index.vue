@@ -100,11 +100,10 @@
         </UPopover></span>
       </h1>
       <p class="text-lg text-pretty text-muted">
-        Une application libre et gratuite, pensée pour la lecture et la recherche.
-        <NuxtLink
-          to="/à-propos"
+        Une application libre et gratuite, pensée pour la lecture et la recherche (<NuxtLink
+          :to="encodeURI('/à-propos')"
           class="underline decoration-dotted underline-offset-4 hover:text-primary"
-        >D'où vient le texte&nbsp;?</NuxtLink>
+        >en savoir plus</NuxtLink>).
       </p>
       <!--
         For the readers who don't read Greek: the transliteration preference,
@@ -114,7 +113,7 @@
         <USwitch
           v-model="transliterateGreek"
           aria-labelledby="translitteration"
-          aria-describedby="translitteration-aide"
+          aria-describedby="translitteration-help"
           class="mt-0.5"
         />
         <div class="text-sm">
@@ -125,14 +124,10 @@
             Vous ne lisez pas le grec ?
           </p>
           <p
-            id="translitteration-aide"
+            id="translitteration-help"
             class="text-muted"
           >
-            Affichez-le en caractères latins : <span lang="grc">λόγος</span> → <span lang="grc-Latn">lógos</span>.
-            Ce choix est enregistré dans vos <NuxtLink
-              :to="encodeURI('/préférences')"
-              class="underline decoration-dotted underline-offset-4 hover:text-primary"
-            >préférences</NuxtLink>.
+            Affichez-le en caractères latins.
           </p>
         </div>
       </div>
