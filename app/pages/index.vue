@@ -51,12 +51,13 @@
     <!--
       Below `lg`, a grid: on mobile, the title first and the transliteration
       offer right under it, the donation's button last; on a tablet (`md`),
-      the offer at the top right, beside the title. A column from `lg`. The
+      the offer at the top right, beside the donation's button, the title
+      and the text below on the whole width. A column from `lg`. The
       order is CSS's only, the markup's being the same everywhere.
     -->
     <section class="@container grid grid-cols-1 justify-items-start gap-5 md:grid-cols-[minmax(0,1fr)_18rem] md:gap-x-10 lg:flex lg:flex-col lg:items-start">
       <UButton
-        class="order-4 md:order-none md:col-start-1"
+        class="order-4 md:order-none md:col-start-1 md:self-end"
         to="/soutenir"
         size="sm"
         color="primary"
@@ -73,7 +74,7 @@
       -->
       <h1
         aria-labelledby="titre-accueil"
-        class="order-1 font-serif text-2xl/[1.25] font-bold text-balance md:order-none md:col-start-1 md:text-3xl/[1.25] lg:text-[length:min(2.25rem,5.6cqi)]"
+        class="order-1 font-serif text-2xl/[1.25] font-bold text-balance md:order-none md:col-span-2 md:text-3xl/[1.25] lg:text-[length:min(2.25rem,5.6cqi)]"
       >
         <span id="titre-accueil">Consultez le dictionnaire <br class="max-lg:hidden">grec–français d'Anatole&nbsp;Bailly</span><span class="whitespace-nowrap">&nbsp;<UPopover
           v-model:open="editionOpen"
@@ -106,7 +107,7 @@
           </template>
         </UPopover></span>
       </h1>
-      <p class="order-3 text-lg text-pretty text-muted md:order-none md:col-start-1">
+      <p class="order-3 text-lg text-pretty text-muted md:order-none md:col-span-2">
         Une application libre et gratuite, pensée pour la lecture et la recherche (<NuxtLink
           :to="encodeURI('/à-propos')"
           class="underline decoration-dotted underline-offset-4 hover:text-primary"
@@ -116,7 +117,7 @@
         For the readers who don't read Greek: the transliteration preference,
         whose effect shows at once on the opened entry (and is saved).
       -->
-      <div class="order-2 flex w-full items-start gap-3 rounded-lg bg-primary/8 px-4 py-3 ring-1 ring-primary/25 md:order-none md:col-start-2 md:row-span-3 md:row-start-1 md:self-start lg:mt-3 lg:w-auto lg:bg-default/60 lg:ring-default">
+      <div class="order-2 flex w-full items-start gap-3 rounded-lg bg-default/60 px-4 py-3 ring-1 ring-default md:order-none md:col-start-2 md:row-start-1 lg:mt-3 lg:w-auto">
         <USwitch
           v-model="transliterateGreek"
           aria-labelledby="translitteration"
