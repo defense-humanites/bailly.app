@@ -257,7 +257,7 @@
     key: "Votre clé de synchronisation",
     status: props.scope === "bookmarks" ? "Synchronisation des signets" : "Synchronisation des préférences",
     stop: "Arrêter la synchronisation ?",
-    delete: "Supprimer vos données en ligne ?",
+    delete: "Révoquer cette clé ?",
     preferences: "Préférences synchronisées",
   }));
 
@@ -476,18 +476,10 @@
   const { lastSync, syncingShown, manualSync, syncNow } = useSyncActivity();
 
   /**
-   * What stopping the synchronization concerns: this device only, or every
-   * device (the locker is then deleted from the server).
-   */
-  const stopScope = ref<"device" | "everywhere">("device");
-
-  /**
    * Whether this device synchronizes the other type of data too (it goes on
    * when the window's is stopped on this device).
    */
   const otherEnabled = computed(() => (props.scope === "bookmarks" ? syncedPreferences.value.length > 0 : syncedBookmarks.value));
-
-  const capitalize = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
 
   /**
    * What the locker holds, as last read (the deletion deletes it all).
@@ -499,27 +491,14 @@
     return preferences ? "vos préférences" : "vos signets";
   });
 
-  const stopItems = computed(() => [
-    {
-      value: "device",
-      label: "Sur cet appareil seulement",
-      description: otherEnabled.value ? `${texts.value.stopDeviceKept} ${texts.value.otherStays}` : texts.value.stopDevice,
-    },
-    {
-      value: "everywhere",
-      label: "Sur tous vos appareils",
-      description: `${onlineData.value === "vos préférences" ? "Vos préférences sont supprimées" : `${capitalize(onlineData.value)} sont supprimés`} du serveur, et la synchronisation s'arrête sur tous vos appareils. Chacun d'eux garde ses données. Utile aussi si quelqu'un a pu voir votre clé : réactivez ensuite la synchronisation, avec une nouvelle clé.`,
-    },
-  ]);
-
   /**
-   * Stops the synchronization on this device; for every device, a second
-   * confirmation is asked first (the online copy is deleted).
+   * Stopping concerns the window's type of data, on this device only. Deleting
+   * the online copy (every device stops, for both types of data: the locker
+   * is the key's) is the key's action, from its view (« Révoquer cette
+   * clé… »): not a choice beside the stop, whose scope it would not share.
    */
-  const stop = (): void => {
-    if (stopScope.value === "device") void disable();
-    else view.value = "delete";
-  };
+  const stopText = computed((): string =>
+    otherEnabled.value ? `${texts.value.stopDeviceKept} ${texts.value.otherStays}` : texts.value.stopDevice);
 
   const disable = () => run(async () => {
     const other = otherEnabled.value;
@@ -555,7 +534,6 @@
     joinError.value = null;
     actionError.value = null;
     linkKey.value = props.linkSecret ?? null;
-    stopScope.value = "device";
     customizing.value = false;
     chosenPreferences.value = syncedPreferences.value.length ? [...syncedPreferences.value] : [...DEFAULT_SYNCED_PREFERENCES];
     if (linkKey.value) view.value = "join";
@@ -1041,16 +1019,11 @@
 
         <!-- Stop: on this device only, or everywhere -->
         <template v-else-if="view === 'stop'">
-          <URadioGroup
-            v-model="stopScope"
-            color="secondary"
-            :items="stopItems"
-            variant="card"
-            legend="Arrêter la synchronisation"
-            :ui="{ legend: 'sr-only', fieldset: 'gap-2' }"
-          />
+          <p>
+            {{ stopText }}
+          </p>
           <UAlert
-            v-if="stopScope === 'device' && scopeError"
+            v-if="scopeError"
             color="warning"
             variant="subtle"
             icon="i-lucide-cloud-off"
@@ -1059,12 +1032,13 @@
           />
         </template>
 
-        <!-- Stop everywhere: the second confirmation -->
+        <!-- The key revoked: the online copy deleted, every device stopped -->
         <template v-else-if="view === 'delete'">
           <ul class="list-disc space-y-1.5 ps-5">
             <li>La copie en ligne de {{ onlineData }} sera effacée, sans retour possible.</li>
             <li>La synchronisation s'arrêtera sur tous vos appareils, et cette clé ne pourra plus servir.</li>
             <li>Chaque appareil garde ses données.</li>
+            <li>Pour synchroniser de nouveau, activez la synchronisation avec une nouvelle clé.</li>
           </ul>
         </template>
       </div>
@@ -1120,6 +1094,15 @@
       </template>
 
       <template v-else-if="view === 'key'">
+        <!-- Revoking the key: when it was opened to be managed (not right after its creation). -->
+        <UButton
+          v-if="keyFromStatus"
+          label="Révoquer cette clé…"
+          color="neutral"
+          variant="ghost"
+          class="me-auto"
+          @click="view = 'delete'"
+        />
         <UButton
           :label="keyFromStatus ? (openedOn === 'key' ? 'Fermer' : 'Retour') : 'J\'ai conservé ma clé'"
           :color="keyFromStatus ? 'neutral' : 'secondary'"
@@ -1161,15 +1144,15 @@
         />
         <UButton
           color="secondary"
-          :label="stopScope === 'device' ? 'Désactiver sur cet appareil' : 'Continuer…'"
+          label="Désactiver sur cet appareil"
           :loading="busy"
-          @click="stop"
+          @click="disable"
         />
       </template>
 
       <!--
-        The deletion is not where "Continuer…" was: a double click can't
-        confirm it.
+        The deletion is not where « Révoquer cette clé… » was: a double click
+        can't confirm it.
       -->
       <template v-else-if="view === 'delete'">
         <UButton
@@ -1183,7 +1166,7 @@
           label="Retour"
           color="neutral"
           variant="outline"
-          @click="view = 'stop'"
+          @click="view = 'key'"
         />
       </template>
     </template>

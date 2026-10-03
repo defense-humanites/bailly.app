@@ -113,12 +113,16 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
     return (await bookmarksState(page)).tags;
   }, { timeout: 15_000 }).toEqual(["Homère", "Platon"]);
 
-  // The laptop deletes the bookmarks online: the phone stops synchronizing,
-  // and keeps its bookmarks.
+  // The laptop revokes the key (its window, from the state's): the online
+  // copy is deleted, the phone stops synchronizing, and keeps its bookmarks.
+  // (Not from the stop's window, which concerns this device only.)
   await openSync(page);
   await page.getByRole("button", { name: "Arrêter la synchronisation…" }).click();
-  await page.getByRole("radio", { name: /^Sur tous vos appareils/ }).click();
-  await page.getByRole("button", { name: "Continuer…" }).click();
+  await expect(page.getByRole("radio")).toHaveCount(0);
+  await page.getByRole("button", { name: "Annuler" }).click();
+  await page.getByRole("button", { name: "Ma clé" }).click();
+  await page.getByRole("button", { name: "Révoquer cette clé…" }).click();
+  await expect(page.getByRole("dialog", { name: "Révoquer cette clé ?" })).toBeVisible();
   await expect(page.getByText("sans retour possible")).toBeVisible();
   await page.getByRole("button", { name: "Supprimer définitivement" }).click();
   await expect(page.getByText("Données supprimées du serveur", { exact: true })).toBeVisible();
