@@ -57,11 +57,6 @@ export enum StorageKey {
    * The notices the user dismissed (a list of ids, e.g. `morpheusWarning`).
    */
   Dismissed = "bailly:dismissed",
-  /**
-   * The theme (`system`, `light` or `dark`), managed by the color mode
-   * module (cf. `colorMode.storageKey` in `nuxt.config.ts`).
-   */
-  Theme = "bailly:theme",
 }
 
 /**

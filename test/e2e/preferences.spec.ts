@@ -14,11 +14,11 @@ const preferencesCookie = async (context: BrowserContext) =>
   (await context.cookies()).find(cookie => cookie.name === COOKIE);
 
 test.describe("preferences", () => {
-  test("a first visit stores nothing but the color mode", async ({ page, goto, context }) => {
+  test("a first visit stores nothing (but the color mode, in a cookie)", async ({ page, goto, context }) => {
     await goto("/logos", { waitUntil: "hydration" });
     await searchInput(page).fill("log");
     expect(await preferencesCookie(context)).toBeUndefined();
-    expect(Object.keys(await storage(page))).toEqual(["bailly:theme"]);
+    expect(Object.keys(await storage(page))).toEqual([]);
   });
 
   test("stored in a cookie, which the server renders the pages with", async ({ page, goto, context }) => {
@@ -56,8 +56,8 @@ test.describe("preferences", () => {
     const stored = await storage(page);
     expect(stored).toMatchObject({
       "bailly:dismissed": "[\"morpheusWarning\"]",
-      "bailly:theme": "dark",
     });
+    expect((await context.cookies()).find(cookie => cookie.name === "bailly-theme")?.value).toBe("dark");
     expect(Object.keys(stored).filter(key => !key.startsWith("bailly:"))).toEqual([]);
     await expect(page.locator("html")).toHaveClass(/\bdark\b/);
   });

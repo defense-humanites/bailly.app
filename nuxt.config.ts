@@ -40,11 +40,14 @@ export default defineNuxtConfig({
   },
   css: ["~/assets/css/main.css"],
   /**
-   * The theme is kept in the local storage (cf. `StorageKey.Theme`): the
-   * module applies it before the page is shown, with an inline script.
+   * The theme is kept in a cookie: the server renders the theme's choice (on
+   * the preferences page) and class as stored. In the local storage, the
+   * server rendered « Système », which the hydration then didn't always
+   * update (a light or dark choice not shown as selected).
    */
   colorMode: {
-    storageKey: "bailly:theme",
+    storage: "cookie",
+    storageKey: "bailly-theme",
   },
   ui: {
     // Fonts are self-hosted (cf. `app/assets/css/fonts.css`).

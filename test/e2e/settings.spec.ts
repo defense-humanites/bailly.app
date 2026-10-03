@@ -27,6 +27,16 @@ test.describe("settings", () => {
     expect(Math.abs(button!.x + button!.width - (card!.x + card!.width))).toBeLessThan(1);
   });
 
+  test("the theme: kept in a cookie, shown as chosen once reloaded", async ({ page, goto, context }) => {
+    await goto("/préférences", { waitUntil: "hydration" });
+    await page.locator("[data-slot=label]", { hasText: "Sombre" }).click();
+    await expect(page.locator("html")).toHaveClass(/\bdark\b/);
+    expect((await context.cookies()).find(cookie => cookie.name === "bailly-theme")?.value).toBe("dark");
+    await page.reload();
+    await expect(page.getByRole("radio", { name: "Sombre" })).toBeChecked();
+    await expect(page.getByRole("radio", { name: "Système" })).not.toBeChecked();
+  });
+
   test("two columns from lg, centered under the header; one below", async ({ page, goto }) => {
     const extent = (selector: string) => page.locator(selector).first().evaluate((element) => {
       const { left, right, top } = element.getBoundingClientRect();
