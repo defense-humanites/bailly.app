@@ -1,7 +1,7 @@
 > [!NOTE]
 > Ce dépôt contient uniquement le client de l'application Bailly. L'API se
 > trouve dans le dépôt
-> [bailly-api](https://github.com/antoineboquet/bailly-api).
+> [bailly-api](https://github.com/defense-humanites/bailly-api).
 
 <p align="center">
   <br><br><img width="192" height="192" src="app/assets/icons/bailly.svg" alt="Logo de l'application Bailly">
