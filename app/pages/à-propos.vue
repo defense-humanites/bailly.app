@@ -64,14 +64,6 @@
   };
 
   /**
-   * The entry ῥιπτός, as the 2020 edition gives it (cf. its scan from 1935).
-   */
-  const rhiptos = `<span class="entreea"><span class="grec">ῥιπτός,</span></span> <span class="des">ή, όν,</span> jeté,
-lancé : <span class="grec">μόρος</span>, <span class="aut">Soph.</span> <span class="oeuv">Tr.</span> <span class="refch">357,</span>
-mort d'un homme qu'on lance (du haut d'un rocher).
-<div class="etymor"><span class="etiqetymor">Étym.</span> <span class="ital">vb. de</span> <span class="grec">ῥίπτω</span>.</div>`;
-
-  /**
    * The errors of the text go to the team of the 2020 edition, with the entry
    * and the version (as its notice asks).
    */
@@ -188,7 +180,9 @@ mort d'un homme qu'on lance (du haut d'un rocher).
         <!--
           The rest of the page is below the fold: an invitation to scroll
           (smoothly, through the router: cf. `router.options.ts`; a plain
-          `#atouts` would be a native jump).
+          `#atouts` would be a native jump). On a short window (at most 45rem
+          high), where it comes close to the hero's text, its arrow alone, a
+          notch larger (its label for screen readers): lighter.
         -->
         <UButton
           :to="{ hash: '#atouts' }"
@@ -198,7 +192,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           trailing-icon="i-lucide-chevron-down"
           label="En savoir plus"
           class="hero-cue mt-[clamp(0.25rem,1.5svh,1.5rem)] shrink-0 flex-col gap-0 text-muted max-md:py-0"
-          :ui="{ trailingIcon: 'size-4 md:size-5' }"
+          :ui="{ label: '[@media(max-height:45rem)]:sr-only', trailingIcon: 'size-4 md:size-5 [@media(max-height:45rem)]:size-6' }"
         />
       </section>
     </div>
@@ -356,7 +350,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
         </h2>
         <p class="mx-auto mt-2 max-w-2xl text-center text-muted">
           Trois ouvrages en un : le dictionnaire, son édition numérique, et l'application qui vous la
-          présente. Voici la même entrée, ῥιπτός, dans chacun d'eux.
+          présente. Voici la même entrée, ῥινόκερως (le rhinocéros), dans chacun d'eux.
         </p>
 
         <!--
@@ -376,10 +370,10 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           <article class="flex flex-col gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-8 lg:flex lg:col-start-1 lg:row-start-2">
             <div class="mx-auto aspect-[4/3] w-full max-w-sm bg-white overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
               <img
-                src="/images/bailly-1935-rhiptos.webp"
-                width="480"
-                height="480"
-                alt="L'entrée ῥιπτός dans l'édition de 1935 (fac-similé)."
+                src="/images/bailly-1935-rhinokeros.webp"
+                width="360"
+                height="270"
+                alt="L'entrée ῥινόκερως dans l'édition de 1935 (fac-similé)."
                 class="size-full object-cover"
               >
             </div>
@@ -400,16 +394,14 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           </article>
 
           <article class="flex flex-col gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-8 lg:flex lg:col-start-2 lg:row-start-2">
-            <div
-              aria-hidden="true"
-              class="mx-auto flex aspect-[4/3] w-full max-w-sm items-center justify-center bg-default p-4 overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none"
-            >
-              <!-- eslint-disable vue/no-v-html -- A constant of this page. -->
-              <div
-                class="definition max-w-[17rem] font-serif [--reading-font-size:0.875rem] [--reading-font-weight:400]"
-                v-html="rhiptos"
-              />
-              <!-- eslint-enable vue/no-v-html -->
+            <div class="mx-auto aspect-[4/3] w-full max-w-sm bg-white overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
+              <img
+                src="/images/bailly-2020-rhinokeros.webp"
+                width="400"
+                height="300"
+                alt="L'entrée ῥινόκερως dans l'édition PDF de 2020."
+                class="size-full object-cover"
+              >
             </div>
             <div class="min-w-0 max-md:text-center">
               <h3 class="font-serif text-lg/8 font-bold">
@@ -461,7 +453,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
           <article class="flex flex-col gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-8 lg:flex lg:col-start-3 lg:row-start-2">
             <div
               aria-hidden="true"
-              class="mx-auto flex aspect-[4/3] w-full max-w-sm items-center justify-center bg-linear-to-br from-primary/10 to-(--ui-bg) overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none"
+              class="mx-auto flex aspect-[4/3] w-full max-w-sm items-center justify-center bg-primary/10 overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none"
             >
               <div class="w-56 space-y-2">
                 <div class="flex items-center gap-2 rounded-full bg-default px-3 py-1.5 text-sm shadow-xs ring-1 ring-default">
@@ -469,19 +461,19 @@ mort d'un homme qu'on lance (du haut d'un rocher).
                     name="i-lucide-search"
                     class="size-4 text-muted"
                   />
-                  <span class="font-serif">ῥιπτ</span>
-                  <span class="ms-auto rounded-full bg-elevated px-1.5 text-xs text-muted">4</span>
+                  <span class="font-serif">ῥινοκ</span>
+                  <span class="ms-auto rounded-full bg-elevated px-1.5 text-xs text-muted">2</span>
                 </div>
                 <div class="rounded-md bg-default p-2.5 ring-1 ring-default">
                   <div class="flex items-center gap-1.5">
-                    <span class="font-serif text-sm font-bold">ῥιπτός</span>
+                    <span class="font-serif text-sm font-bold">ῥινόκερως</span>
                     <UIcon
                       name="i-bailly-star-filled"
                       class="ms-auto size-4 text-favorite"
                     />
                   </div>
                   <p class="line-clamp-2 font-serif text-xs/5 text-muted">
-                    ή, όν, jeté, lancé : μόρος, Soph. Tr. 357, mort d'un homme qu'on lance…
+                    ωτος (ὁ) [ῑ] rhinocéros, animal avec une corne sur le nez, Str. 774…
                   </p>
                 </div>
               </div>
