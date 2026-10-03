@@ -90,7 +90,7 @@
   const PRESSED = {
     secondary: { solid: "", ghost: "aria-expanded:bg-secondary/10" },
     warning: { solid: "", ghost: "aria-expanded:bg-warning/10" },
-    neutral: { solid: "", ghost: "aria-expanded:bg-elevated" },
+    neutral: { solid: "", ghost: "hover:bg-(--app-button-hover) active:bg-(--app-button-hover) aria-expanded:bg-(--app-button-hover)" },
   } as const;
 
   const tooltip = computed((): string => {

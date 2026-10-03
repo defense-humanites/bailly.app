@@ -60,7 +60,7 @@
           size="xl"
           color="neutral"
           variant="ghost"
-          class="h-full rounded-none aria-expanded:bg-elevated"
+          class="h-full rounded-none hover:bg-(--app-button-hover) active:bg-(--app-button-hover) aria-expanded:bg-(--app-button-hover)"
           :ui="{ base: 'max-xl:px-2.5', label: 'max-xl:sr-only' }"
         />
       </UTooltip>

@@ -50,6 +50,12 @@
   --app-page-hover: var(--ui-bg-accented);
   /* The highlighted item of the search's results and of the history. */
   --app-highlight: var(--ui-bg-elevated);
+  /*
+   * The hover of the ghost buttons of a bar on the cards' background (e.g.
+   * the bookmarks' menu bar): a shade darker, as the header menu's, rather
+   * than `bg-elevated`, the page's own color in the light theme.
+   */
+  --app-button-hover: color-mix(in oklab, var(--ui-bg-accented) 50%, transparent);
 }
 
 .dark {
@@ -79,6 +85,7 @@
   --app-favorite: var(--color-gold-300);
   --app-page-hover: var(--ui-bg-elevated);
   --app-highlight: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
+  --app-button-hover: var(--ui-bg-elevated);
 }
 
 :root {
