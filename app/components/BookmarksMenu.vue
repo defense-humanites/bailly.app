@@ -192,7 +192,7 @@
       >
         <UButton
           label="Fichiers"
-          icon="i-lucide-archive"
+          icon="i-lucide-folder-open"
           size="xl"
           color="neutral"
           variant="ghost"
