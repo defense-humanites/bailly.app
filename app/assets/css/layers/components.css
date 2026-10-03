@@ -7,23 +7,18 @@
 
   /*
    * The header menu's current page (cf. `AppNavHorizontal`): a trait in the
-   * primary color at the bottom edge of its row, as an open tab (the language
-   * of the bookmarks' table of contents, which marks so the group being
-   * read). The link is centered in the row: 3rem high below `md` (the title
-   * and the menu), `--header-height` from `md`.
+   * primary color right under its link (the language of the bookmarks' table
+   * of contents, which marks so the group being read). Not at the header's
+   * bottom edge: it touched what comes under it (e.g. the about page's hero).
    */
   .header-menu a[aria-current="page"]::after {
     content: "";
     position: absolute;
     inset-inline: 0.5rem;
-    bottom: calc((100% - 3rem) / 2);
+    bottom: -2px;
     height: 3px;
-    border-radius: 3px 3px 0 0;
+    border-radius: 3px;
     background-color: var(--ui-primary);
-
-    @variant md {
-      bottom: calc((100% - var(--header-height)) / 2);
-    }
   }
 
   /*
