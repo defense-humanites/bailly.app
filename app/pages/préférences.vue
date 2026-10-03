@@ -118,8 +118,8 @@
   help on the left, control on the right), so that they all show at once.
   One column (the reading width, centered) below `lg`; from `lg`, two
   columns, aligned with the header (as the bookmarks page): Synchronization,
-  General and Search on the left, Reading (the tallest, with its preview)
-  and Bookmarks on the right.
+  General and Search on the left, Reading (the tallest, with its preview),
+  Bookmarks and the reset on the right.
 -->
 <template>
   <div class="px-4 py-6 md:px-6 lg:pt-8 lg:pb-6">
@@ -130,8 +130,9 @@
 
       <!--
         Two columns from `lg`, balanced (the tallest card, Reading, with
-        Bookmarks; Synchronization, General and Search with the reset); below, one column in
-        the order of the cards (`contents`, `order`).
+        Bookmarks and the reset, the shorter column; Synchronization, General
+        and Search); below, one column in the order of the cards (`contents`,
+        `order`).
       -->
       <div class="contents lg:flex lg:flex-col lg:gap-6">
         <!--
@@ -232,38 +233,6 @@
             />
           </SettingsRow>
         </UCard>
-
-        <!-- A dangerous action: at the end, apart from the settings, confirmed. -->
-        <UModal
-          v-model:open="isResetConfirmationOpen"
-          title="Réinitialiser les préférences ?"
-          :description="syncStore.syncedPreferences.length
-            ? 'Le thème, la lecture, la recherche et les signets retrouveront leurs réglages par défaut. Les préférences synchronisées seront aussi réinitialisées sur vos autres appareils.'
-            : 'Le thème, la lecture, la recherche et les signets retrouveront leurs réglages par défaut.'"
-          :ui="{ footer: 'justify-end' }"
-        >
-          <UButton
-            label="Réinitialiser les préférences"
-            icon="i-lucide-rotate-ccw"
-            color="error"
-            variant="ghost"
-            class="order-6 justify-self-end lg:self-start"
-          />
-
-          <template #footer>
-            <UButton
-              label="Annuler"
-              color="neutral"
-              variant="outline"
-              @click="isResetConfirmationOpen = false"
-            />
-            <UButton
-              label="Réinitialiser"
-              color="error"
-              @click="reset"
-            />
-          </template>
-        </UModal>
       </div>
       <div class="contents lg:flex lg:flex-col lg:gap-6">
         <UCard
@@ -393,6 +362,38 @@
             />
           </SettingsRow>
         </UCard>
+
+        <!-- A dangerous action: at the end, apart from the settings, confirmed. -->
+        <UModal
+          v-model:open="isResetConfirmationOpen"
+          title="Réinitialiser les préférences ?"
+          :description="syncStore.syncedPreferences.length
+            ? 'Le thème, la lecture, la recherche et les signets retrouveront leurs réglages par défaut. Les préférences synchronisées seront aussi réinitialisées sur vos autres appareils.'
+            : 'Le thème, la lecture, la recherche et les signets retrouveront leurs réglages par défaut.'"
+          :ui="{ footer: 'justify-end' }"
+        >
+          <UButton
+            label="Réinitialiser les préférences"
+            icon="i-lucide-rotate-ccw"
+            color="error"
+            variant="ghost"
+            class="order-6 justify-self-end lg:self-end"
+          />
+
+          <template #footer>
+            <UButton
+              label="Annuler"
+              color="neutral"
+              variant="outline"
+              @click="isResetConfirmationOpen = false"
+            />
+            <UButton
+              label="Réinitialiser"
+              color="error"
+              @click="reset"
+            />
+          </template>
+        </UModal>
       </div>
     </div>
   </div>

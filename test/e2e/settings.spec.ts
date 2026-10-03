@@ -14,11 +14,17 @@ test.describe("settings", () => {
   test("compact: all the settings at once on a desktop screen", async ({ page, goto }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await goto("/préférences", { waitUntil: "hydration" });
-    // The search below (with the reset), partly shown.
+    // The search below, partly shown.
     for (const name of ["Synchronisation", "Général", "Lecture", "Signets"]) {
       await expect(page.getByRole("region", { name, exact: true })).toBeInViewport({ ratio: 1 });
     }
     await expect(page.getByRole("heading", { name: "Recherche" })).toBeInViewport();
+    // The reset under the bookmarks' settings (the shorter column), at its end.
+    const reset = page.getByRole("button", { name: "Réinitialiser les préférences" });
+    await expect(reset).toBeInViewport({ ratio: 1 });
+    const [card, button] = await Promise.all([page.getByRole("region", { name: "Signets", exact: true }).boundingBox(), reset.boundingBox()]);
+    expect(button!.y).toBeGreaterThan(card!.y + card!.height);
+    expect(Math.abs(button!.x + button!.width - (card!.x + card!.width))).toBeLessThan(1);
   });
 
   test("two columns from lg, centered under the header; one below", async ({ page, goto }) => {
