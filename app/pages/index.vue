@@ -57,7 +57,7 @@
     -->
     <section class="@container grid grid-cols-1 justify-items-start gap-5 md:grid-cols-[minmax(0,1fr)_18rem] md:gap-x-10 lg:flex lg:flex-col lg:items-start">
       <UButton
-        class="order-4 md:order-none md:col-start-1 md:self-end"
+        class="order-4 md:order-none md:col-start-1 md:self-end lg:self-auto"
         to="/soutenir"
         size="sm"
         color="primary"
