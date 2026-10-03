@@ -900,11 +900,12 @@
             cross (no ring) on a rounded square, opaque, a little inside the
             entry's corner, its shadow in the cards' background fading the text
             under it (as the description's clear button). The entry stays
-            hovered while the cross is (`group/item`).
+            hovered while the cross is (`group/item`). Above the entry's card
+            only (`z-1`): under the sticky table of contents (`z-10`).
           -->
           <UButton
             v-if="editMode"
-            class="absolute top-1.5 right-1.5 z-50 rounded-md bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] shadow-[-0.75rem_0_0.5rem_0.125rem_var(--ui-bg)]"
+            class="absolute top-1.5 right-1.5 z-1 rounded-md bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] shadow-[-0.75rem_0_0.5rem_0.125rem_var(--ui-bg)]"
             icon="i-lucide-x"
             size="xs"
             color="error"
