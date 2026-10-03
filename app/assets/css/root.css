@@ -42,6 +42,14 @@
   --app-bar-bg: var(--app-page-bg);
   /* The favorites (the star). */
   --app-favorite: var(--color-gold-400);
+  /*
+   * The hover of what lies on the page's (or the bars') background, e.g.
+   * the header's menu and the ghost buttons on the page: Nuxt UI's
+   * `bg-elevated` is the page's own color in the light theme.
+   */
+  --app-page-hover: var(--ui-bg-accented);
+  /* The highlighted item of the search's results and of the history. */
+  --app-highlight: var(--ui-bg-elevated);
 }
 
 .dark {
@@ -69,6 +77,8 @@
 
   --app-page-bg: var(--color-vernis);
   --app-favorite: var(--color-gold-300);
+  --app-page-hover: var(--ui-bg-elevated);
+  --app-highlight: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
 }
 
 :root {
@@ -115,7 +125,14 @@
     var(--header-title-width) + var(--reading-width) + var(--header-menu-width-labels)
     + 2 * var(--header-gap-wide)
   );
-  --header-max-width: calc(var(--content-max-width) + 2 * var(--search-overhang));
+  /*
+   * From `wide` (84rem), where the room allows it, the header widens (its
+   * title and menu tracks, by `--header-extra` each: the search bar and the
+   * column under it keep their place) and its items grow (cf.
+   * `AppNavHorizontal`, `SearchBar`). The pages keep their width.
+   */
+  --header-extra: 0rem;
+  --header-max-width: calc(var(--content-max-width) + 2 * var(--search-overhang) + 2 * var(--header-extra));
   /*
    * Below `lg`, the bar is capped at the width it has when `lg` starts: the
    * room left by the header's tracks and gaps, which widen there (60px more
@@ -141,6 +158,12 @@
 
   @variant xl {
     --header-menu-width: var(--header-menu-width-labels);
+  }
+
+  @variant wide {
+    --header-extra: 3rem;
+    --header-title-track: calc(var(--header-title-width) + var(--header-extra));
+    --header-menu-width: calc(var(--header-menu-width-labels) + var(--header-extra));
   }
 
   /*

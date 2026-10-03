@@ -66,18 +66,18 @@
       <UNavigationMenu
         aria-label="Accueil"
         :items="[{ label: 'Bailly.app', to: '/', active: false }]"
-        :ui="{ item: 'md:py-0', link: 'cursor-pointer py-1.5 md:py-0.5' }"
+        :ui="{ item: 'md:py-0', link: 'cursor-pointer py-1.5 md:py-0.5 hover:before:bg-(--app-page-hover)/50' }"
       >
         <template #item-label>
           <img
             src="../assets/images/bailly-app-light.svg"
             alt="Bailly.app"
-            class="h-7 w-auto dark:hidden"
+            class="h-7 w-auto wide:h-8 dark:hidden"
           >
           <img
             src="../assets/images/bailly-app-dark.svg"
             alt="Bailly.app"
-            class="h-7 w-auto hidden dark:block"
+            class="h-7 w-auto hidden wide:h-8 dark:block"
           >
         </template>
       </UNavigationMenu>
@@ -85,7 +85,12 @@
       <UNavigationMenu
         class="md:col-start-3 md:row-start-1 md:justify-self-end"
         :items="menuItems"
-        :ui="{ item: 'md:py-0', link: 'max-md:p-2.5', linkLabel: 'max-xl:sr-only' }"
+        :ui="{
+          item: 'md:py-0',
+          link: 'max-md:p-2.5 wide:text-base hover:before:bg-(--app-page-hover)/50',
+          linkLeadingIcon: 'wide:size-6',
+          linkLabel: 'max-xl:sr-only',
+        }"
       />
     </nav>
   </header>

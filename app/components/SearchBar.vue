@@ -424,12 +424,12 @@
       :content="{ align: 'start', collisionPadding: 8, reference: groupElement }"
       :ui="{
         root: 'has-focus-visible:z-auto',
-        base: 'shadow-xs text-base/6 focus-visible:outline-transparent',
+        base: 'shadow-xs text-base/6 focus-visible:outline-transparent wide:py-2.5 wide:text-lg/6',
         content: contentClass,
         // The homonyms' indent comes from their label (`data-nested`), not from
         // an item class: the input menu reuses its items by position without
         // updating their class, which then stuck to the next results.
-        item: 'items-start has-[[data-nested]]:ps-5',
+        item: 'items-start has-[[data-nested]]:ps-5 data-highlighted:not-data-disabled:before:bg-(--app-highlight)',
         itemLabel: 'whitespace-normal line-clamp-2',
         itemTrailingIcon: 'hidden',
         label: 'text-xs uppercase tracking-wide text-muted',

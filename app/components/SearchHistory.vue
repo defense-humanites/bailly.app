@@ -96,7 +96,7 @@
       variant="outline"
       size="lg"
       icon="i-lucide-history"
-      class="relative w-12 shrink-0 justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border-accented) data-[state=open]:bg-elevated group-has-[input:focus-visible]/search:ring-primary"
+      class="relative w-12 shrink-0 justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border) data-[state=open]:bg-elevated group-has-[input:focus-visible]/search:ring-primary"
       aria-label="Entrées consultées récemment"
     />
 
@@ -126,7 +126,7 @@
           >
             <NuxtLink
               :to="link.to"
-              class="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm outline-none hover:bg-elevated/50 focus-visible:bg-elevated"
+              class="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm outline-none hover:bg-(--app-highlight) focus-visible:bg-elevated"
             >
               <span class="line-clamp-2 grow font-serif text-sm/6"><span class="font-semibold">{{ greek.text(link.word) }}</span>{{ greek.text(link.rest) }}</span>
               <EntryBookmarkIndicator

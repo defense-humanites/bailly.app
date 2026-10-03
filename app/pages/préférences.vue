@@ -392,7 +392,7 @@
             icon="i-lucide-rotate-ccw"
             color="neutral"
             variant="ghost"
-            class="order-6 justify-self-end lg:self-end"
+            class="order-6 justify-self-end hover:bg-(--app-page-hover) active:bg-(--app-page-hover) lg:self-end"
           />
 
           <template #footer>
