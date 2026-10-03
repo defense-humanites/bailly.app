@@ -363,19 +363,23 @@
           </SettingsRow>
         </UCard>
 
-        <!-- A dangerous action: at the end, apart from the settings, confirmed. -->
+        <!--
+          A dangerous action: at the end, apart from the settings, discreet
+          (neutral), confirmed. In its window, « Annuler » and « Réinitialiser »
+          at both ends: not to be hit for the other.
+        -->
         <UModal
           v-model:open="isResetConfirmationOpen"
           title="Réinitialiser les préférences ?"
           :description="syncStore.syncedPreferences.length
             ? 'Le thème, la lecture, la recherche et les signets retrouveront leurs réglages par défaut. Les préférences synchronisées seront aussi réinitialisées sur vos autres appareils.'
             : 'Le thème, la lecture, la recherche et les signets retrouveront leurs réglages par défaut.'"
-          :ui="{ footer: 'justify-end' }"
+          :ui="{ footer: 'justify-between' }"
         >
           <UButton
             label="Réinitialiser les préférences"
             icon="i-lucide-rotate-ccw"
-            color="error"
+            color="neutral"
             variant="ghost"
             class="order-6 justify-self-end lg:self-end"
           />

@@ -85,7 +85,16 @@ test.describe("settings", () => {
     await goto("/préférences", { waitUntil: "hydration" });
     // Confirmed first: cancelling keeps the settings.
     await page.getByRole("button", { name: "Réinitialiser les préférences" }).click();
-    await page.getByRole("dialog").getByRole("button", { name: "Annuler" }).click();
+    // Cancelling and resetting at both ends of the window.
+    const dialog = page.getByRole("dialog");
+    const [cancel, confirm, box] = await Promise.all([
+      dialog.getByRole("button", { name: "Annuler" }).boundingBox(),
+      dialog.getByRole("button", { name: "Réinitialiser", exact: true }).boundingBox(),
+      dialog.boundingBox(),
+    ]);
+    expect(cancel!.x - box!.x).toBeLessThan(40);
+    expect(box!.x + box!.width - (confirm!.x + confirm!.width)).toBeLessThan(40);
+    await dialog.getByRole("button", { name: "Annuler" }).click();
     await expect(preview).toHaveCSS("font-size", "18.5px");
     await page.getByRole("button", { name: "Réinitialiser les préférences" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Réinitialiser", exact: true }).click();
