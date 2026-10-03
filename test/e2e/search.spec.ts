@@ -213,3 +213,27 @@ test("no results panel while there is nothing to look up", async ({ page, goto }
   await searchInput(page).pressSequentially("l");
   await expect(searchResults(page)).toBeVisible();
 });
+
+test.describe("on iOS", () => {
+  test.use({
+    hasTouch: true,
+    isMobile: true,
+    viewport: { width: 390, height: 844 },
+    userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+  });
+
+  // WebKit scrolls back to the top when an input of a sticky header gets the
+  // focus: a tap focuses the search bar itself, without scrolling.
+  test("a tap focuses the search bar, the page staying where it is", async ({ page, goto }) => {
+    await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
+    await page.evaluate(() => {
+      window.scrollTo(0, 1500);
+    });
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(1500);
+    await searchInput(page).tap();
+    await expect(searchInput(page)).toBeFocused();
+    expect(await page.evaluate(() => window.scrollY)).toBe(1500);
+    await searchInput(page).pressSequentially("logos");
+    await expect(searchInput(page)).toHaveValue("λογος");
+  });
+});
