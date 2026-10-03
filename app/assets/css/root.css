@@ -148,11 +148,11 @@
   --header-height: 4rem;
 
   /*
-   * The bottom of the header, once the page is scrolled (cf.
-   * `AppNavHorizontal`): below `md`, the search bar row (and its border),
-   * and the title row too while it is shown; for what sticks under it.
+   * The bottom of the header (cf. `AppNavHorizontal`), fixed: below `md`,
+   * its two rows (the title and the menu, 3rem; the search bar, 3.5rem) and
+   * its border; for its place in the flow and what sticks under it.
    */
-  --header-bottom: calc(3.5rem + 1px);
+  --header-bottom: calc(6.5rem + 1px);
 
   @variant md {
     --header-bottom: var(--header-height);
@@ -205,8 +205,3 @@
   --reading-font-weight: 700;
 }
 
-:root[data-header-title-row] {
-  @variant max-md {
-    --header-bottom: calc(6.5rem + 1px);
-  }
-}

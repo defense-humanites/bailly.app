@@ -17,21 +17,7 @@
     props.items.map(item => ({ ...item, tooltip: { disabled: showLabels.value } })),
   );
 
-  const header = useTemplateRef<HTMLElement>("header");
   const { y } = useWindowScroll();
-
-  /**
-   * Below `md`, whether the title row (and the menu) is shown again while the
-   * page is scrolled: it slides back as soon as the user scrolls up, and away
-   * when they scroll down. It stays as it is while the header has the focus
-   * (e.g. when the mobile keyboard, opening, scrolls the page).
-   */
-  const titleRowShown = ref(false);
-
-  // Exposed to what sticks under the header (cf. `--header-bottom`).
-  useHead({
-    htmlAttrs: { "data-header-title-row": computed(() => (titleRowShown.value ? "" : undefined)) },
-  });
 
   /**
    * Whether the content scrolls under the header (its border then appears).
@@ -42,29 +28,19 @@
    * A bar stuck under the header draws the border under both.
    */
   const extended = useHeaderExtended();
-
-  /**
-   * Scrolls shorter than this (in px) are ignored, e.g. iOS rubber-banding.
-   */
-  const SCROLL_THRESHOLD = 8;
-  let lastY = 0;
-
-  watch(y, (value) => {
-    const delta = value - lastY;
-    if (Math.abs(delta) < SCROLL_THRESHOLD) return;
-    if (!header.value?.matches(":focus-within")) titleRowShown.value = delta < 0;
-    lastY = value;
-  });
 </script>
 
 <template>
   <!--
-    Below `md`, two rows: the title and the menu, then the search bar. The
-    header is sticky with an offset of the first row's height (`h-12`): that
-    row scrolls away with the page, and the search bar stays at the top. The
-    first row slides back (offset `0`) when the user scrolls up, over the
-    content: the layout doesn't change. From `md`, a single row, sticky at the
-    top, whose content is at most `--header-max-width` wide, on a grid shared
+    Below `md`, two rows: the title and the menu, then the search bar. From
+    `md`, a single row. The header is fixed at the top, a block of its height
+    (`--header-bottom`) keeping its place in the flow: in a sticky header, the
+    search bar, focused on iOS, scrolled the page back to the top (WebKit
+    bringing it into view where it would be in the flow), even with
+    `focus({ preventScroll })` once it had a text. Below `md`, the title row
+    used to scroll away with the page and slide back when scrolling up (an
+    offset of the sticky header): to bring back if a fixed header allows it.
+    The single row's content is at most `--header-max-width` wide, on a grid shared
     with the single-column layout (whose column thus lies under the search
     bar): fixed tracks for the title and the menu, the search bar taking the
     space left up to `--search-width`, a little wider than the column under it
@@ -73,10 +49,10 @@
     the content doesn't show around it. Its bottom border only appears once
     the content scrolls under it.
   -->
+  <div class="h-(--header-bottom)" />
   <header
-    ref="header"
-    class="sticky z-[99] border-b bg-bar backdrop-blur-sm transition-[top,border-color] duration-300 ease-out motion-reduce:transition-none md:top-0 md:h-(--header-height) md:px-safe-6 md:transition-[border-color]"
-    :class="[titleRowShown ? 'top-0' : '-top-12', scrolled && !extended ? 'border-default' : 'border-transparent']"
+    class="fixed inset-x-0 top-0 z-[99] border-b bg-bar backdrop-blur-sm transition-[border-color] duration-300 ease-out motion-reduce:transition-none md:h-(--header-height) md:px-safe-6"
+    :class="[scrolled && !extended ? 'border-default' : 'border-transparent']"
   >
     <nav
       class="grid grid-cols-[1fr_auto] items-center gap-x-3 pb-2 max-md:px-safe-4 md:mx-auto md:grid-cols-header md:h-full md:w-full md:max-w-(--header-max-width) md:pb-0"
