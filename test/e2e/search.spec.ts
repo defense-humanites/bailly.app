@@ -25,6 +25,26 @@ test.describe("search bar", () => {
     await expect(input).toHaveValue("Ἀθῆναι");
   });
 
+  test.describe("on Android", () => {
+    // The input menu passes on the text composed on Android only (not
+    // elsewhere, where input methods compose ideograms).
+    test.use({ userAgent: "Mozilla/5.0 (Linux; Android 14; SM-X710) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36" });
+
+    test("converts beta code while the keyboard composes a word, not a lone mark", async ({ page }) => {
+      const input = searchInput(page);
+      await input.click();
+      // The keyboards of Android compose the whole word.
+      const cdp = await page.context().newCDPSession(page);
+      const compose = (text: string) => cdp.send("Input.imeSetComposition", { text, selectionStart: text.length, selectionEnd: text.length });
+      await compose("lo/gos");
+      await expect(input).toHaveValue("λόγος");
+      await input.fill("");
+      // A dead key: the mark composed is left alone, until its letter.
+      await compose("^");
+      await expect(input).toHaveValue("^");
+    });
+  });
+
   test("shows grouped results and their count", async ({ page }) => {
     await searchInput(page).fill("logos");
     await expect(searchInput(page)).toHaveValue("λογος");

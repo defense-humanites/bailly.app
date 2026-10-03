@@ -100,10 +100,21 @@
   });
 
   /**
-   * Whether the input method is composing (e.g. with dead keys): the input
-   * must not be rewritten meanwhile.
+   * Whether the input method is composing, and the text it composes.
    */
   let composing = false;
+  let composed = "";
+
+  /**
+   * Whether the input may be converted while the input method composes: when
+   * the text composed has Latin letters. The keyboards of Android compose
+   * whole words (ended by a space or a suggestion, never in a search): their
+   * Beta Code is converted as it is typed (rewriting the input ends the
+   * composition; the keyboard starts another one with the next letter). A
+   * dead key (a desktop keyboard) composes a lone mark, left alone until its
+   * letter comes.
+   */
+  const convertibleWhileComposing = (): boolean => /[a-z]/i.test(composed);
 
   /**
    * Converts the input (Beta Code, or Greek) into Greek, keeping the caret
@@ -115,7 +126,7 @@
     if (typeof value !== "string") return;
 
     // Transliterated input is converted when looked up (cf. `toLookupQuery`).
-    if (composing || transliterating.value) {
+    if ((composing && !convertibleWhileComposing()) || transliterating.value) {
       query.value = value;
       return;
     }
@@ -133,10 +144,16 @@
 
   const onCompositionStart = (): void => {
     composing = true;
+    composed = "";
+  };
+
+  const onCompositionUpdate = (event: CompositionEvent): void => {
+    composed = event.data;
   };
 
   const onCompositionEnd = (event: CompositionEvent): void => {
     composing = false;
+    composed = "";
     onInput((event.target as HTMLInputElement).value);
   };
 
@@ -407,6 +424,7 @@
       @update:open="open = $event"
       @update:model-value="onInput"
       @compositionstart="onCompositionStart"
+      @compositionupdate="onCompositionUpdate"
       @compositionend="onCompositionEnd"
     >
       <!-- The clear button replaces the search icon once the input isn't empty. -->
