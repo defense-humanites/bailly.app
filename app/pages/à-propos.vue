@@ -371,8 +371,8 @@
             <div class="mx-auto aspect-[4/3] w-full max-w-sm bg-white overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
               <img
                 src="/images/bailly-1935-rhinokeros.webp"
-                width="360"
-                height="270"
+                width="596"
+                height="448"
                 alt="L'entrée ῥινόκερως dans l'édition de 1935 (fac-similé)."
                 class="size-full object-cover"
               >
@@ -397,8 +397,8 @@
             <div class="mx-auto aspect-[4/3] w-full max-w-sm bg-white overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
               <img
                 src="/images/bailly-2020-rhinokeros.webp"
-                width="400"
-                height="300"
+                width="560"
+                height="420"
                 alt="L'entrée ῥινόκερως dans l'édition PDF de 2020."
                 class="size-full object-cover"
               >
