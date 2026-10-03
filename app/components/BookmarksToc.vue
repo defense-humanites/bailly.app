@@ -228,13 +228,15 @@
     below `md`), by a horizontal swipe or wheel only (a vertical one scrolls
     the page, even over the row); its edges fade where it overflows, with
     arrows for a fine pointer (a touch screen swipes), both fading in and
-    out. Once stuck, the header's background and border, across the whole
-    window (a pseudo-element; the page clips it sideways).
+    out. Once stuck, the header's background and border, across the pages'
+    scroller (a pseudo-element, `100cqw` wide: as wide as it, cf.
+    `PageScroller`; no ancestor clips it, which made it flicker in Safari,
+    in the scroller).
   -->
   <nav
     ref="nav"
     aria-label="Sommaire des signets"
-    class="sticky top-(--header-bottom) z-10 col-span-full transition-[top] duration-300 ease-out before:pointer-events-none before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-screen before:-translate-x-1/2 before:border-b before:transition-colors before:duration-300 motion-reduce:transition-none md:transition-none"
+    class="sticky top-(--header-bottom) z-10 col-span-full before:pointer-events-none before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-[100cqw] before:-translate-x-1/2 before:border-b before:transition-colors before:duration-300 motion-reduce:before:transition-none"
     :class="stuck ? 'before:border-default before:bg-bar' : 'before:border-transparent'"
   >
     <ul

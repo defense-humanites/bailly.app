@@ -26,12 +26,14 @@
   `AppNavHorizontal`). What sticks in it sticks at its top (`--header-bottom:
   0`, cf. root.css). Its content is at least `--app-min-width` wide, its
   scrollbar's room included (`100vw - 100%`), and it then scrolls sideways.
+  A container: what spans its whole width (`100cqw`, e.g. the bookmarks'
+  table of contents' background) is exactly as wide.
 -->
 <template>
   <main
     id="page"
     ref="main"
-    class="absolute inset-x-0 top-(--header-total) bottom-0 overflow-y-auto [--header-bottom:0px] [scrollbar-gutter:stable] print:static print:overflow-visible"
+    class="absolute inset-x-0 top-(--header-total) bottom-0 overflow-y-auto [container-type:inline-size] [--header-bottom:0px] [scrollbar-gutter:stable] print:static print:overflow-visible"
   >
     <div
       v-bind="$attrs"
