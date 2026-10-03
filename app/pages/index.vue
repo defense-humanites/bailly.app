@@ -109,7 +109,7 @@
         For the readers who don't read Greek: the transliteration preference,
         whose effect shows at once on the opened entry (and is saved).
       -->
-      <div class="flex items-start gap-3 rounded-lg bg-default/60 px-4 py-3 ring-1 ring-default">
+      <div class="mt-3 flex items-start gap-3 rounded-lg bg-default/60 px-4 py-3 ring-1 ring-default">
         <USwitch
           v-model="transliterateGreek"
           aria-labelledby="translitteration"
