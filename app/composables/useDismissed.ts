@@ -1,8 +1,11 @@
 import { StorageKey } from "~/enums";
+import { IdbPreferences } from "~/idb";
 
 /**
  * Whether the user dismissed a notice (e.g. `morpheusWarning`), stored in
- * the local storage with the other dismissed notices.
+ * the local storage with the other dismissed notices, and recorded to be
+ * synchronized with the preferences (cf. `isDismissedRecord`): a notice
+ * dismissed is so on every device.
  * @remarks Read on the client only: for notices that the server doesn't render.
  */
 export function useDismissed(id: string): WritableComputedRef<boolean> {
@@ -13,6 +16,11 @@ export function useDismissed(id: string): WritableComputedRef<boolean> {
     set: (value: boolean) => {
       const others = dismissed.value.filter(item => item !== id);
       dismissed.value = value ? [...others, id] : others;
+      if (value) {
+        void IdbPreferences.recordDismissed([id]).then(() => {
+          useSyncStore().noticeDismissed();
+        });
+      }
     },
   });
 }

@@ -69,6 +69,7 @@
    * The preferences that can be synchronized, as offered.
    */
   const preferenceLabels: Record<SyncablePreference, { label: string; description?: string }> = {
+    theme: { label: "Thème" },
     transliterateGreek: { label: "Grec translittéré" },
     readingFont: { label: "Police" },
     readingSize: { label: "Taille du texte" },
@@ -141,6 +142,7 @@
    * translittéré et le tri des étiquettes »).
    */
   const preferencePhrases: Record<SyncablePreference, string> = {
+    theme: "le thème",
     transliterateGreek: "le grec translittéré",
     readingFont: "la police",
     readingSize: "la taille du texte",
@@ -633,7 +635,8 @@
             <template v-else>
               Seront synchronisées : {{ chosenSummary }}.
             </template>
-            Vous pourrez modifier ce choix ensuite, pour tous vos appareils.
+            Vous pourrez modifier ce choix ensuite, pour tous vos appareils. Les indications que vous masquez le
+            seront aussi sur vos autres appareils.
             <button
               type="button"
               class="font-medium text-highlighted underline decoration-dotted underline-offset-3 hover:text-secondary focus-visible:outline-2 focus-visible:outline-secondary"
@@ -1030,8 +1033,8 @@
             @update:model-value="(keys) => setPreferences(keys as SyncablePreference[])"
           />
           <p class="text-muted">
-            Ce choix vaut pour tous vos appareils synchronisés. Les préférences synchronisées sont marquées d'un
-            nuage sur cette page.
+            Ce choix vaut pour tous vos appareils synchronisés, comme les indications que vous masquez. Les
+            préférences synchronisées sont marquées d'un nuage sur cette page.
           </p>
         </template>
 

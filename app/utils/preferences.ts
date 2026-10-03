@@ -10,7 +10,14 @@ import { isTagSort, type TagSort } from "~/utils/tagSort";
  * @remarks The cookie is only set when the user changes a preference (it
  * then customizes the interface at the user's request: no consent needed).
  */
+export const THEMES = ["system", "light", "dark"] as const;
+export type Theme = typeof THEMES[number];
+
+export const isTheme = (value: unknown): value is Theme => THEMES.includes(value as Theme);
+
 export type Preferences = {
+  /** The color mode (applied by the color mode module, cf. `useThemePreference`). */
+  theme: Theme;
   /** Whether Greek is shown in Latin characters (transliterated) across the application. */
   transliterateGreek: boolean;
   /** The serif font, of the entries' text in particular (cf. `utils/fonts.ts`). */
@@ -36,6 +43,7 @@ export const READING_WEIGHTS = ["normal", "bold"] as const;
 export type ReadingWeight = typeof READING_WEIGHTS[number];
 
 export const DEFAULT_PREFERENCES: Readonly<Preferences> = {
+  theme: "system",
   transliterateGreek: false,
   readingFont: "book",
   readingSize: "normal",
@@ -62,6 +70,7 @@ export function parsePreferences(value: unknown): Partial<Preferences> {
   const record = value as Record<string, unknown>;
   const preferences: Partial<Preferences> = {};
 
+  if (isTheme(record.theme)) preferences.theme = record.theme;
   if (typeof record.transliterateGreek === "boolean") preferences.transliterateGreek = record.transliterateGreek;
   if (typeof record.readingFont === "string" && Object.hasOwn(READING_FONTS, record.readingFont)) preferences.readingFont = record.readingFont as ReadingFont;
   if (READING_SIZES.includes(record.readingSize as ReadingSize)) preferences.readingSize = record.readingSize as ReadingSize;
@@ -78,9 +87,10 @@ export function parsePreferences(value: unknown): Partial<Preferences> {
  * The preferences that can be synchronized across devices, if the user
  * chooses so (cf. `preferenceRecords.ts`), in the order of the preferences
  * page, then those of the bookmarks page (the display of the entries, the
- * sorting of the tags); the theme stays the device's (cf. the color mode).
+ * sorting of the tags).
  */
 export const SYNCABLE_PREFERENCES = [
+  "theme",
   "transliterateGreek",
   "readingFont",
   "readingSize",
@@ -97,10 +107,10 @@ export type SyncablePreference = typeof SYNCABLE_PREFERENCES[number];
  * is enabled: the others are rather the device's, the size and the weight of
  * the text depending on its screen, the input mode on its keyboard (the
  * transliteration suits a computer's better than a touch screen), the
- * display of the bookmarks on its screen too. The sorting of the tags, a
- * habit rather than a matter of screen, is offered checked.
+ * display of the bookmarks on its screen too. The theme and the sorting of
+ * the tags, habits rather than matters of screen, are offered checked.
  */
-export const DEFAULT_SYNCED_PREFERENCES: readonly SyncablePreference[] = ["transliterateGreek", "inflectedForms", "readingFont", "tagSort"];
+export const DEFAULT_SYNCED_PREFERENCES: readonly SyncablePreference[] = ["theme", "transliterateGreek", "inflectedForms", "readingFont", "tagSort"];
 
 export const isSyncablePreference = (key: string): key is SyncablePreference =>
   (SYNCABLE_PREFERENCES as readonly string[]).includes(key);

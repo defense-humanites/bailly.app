@@ -50,7 +50,8 @@ test.describe("preferences", () => {
 
     await expect(searchInput(page)).toHaveAttribute("placeholder", "anazētéō…");
     const cookie = await preferencesCookie(context);
-    expect(JSON.parse(decodeURIComponent(cookie!.value))).toEqual({ inputMode: "transliteration", inflectedForms: false });
+    // (The theme too, a preference now, cf. `useThemePreference`.)
+    expect(JSON.parse(decodeURIComponent(cookie!.value))).toEqual({ inputMode: "transliteration", inflectedForms: false, theme: "dark" });
     // (The current tag key is migrated too, then removed by the store once
     // it has loaded the bookmarks, as there is no tag 3 here: not checked.)
     const stored = await storage(page);

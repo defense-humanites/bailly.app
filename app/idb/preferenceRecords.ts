@@ -124,3 +124,27 @@ export function syncedListOf(records: readonly PreferenceRecord[]): SyncablePref
   if (!flags.length) return null;
   return SYNCABLE_PREFERENCES.filter(key => flags.some(flag => flag.key === `${SYNCED_FLAG_PREFIX}${key}` && flag.value === true));
 }
+
+/**
+ * The notices dismissed (cf. `useDismissed`), synchronized with the
+ * preferences, whichever they are (not a choice: a notice read on a device
+ * is read): a record per notice, `dismissed:<id>`, always `true` (a notice is
+ * never shown again), so that merging them unites them.
+ */
+export const DISMISSED_PREFIX = "dismissed:";
+
+export const isDismissedRecord = (key: string): boolean => key.startsWith(DISMISSED_PREFIX);
+
+/**
+ * The records of notices dismissed, with a stamp.
+ */
+export function dismissedRecords(ids: readonly string[], stamp: Stamp): PreferenceRecord[] {
+  return ids.map(id => ({ key: `${DISMISSED_PREFIX}${id}`, value: true, updatedAt: stamp }));
+}
+
+/**
+ * The notices dismissed that records give.
+ */
+export function dismissedOf(records: readonly PreferenceRecord[]): string[] {
+  return records.filter(record => isDismissedRecord(record.key) && record.value === true).map(record => record.key.slice(DISMISSED_PREFIX.length));
+}

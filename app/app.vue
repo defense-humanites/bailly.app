@@ -19,6 +19,9 @@
   const readingSize = preference("readingSize");
   const readingWeight = preference("readingWeight");
 
+  // The theme, a preference that the color mode applies.
+  if (import.meta.client) useThemePreference();
+
   /**
    * The audience measurement (Simple Analytics: no cookie, no IP address
    * kept), on the production host only (cf. `analyticsHost`).

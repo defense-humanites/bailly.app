@@ -98,8 +98,8 @@
   const isResetConfirmationOpen = ref(false);
 
   const reset = (): void => {
+    // The theme too, a preference (cf. `useThemePreference`).
     resetPreferences();
-    colorMode.preference = "system";
     isResetConfirmationOpen.value = false;
   };
 
@@ -164,11 +164,14 @@
               Général
             </h2>
           </template>
-          <SettingsRow label="Thème">
+          <SettingsRow
+            label="Thème"
+            :synced="synced('theme')"
+          >
             <URadioGroup
               v-model="colorMode.preference"
               :items="themeItems"
-              legend="Thème"
+              :legend="syncedLabel('Thème', 'theme')"
               variant="table"
               size="xs"
               orientation="horizontal"

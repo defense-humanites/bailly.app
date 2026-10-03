@@ -1,7 +1,8 @@
 import { defineStore } from "pinia";
+import { StorageKey } from "~/enums";
 import { IdbBookmarks, Idb, IdbError, IdbMetaKey, IdbPreferences, type IdbResult, type IdbSyncConfig } from "~/idb";
 import type { BookmarksState, LimitExcess } from "~/idb/merge";
-import { applicableValue, syncedListOf, type PreferenceRecord } from "~/idb/preferenceRecords";
+import { applicableValue, dismissedOf, syncedListOf, type PreferenceRecord } from "~/idb/preferenceRecords";
 import { formatStamp } from "~/idb/clock";
 import { fromBase64url, toBase64url } from "~/sync/base64url";
 import { deriveCredentials, type SyncCredentials } from "~/sync/crypto";
@@ -190,8 +191,33 @@ export const useSyncStore = defineStore("sync", () => {
    * @returns This device's records of these preferences, merged.
    */
   async function mergePreferences(received: PreferenceRecord[], keys: readonly SyncablePreference[]): Promise<PreferenceRecord[]> {
+    await recordDismissed();
     await IdbPreferences.merge(received);
-    return applyPreferences(keys);
+    const records = await applyPreferences(keys);
+    applyDismissed(records);
+    return records;
+  }
+
+  /**
+   * The notices dismissed on this device (cf. `useDismissed`).
+   */
+  const dismissed = useLocalStorage<string[]>(StorageKey.Dismissed, [], { writeDefaults: false });
+
+  /**
+   * Records the notices dismissed on this device that the records lack (e.g.
+   * dismissed before their synchronization), older than any change.
+   */
+  async function recordDismissed(): Promise<void> {
+    const known = dismissedOf(await IdbPreferences.getRecords());
+    await IdbPreferences.recordDismissed(dismissed.value.filter(id => !known.includes(id)), { stamp: false });
+  }
+
+  /**
+   * Dismisses on this device the notices dismissed on the others.
+   */
+  function applyDismissed(records: readonly PreferenceRecord[]): void {
+    const received = dismissedOf(records).filter(id => !dismissed.value.includes(id));
+    if (received.length) dismissed.value = [...dismissed.value, ...received];
   }
 
   /**
@@ -298,7 +324,10 @@ export const useSyncStore = defineStore("sync", () => {
       preferences: keys.length
         ? {
             keys,
-            readRecords: () => IdbPreferences.getRecords(),
+            readRecords: async () => {
+              await recordDismissed();
+              return IdbPreferences.getRecords();
+            },
             mergeRecords: records => mergePreferences(records, keys),
           }
         : undefined,
@@ -829,6 +858,14 @@ export const useSyncStore = defineStore("sync", () => {
   }
 
   /**
+   * To be called when the user dismisses a notice (recorded): synchronized
+   * shortly, if this device synchronizes preferences (cf. `isDismissedRecord`).
+   */
+  function noticeDismissed(): void {
+    if (syncedPreferences.value.length) schedule();
+  }
+
+  /**
    * Deletes the bookmarks from the server: the synchronization stops on every
    * device (their bookmarks stay on each of them).
    */
@@ -889,6 +926,7 @@ export const useSyncStore = defineStore("sync", () => {
     setSections,
     disable,
     preferencesChanged,
+    noticeDismissed,
     reconcilePreferences,
     deleteRemote,
     words,

@@ -103,7 +103,7 @@ test("a value this version cannot apply is not applied", () => {
 
 test("only the synchronizable preferences are stamped (the size and the weight of the text included)", () => {
   const stamp = formatStamp({ time: now, counter: 0, node: "a" });
-  const values = { readingFont: "book", readingSize: "large", readingWeight: "bold", transliterateGreek: true, theme: "dark" };
+  const values = { readingFont: "book", readingSize: "large", readingWeight: "bold", transliterateGreek: true, notAPreference: "dark" };
   expect(preferenceRecords(values as Partial<Preferences>, stamp)).toEqual([
     { key: "readingFont", value: "book", updatedAt: stamp },
     { key: "readingSize", value: "large", updatedAt: stamp },

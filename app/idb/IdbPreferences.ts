@@ -1,6 +1,6 @@
 import { formatStamp, maxStamp } from "./clock";
 import { Idb, IdbMetaKey, IdbStore } from "./Idb";
-import { isSyncedFlag, mergePreferenceRecords, preferenceRecords, syncedFlagRecords, type PreferenceRecord } from "./preferenceRecords";
+import { dismissedRecords, isSyncedFlag, mergePreferenceRecords, preferenceRecords, syncedFlagRecords, type PreferenceRecord } from "./preferenceRecords";
 import { isSyncablePreference, type Preferences, type SyncablePreference } from "~/utils/preferences";
 
 /**
@@ -75,6 +75,28 @@ export class IdbPreferences {
     const changed = [...syncedFlagRecords(list, stamp), ...(how.chosen ? preferenceRecords(how.added, stamp) : [])];
     const stored = (await Idb.getMeta(meta, IdbMetaKey.Preferences)) ?? [];
     await meta.put(mergePreferenceRecords(stored, changed), IdbMetaKey.Preferences);
+    await tx.done;
+  }
+
+  /**
+   * Records notices dismissed (cf. `dismissedRecords`): stamped now, or, as
+   * found on this device (e.g. dismissed before), older than any change.
+   */
+  static async recordDismissed(ids: readonly string[], { stamp = true }: { stamp?: boolean } = {}): Promise<void> {
+    if (!ids.length) return;
+    const recording = IdbPreferences.#writeDismissed(ids, stamp);
+    IdbPreferences.#pending = recording.catch(() => undefined);
+    return recording;
+  }
+
+  static async #writeDismissed(ids: readonly string[], stamp: boolean): Promise<void> {
+    await IdbPreferences.#pending;
+    const db = await Idb.getIndexedDB();
+    const tx = db.transaction(IdbStore.Meta, "readwrite");
+    const meta = tx.objectStore(IdbStore.Meta);
+    const stored = (await Idb.getMeta(meta, IdbMetaKey.Preferences)) ?? [];
+    const time = stamp ? await Idb.stamp(meta) : formatStamp({ time: 0, counter: 0, node: "0" });
+    await meta.put(mergePreferenceRecords(stored, dismissedRecords(ids, time)), IdbMetaKey.Preferences);
     await tx.done;
   }
 
