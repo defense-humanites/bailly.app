@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import type { ColorKey } from "~/enums";
   import { IdbTags, type IdbEntry, type IdbTagWithKey } from "~/idb";
-  import { comparableTagName } from "~/idb/merge";
+  import { comparableTagName, type RemovedRecords } from "~/idb/merge";
 
   const bookmarksStore = useBookmarksStore();
 
@@ -88,7 +88,6 @@
   /**
    * A boolean representing whether the tag deletion confirmation is open.
    */
-  const isDeleteConfirmationOpen = ref<boolean>(false);
 
   // The bookmarks do not change while the tag is being edited.
   useBookmarksHold(editMode);
@@ -252,20 +251,51 @@
   };
 
   /**
-   * Deletes the tag (its entries, if any, are detached from it), once the
-   * user has confirmed it.
+   * Tells a deletion by a toast, which can undo it (as the description's):
+   * the records come back as they were (cf. `IdbBookmarks.revive`).
    */
-  const onDeleteTag = async (): Promise<void> => {
-    const response = await bookmarksStore.removeTag(props.tag.key);
-    if (response.state === "success") isDeleteConfirmationOpen.value = false;
+  const toastUndo = (title: string, removed: RemovedRecords, description?: string): void => {
+    toast.add({
+      title,
+      description,
+      icon: "i-lucide-circle-check",
+      color: "success",
+      actions: [{
+        label: "Annuler",
+        color: "neutral",
+        variant: "outline",
+        onClick: () => {
+          void bookmarksStore.revive(removed);
+        },
+      }],
+    });
   };
 
+  /**
+   * Deletes the tag (its entries, if any, are detached from it) at once: a
+   * toast can undo it, rather than a confirmation asked first.
+   */
+  const onDeleteTag = async (): Promise<void> => {
+    const { name } = props.tag;
+    const count = props.entries.length;
+    const response = await bookmarksStore.removeTag(props.tag.key);
+    if (response.state !== "success") return;
+    toastUndo(`Étiquette « ${name} » supprimée`, response.data, count
+      ? `${count === 1 ? "L'entrée qu'elle référençait n'est" : `Les ${count} entrées qu'elle référençait ne sont`} plus étiquetée${count === 1 ? "" : "s"} ainsi.`
+      : undefined);
+  };
+
+  /**
+   * Removes an entry from the group at once: a toast can undo it (the entry
+   * comes back at its place).
+   */
   const onDeleteEntry = async (entry: IdbEntry): Promise<void> => {
-    if (props.favorites) {
-      await bookmarksStore.unstarEntry(entry.uri);
-    } else {
-      await bookmarksStore.untagEntry(entry.uri, props.tag.key);
-    }
+    const word = greek.text(entry.word);
+    const response = props.favorites
+      ? await bookmarksStore.unstarEntry(entry.uri)
+      : await bookmarksStore.untagEntry(entry.uri, props.tag.key);
+    if (response.state !== "success") return;
+    toastUndo(`« ${word} » retirée ${props.favorites ? "des favoris" : `de l'étiquette « ${props.tag.name} »`}`, response.data);
   };
 
   const onPickColor = (colorKey: ColorKey | undefined): void => {
@@ -331,17 +361,6 @@
     (): string => props.favorites ? "les favoris" : `l'étiquette « ${props.tag.name} »`,
   );
 
-  /**
-   * The consequence of the tag deletion, for its confirmation.
-   */
-  const deleteDescription = computed((): string => {
-    const count = props.entries.length;
-    if (!count) return "Cette étiquette ne référence aucune entrée.";
-    return count === 1
-      ? "L'entrée qu'elle référence ne sera plus étiquetée ainsi."
-      : `Les ${count} entrées qu'elle référence ne seront plus étiquetées ainsi.`;
-  });
-
   const enterEditMode = (): void => {
     editMode.value = true;
   };
@@ -374,12 +393,10 @@
   };
 
   /**
-   * Whether an overlay of the group (the tag color popover, the deletion
-   * confirmation) is open: the edit mode shortcuts then leave it alone.
+   * Whether an overlay of the group (the tag color popover) is open: the
+   * edit mode shortcuts then leave it alone.
    */
-  const isOverlayOpen = computed(
-    (): boolean => isTagColorPopoverOpen.value || isDeleteConfirmationOpen.value,
-  );
+  const isOverlayOpen = computed((): boolean => isTagColorPopoverOpen.value);
 
   /**
    * Exits the edit mode when clicking outside the bookmark group.
@@ -692,9 +709,10 @@
             icon="i-lucide-trash-2"
             size="sm"
             color="error"
-            variant="subtle"
+            variant="outline"
+            class="bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
             :aria-label="`Supprimer ${groupName}`"
-            @click="isDeleteConfirmationOpen = true"
+            @click="onDeleteTag"
           />
           <UButton
             icon="i-lucide-pencil"
@@ -708,28 +726,6 @@
             @click="toggleEditMode"
           />
         </span>
-
-        <UModal
-          v-if="editable"
-          v-model:open="isDeleteConfirmationOpen"
-          :title="`Supprimer ${groupName} ?`"
-          :description="deleteDescription"
-          :ui="{ footer: 'justify-end' }"
-        >
-          <template #footer>
-            <UButton
-              label="Annuler"
-              color="neutral"
-              variant="outline"
-              @click="isDeleteConfirmationOpen = false"
-            />
-            <UButton
-              label="Supprimer"
-              color="error"
-              @click="onDeleteTag"
-            />
-          </template>
-        </UModal>
       </div>
 
       <!--
@@ -784,9 +780,9 @@
                   icon="i-lucide-x"
                   size="xs"
                   variant="ghost"
-                  color="neutral"
+                  color="error"
                   aria-label="Supprimer la description"
-                  class="absolute end-1 top-1 text-tag-text/75 hover:bg-default hover:text-tag-text"
+                  class="absolute end-1 top-1 rounded-md bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
                   @click="clearDescription"
                 />
               </UTooltip>
@@ -859,7 +855,7 @@
         <li
           v-for="entry in shownEntries"
           :key="entry.uri"
-          class="relative flex min-w-0"
+          class="group/item relative flex min-w-0"
         >
           <UTooltip
             :text="greek.text(entry.excerpt)"
@@ -871,17 +867,17 @@
             <NuxtLink
               :to="entryRoute(entry.uri)"
               :lang="greek.lang.value"
-              class="block min-w-0 grow truncate rounded-lg bg-default/75 px-3 py-1 font-serif text-[0.96875rem]/6 font-bold text-tag-text ring ring-tag-300/50 ring-inset transition-colors hover:ring-tag-400 focus-visible:outline-2 focus-visible:outline-tag-400"
+              class="block min-w-0 grow truncate rounded-lg bg-default/75 px-3 py-1 font-serif text-[0.96875rem]/6 font-bold text-tag-text ring ring-tag-300/50 ring-inset transition-colors group-hover/item:ring-tag-400 focus-visible:outline-2 focus-visible:outline-tag-400"
               :class="{ 'pe-9': editMode }"
             >{{ greek.text(entry.word) }}</NuxtLink>
           </UTooltip>
           <UButton
             v-if="editMode"
-            class="absolute end-1 top-1/2 -translate-y-1/2"
+            class="absolute end-1 top-1/2 -translate-y-1/2 rounded-md bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
             icon="i-lucide-x"
             size="xs"
             color="error"
-            variant="subtle"
+            variant="ghost"
             :aria-label="`Retirer « ${greek.text(entry.word)} » ${favorites ? 'des favoris' : `de l'étiquette « ${tag.name} »`}`"
             @click="onDeleteEntry(entry)"
           />
@@ -899,14 +895,20 @@
           :key="entry.uri"
           class="group/item relative"
         >
-          <!-- Shown on every entry in edit mode (not only on hover). -->
+          <!--
+            Shown on every entry in edit mode (not only on hover): a plain
+            cross (no ring) on a rounded square, opaque, a little inside the
+            entry's corner, its shadow in the cards' background fading the text
+            under it (as the description's clear button). The entry stays
+            hovered while the cross is (`group/item`).
+          -->
           <UButton
             v-if="editMode"
-            class="absolute top-1.5 right-1.5 z-50"
+            class="absolute top-1.5 right-1.5 z-50 rounded-md bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] shadow-[-0.75rem_0_0.5rem_0.125rem_var(--ui-bg)]"
             icon="i-lucide-x"
             size="xs"
             color="error"
-            variant="subtle"
+            variant="ghost"
             :aria-label="`Retirer « ${greek.text(entry.word)} » ${favorites ? 'des favoris' : `de l'étiquette « ${tag.name} »`}`"
             @click="onDeleteEntry(entry)"
           />
@@ -921,7 +923,7 @@
             link
             prefetch-on="visibility"
             :ui="{
-              root: 'bg-default/75 ring-tag-300/50 hover:ring-tag-400 text-tag-text shadow-none',
+              root: 'bg-default/75 ring-tag-300/50 group-hover/item:ring-tag-400 text-tag-text shadow-none',
               entry: 'mx-3 my-1.5 line-clamp-4 [--reading-font-size:0.96875rem] [--reading-font-weight:400]',
             }"
           />

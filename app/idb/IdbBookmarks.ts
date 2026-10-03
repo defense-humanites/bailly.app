@@ -1,8 +1,10 @@
 import { maxStamp, stampTime } from "./clock";
-import { attempt, Idb, IdbMetaKey, IdbStore, type IdbMetaStore, type IdbResult } from "./Idb";
+import { attempt, Idb, IdbError, IdbMetaKey, IdbStore, type IdbMetaStore, type IdbResult } from "./Idb";
 import {
   canonical,
+  comparableTagName,
   compact,
+  entryAddedAt,
   emptyState,
   fitImport,
   limitExcesses,
@@ -15,6 +17,7 @@ import {
   withoutTombstones,
   type BookmarksState,
   type LimitExcess,
+  type RemovedRecords,
   type SkippedRecords,
 } from "./merge";
 
@@ -37,6 +40,52 @@ export type MergeOutcome = {
  * imported and synchronized.
  */
 export class IdbBookmarks {
+  /**
+   * Brings back records just deleted (cf. `RemovedRecords`: a tag with its
+   * entries, an entry), as they were, with a new stamp: their deletion is
+   * undone on the other devices too (the latest version wins). An entry
+   * keeps its place (`addedAt`). A record changed meanwhile (e.g. added
+   * again) is left as it is.
+   */
+  static async revive(removed: RemovedRecords): Promise<IdbResult> {
+    return attempt(async () => {
+      const db = await Idb.getIndexedDB();
+      const tx = db.transaction([IdbStore.Tags, IdbStore.Tagged, IdbStore.Starred, IdbStore.Meta], "readwrite");
+      const updatedAt = await Idb.stamp(tx.objectStore(IdbStore.Meta));
+
+      const tags = tx.objectStore(IdbStore.Tags);
+      const live = (await tags.getAll()).filter(tag => !tag.deleted);
+      for (const tag of removed.tags) {
+        const stored = await tags.get(tag.key);
+        if (stored && !stored.deleted) continue;
+        if (live.some(other => comparableTagName(other.name) === comparableTagName(tag.name))) {
+          throw new IdbError(`Une autre étiquette s'appelle désormais « ${tag.name} ».`);
+        }
+        const { deleted: _deleted, ...record } = tag;
+        await tags.put({ ...record, updatedAt });
+      }
+
+      const tagged = tx.objectStore(IdbStore.Tagged);
+      for (const entry of removed.tagged) {
+        const stored = await tagged.get([entry.tagKey, entry.uri]);
+        if (stored && !stored.deleted) continue;
+        const { deleted: _deleted, ...record } = entry;
+        await tagged.put({ ...record, addedAt: entryAddedAt(entry), updatedAt });
+      }
+
+      const starred = tx.objectStore(IdbStore.Starred);
+      for (const entry of removed.starred) {
+        const stored = await starred.get(entry.uri);
+        if (stored && !stored.deleted) continue;
+        const { deleted: _deleted, ...record } = entry;
+        await starred.put({ ...record, addedAt: entryAddedAt(entry), updatedAt });
+      }
+
+      await tx.done;
+      return undefined;
+    });
+  }
+
   /**
    * Reads the whole state.
    * @returns The state, in canonical form (records sorted by identity).

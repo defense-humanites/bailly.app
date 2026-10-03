@@ -18,7 +18,7 @@ import {
   type TagColorKey,
   type TagKey,
 } from "~/idb";
-import { comparableTagName } from "~/idb/merge";
+import { comparableTagName, type RemovedRecords } from "~/idb/merge";
 import { parseBookmarksFile, toBookmarksFile, type BookmarksFile } from "~/idb/transfer";
 import type { ApiExcerptsData, ApiResponse } from "#shared/types/api";
 import { MAX_EXCERPTS_URIS, toApiQuery } from "#shared/utils/api";
@@ -207,7 +207,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     return result;
   }
 
-  async function unstarEntry(uri: string): Promise<IdbResult> {
+  async function unstarEntry(uri: string): Promise<IdbResult<RemovedRecords>> {
     await initialize();
     const result = report(await IdbStarred.remove(uri));
     if (result.state === "success") await fetchStarredEntries();
@@ -262,7 +262,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   /**
    * Removes a tag and detaches its entries.
    */
-  async function removeTag(key: TagKey): Promise<IdbResult> {
+  async function removeTag(key: TagKey): Promise<IdbResult<RemovedRecords>> {
     await initialize();
     const result = report(await IdbTags.remove(key));
     if (result.state === "success") {
@@ -282,10 +282,25 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     return result;
   }
 
-  async function untagEntry(uri: string, tagKey: TagKey): Promise<IdbResult> {
+  async function untagEntry(uri: string, tagKey: TagKey): Promise<IdbResult<RemovedRecords>> {
     await initialize();
     const result = report(await IdbTaggedEntry.remove(uri, tagKey));
     if (result.state === "success") await fetchTaggedEntries();
+    return result;
+  }
+
+  /**
+   * Undoes a deletion (a tag with its entries, an entry: cf.
+   * `IdbBookmarks.revive`).
+   */
+  async function revive(removed: RemovedRecords): Promise<IdbResult> {
+    await initialize();
+    const result = report(await IdbBookmarks.revive(removed));
+    if (result.state === "success") {
+      await Promise.all([fetchTags(), fetchTaggedEntries(), fetchStarredEntries(), refreshNewTagColor()]);
+      // The excerpts of the entries brought back, if forgotten meanwhile.
+      void fillExcerpts();
+    }
     return result;
   }
 
@@ -445,6 +460,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     updateTag,
     pinTag,
     removeTag,
+    revive,
     setCurrentTag,
     tagEntry,
     untagEntry,

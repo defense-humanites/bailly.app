@@ -7,7 +7,7 @@ import {
   type IdbResult,
   type IdbTagged,
 } from "./Idb";
-import { entryAddedAt, entryTombstone, latestAddedFirst, type TaggedRecord, type TagKey } from "./merge";
+import { entryAddedAt, entryTombstone, latestAddedFirst, type RemovedRecords, type TaggedRecord, type TagKey } from "./merge";
 
 /**
  * A tagged entry as shown, with its excerpt if known (cf. `IdbExcerpt`).
@@ -70,7 +70,7 @@ export class IdbTaggedEntry {
    * @param uri The URI of the entry to detach.
    * @param tagKey The key of the tag to which the entry must not belong anymore.
    */
-  static async remove(uri: string, tagKey: TagKey): Promise<IdbResult> {
+  static async remove(uri: string, tagKey: TagKey): Promise<IdbResult<RemovedRecords>> {
     return attempt(async () => {
       const db = await Idb.getIndexedDB();
       const tx = db.transaction([IdbStore.Tagged, IdbStore.Meta], "readwrite");
@@ -84,7 +84,7 @@ export class IdbTaggedEntry {
       await store.put(entryTombstone(record, await Idb.stamp(tx.objectStore(IdbStore.Meta))));
       await tx.done;
 
-      return undefined;
+      return { tags: [], tagged: [record], starred: [] };
     });
   }
 

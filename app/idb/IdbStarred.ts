@@ -7,7 +7,7 @@ import {
   type IdbEntryCreation,
   type IdbResult,
 } from "./Idb";
-import { entryTombstone, latestAddedFirst, type StarredRecord } from "./merge";
+import { entryTombstone, latestAddedFirst, type RemovedRecords, type StarredRecord } from "./merge";
 
 /**
  * A favorite as shown, with its excerpt if known (cf. `IdbExcerpt`).
@@ -91,7 +91,7 @@ export class IdbStarred {
    * Removes an entry from the starred entries.
    * @param uri The URI of the entry to remove.
    */
-  static async remove(uri: string): Promise<IdbResult> {
+  static async remove(uri: string): Promise<IdbResult<RemovedRecords>> {
     return attempt(async () => {
       const db = await Idb.getIndexedDB();
       const tx = db.transaction([IdbStore.Starred, IdbStore.Meta], "readwrite");
@@ -105,7 +105,7 @@ export class IdbStarred {
       await store.put(entryTombstone(record, await Idb.stamp(tx.objectStore(IdbStore.Meta))));
       await tx.done;
 
-      return undefined;
+      return { tags: [], tagged: [], starred: [record] };
     });
   }
 }

@@ -9,7 +9,7 @@ import {
   type IdbTagCreation,
   type IdbTagWithKey,
 } from "./Idb";
-import { comparableTagName, entryTombstone, orderTags, tagTombstone, type TagKey, type TagRecord } from "./merge";
+import { comparableTagName, entryTombstone, orderTags, tagTombstone, type RemovedRecords, type TagKey, type TagRecord } from "./merge";
 import { randomUuid } from "./random";
 import { Color, type ColorKey } from "~/enums";
 import { pickRandom } from "~/helpers";
@@ -306,8 +306,9 @@ export class IdbTags {
   /**
    * Removes a tag and detaches its entries.
    * @param tagKey The key of the tag to remove.
+   * @returns The tag and its entries as they were (to undo it).
    */
-  static async remove(tagKey: TagKey): Promise<IdbResult> {
+  static async remove(tagKey: TagKey): Promise<IdbResult<RemovedRecords>> {
     return attempt(async () => {
       const db = await Idb.getIndexedDB();
       const tx = db.transaction([IdbStore.Tags, IdbStore.Tagged, IdbStore.Meta], "readwrite");
@@ -322,13 +323,16 @@ export class IdbTags {
       await tags.put(tagTombstone(tag, updatedAt));
 
       const tagged = tx.objectStore(IdbStore.Tagged);
+      const detached = [];
       for (const record of await tagged.index("tagKey").getAll(tagKey)) {
-        if (!record.deleted) await tagged.put(entryTombstone(record, updatedAt));
+        if (record.deleted) continue;
+        detached.push(record);
+        await tagged.put(entryTombstone(record, updatedAt));
       }
 
       await tx.done;
 
-      return undefined;
+      return { tags: [tag], tagged: detached, starred: [] };
     });
   }
 

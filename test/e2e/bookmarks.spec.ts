@@ -32,7 +32,7 @@ test.describe("bookmarks page", () => {
     expect(inside).toBe(true);
   });
 
-  test("editing with the keyboard: rename, delete after a confirmation", async ({ page }) => {
+  test("editing with the keyboard: rename, delete with an undo", async ({ page }) => {
     const edit = page.getByRole("button", { name: "Modifier l'étiquette « Vide »" });
     await edit.focus();
     await page.keyboard.press("Enter");
@@ -43,17 +43,17 @@ test.describe("bookmarks page", () => {
     await page.keyboard.press("Escape");
     await expect.poll(async () => (await bookmarksState(page)).tags).toContain("Vide renommée");
 
+    // Deleted at once, a toast able to undo it: the tag comes back with its
+    // entries.
     const homer = page.getByRole("button", { name: "Modifier l'étiquette « Vocabulaire homérique et tragique »" });
     await homer.click();
     await page.getByRole("button", { name: "Supprimer l'étiquette « Vocabulaire homérique et tragique »" }).click();
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toContainText("Les 2 entrées qu'elle référence ne seront plus étiquetées ainsi.");
-    await page.keyboard.press("Escape");
-    await expect(dialog).toBeHidden();
-    expect((await bookmarksState(page)).tags).toContain("Vocabulaire homérique et tragique");
-    await page.getByRole("button", { name: "Supprimer l'étiquette « Vocabulaire homérique et tragique »" }).click();
-    await dialog.getByRole("button", { name: "Supprimer" }).click();
+    const toast = page.locator("li").filter({ hasText: "Étiquette « Vocabulaire homérique et tragique » supprimée" });
+    await expect(toast).toContainText("Les 2 entrées qu'elle référençait ne sont plus étiquetées ainsi.");
     await expect.poll(async () => await bookmarksState(page)).toMatchObject({ tagged: 0 });
+    await toast.getByRole("button", { name: "Annuler" }).click();
+    await expect.poll(async () => await bookmarksState(page)).toMatchObject({ tagged: 2 });
+    await expect(card(page, "Vocabulaire homérique")).toBeVisible();
   });
 
   // As for a new tag: a name taken told on the field, which keeps it and the
@@ -304,10 +304,13 @@ test.describe("bookmarks page", () => {
     await expect(menu).toContainText("Vocabulaire homérique et tragique");
   });
 
-  test("removing a favorite", async ({ page }) => {
+  test("removing a favorite, with an undo", async ({ page }) => {
     await page.getByRole("button", { name: "Modifier les favoris" }).click();
     await page.getByRole("button", { name: "Retirer « λόγος » des favoris" }).click();
     await expect.poll(async () => (await bookmarksState(page)).starred).toBe(0);
+    const toast = page.locator("li").filter({ hasText: "« λόγος » retirée des favoris" });
+    await toast.getByRole("button", { name: "Annuler" }).click();
+    await expect.poll(async () => (await bookmarksState(page)).starred).toBe(1);
   });
 
   // The edit button toggles the mode from the same place, in the corner.

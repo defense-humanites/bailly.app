@@ -125,6 +125,16 @@ export const entryTombstone = <T extends TaggedRecord | StarredRecord>(record: T
 });
 
 /**
+ * The live versions of records just deleted (a tag with its entries, an
+ * entry), so that the deletion can be undone (cf. `IdbBookmarks.revive`).
+ */
+export type RemovedRecords = {
+  tags: TagRecord[];
+  tagged: TaggedRecord[];
+  starred: StarredRecord[];
+};
+
+/**
  * The stamp of an entry's addition (cf. `TaggedRecord.addedAt`).
  */
 export const entryAddedAt = (record: TaggedRecord | StarredRecord): Stamp => record.addedAt ?? record.updatedAt;
