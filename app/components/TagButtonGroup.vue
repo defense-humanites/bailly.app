@@ -111,7 +111,7 @@
 <template>
   <UFieldGroup
     orientation="horizontal"
-    class="border border-default rounded-lg bg-default [&>button]:rounded-lg shadow-xs"
+    class="border border-default rounded-lg [&>button]:rounded-lg shadow-xs"
   >
     <!--
       The current tag, in one click (the most frequent action while reading):

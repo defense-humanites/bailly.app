@@ -79,6 +79,11 @@
         v-for="position in (['previous', 'main', 'next'] as const)"
         :key="position"
       >
+        <!--
+          The entry lies on the page's background, not on a card: the hovered
+          buttons of its toolbar (`bg-elevated`, as dark as the page in the
+          light theme) take a lighter shade, as they do in the dark theme.
+        -->
         <div
           v-if="position === 'main'"
           class="h-80 border-y border-terracotta-700/25 py-2 dark:border-terracotta-600/30"
@@ -90,7 +95,7 @@
             toolbar
             link
             :ui="{
-              root: 'h-full flex overflow-hidden bg-transparent shadow-none ring-0 rounded-none',
+              root: 'h-full flex overflow-hidden bg-transparent shadow-none ring-0 rounded-none [--ui-bg-elevated:var(--ui-bg)] dark:[--ui-bg-elevated:var(--ui-color-neutral-800)]',
               body: 'h-full mask-b-from-80%',
             }"
           />
