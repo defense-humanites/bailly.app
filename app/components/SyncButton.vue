@@ -63,15 +63,15 @@
 
   /**
    * The look and the visible label, after the state: an invitation while the
-   * synchronization is off (a soft Aegean blue, « Synchroniser »), calm once
+   * synchronization is off (solid Aegean blue, « Synchroniser »), calm once
    * it is on (as the bar's other buttons, its icon only in blue,
    * « Synchronisé »), gold when it needs
    * attention (« À vérifier »), once the settings are loaded (before, as the cookie
    * tells, cf. `hinted`). The accessible name stays « Synchronisation (…) ».
    */
-  const look = computed((): { text: string; color: "secondary" | "warning" | "neutral"; variant: "soft" | "ghost" } => {
-    if (!enabled.value) return { text: "Synchroniser", color: "secondary", variant: "soft" };
-    if (needsAttention.value) return { text: "À vérifier", color: "warning", variant: "soft" };
+  const look = computed((): { text: string; color: "secondary" | "warning" | "neutral"; variant: "solid" | "ghost" } => {
+    if (!enabled.value) return { text: "Synchroniser", color: "secondary", variant: "solid" };
+    if (needsAttention.value) return { text: "À vérifier", color: "warning", variant: "solid" };
     return { text: "Synchronisé", color: "neutral", variant: "ghost" };
   });
 
@@ -84,12 +84,13 @@
 
   /**
    * Pressed while its window is open, as the bar's other buttons
-   * (`aria-expanded`): the shade of its hover.
+   * (`aria-expanded`): the shade of its hover (the solid buttons' own, cf.
+   * `app.config.ts`).
    */
   const PRESSED = {
-    secondary: { soft: "aria-expanded:bg-secondary/15", ghost: "aria-expanded:bg-secondary/10" },
-    warning: { soft: "aria-expanded:bg-warning/15", ghost: "aria-expanded:bg-warning/10" },
-    neutral: { soft: "aria-expanded:bg-elevated", ghost: "aria-expanded:bg-elevated" },
+    secondary: { solid: "", ghost: "aria-expanded:bg-secondary/10" },
+    warning: { solid: "", ghost: "aria-expanded:bg-warning/10" },
+    neutral: { solid: "", ghost: "aria-expanded:bg-elevated" },
   } as const;
 
   const tooltip = computed((): string => {

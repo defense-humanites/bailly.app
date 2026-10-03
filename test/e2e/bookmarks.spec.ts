@@ -225,29 +225,29 @@ test.describe("bookmarks page", () => {
     await expect(page.getByText("Vos signets", { exact: true })).toHaveCount(0);
   });
 
-  // The synchronization's button, in the menu bar, keeps its pressed look
-  // while its dialog is open (`aria-expanded`), as the bar's menus.
-  test("the synchronization's button stays pressed while its window is open", async ({ page }) => {
-    // The synchronization, off: a soft button (once its state is loaded).
+  // A solid button keeps its pressed look while its menu or dialog is open
+  // (`aria-expanded`).
+  test("a solid button stays pressed while its window is open", async ({ page }) => {
+    // The synchronization, off: a solid button (once its state is loaded).
     // (Not by its role: the open dialog hides the page from the accessibility
     // tree.)
     const button = page.locator("main header button[aria-label^=Synchronisation]");
-    const look = () => button.evaluate(element => getComputedStyle(element).backgroundColor);
+    const look = () => button.evaluate(element => [getComputedStyle(element).backgroundImage, getComputedStyle(element).filter, getComputedStyle(element).backgroundColor]);
     await page.mouse.move(0, 0);
-    await expect(button).toHaveClass(/(^| )bg-secondary\/10( |$)/);
-    // Its color reached (once its transition is over).
-    let rest = "";
-    await expect.poll(async () => {
-      const previous = rest;
-      rest = await look();
-      return rest === previous;
-    }).toBe(true);
+    await expect.poll(async () => (await look())[0]).toMatch(/gradient/);
+    // Its color reached (from the calm look shown until then).
+    await expect.poll(async () => (await look())[2]).toMatch(/^rgb\(/);
+    const [restImage, , restColor] = await look();
     await button.click();
     await expect(button).toHaveAttribute("aria-expanded", "true");
-    await expect.poll(look).not.toBe(rest);
+    await expect.poll(async () => (await look())[0]).toBe("none");
+    // The next shade (once its transition is over), opaque (not the former
+    // translucency).
+    await expect.poll(async () => (await look())[2]).not.toBe(restColor);
+    expect((await look())[2]).toMatch(/^rgb\(/);
     await page.keyboard.press("Escape");
     await page.mouse.move(0, 0);
-    await expect.poll(look).toBe(rest);
+    await expect.poll(look).toEqual([restImage, "none", restColor]);
   });
 
   // No submit button: Enter adds the tag, as the key drawn in the field says.
