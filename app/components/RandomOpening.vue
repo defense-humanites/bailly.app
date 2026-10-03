@@ -74,7 +74,7 @@
     </h2>
 
     <!-- The opened page, framed like the about page's hero: the neighbors above and below. -->
-    <div class="rounded-xl border-2 border-terracotta-700 px-3 py-3 shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] sm:px-5 sm:py-4 dark:border-terracotta-600 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-600)]">
+    <div class="rounded-xl border-2 border-terracotta-700 px-3 py-3 shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] sm:px-5 sm:py-4 dark:border-terracotta-700 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)]">
       <template
         v-for="position in (['previous', 'main', 'next'] as const)"
         :key="position"

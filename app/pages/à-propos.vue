@@ -131,7 +131,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
       rather than letting it overflow (e.g. a phone in landscape).
     -->
     <div class="p-4 md:px-16 md:pt-0 md:pb-16">
-      <section class="flex min-h-[calc(100svh-(6.5rem+1px)-2rem)] flex-col items-center rounded-xl border-2 border-terracotta-700 px-3 pt-[clamp(1rem,3svh,3rem)] pb-[clamp(0.25rem,1svh,1rem)] text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[calc(100svh-var(--header-height)-4rem)] md:px-8 dark:border-terracotta-600 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-600)]">
+      <section class="flex min-h-[calc(100svh-(6.5rem+1px)-2rem)] flex-col items-center rounded-xl border-2 border-terracotta-700 px-3 pt-[clamp(1rem,3svh,3rem)] pb-[clamp(0.25rem,1svh,1rem)] text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[calc(100svh-var(--header-height)-4rem)] md:px-8 dark:border-terracotta-700 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)]">
         <div class="my-auto flex w-full flex-col items-center">
           <UIcon
             name="i-bailly-bailly"
@@ -340,7 +340,7 @@ mort d'un homme qu'on lance (du haut d'un rocher).
 
       <section
         aria-labelledby="origine"
-        class="chapter py-10 md:py-14"
+        class="chapter chapter-framed py-10 md:py-14"
       >
         <h2
           id="origine"
@@ -681,6 +681,14 @@ mort d'un homme qu'on lance (du haut d'un rocher).
 
 :global(.dark) .chapter {
   --rule-color: var(--color-terracotta-600);
+}
+
+/*
+ * The origin's frames (double, as the hero's): a shade darker in the dark
+ * theme, as the hero's and the random entry's (cf. `RandomOpening`).
+ */
+:global(.dark) .chapter-framed {
+  --rule-color: var(--color-terracotta-700);
 }
 
 /* The scroll invitation bounces a few times once the page is shown. */
