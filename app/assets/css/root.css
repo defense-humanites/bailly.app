@@ -235,15 +235,32 @@
  * the page (4 October 2026): white in the light theme, a shade lighter than
  * the cards in the dark one (with their borders, their text and their hover
  * a shade lighter too: the text keeps its contrast, the muted and dimmed
- * ones at least 5:1), the panels with a stronger shadow.
+ * ones at least 5:1), the panels with a stronger shadow. The bar itself only
+ * while in use (focused, or one of its panels open): at rest, it has the
+ * cards' background. In the light theme, the hover and the highlighted line
+ * barely tinted (the perceived difference matters more than the contrast).
  */
-.search-surface {
+.search-surface,
+.search-bar:focus-within,
+.search-bar:has([aria-expanded="true"]) {
   --ui-bg: #fff;
   /* The hover and open state of the bar's buttons (history, options). */
-  --search-hover: color-mix(in oklab, var(--ui-color-neutral-100) 80%, #fff);
+  --search-hover: color-mix(in oklab, var(--ui-color-neutral-100) 50%, #fff);
+  --app-highlight: color-mix(in oklab, var(--ui-color-neutral-100) 60%, #fff);
 }
 
-.dark .search-surface {
+/* At rest, the buttons' hover as in use. */
+.search-bar {
+  --search-hover: color-mix(in oklab, var(--ui-color-neutral-100) 50%, var(--ui-bg));
+}
+
+.dark .search-bar {
+  --search-hover: var(--ui-color-neutral-800);
+}
+
+.dark .search-surface,
+.dark .search-bar:focus-within,
+.dark .search-bar:has([aria-expanded="true"]) {
   --ui-bg: var(--ui-color-neutral-800);
   --ui-bg-elevated: var(--ui-color-neutral-700);
   --ui-border: var(--ui-color-neutral-700);

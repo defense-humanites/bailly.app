@@ -395,7 +395,7 @@
   -->
   <UFieldGroup
     ref="group"
-    class="search-surface group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
+    class="search-bar group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
     @keydown.capture="onKeydown"
     @input.capture="onComposedInput"
   >
