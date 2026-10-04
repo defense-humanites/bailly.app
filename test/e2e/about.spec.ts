@@ -26,7 +26,7 @@ test.describe("about page", () => {
   test("leads to the privacy page", async ({ page, goto }) => {
     await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
     await page.getByRole("link", { name: "confidentialité" }).click();
-    await expect(page).toHaveURL(/\/confidentialite$/);
+    await expect(page).toHaveURL(/\/confidentialité$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Vos données");
     await expect(page.getByRole("region", { name: "En bref" })).toBeVisible();
   });

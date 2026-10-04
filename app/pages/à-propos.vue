@@ -660,7 +660,7 @@
           <p class="text-muted">
             Ce que l'application garde de vos données, et où :
             <NuxtLink
-              to="/confidentialite"
+              :to="encodeURI('/confidentialité')"
               class="underline decoration-dotted underline-offset-4 hover:text-primary"
             >confidentialité</NuxtLink>.
           </p>

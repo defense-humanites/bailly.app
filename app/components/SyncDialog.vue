@@ -706,7 +706,7 @@
             personne ne peut les lire, pas même Bailly.app.
             <!-- What is kept online, and for how long (the window closes with the page). -->
             <NuxtLink
-              to="/confidentialite"
+              :to="encodeURI('/confidentialité')"
               class="font-medium text-highlighted underline decoration-dotted underline-offset-3 hover:text-secondary focus-visible:outline-2 focus-visible:outline-secondary"
             >Vos données en détail</NuxtLink>.
           </p>
