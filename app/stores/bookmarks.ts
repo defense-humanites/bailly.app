@@ -224,8 +224,10 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
     const added = await IdbTags.add(data);
     const result = quiet ? added : report(added);
     if (result.state === "success") {
-      currentTagKey.value = result.data.key;
+      // Active once listed: before, the active tag's field (which looks it up
+      // among the tags) would show its key for a moment.
       await Promise.all([fetchTags(), refreshNewTagColor()]);
+      currentTagKey.value = result.data.key;
     }
     return result;
   }
