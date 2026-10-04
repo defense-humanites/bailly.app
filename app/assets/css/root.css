@@ -260,8 +260,20 @@
   --search-hover: color-mix(in oklab, var(--ui-color-neutral-100) 50%, var(--ui-bg));
 }
 
-.dark .search-bar {
-  --search-hover: var(--ui-color-neutral-800);
+/*
+ * In the dark theme, the bar's borders, separators, count and text keep their
+ * colors whether at rest or in use (a shade lighter than elsewhere): only its
+ * background changes, so that the transition stays smooth.
+ */
+.dark .search-bar,
+.dark .search-surface {
+  --ui-bg-elevated: var(--ui-color-neutral-700);
+  --ui-border: var(--ui-color-neutral-700);
+  --ui-border-accented: var(--ui-color-neutral-700);
+  --ui-text: var(--ui-color-neutral-100); /* 11.3:1 in use */
+  --ui-text-muted: var(--ui-color-neutral-300); /* 8.3:1 */
+  --ui-text-dimmed: var(--ui-color-neutral-400); /* 6.2:1 */
+  --search-hover: var(--ui-color-neutral-700);
 }
 
 .dark .search-surface,
@@ -270,14 +282,7 @@
 .dark .search-bar:has([aria-expanded="true"]) {
   /* Between marble 800 and 900: a gentler contrast, as in the light theme. */
   --ui-bg: color-mix(in oklab, var(--ui-color-neutral-800) 50%, var(--ui-color-neutral-900));
-  --ui-bg-elevated: var(--ui-color-neutral-700);
-  --ui-border: var(--ui-color-neutral-700);
-  --ui-border-accented: var(--ui-color-neutral-700);
-  --ui-text: var(--ui-color-neutral-100); /* 11.3:1 */
-  --ui-text-muted: var(--ui-color-neutral-300); /* 8.3:1 */
-  --ui-text-dimmed: var(--ui-color-neutral-400); /* 6.2:1 */
-  --app-highlight: color-mix(in oklab, var(--ui-color-neutral-700) 70%, transparent);
-  --search-hover: var(--ui-color-neutral-700);
+  --app-highlight: color-mix(in oklab, var(--ui-color-neutral-700) 50%, transparent);
 }
 
 .search-panel {
