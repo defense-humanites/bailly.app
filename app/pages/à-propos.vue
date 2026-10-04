@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { FEATURES } from "#shared/utils/features";
   /*
    * The hero is a cover: the header's items are hidden while the page is at
    * its top (cf. `AppNavHorizontal`), its height and background framing it.
@@ -182,6 +183,7 @@
               @click="searchFocus.focus()"
             />
             <UButton
+              v-if="FEATURES.donations"
               to="/soutenir"
               size="lg"
               color="neutral"
@@ -666,7 +668,9 @@
       </section>
     </div>
 
+    <!-- The closing section, to be reworked (cf. `FEATURES`). -->
     <section
+      v-if="FEATURES.aboutClosing"
       aria-labelledby="soutien"
       class="cloth relative py-16 text-center text-terracotta-100 md:py-20"
     >

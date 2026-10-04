@@ -1,5 +1,6 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
 import type { Page } from "@playwright/test";
+import { FEATURES } from "../../shared/utils/features";
 
 const SDK_URL = "https://www.paypalobjects.com/donate/sdk/donate-sdk.js";
 
@@ -25,6 +26,8 @@ async function stubSdk(page: Page): Promise<string[]> {
 }
 
 test.describe("donations", () => {
+  test.skip(!FEATURES.donations, "The donations are not offered yet (cf. `FEATURES`).");
+
   test("the home page leads to the donation page", async ({ page, goto }) => {
     await page.route(SDK_URL, route => route.abort());
     await goto("/", { waitUntil: "hydration" });

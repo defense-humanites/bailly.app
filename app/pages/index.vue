@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { FEATURES } from "#shared/utils/features";
+
   const searchFocus = useSearchFocus();
 
   /**
@@ -85,9 +87,16 @@
           </p>
         </div>
       </div>
-      <!-- The news and the donation (on mobile, the header's icons). -->
-      <div class="flex gap-2 max-md:hidden md:mb-5 lg:mb-0">
+      <!--
+        The news and the donation (on mobile, the header's icons), once
+        offered (cf. `FEATURES`).
+      -->
+      <div
+        v-if="FEATURES.news || FEATURES.donations"
+        class="flex gap-2 max-md:hidden md:mb-5 lg:mb-0"
+      >
         <UButton
+          v-if="FEATURES.news"
           :to="encodeURI('/nouveautés')"
           size="sm"
           color="secondary"
@@ -96,6 +105,7 @@
           label="Nouveautés"
         />
         <UButton
+          v-if="FEATURES.donations"
           to="/soutenir"
           size="sm"
           color="primary"

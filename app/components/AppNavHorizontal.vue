@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { FEATURES } from "#shared/utils/features";
   import type { NavigationMenuItem } from "@nuxt/ui";
 
   const props = defineProps<{
@@ -116,11 +117,11 @@
       <!--
         The menu; on mobile, on the home page only, cotillons and a heart
         first lead to the news and the donation (the page's own buttons are
-        left out there, for room).
+        left out there, for room), once offered (cf. `FEATURES`).
       -->
       <div class="flex items-center md:col-start-3 md:row-start-1 md:justify-self-end">
         <UButton
-          v-if="route.path === '/'"
+          v-if="FEATURES.news && route.path === '/'"
           :to="encodeURI('/nouveautés')"
           icon="i-lucide-party-popper"
           color="secondary"
@@ -130,7 +131,7 @@
           :ui="{ leadingIcon: 'size-5' }"
         />
         <UButton
-          v-if="route.path === '/'"
+          v-if="FEATURES.donations && route.path === '/'"
           to="/soutenir"
           icon="i-lucide-heart"
           color="primary"

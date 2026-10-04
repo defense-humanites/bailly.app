@@ -1,4 +1,5 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
+import { FEATURES } from "../../shared/utils/features";
 import { searchInput } from "./helpers";
 
 test.describe("home page", () => {
@@ -83,6 +84,17 @@ test.describe("home page", () => {
     await expect(edition).toBeVisible();
   });
 
+  test("the features not offered yet: no links, their pages not served", async ({ page, goto }) => {
+    await goto("/", { waitUntil: "hydration" });
+    if (!FEATURES.news) await expect(page.getByRole("link", { name: "Nouveautés" })).toHaveCount(0);
+    if (!FEATURES.donations) await expect(page.getByRole("link", { name: /Nous soutenir/ })).toHaveCount(0);
+    for (const [on, path] of [[FEATURES.news, "/nouveautés"], [FEATURES.donations, "/soutenir"], [FEATURES.donations, "/soutenir/merci"]] as const) {
+      if (on) continue;
+      await goto(encodeURI(path), { waitUntil: "hydration" });
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Page introuvable");
+    }
+  });
+
   test("leads to the about page", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
     await page.getByRole("link", { name: "en savoir plus", exact: true }).click();
@@ -90,6 +102,7 @@ test.describe("home page", () => {
   });
 
   test("leads to the news: a button, on mobile the header's cotillons", async ({ page, goto }) => {
+    test.skip(!FEATURES.news, "The news are not offered yet (cf. `FEATURES`).");
     await page.setViewportSize({ width: 1280, height: 800 });
     await goto("/", { waitUntil: "hydration" });
     await page.getByRole("link", { name: "Nouveautés" }).click();

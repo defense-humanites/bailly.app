@@ -1,3 +1,5 @@
+import { FEATURES } from "./shared/utils/features";
+
 /**
  * Whether the app is built for Cloudflare: a Cloudflare preset, or a build
  * by Cloudflare (Workers Builds, Pages), where Nitro picks the preset itself.
@@ -16,6 +18,14 @@ const cloudflare = Boolean(
 const syncDatabase = cloudflare
   ? { connector: "cloudflare-d1" as const, options: { bindingName: "SYNC_DB" } }
   : { connector: "sqlite" as const, options: { name: "sync" } };
+
+/**
+ * The pages of the features not offered yet (cf. `shared/utils/features.ts`).
+ */
+const hiddenPages = [
+  ...(FEATURES.news ? [] : ["/nouveautés"]),
+  ...(FEATURES.donations ? [] : ["/soutenir"]),
+];
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -147,6 +157,16 @@ export default defineNuxtConfig({
       vueCompilerOptions: {
         checkUnknownComponents: true,
       },
+    },
+  },
+  hooks: {
+    // The pages of the features not offered yet, left out (their addresses
+    // lead to the error page).
+    "pages:extend"(pages) {
+      for (let index = pages.length - 1; index >= 0; index--) {
+        const path = decodeURI(pages[index]!.path);
+        if (hiddenPages.some(hidden => path === hidden || path.startsWith(`${hidden}/`))) pages.splice(index, 1);
+      }
     },
   },
   eslint: {
