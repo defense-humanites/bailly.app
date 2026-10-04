@@ -69,17 +69,19 @@
       </p>
 
       <p>
-        <strong>Préférences.</strong> Vos préférences (police, taille du texte,
-        translittération, recherche) sont gardées dans un cookie,
-        déposé seulement lorsque vous modifiez un réglage et conservé treize mois.
-        Notre serveur le lit pour afficher les pages avec vos réglages. Le thème et
-        l'état de l'interface (étiquette active, avis masqués) sont gardés dans le
+        <strong>Préférences.</strong> Vos préférences (thème, police, taille et
+        graisse du texte, translittération, recherche, affichage des signets) sont
+        gardées dans un cookie, déposé seulement lorsque vous modifiez un réglage
+        et conservé treize mois. Notre serveur le lit pour afficher les pages avec
+        vos réglages. Le thème est aussi gardé dans un second cookie, conservé un
+        an, pour que les pages s'affichent dans le bon thème dès leur chargement.
+        L'état de l'interface (étiquette active, avis masqués) est gardé dans le
         stockage local de votre navigateur. Ces données ne contiennent aucun
         identifiant et ne servent qu'au fonctionnement de l'application. La date de
-        chaque modification de certaines préférences (translittération, formes
-        fléchies, police, saisie) est aussi gardée dans votre navigateur, pour leur
-        synchronisation si vous l'activez&nbsp;; le cookie peut alors être déposé
-        ou modifié pour appliquer un réglage fait sur un autre de vos appareils.
+        chaque modification de vos préférences est aussi gardée dans votre
+        navigateur, pour leur synchronisation si vous l'activez&nbsp;; le cookie
+        peut alors être déposé ou modifié pour appliquer un réglage fait sur un
+        autre de vos appareils.
       </p>
 
       <p>
