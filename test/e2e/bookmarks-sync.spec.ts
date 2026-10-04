@@ -252,6 +252,25 @@ test("the server unreachable: told as a warning, the key's words not at fault; t
   await expect(page.getByText("Le serveur de synchronisation est injoignable.", { exact: true })).toHaveCount(0);
 });
 
+test("the link of another key, on a synchronized device: replacing its key, in red, the buttons apart", async ({ page, goto, browser, baseURL }) => {
+  test.setTimeout(60_000);
+  await goto("/signets", { waitUntil: "hydration" });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await expect(page.getByRole("button", { name: "Télécharger le kit de récupération" })).toBeVisible();
+  const link = await syncLink(page);
+
+  const phone = await newDevice(browser, baseURL);
+  await openSync(phone);
+  await phone.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await phone.getByRole("button", { name: "J'ai conservé ma clé" }).click();
+  await phone.goto(link!);
+  const replace = phone.getByRole("button", { name: "Remplacer la clé" });
+  await expect(replace).toBeVisible();
+  await expect(replace).toHaveClass(/bg-error/);
+  await expect(phone.getByRole("button", { name: "Annuler" })).toHaveClass(/me-auto/);
+});
+
 test("a key whose online bookmarks the server emptied: joining explains it", async ({ page, goto, browser, baseURL }) => {
   await goto("/signets", { waitUntil: "hydration" });
   await openSync(page);
