@@ -142,7 +142,10 @@
           target="_blank"
           rel="noopener"
           href="https://www.cloudflare.com/privacypolicy/"
-        >politique de confidentialité</a>.
+        >politique de confidentialité</a>. Pour distinguer les visites des
+        robots, Cloudflare peut déposer un cookie de sécurité (<code>__cf_bm</code>),
+        strictement nécessaire&nbsp;: propre à ce site, chiffré, il ne sert pas
+        au suivi et expire après trente minutes d'inactivité.
       </p>
 
       <p>
