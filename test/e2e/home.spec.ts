@@ -94,7 +94,7 @@ test.describe("home page", () => {
     await goto("/", { waitUntil: "hydration" });
     await page.getByRole("link", { name: "Nouveautés" }).click();
     await expect(page).toHaveURL(new RegExp(`${encodeURI("/nouveautés")}$`));
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("L'application Bailly fait peau neuve !");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Une nouvelle application Bailly");
     // Their icon only in the header, on the home page only.
     await page.setViewportSize({ width: 375, height: 800 });
     await expect(page.locator("header").getByRole("link", { name: "Nouveautés" })).toBeHidden();
