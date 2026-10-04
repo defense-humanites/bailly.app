@@ -55,7 +55,7 @@
    */
   const introDismissed = useDismissed("bookmarksIntro");
   // (Its exposed `enabled` is unwrapped on the component's instance.)
-  const syncButton = useTemplateRef<{ open: () => void; enabled: boolean }>("syncButton");
+  const syncButton = useTemplateRef<{ enabled: boolean }>("syncButton");
   const syncEnabled = computed((): boolean => syncButton.value?.enabled ?? false);
 
   /**
@@ -195,19 +195,18 @@
         />
 
         <!--
-          The introduction, before the favorites: what the bookmarks are, and
-          an invitation to synchronize them (the Aegean blue of the
-          synchronization). Dismissed by its close button.
+          The introduction, a card before the favorites (on their left from
+          `lg`), in terracotta: what the bookmarks are, and, while they aren't
+          synchronized, that they can be (the bar's button). Dismissed by its
+          close button.
         -->
         <UAlert
           v-if="!introDismissed"
-          class="col-span-full"
-          color="secondary"
+          color="primary"
           variant="subtle"
           icon="i-lucide-bookmark"
           title="Vos signets"
           :ui="{ description: 'text-default opacity-100' }"
-          :actions="syncEnabled ? [] : [{ label: 'Synchroniser mes signets', icon: 'i-lucide-cloud-upload', color: 'secondary', variant: 'solid', size: 'sm', onClick: () => syncButton?.open() }]"
           close
           @update:open="introDismissed = true"
         >

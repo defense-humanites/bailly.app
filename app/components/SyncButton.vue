@@ -125,8 +125,9 @@
     isSyncOpen.value = true;
   };
 
-  // For the page's invitations (e.g. the bookmarks' introduction).
-  defineExpose({ open: openSync, enabled });
+  // For the page's texts (e.g. the bookmarks' introduction, which tells
+  // that they can be synchronized while they aren't).
+  defineExpose({ enabled });
 </script>
 
 <template>

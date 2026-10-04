@@ -204,18 +204,15 @@ test.describe("bookmarks page", () => {
     await expect(excerpt).toHaveCSS("font-weight", "400");
   });
 
-  // An introduction before the favorites, with an invitation to synchronize,
-  // until the user dismisses it (with the other dismissed notices).
+  // An introduction on the favorites' left, until the user dismisses it (with
+  // the other dismissed notices).
   test("an introduction, until dismissed", async ({ page }) => {
     const intro = page.locator("main [data-slot=root]").filter({ has: page.getByText("Vos signets", { exact: true }) });
     await expect(intro).toBeVisible();
-    const top = async (locator: typeof intro) => (await locator.boundingBox())!.y;
-    expect(await top(intro)).toBeLessThan(await top(card(page, "Favoris")));
-    // The invitation opens the synchronization's window.
-    await intro.getByRole("button", { name: "Synchroniser mes signets" }).click();
-    await expect(page.getByRole("dialog")).toBeVisible();
-    await page.keyboard.press("Escape");
-    await expect(page.getByRole("dialog")).toBeHidden();
+    // A card on the favorites' left.
+    const [introBox, favoritesBox] = [(await intro.boundingBox())!, (await card(page, "Favoris").boundingBox())!];
+    expect(introBox.x + introBox.width).toBeLessThan(favoritesBox.x);
+    expect(Math.abs(introBox.y - favoritesBox.y)).toBeLessThan(2);
 
     await intro.locator("[data-slot=close]").click();
     await expect(intro).toBeHidden();
