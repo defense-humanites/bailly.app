@@ -243,7 +243,7 @@
               </UTooltip>
             </div>
           </template>
-          <div class="ms-12 text-marble-700 dark:text-marble-400">
+          <div class="ms-12 text-marble-700 dark:text-marble-400 font-semibold">
             <p class="mb-2">
               Depuis la barre d'outils d'une entrée, ajoutez-la à vos favoris ou rangez-la sous
               une étiquette : vous la retrouverez ici.
