@@ -601,24 +601,29 @@
               :key="authors"
             >
               {{ authors }}
-              <!-- Their « et al. »: the contributors, in a popover. -->
-              <UPopover
+              <!--
+                Their « et al. »: the contributors (a long list), in a window;
+                the icon tells there is more behind it.
+              -->
+              <UModal
                 v-if="credit.contributors"
-                :content="{ side: 'top', collisionPadding: 12 }"
-                :ui="{ content: 'max-h-[min(24rem,var(--reka-popover-content-available-height))] w-[min(42rem,calc(100vw-1.5rem))] overflow-y-auto p-4' }"
+                :title="`Contributeurs au ${credit.title}`"
+                :description="`${credit.contributors.length} contributeurs, aux côtés de ses auteurs.`"
+                :ui="{ content: 'sm:max-w-2xl', title: 'pe-8' }"
               >
                 <button
                   type="button"
-                  class="italic underline decoration-dotted underline-offset-4 hover:text-primary"
+                  class="inline-flex items-baseline gap-1 italic hover:text-primary"
                   :aria-label="`Et al. : les ${credit.contributors.length} contributeurs au ${credit.title}`"
                 >
-                  et al.
+                  <span class="underline decoration-dotted underline-offset-4">et al.</span>
+                  <UIcon
+                    name="i-lucide-users-round"
+                    class="size-4 self-center not-italic"
+                  />
                 </button>
-                <template #content>
-                  <p class="mb-3 font-sans text-sm font-semibold">
-                    Contributeurs au {{ credit.title }}
-                  </p>
-                  <ul class="columns-1 gap-6 text-sm sm:columns-2 md:columns-3">
+                <template #body>
+                  <ul class="columns-1 gap-6 sm:columns-2 md:columns-3">
                     <li
                       v-for="contributor in credit.contributors"
                       :key="contributor"
@@ -628,7 +633,7 @@
                     </li>
                   </ul>
                 </template>
-              </UPopover>
+              </UModal>
             </p>
             <p class="text-muted">
               {{ credit.licence }}
