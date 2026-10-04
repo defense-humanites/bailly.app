@@ -227,9 +227,27 @@
           </SettingsRow>
           <SettingsRow
             label="Saisie"
-            description="Le grec est toujours accepté."
             :synced="synced('inputMode')"
           >
+            <!-- The correspondence of the letters, in a window (as the published version's). -->
+            <template #description>
+              Le grec est toujours accepté.
+              <UModal
+                title="Table de correspondance"
+                description="Les lettres grecques en beta code et en translittération."
+                :ui="{ body: 'sm:p-6' }"
+              >
+                <button
+                  type="button"
+                  class="underline decoration-dotted underline-offset-3 hover:text-default focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)"
+                >
+                  Table de correspondance
+                </button>
+                <template #body>
+                  <ConversionTable />
+                </template>
+              </UModal>
+            </template>
             <URadioGroup
               v-model="inputMode"
               :items="inputModeItems"

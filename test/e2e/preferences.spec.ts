@@ -62,4 +62,13 @@ test.describe("preferences", () => {
     expect(Object.keys(stored).filter(key => !key.startsWith("bailly:"))).toEqual([]);
     await expect(page.locator("html")).toHaveClass(/\bdark\b/);
   });
+
+  test("the table of the input modes, from « Saisie »", async ({ page, goto }) => {
+    await goto(encodeURI("/préférences"), { waitUntil: "hydration" });
+    await page.getByRole("button", { name: "Table de correspondance" }).click();
+    const dialog = page.getByRole("dialog", { name: "Table de correspondance" });
+    await expect(dialog.getByRole("row", { name: /^êta/ })).toContainText("ē, ê");
+    await expect(dialog.getByRole("row", { name: /^xi/ })).toContainText("c");
+    await expect(dialog.getByRole("row", { name: /^Esprit rude/ })).toContainText("(");
+  });
 });
