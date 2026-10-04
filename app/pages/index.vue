@@ -125,7 +125,7 @@
         aria-labelledby="titre-accueil"
         class="order-1 font-serif text-2xl/[1.25] font-bold text-balance md:order-none md:mb-5 md:text-3xl/[1.25] lg:mb-0 lg:text-[length:min(2.25rem,5.6cqi)]"
       >
-        <span id="titre-accueil">Consultez le dictionnaire <br class="max-lg:hidden">grec–français d'Anatole&nbsp;Bailly</span><span class="whitespace-nowrap">&nbsp;<UPopover
+        <span id="titre-accueil">Consultez le dictionnaire <br class="max-lg:hidden">grec-français d'Anatole&nbsp;Bailly</span><span class="whitespace-nowrap">&nbsp;<UPopover
           v-model:open="editionOpen"
           :content="{ side: 'top', sideOffset: 6, onOpenAutoFocus }"
           arrow
