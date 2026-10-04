@@ -27,7 +27,7 @@
     {
       icon: "i-lucide-book-open",
       title: "Une lecture à votre mesure.",
-      text: "Choisissez la police du texte grec (GFS Didot, Artemisia, Bodoni ou NeoHellenic), sa taille et sa graisse. Vous ne lisez pas le grec ? Affichez-le en caractères latins.",
+      text: "Choisissez la police du texte grec (Bailly Book, GFS Didot, Artemisia, Bodoni ou NeoHellenic), sa taille et sa graisse. Vous ne lisez pas le grec ? Affichez-le en caractères latins.",
     },
     {
       icon: "i-lucide-bookmark",
