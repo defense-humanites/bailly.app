@@ -243,6 +243,17 @@ test("the server unreachable: told as a warning, the key's words not at fault; t
   await expect(message.locator("xpath=ancestor::*[contains(@class, 'text-warning')][1]")).toHaveCount(1);
   await expect(field).not.toHaveAttribute("aria-invalid", "true");
 
+  // The server busy (Cloudflare's rate limiting): a warning too, asking to
+  // try again.
+  await phone.unroute("**/api/sync/**");
+  await phone.route("**/api/sync/**", route => route.fulfill({ status: 429, contentType: "text/plain", body: "" }));
+  await phone.getByRole("button", { name: "Rejoindre" }).click();
+  const busy = phone.getByText("Le serveur de synchronisation est très sollicité : réessayez dans quelques secondes.", { exact: true });
+  await expect(busy).toBeVisible();
+  await expect(busy.locator("xpath=ancestor::*[contains(@class, 'text-warning')][1]")).toHaveCount(1);
+  await expect(field).not.toHaveAttribute("aria-invalid", "true");
+  await expect(phone.getByText(/nouvel essai dans quelques secondes/)).toHaveCount(0);
+
   // The laptop loses the server: its state waits, and tells why, once.
   await page.route("**/api/sync/**", route => route.abort());
   await openSync(page);
