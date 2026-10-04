@@ -7,7 +7,7 @@
   defineOptions({ inheritAttrs: false });
 
   const bookmarksStore = useBookmarksStore();
-  const { newTagColor, tags } = storeToRefs(bookmarksStore);
+  const { initialized, newTagColor, tags } = storeToRefs(bookmarksStore);
   const hintId = useId();
   const errorId = useId();
 
@@ -128,12 +128,16 @@
 
         <!-- Enter adds the tag; or why it cannot -->
         <template #trailing>
-          <!-- The quota: « 12/50 » (cf. the hint for screen readers). -->
+          <!--
+            The quota: « 12/50 » (cf. the hint for screen readers), once the
+            bookmarks are loaded (before, the count would be 0); its place
+            kept meanwhile.
+          -->
           <span
             v-if="showsQuota"
             aria-hidden="true"
             class="text-xs tabular-nums"
-            :class="nearQuota ? 'font-medium text-warning' : 'text-dimmed'"
+            :class="[nearQuota ? 'font-medium text-warning' : 'text-dimmed', { invisible: !initialized }]"
           >{{ tags.length }}/{{ maxTags }}</span>
           <UIcon
             v-if="error"
@@ -167,7 +171,7 @@
           <span
             :id="hintId"
             class="sr-only"
-          >Entrée pour ajouter{{ showsQuota ? ` (${tags.length} étiquette${tags.length > 1 ? "s" : ""} sur ${maxTags} au plus)` : "" }}</span>
+          >Entrée pour ajouter{{ initialized && showsQuota ? ` (${tags.length} étiquette${tags.length > 1 ? "s" : ""} sur ${maxTags} au plus)` : "" }}</span>
           <span
             :id="errorId"
             role="status"

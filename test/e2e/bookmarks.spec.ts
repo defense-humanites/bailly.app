@@ -510,6 +510,21 @@ test.describe("bookmarks page, quotas", () => {
     const field = page.getByRole("textbox", { name: "Nom de la nouvelle étiquette" });
     await expect(page.getByText("2/50", { exact: true })).toBeVisible();
     await expect(field).toHaveAccessibleDescription(/\(2 étiquettes sur 50 au plus\)/);
+
+    // Reloaded, no count shown before the bookmarks are loaded (it would be
+    // 0): every visible count, from the first paint.
+    await page.addInitScript(() => {
+      const seen: string[] = [];
+      (window as unknown as { seenCounts: string[] }).seenCounts = seen;
+      new MutationObserver(() => {
+        for (const span of document.querySelectorAll("span.tabular-nums")) {
+          if (/^\d+\/50$/.test(span.textContent) && getComputedStyle(span).visibility === "visible") seen.push(span.textContent);
+        }
+      }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true });
+    });
+    await page.reload();
+    await expect(page.getByText("2/50", { exact: true })).toBeVisible();
+    expect(await page.evaluate(() => (window as unknown as { seenCounts: string[] }).seenCounts)).not.toContain("0/50");
   });
 });
 
