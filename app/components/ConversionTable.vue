@@ -4,8 +4,8 @@
   /**
    * The correspondence of the Greek letters with the two input modes (cf.
    * `utils/searchInput.ts`), computed by the library the search uses, so
-   * that it can't drift from it: Beta Code (case insensitive: the capitals
-   * are only Greek ones), and the transliteration, with its usual variants
+   * that it can't drift from it: Beta Code (its capitals marked by an
+   * asterisk, their diacritics before the letter), and the transliteration, with its usual variants
    * (the circumflex for the long vowels, y for upsilon).
    */
   const NAMES = [
@@ -40,6 +40,7 @@
     { betaCode: "ci/fos", greek: "ξίφος", transliteration: "xiphos" },
     { betaCode: "yuxh/", greek: "ψυχή", transliteration: "psuchê" },
     { betaCode: "o(do/s", greek: "ὁδός", transliteration: "hodos" },
+    { betaCode: "*(h/ra", greek: "Ἥρα", transliteration: "Hêra" },
   ];
 </script>
 
@@ -116,9 +117,9 @@
     </table>
 
     <p class="text-muted">
-      Le beta code ne distingue pas les majuscules ; le sigma final (ς) est
-      placé de lui-même. En translittération, un h initial note l'esprit rude
-      (hodos → ὁδος).
+      En beta code, une majuscule se marque d'un astérisque (*a → Α) ; le
+      sigma final (ς) est placé de lui-même. En translittération, un h initial
+      note l'esprit rude (hodos → ὁδος).
     </p>
 
     <section aria-labelledby="conversion-diacritiques">
@@ -129,7 +130,8 @@
         Signes diacritiques (beta code)
       </h3>
       <p class="mb-2 text-muted">
-        Facultatifs, ils se tapent après la lettre.
+        Facultatifs, ils se tapent après la lettre ; pour une majuscule, avant
+        elle, après l'astérisque (*)/a → Ἄ).
       </p>
       <table class="w-full table-fixed">
         <tbody>

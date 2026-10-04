@@ -70,5 +70,7 @@ test.describe("preferences", () => {
     await expect(dialog.getByRole("row", { name: /^êta/ })).toContainText("ē, ê");
     await expect(dialog.getByRole("row", { name: /^xi/ })).toContainText("c");
     await expect(dialog.getByRole("row", { name: /^Esprit rude/ })).toContainText("(");
+    // A capital: the asterisk, then the diacritics, then the letter.
+    await expect(dialog).toContainText("*)/a → Ἄ");
   });
 });
