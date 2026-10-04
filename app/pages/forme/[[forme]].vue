@@ -100,10 +100,10 @@
    * The entry in view: the last one whose top has passed a "reading line"
    * (a quarter of the window), the first one at the page's top, or the last
    * one at the bottom of a page that scrolled. It
-   * is highlighted, and kept visible, in the lists of headwords.
+   * is marked in the headwords' column (from `xl`; below, the table of
+   * contents finds it by itself).
    */
   const currentId = ref<string>();
-  const bar = useTemplateRef<HTMLElement>("bar");
   const scroller = usePageScroller();
   const { y } = usePageScroll();
 
@@ -131,9 +131,24 @@
 
   onMounted(updateCurrent);
   watch(y, () => requestAnimationFrame(updateCurrent));
-  watch(currentId, (id) => {
-    bar.value?.querySelector(`[href$="#${id}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" });
-  });
+
+  /**
+   * Whether all the cards fit in the window (the page doesn't scroll): the
+   * headwords' column then needs no links.
+   */
+  const fits = ref(false);
+  const measureFit = (): void => {
+    const box = scroller.value;
+    fits.value = !!box && box.scrollHeight <= box.clientHeight + 1;
+  };
+  onMounted(measureFit);
+  useResizeObserver(list, measureFit);
+  useEventListener("resize", measureFit);
+
+  /**
+   * The headwords' table of contents below `xl` (cf. `BookmarksToc`).
+   */
+  const toc = computed(() => sections.value.map(({ id, entry }) => ({ key: id, id, name: greek.text(entry.word), serif: true })));
 </script>
 
 <template>
@@ -187,7 +202,12 @@
           Aucune entrée à afficher.
         </p>
 
-        <!-- From `xl`, the headwords in a column, to go from a card to another. -->
+        <!--
+          From `xl`, the headwords in a column: links to their cards, the one
+          in view marked (in neutral colors), only when the cards don't all fit
+          in the window (`fits`, measured: the server renders links, unmarked,
+          which look the same).
+        -->
         <nav
           v-if="sections.length > 1"
           aria-label="Accès rapide aux entrées"
@@ -198,16 +218,17 @@
               v-for="{ id, entry } in sections"
               :key="id"
             >
-              <UButton
+              <span
+                v-if="fits"
+                class="block truncate px-2.5 py-1.5 font-serif text-sm text-muted"
+              >{{ greek.text(entry.word) }}</span>
+              <NuxtLink
+                v-else
                 :to="{ query: route.query, hash: `#${id}` }"
-                :label="greek.text(entry.word)"
-                :aria-current="currentId === id ? 'true' : undefined"
-                :color="currentId === id ? 'primary' : 'neutral'"
-                variant="ghost"
-                block
-                class="justify-start rounded-md font-serif"
-                :class="currentId === id ? 'bg-primary/10 font-semibold' : 'text-muted hover:bg-(--app-page-hover)'"
-              />
+                :aria-current="currentId === id ? 'location' : undefined"
+                class="block truncate rounded-md px-2.5 py-1.5 font-serif text-sm transition-colors focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)"
+                :class="currentId === id ? 'bg-accented/50 font-semibold text-highlighted' : 'text-muted hover:bg-(--app-page-hover) hover:text-default'"
+              >{{ greek.text(entry.word) }}</NuxtLink>
             </li>
           </ul>
         </nav>
@@ -215,26 +236,18 @@
     </header>
 
     <!--
-      Below `xl`, the headwords in a bar that sticks under the header (cf.
-      `--header-bottom`), scrolling horizontally if needed.
+      Below `xl`, the headwords in a table of contents as the bookmarks'
+      (sticky under the header, scrolling sideways), in neutral colors: no
+      entry's bar (whose title and arrows tell the entry read and lead to its
+      neighbours).
     -->
-    <nav
+    <BookmarksToc
       v-if="sections.length > 1"
-      ref="bar"
-      aria-label="Accès rapide aux entrées"
-      class="sticky top-(--header-bottom) z-10 -mx-2 mb-6 flex gap-2 overflow-x-auto bg-bar px-2 py-2 transition-[top] duration-300 ease-out motion-reduce:transition-none xl:hidden"
-    >
-      <UButton
-        v-for="{ id, entry } in sections"
-        :key="id"
-        :to="{ query: route.query, hash: `#${id}` }"
-        :label="greek.text(entry.word)"
-        :aria-current="currentId === id ? 'true' : undefined"
-        :color="currentId === id ? 'primary' : 'neutral'"
-        :variant="currentId === id ? 'subtle' : 'outline'"
-        class="shrink-0 font-serif text-xs/6"
-      />
-    </nav>
+      :groups="toc"
+      label="Accès rapide aux entrées"
+      :highlight="false"
+      class="mb-6 xl:hidden"
+    />
 
     <div
       ref="list"

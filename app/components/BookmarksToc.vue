@@ -2,25 +2,37 @@
   import type { ColorKey } from "~/enums";
 
   /**
-   * A group of the bookmarks page, as listed in its table of contents.
+   * A group of the bookmarks page, as listed in its table of contents; or,
+   * without a color, a card of another page (e.g. an entry of an ambiguous
+   * form's page, cf. `forme/[[forme]].vue`), in neutral colors.
    */
   export interface TocGroup {
     key: string;
     /** The id of the group's card (the link's target). */
     id: string;
     name: string;
-    color: ColorKey;
-    icon: string;
+    color?: ColorKey;
+    icon?: string;
     /** Its number of entries. */
-    count: number;
+    count?: number;
     /** Whether it is the active tag (the favorites always are). */
-    active: boolean;
+    active?: boolean;
+    /** Whether its name is Greek, in the dictionary's font. */
+    serif?: boolean;
   }
 
-  const props = defineProps<{
+  const props = withDefaults(defineProps<{
     groups: TocGroup[];
-  }>();
+    /** The navigation's accessible name. */
+    label?: string;
+    /** Whether a card reached is pointed out (in its tag's color, cf. `highlightCard`). */
+    highlight?: boolean;
+  }>(), {
+    label: "Sommaire des signets",
+    highlight: true,
+  });
 
+  const route = useRoute();
   const nav = useTemplateRef<HTMLElement>("nav");
   const row = useTemplateRef<HTMLElement>("row");
 
@@ -110,7 +122,7 @@
   const follow = (group: TocGroup): void => {
     followed = current.value = group.key;
     const card = document.getElementById(group.id);
-    if (card) highlightCard(card);
+    if (card && props.highlight) highlightCard(card);
   };
 
   /**
@@ -182,7 +194,7 @@
    * once when it appears (`markSlides`), and without sliding with reduced
    * motion.
    */
-  const mark = ref<{ left: number; width: number; color: ColorKey }>();
+  const mark = ref<{ left: number; width: number; color?: ColorKey }>();
   const markSlides = ref(false);
   function placeMark(): void {
     const group = props.groups.find(({ key }) => key === current.value);
@@ -236,7 +248,7 @@
   -->
   <nav
     ref="nav"
-    aria-label="Sommaire des signets"
+    :aria-label="label"
     class="sticky top-(--header-bottom) z-10 col-span-full before:pointer-events-none before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-[100cqw] before:-translate-x-1/2 before:border-b before:transition-colors before:duration-300 motion-reduce:before:transition-none"
     :class="stuck ? 'before:border-default before:bg-bar' : 'before:border-transparent'"
   >
@@ -255,22 +267,28 @@
       >
         <!-- Named « Homère, 12 entrées » (the full name, the count spelled out). -->
         <NuxtLink
-          :to="{ hash: `#${group.id}` }"
+          :to="{ query: route.query, hash: `#${group.id}` }"
           :data-group="group.key"
-          :aria-label="`${group.name}, ${group.count} ${entryCount(group.count)}${group.active && group.key !== 'favorites' ? ', étiquette active' : ''}`"
+          :aria-label="group.count === undefined ? undefined : `${group.name}, ${group.count} ${entryCount(group.count)}${group.active && group.key !== 'favorites' ? ', étiquette active' : ''}`"
           :aria-current="group.key === current ? 'location' : undefined"
-          class="relative flex h-8 items-center gap-1.5 rounded-full ps-2.5 pe-3 text-sm ring-inset transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
-          :class="group.active
-            ? 'bg-tag-text text-tag-100 hover:bg-tag-text/90'
-            : 'bg-tag-100 text-tag-text ring ring-tag-300/60 hover:bg-tag-200/80'"
+          class="relative flex h-8 items-center gap-1.5 rounded-full pe-3 text-sm ring-inset transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
+          :class="[!group.color
+            ? 'bg-default text-default ring ring-default hover:bg-elevated focus-visible:outline-(--ui-border-inverted)'
+            : group.active
+              ? 'bg-tag-text text-tag-100 hover:bg-tag-text/90'
+              : 'bg-tag-100 text-tag-text ring ring-tag-300/60 hover:bg-tag-200/80', group.icon ? 'ps-2.5' : 'ps-3', { 'font-serif': group.serif }]"
           @click="follow(group)"
         >
           <UIcon
+            v-if="group.icon"
             :name="group.icon"
             class="size-4 shrink-0"
           />
           <span class="max-w-48 truncate font-medium">{{ group.name }}</span>
-          <span class="tabular-nums opacity-75">{{ group.count }}</span>
+          <span
+            v-if="group.count !== undefined"
+            class="tabular-nums opacity-75"
+          >{{ group.count }}</span>
         </NuxtLink>
       </li>
 
@@ -280,8 +298,8 @@
         aria-hidden="true"
         data-toc-mark
         :data-tag-color="mark.color"
-        class="pointer-events-none absolute start-0 bottom-0.5 h-0.5 rounded-full bg-tag-text duration-300 ease-out motion-reduce:transition-none"
-        :class="{ 'transition-[translate,width,background-color]': markSlides }"
+        class="pointer-events-none absolute start-0 bottom-0.5 h-0.5 rounded-full duration-300 ease-out motion-reduce:transition-none"
+        :class="[mark.color ? 'bg-tag-text' : 'bg-(--ui-text)', { 'transition-[translate,width,background-color]': markSlides }]"
         :style="{ translate: `${mark.left}px 0`, width: `${mark.width}px` }"
       />
     </ul>

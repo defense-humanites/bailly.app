@@ -39,32 +39,37 @@ test.describe("page of an ambiguous form", () => {
     const [cardBox, titleBox] = [await card.boundingBox(), await page.getByRole("heading", { level: 1 }).boundingBox()];
     expect(titleBox!.x).toBeGreaterThan(cardBox!.x + cardBox!.width);
 
+    // All the cards in view: the headwords, without links.
     const nav = page.getByRole("navigation", { name: "Accès rapide aux entrées" });
+    await expect(nav.getByRole("listitem")).toHaveText(["αἱ", "ὁ"]);
+    await expect(nav.getByRole("link")).toHaveCount(0);
+    // A lower window: links, the one in view marked.
+    await page.setViewportSize({ width: 1280, height: 400 });
     const headwords = nav.getByRole("link");
     await expect(headwords).toHaveText(["αἱ", "ὁ"]);
-    await expect(headwords.nth(0)).toHaveAttribute("aria-current", "true");
+    await expect(headwords.nth(0)).toHaveAttribute("aria-current", "location");
 
     await card.click();
     await expect(page).toHaveURL(/\/ho_\(1\)$/);
   });
 
-  test("below xl: the title above, a bar of headwords sticking under the header", async ({ page, goto }) => {
+  test("below xl: the title above, the headwords in a table of contents sticking under the header", async ({ page, goto }) => {
     await page.setViewportSize({ width: 1024, height: 450 });
     await goto(formUrl, { waitUntil: "hydration" });
     const bar = page.getByRole("navigation", { name: "Accès rapide aux entrées" });
     const chips = bar.getByRole("link");
     await expect(chips).toHaveText(["αἱ", "ὁ"]);
-    await expect(chips.nth(0)).toHaveAttribute("aria-current", "true");
+    await expect(chips.nth(0)).toHaveAttribute("aria-current", "location");
 
     await chips.nth(1).click();
     await expect(page).toHaveURL(/#entree-2$/);
-    await expect(chips.nth(1)).toHaveAttribute("aria-current", "true");
-    // The bar sticks under the header.
-    const [barTop, headerBottom] = await page.evaluate(() => [
-      document.querySelector("nav[aria-label='Accès rapide aux entrées'].sticky")!.getBoundingClientRect().top,
-      document.querySelector("body > div header")!.getBoundingClientRect().bottom,
-    ]);
-    expect(Math.abs(barTop - headerBottom)).toBeLessThan(1);
+    await expect(chips.nth(1)).toHaveAttribute("aria-current", "location");
+    // The table of contents sticks under the header (once the smooth scroll
+    // is over).
+    await expect.poll(() => page.evaluate(() => Math.abs(
+      document.querySelector("nav[aria-label='Accès rapide aux entrées'].sticky")!.getBoundingClientRect().top
+      - document.querySelector("body > div header")!.getBoundingClientRect().bottom,
+    ))).toBeLessThan(1);
   });
 
   test("the former address (/lecteur) redirects to the form's page", async ({ page, goto }) => {
