@@ -22,6 +22,15 @@ import { SYNCABLE_PREFERENCES, type Preferences, type SyncablePreference } from 
 export type SyncStatus = "idle" | "syncing" | "error";
 
 /**
+ * The result of an action of the synchronization's window (enabling,
+ * joining): a failure may tell its cause, for the window to show it where
+ * it belongs — the key (mistyped, unknown, disabled: on the field of its
+ * words) or the network (the server unreachable, busy, or its daily budget
+ * spent: a warning, to try again later; the key is not at fault).
+ */
+export type SyncActionResult<T = undefined> = IdbResult<T> | { state: "error"; message: string; cause: "key" | "network" | "quota" };
+
+/**
  * The types of data a device synchronizes: its bookmarks, and some of its
  * preferences (cf. `SYNCABLE_PREFERENCES`).
  */
@@ -408,6 +417,17 @@ export const useSyncStore = defineStore("sync", () => {
   /**
    * An error of the synchronization, explained to the user.
    */
+  /**
+   * A failure of an action, its cause told when it is the network's (cf.
+   * `SyncActionResult`).
+   */
+  function actionFailure(e: unknown, message = describe(e)): SyncActionResult<never> {
+    const cause = e instanceof SyncPartialError ? e.cause : e;
+    if (cause instanceof SyncQuotaError) return { state: "error", message, cause: "quota" };
+    if (cause instanceof SyncNetworkError) return { state: "error", message, cause: "network" };
+    return { state: "error", message };
+  }
+
   function describe(e: unknown): string {
     if (e instanceof SyncPartialError) return describe(e.cause);
     if (e instanceof LockerDeletedError) return `${e.message} Vos données restent sur cet appareil.`;
@@ -614,7 +634,7 @@ export const useSyncStore = defineStore("sync", () => {
    * server had emptied the locker (the key is valid, but only this device's
    * data are online now).
    */
-  async function activate(secret: Uint8Array<ArrayBuffer>, sections: SyncSections, { fresh = false }: { fresh?: boolean } = {}): Promise<IdbResult<{ emptied: boolean }>> {
+  async function activate(secret: Uint8Array<ArrayBuffer>, sections: SyncSections, { fresh = false }: { fresh?: boolean } = {}): Promise<SyncActionResult<{ emptied: boolean }>> {
     clearTimeout(timer);
     const previousStatus = status.value;
     status.value = "syncing";
@@ -656,7 +676,7 @@ export const useSyncStore = defineStore("sync", () => {
       if (cause instanceof SyncLimitError && cause.excesses.length) {
         return { state: "error", message: describeExcesses(cause.excesses, "user") };
       }
-      return { state: "error", message: describe(failure) };
+      return actionFailure(failure);
     }
 
     const value: IdbSyncConfig = {
@@ -710,7 +730,7 @@ export const useSyncStore = defineStore("sync", () => {
    * first to be sent).
    * @param sections The types of data to synchronize.
    */
-  async function enable(sections: SyncSections): Promise<IdbResult> {
+  async function enable(sections: SyncSections): Promise<SyncActionResult> {
     const result = await activate(crypto.getRandomValues(new Uint8Array(16)), sections, { fresh: true });
     return result.state === "success" ? { state: "success", data: undefined } : result;
   }
@@ -725,14 +745,14 @@ export const useSyncStore = defineStore("sync", () => {
    * @returns `emptied`: the server had emptied the locker (the key is valid,
    * but only this device's data are online now).
    */
-  async function join(key: string[] | Uint8Array<ArrayBuffer>, sections: SyncSections): Promise<IdbResult<{ emptied: boolean }>> {
+  async function join(key: string[] | Uint8Array<ArrayBuffer>, sections: SyncSections): Promise<SyncActionResult<{ emptied: boolean }>> {
     let secret: Uint8Array<ArrayBuffer>;
     if (Array.isArray(key)) {
       const { wordsToSecret, SyncKeyError } = await import("~/sync/key");
       try {
         secret = wordsToSecret(key);
       } catch (e: unknown) {
-        if (e instanceof SyncKeyError) return { state: "error", message: e.message };
+        if (e instanceof SyncKeyError) return { state: "error", message: e.message, cause: "key" };
         throw e;
       }
     } else {
@@ -752,13 +772,13 @@ export const useSyncStore = defineStore("sync", () => {
     // created by `enable`; an emptied one still exists).
     try {
       if (!(await fetchLocker(await deriveCredentials(secret), { signal: AbortSignal.timeout(ATTEMPT_TIMEOUT) }))) {
-        return { state: "error", message: "Cette clé n'est utilisée par aucun appareil : vérifiez-la." };
+        return { state: "error", message: "Cette clé n'est utilisée par aucun appareil : vérifiez-la.", cause: "key" };
       }
     } catch (e: unknown) {
       if (e instanceof LockerDeletedError) {
-        return { state: "error", message: "Cette clé a été désactivée : activez la synchronisation avec une nouvelle clé." };
+        return { state: "error", message: "Cette clé a été désactivée : activez la synchronisation avec une nouvelle clé.", cause: "key" };
       }
-      return { state: "error", message: describe(e) };
+      return actionFailure(e);
     }
 
     return activate(secret, sections);

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { renderSVG } from "uqr";
-  import type { SyncSections } from "~/stores/sync";
+  import type { SyncActionResult, SyncSections } from "~/stores/sync";
   import { SYNC_BUSY_MESSAGE } from "~/sync/lockerClient";
   import { DEFAULT_SYNCED_PREFERENCES, SYNCABLE_PREFERENCES, type SyncablePreference } from "~/utils/preferences";
 
@@ -114,6 +114,12 @@
    * The latest error of the synchronization, if it concerns the type of data
    * of the window.
    */
+  /**
+   * The error of a synchronization that will be tried again by itself (the
+   * server unreachable, busy…): told in the state's block.
+   */
+  const pendingError = computed((): string | null => (scopeError.value && !errorNeedsAction.value ? error.value : null));
+
   const scopedError = computed(() => (errorSection.value === null || errorSection.value === props.scope ? error.value : null));
 
   /**
@@ -289,12 +295,30 @@
   const actionError = ref<string | null>(null);
 
   /**
-   * A busy server (Cloudflare's rate limiting) is no error: a warning, which
-   * asks to try again (nothing retries an action of the window by itself).
+   * Whether the action failed for the network's sake (the server
+   * unreachable, busy, or its daily budget spent): a warning, not an error;
+   * and whether to tell to try again (nothing retries an action of the
+   * window by itself), unless the message tells when.
+   */
+  const actionWarning = ref(false);
+  const actionRetry = ref(false);
+
+  /**
+   * A busy server (Cloudflare's rate limiting): its message, which promises
+   * a retry, asks to try again here.
    */
   const BUSY_RETRY = "Le serveur de synchronisation est très sollicité : réessayez dans quelques secondes.";
   const explain = (message: string): string => (message === SYNC_BUSY_MESSAGE ? BUSY_RETRY : message);
-  const actionBusy = computed((): boolean => actionError.value === BUSY_RETRY);
+
+  /**
+   * Shows the failure of an action (not the key's, cf. `join`).
+   */
+  const showFailure = (result: Extract<SyncActionResult, { state: "error" }>): void => {
+    const cause = "cause" in result ? result.cause : undefined;
+    actionError.value = explain(result.message);
+    actionWarning.value = cause === "network" || cause === "quota";
+    actionRetry.value = cause === "network" && result.message !== SYNC_BUSY_MESSAGE;
+  };
 
   /**
    * Runs an action of the window: busy meanwhile, and any unexpected error
@@ -303,6 +327,8 @@
   const run = async (action: () => Promise<void>): Promise<void> => {
     busy.value = true;
     actionError.value = null;
+    actionWarning.value = false;
+    actionRetry.value = false;
     try {
       await action();
     } catch (e: unknown) {
@@ -316,7 +342,7 @@
   const enable = () => run(async () => {
     const result = await syncStore.enable(sectionsToSync());
     if (result.state === "error") {
-      actionError.value = explain(result.message);
+      showFailure(result);
       return;
     }
     await showKey();
@@ -333,6 +359,7 @@
       // Enabled all the same (e.g. offline: synchronized later, the
       // message saying so); otherwise, to be tried again.
       actionError.value = scopeEnabled.value ? result.message : explain(result.message);
+      actionWarning.value = !scopeEnabled.value && result.message === SYNC_BUSY_MESSAGE;
       if (scopeEnabled.value) view.value = "status";
       return;
     }
@@ -416,9 +443,10 @@
     joinError.value = null;
     const result = await syncStore.join(linkKey.value ?? typedWords.value, sectionsToSync());
     if (result.state === "error") {
-      // The server busy: a warning, the words being right as far as known.
-      if (result.message === SYNC_BUSY_MESSAGE) actionError.value = BUSY_RETRY;
-      else joinError.value = result.message;
+      // On the words' field, only what is wrong with the key; the server's
+      // failures (the words being right as far as known) under it.
+      if ("cause" in result && result.cause === "key") joinError.value = result.message;
+      else showFailure(result);
       return;
     }
     linkKey.value = null;
@@ -585,6 +613,8 @@
     joinText.value = "";
     joinError.value = null;
     actionError.value = null;
+    actionWarning.value = false;
+    actionRetry.value = false;
     linkKey.value = props.linkSecret ?? null;
     customizing.value = false;
     chosenPreferences.value = syncedPreferences.value.length ? [...syncedPreferences.value] : [...DEFAULT_SYNCED_PREFERENCES];
@@ -648,10 +678,11 @@
         <template v-else-if="view === 'intro'">
           <UAlert
             v-if="actionError ?? scopedError"
-            :color="actionError && !actionBusy ? 'error' : 'warning'"
+            :color="actionError && !actionWarning ? 'error' : 'warning'"
             variant="subtle"
-            :icon="actionError ? (actionBusy ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert') : 'i-lucide-info'"
+            :icon="actionError ? (actionWarning ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert') : 'i-lucide-info'"
             :title="actionError ?? scopedError ?? undefined"
+            :description="actionError && actionRetry ? 'Réessayez dans quelques instants.' : undefined"
           />
           <p>
             {{ texts.intro }}
@@ -807,7 +838,7 @@
             <UFormField
               label="Les douze mots de votre clé"
               help="Dans l'ordre, séparés par des espaces. Accents et majuscules sont facultatifs ; les 4 premières lettres de chaque mot suffisent."
-              :error="joinError ?? (actionBusy ? undefined : actionError) ?? (unknownWord ? `« ${unknownWord} » n'est pas un mot de la liste.` : undefined)"
+              :error="joinError ?? (unknownWord ? `« ${unknownWord} » n'est pas un mot de la liste.` : undefined)"
             >
               <!--
                 Once the key is ready, the key drawn at the bottom right says
@@ -849,12 +880,14 @@
               class="sr-only"
             >{{ keyReady ? "Clé complète : appuyez sur Entrée pour rejoindre." : "" }}</span>
           </form>
+          <!-- The key's error (from a link: no field), or the server's. -->
           <UAlert
-            v-if="(linkKey && (joinError ?? actionError)) || (!linkKey && actionBusy)"
-            :color="!joinError && actionBusy ? 'warning' : 'error'"
+            v-if="(linkKey && joinError) || actionError"
+            :color="!(linkKey && joinError) && actionWarning ? 'warning' : 'error'"
             variant="subtle"
-            :icon="!joinError && actionBusy ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert'"
-            :title="joinError ?? actionError ?? undefined"
+            :icon="!(linkKey && joinError) && actionWarning ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert'"
+            :title="(linkKey && joinError) || actionError || undefined"
+            :description="!(linkKey && joinError) && actionRetry ? 'Réessayez dans quelques instants.' : undefined"
           />
         </template>
 
@@ -994,8 +1027,18 @@
               <p class="font-semibold">
                 {{ syncingShown ? "Synchronisation en cours…" : scopeError ? "Synchronisation en attente" : texts.upToDate }}
               </p>
+              <!--
+                Waiting for the server (unreachable, busy…): why, in the
+                state itself; an error that asks for something is told apart
+                (cf. below).
+              -->
               <p class="text-muted">
-                Synchronisation activée sur cet appareil.
+                <template v-if="pendingError && !syncingShown">
+                  {{ pendingError }} Vos modifications seront envoyées dès que possible.
+                </template>
+                <template v-else>
+                  Synchronisation activée sur cet appareil.
+                </template>
                 <template v-if="lastSync">
                   Dernière synchronisation : {{ lastSync }}.
                 </template>
@@ -1019,12 +1062,11 @@
             >{{ manualSync === "done" ? texts.synced : manualSync === "failed" ? "La synchronisation n'a pas abouti." : "" }}</span>
           </div>
           <UAlert
-            v-if="scopeError && error"
+            v-if="scopeError && error && errorNeedsAction"
             color="warning"
             variant="subtle"
             icon="i-lucide-cloud-off"
             :title="error"
-            :description="errorNeedsAction ? undefined : 'Vos modifications seront envoyées dès que possible.'"
           />
           <UAlert
             v-if="clockWrong"
@@ -1036,10 +1078,11 @@
           />
           <UAlert
             v-if="actionError"
-            :color="actionBusy ? 'warning' : 'error'"
+            :color="actionWarning ? 'warning' : 'error'"
             variant="subtle"
-            :icon="actionBusy ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert'"
+            :icon="actionWarning ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert'"
             :title="actionError"
+            :description="actionRetry ? 'Réessayez dans quelques instants.' : undefined"
           />
           <!-- The preferences synchronized, applied once the window closes. -->
           <UCheckboxGroup
@@ -1061,10 +1104,11 @@
         <template v-else-if="view === 'preferences'">
           <UAlert
             v-if="actionError"
-            :color="actionBusy ? 'warning' : 'error'"
+            :color="actionWarning ? 'warning' : 'error'"
             variant="subtle"
-            :icon="actionBusy ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert'"
+            :icon="actionWarning ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert'"
             :title="actionError"
+            :description="actionRetry ? 'Réessayez dans quelques instants.' : undefined"
           />
           <!-- (Its legend is the window's title.) -->
           <UCheckboxGroup

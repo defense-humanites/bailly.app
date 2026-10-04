@@ -217,6 +217,41 @@ test("a failed first synchronization is reported, and leaves the device as it wa
   await expect(phone.getByRole("button", { name: "Activer la synchronisation" })).toBeVisible();
 });
 
+test("the server unreachable: told as a warning, the key's words not at fault; the state waits, telling why", async ({ page, goto, browser, baseURL }) => {
+  test.setTimeout(60_000);
+  await goto("/signets", { waitUntil: "hydration" });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await page.getByRole("tab", { name: "Ajouter un appareil" }).click();
+  await page.getByRole("button", { name: "Afficher la clé" }).click();
+  const keyWords = page.getByRole("list", { name: "Les douze mots de la clé" }).locator("li > span:last-child");
+  await expect(keyWords).toHaveCount(12);
+  const words = await keyWords.allInnerTexts();
+  await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
+
+  // Joining with the words while the server can't be reached.
+  const phone = await newDevice(browser, baseURL);
+  await phone.route("**/api/sync/**", route => route.abort());
+  await openSync(phone);
+  await phone.getByRole("button", { name: "J'ai déjà une clé" }).click();
+  const field = phone.getByRole("textbox");
+  await field.fill(words.join(" "));
+  await phone.getByRole("button", { name: "Rejoindre" }).click();
+  const message = phone.getByText("Le serveur de synchronisation est injoignable.", { exact: true });
+  await expect(message).toBeVisible();
+  await expect(phone.getByText("Réessayez dans quelques instants.", { exact: true })).toBeVisible();
+  await expect(message.locator("xpath=ancestor::*[contains(@class, 'text-warning')][1]")).toHaveCount(1);
+  await expect(field).not.toHaveAttribute("aria-invalid", "true");
+
+  // The laptop loses the server: its state waits, and tells why, once.
+  await page.route("**/api/sync/**", route => route.abort());
+  await openSync(page);
+  await page.getByRole("button", { name: "Synchroniser maintenant" }).click();
+  await expect(page.getByText("Synchronisation en attente", { exact: true })).toBeVisible();
+  await expect(page.getByText(/^\s*Le serveur de synchronisation est injoignable\. Vos modifications seront envoyées dès que possible\./)).toBeVisible();
+  await expect(page.getByText("Le serveur de synchronisation est injoignable.", { exact: true })).toHaveCount(0);
+});
+
 test("a key whose online bookmarks the server emptied: joining explains it", async ({ page, goto, browser, baseURL }) => {
   await goto("/signets", { waitUntil: "hydration" });
   await openSync(page);
