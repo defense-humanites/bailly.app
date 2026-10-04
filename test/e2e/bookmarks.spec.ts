@@ -257,6 +257,14 @@ test.describe("bookmarks page", () => {
     await expect(card(page, "Pindare")).toBeVisible();
     await expect(field).toHaveValue("");
     expect((await bookmarksState(page)).tags).toContain("Pindare");
+
+    // The key drawn in the field adds the tag when clicked too.
+    const key = page.getByRole("button", { name: "Ajouter l'étiquette" });
+    await expect(key).toBeDisabled();
+    await field.fill("Bacchylide");
+    await key.click();
+    await expect(card(page, "Bacchylide")).toBeVisible();
+    await expect(field).toHaveValue("");
   });
 
   // The error where the eyes are: on the field, as soon as the name is taken

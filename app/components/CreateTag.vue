@@ -69,9 +69,9 @@
   <!--
     A field of the bookmarks page's menu bar (cf. `signets.vue`): square-
     cornered, without the search bar's pill shape and shadow, its background
-    telling it from the bar's buttons. No submit button: Enter adds the tag
-    (the return key of a touch keyboard, `enterkeyhint`), as the key drawn at
-    its end says; brighter once there is a name to add.
+    telling it from the bar's buttons. Enter adds the tag (the return key of
+    a touch keyboard, `enterkeyhint`), as the key drawn at its end says,
+    which adds it too when clicked; brighter once there is a name to add.
 
     An error is shown where the eyes are: the field in red, an alert instead
     of the key, the message in a bubble under it (over the page: nothing
@@ -107,7 +107,8 @@
         <template #leading>
           <!--
             Its corners follow the field's (not the pill buttons'); on the
-            field's background, whatever its state and theme.
+            field's background, whatever its state and theme; pressed while
+            its popover is open.
           -->
           <TagColorPicker
             v-model="newTagColor"
@@ -119,7 +120,7 @@
                 color="neutral"
                 variant="outline"
                 v-bind="attrs"
-                :ui="{ base: 'rounded-md shadow-none bg-transparent' }"
+                :ui="{ base: 'rounded-md shadow-none bg-transparent data-[state=open]:bg-elevated' }"
               />
             </template>
           </TagColorPicker>
@@ -140,14 +141,29 @@
             aria-hidden="true"
             class="size-5 text-error"
           />
-          <UKbd
+          <!--
+            The key adds the tag when clicked or tapped too (e.g. on a touch
+            screen, whose keyboard's return key is less obvious). Left out of
+            the tab order: Enter in the field does it. The field keeps the
+            focus (`mousedown.prevent`).
+          -->
+          <button
             v-else
-            value="enter"
-            size="lg"
-            aria-hidden="true"
-            class="transition-opacity"
+            type="button"
+            tabindex="-1"
+            aria-label="Ajouter l'étiquette"
+            class="flex cursor-pointer rounded-md transition-opacity disabled:cursor-default"
             :class="newTagName.length ? 'opacity-100' : 'opacity-50'"
-          />
+            :disabled="!newTagName.length"
+            @mousedown.prevent
+            @click="createTag"
+          >
+            <UKbd
+              value="enter"
+              size="lg"
+              aria-hidden="true"
+            />
+          </button>
           <span
             :id="hintId"
             class="sr-only"

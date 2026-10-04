@@ -12,10 +12,11 @@ export const FIELD_BACKGROUND = "bg-(--app-field-bg) hover:bg-(--app-field-hover
  * field (whatever part of it has the keyboard focus), over its neighbours
  * (`z-10`): below `lg`, a ring just outside its edge (an inset one would
  * be painted under the field's background), the halo around it; from `lg`,
- * its border takes the ring's color. The field's own outline is
+ * its border takes the ring's color (cf. `--app-field-ring` and
+ * `--app-field-halo`, `root.css`). The field's own outline is
  * transparent. The bar no
  * longer clips its items (no `overflow-hidden`): below `lg`, they round
  * their own corners (`--field-inner-radius`, the bar's radius less its
  * border, cf. `signets.vue`).
  */
-export const FIELD_HALO = "relative outline-inverted/25 has-[:focus-visible]:z-10 has-[:focus-visible]:outline-3 max-lg:has-[:focus-visible]:outline-offset-1 max-lg:has-[:focus-visible]:ring max-lg:has-[:focus-visible]:ring-inverted lg:has-[:focus-visible]:border-inverted";
+export const FIELD_HALO = "relative outline-(--app-field-halo) has-[:focus-visible]:z-10 has-[:focus-visible]:outline-3 max-lg:has-[:focus-visible]:outline-offset-1 max-lg:has-[:focus-visible]:ring max-lg:has-[:focus-visible]:ring-(--app-field-ring) lg:has-[:focus-visible]:border-(--app-field-ring)";

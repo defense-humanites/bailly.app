@@ -65,6 +65,10 @@
   /* The fields of the bookmarks' bar (cf. `FIELD_BACKGROUND`). */
   --app-field-bg: var(--ui-bg);
   --app-field-hover: var(--app-surface-raised);
+  /* Their focus ring and halo: the inverted color (in the dark theme, a
+     softer marble 500, its halo stronger, to stand out from the page). */
+  --app-field-ring: var(--ui-border-inverted);
+  --app-field-halo: color-mix(in oklab, var(--ui-border-inverted) 25%, transparent);
 }
 
 .dark {
@@ -98,6 +102,8 @@
   --app-button-hover: var(--ui-bg-elevated);
   --app-field-bg: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
   --app-field-hover: var(--ui-bg-elevated);
+  --app-field-ring: var(--ui-color-neutral-500);
+  --app-field-halo: color-mix(in oklab, var(--ui-color-neutral-500) 45%, transparent);
 }
 
 :root {
