@@ -52,21 +52,10 @@
           <h1 class="text-3xl font-bold">
             {{ title }}
           </h1>
-          <p class="mt-2 text-muted">
+          <p class="mt-2 text-lg text-muted font-medium">
             {{ description }}
           </p>
         </header>
-        <p>
-          Cherchez une entrée dans la barre de recherche, ou revenez à l'accueil,
-          où le Bailly s'ouvre au hasard.
-        </p>
-        <UButton
-          label="Retour à l'accueil"
-          icon="i-lucide-house"
-          color="primary"
-          variant="soft"
-          @click="goHome"
-        />
       </article>
     </NuxtLayout>
   </UApp>
