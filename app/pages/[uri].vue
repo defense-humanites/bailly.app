@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import type { NavigationMenuItem } from "@nuxt/ui";
   import { convert } from "@humanities/greek-conversion";
-  import { definitionLength, isLongDefinition } from "~/utils/definitionLength";
+  import { definitionLength } from "~/utils/definitionLength";
 
   definePageMeta({
     layout: "single-column",
@@ -46,7 +46,6 @@
   const readingSize = usePreferences().preference("readingSize");
   const textLength = [entry, ...(entry.children ?? [])]
     .reduce((length, { htmlDefinition }) => length + definitionLength(htmlDefinition), 0);
-  const longDefinition = computed((): boolean => isLongDefinition(textLength, readingSize.value));
 
   // Greek may be transliterated (a preference).
   const greek = useGreek();
@@ -167,10 +166,7 @@
       below lg (only arrows in the header on mobile), and on desktop only
       after a long definition (the header's are then out of sight).
     -->
-    <footer
-      class="mt-8"
-      :class="{ 'lg:hidden': !longDefinition }"
-    >
+    <footer class="mt-8">
       <EntrySurround :siblings="siblings" />
     </footer>
   </article>
