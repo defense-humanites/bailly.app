@@ -149,5 +149,21 @@ export default defineAppConfig({
         base: "data-[state=unchecked]:bg-(--ui-color-neutral-300) dark:data-[state=unchecked]:bg-accented",
       },
     },
+    /*
+     * The toasts stand out from the page: the background of the search bar
+     * in use (`--app-surface-raised`, cf. `root.css`), and, on a phone, as
+     * wide as the header's items (its side margins, `px-safe-2`, also
+     * under them).
+     */
+    toast: {
+      slots: {
+        root: "bg-(--app-surface-raised)",
+      },
+    },
+    toaster: {
+      slots: {
+        viewport: "max-sm:w-[calc(100%-1rem-env(safe-area-inset-left)-env(safe-area-inset-right))] max-sm:right-[calc(0.5rem+env(safe-area-inset-right))] max-sm:bottom-[calc(0.5rem+env(safe-area-inset-bottom))]",
+      },
+    },
   },
 });
