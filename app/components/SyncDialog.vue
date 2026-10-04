@@ -1058,8 +1058,9 @@
             @update:model-value="(keys) => setPreferences(keys as SyncablePreference[])"
           />
           <p class="text-muted">
-            Ce choix vaut pour tous vos appareils synchronisés, comme les indications que vous masquez. Les
-            préférences synchronisées sont marquées d'un nuage sur cette page.
+            Ce choix vaut pour tous vos appareils synchronisés, comme les indications que vous masquez ; il
+            s'applique à la fermeture de cette fenêtre. Les préférences synchronisées sont marquées d'un nuage
+            sur cette page.
           </p>
         </template>
 
