@@ -63,16 +63,15 @@
 
   /**
    * The look and the visible label, after the state: an invitation while the
-   * synchronization is off (solid Aegean blue, « Synchroniser »), calm once
-   * it is on (as the bar's other buttons, its icon only in blue,
-   * « Synchronisé »), gold when it needs
+   * synchronization is off (solid Aegean blue, « Synchroniser »), quieter once
+   * it is on (in Aegean blue, « Synchronisé », cf. `PRESSED`), gold when it needs
    * attention (« À vérifier »), once the settings are loaded (before, as the cookie
    * tells, cf. `hinted`). The accessible name stays « Synchronisation (…) ».
    */
-  const look = computed((): { text: string; color: "secondary" | "warning" | "neutral"; variant: "solid" | "ghost" } => {
+  const look = computed((): { text: string; color: "secondary" | "warning"; variant: "solid" | "soft" } => {
     if (!enabled.value) return { text: "Synchroniser", color: "secondary", variant: "solid" };
     if (needsAttention.value) return { text: "À vérifier", color: "warning", variant: "solid" };
-    return { text: "Synchronisé", color: "neutral", variant: "ghost" };
+    return { text: "Synchronisé", color: "secondary", variant: "soft" };
   });
 
   /**
@@ -88,9 +87,11 @@
    * `app.config.ts`).
    */
   const PRESSED = {
-    secondary: { solid: "", ghost: "aria-expanded:bg-secondary/10" },
-    warning: { solid: "", ghost: "aria-expanded:bg-warning/10" },
-    neutral: { solid: "", ghost: "hover:bg-(--app-button-hover) active:bg-(--app-button-hover) aria-expanded:bg-(--app-button-hover)" },
+    // In the light theme, as the bar's other items (their background, their
+    // hover), its text and icon only in Aegean blue; in the dark one, a light
+    // tint of it, over the others' hover when hovered (as light as theirs).
+    secondary: { solid: "", soft: "bg-transparent text-(--ui-color-secondary-700) hover:bg-(--app-button-hover) active:bg-(--app-button-hover) aria-expanded:bg-(--app-button-hover) dark:bg-secondary/10 dark:text-secondary dark:hover:bg-[color-mix(in_oklab,var(--ui-secondary)_12%,var(--app-button-hover))] dark:active:bg-[color-mix(in_oklab,var(--ui-secondary)_12%,var(--app-button-hover))] dark:aria-expanded:bg-[color-mix(in_oklab,var(--ui-secondary)_12%,var(--app-button-hover))]" },
+    warning: { solid: "", soft: "aria-expanded:bg-warning/15" },
   } as const;
 
   const tooltip = computed((): string => {
@@ -164,7 +165,7 @@
             <UIcon
               :name="icon"
               class="size-6 shrink-0"
-              :class="{ 'animate-spin motion-reduce:animate-none': icon === 'i-lucide-refresh-cw', 'text-secondary': look.color === 'neutral' }"
+              :class="{ 'animate-spin motion-reduce:animate-none': icon === 'i-lucide-refresh-cw' }"
             />
           </UChip>
         </template>
