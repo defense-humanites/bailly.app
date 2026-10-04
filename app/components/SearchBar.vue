@@ -376,7 +376,7 @@
    * as wide as the bar (cf. `groupElement`).
    */
   const contentClass = computed((): string => [
-    "w-(--reka-combobox-trigger-width) max-h-[min(32rem,var(--reka-combobox-content-available-height))]",
+    "search-surface search-panel w-(--reka-combobox-trigger-width) max-h-[min(32rem,var(--reka-combobox-content-available-height))]",
     highlightChosen.value ? "" : "[&_[data-highlighted]]:before:bg-transparent! [&_[data-highlighted]]:text-default!",
   ].join(" "));
 </script>
@@ -395,7 +395,7 @@
   -->
   <UFieldGroup
     ref="group"
-    class="group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
+    class="search-surface group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
     @keydown.capture="onKeydown"
     @input.capture="onComposedInput"
   >
