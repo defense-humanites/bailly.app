@@ -296,7 +296,8 @@
   --ui-text: var(--ui-color-neutral-100); /* 11.3:1 in use */
   --ui-text-muted: var(--ui-color-neutral-300); /* 8.3:1 */
   --ui-text-dimmed: var(--ui-color-neutral-400); /* 6.2:1 */
-  --search-hover: var(--ui-color-neutral-700);
+  /* As the highlighted line of the results (opaque). */
+  --search-hover: color-mix(in oklab, var(--ui-color-neutral-700) 50%, var(--app-surface-raised));
 }
 
 .dark .search-surface,
