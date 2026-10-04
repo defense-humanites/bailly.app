@@ -339,6 +339,17 @@
     }
   };
 
+  /**
+   * The synchronization just enabled (a new key kept, a key joined, a type
+   * of data added; a toast tells it): back to the page, whose cards and
+   * clouds show it — the state's view only if something is wrong (the first
+   * synchronization failed, or the clock is off), to say what.
+   */
+  function afterEnabling(): void {
+    if (scopeError.value || clockWrong.value) view.value = "status";
+    else open.value = false;
+  }
+
   const enable = () => run(async () => {
     const result = await syncStore.enable(sectionsToSync());
     if (result.state === "error") {
@@ -364,7 +375,7 @@
       return;
     }
     toast.add({ title: "Synchronisation activée", icon: "i-lucide-circle-check", color: "success" });
-    view.value = "status";
+    afterEnabling();
   });
 
   /* Joining: the words typed (or pasted), or the key of a link. */
@@ -465,7 +476,7 @@
       color: "success",
       duration: result.data.emptied ? 15_000 : undefined,
     });
-    view.value = "status";
+    afterEnabling();
   });
 
   /* The key, outside of the browser. */
@@ -573,12 +584,10 @@
    * (its state's view explains it).
    */
   const keyKept = (): void => {
-    if (scopeError.value || clockWrong.value) {
-      view.value = "status";
-      return;
+    if (!scopeError.value && !clockWrong.value) {
+      toast.add({ title: "Synchronisation activée sur cet appareil.", icon: "i-lucide-circle-check", color: "success" });
     }
-    toast.add({ title: "Synchronisation activée sur cet appareil.", icon: "i-lucide-circle-check", color: "success" });
-    open.value = false;
+    afterEnabling();
   };
 
   const disable = () => run(async () => {

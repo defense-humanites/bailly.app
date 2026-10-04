@@ -107,8 +107,8 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   const phone = await newDevice(browser, baseURL, new URL(link!).pathname + new URL(link!).hash);
   await expect(phone.getByText("Activer la synchronisation sur cet appareil avec la clé de ce lien ?")).toBeVisible();
   await phone.getByRole("button", { name: "Activer", exact: true }).click();
-  await expect(phone.getByText("Préférences à jour")).toBeVisible();
-  await phone.keyboard.press("Escape");
+  await expect(phone.getByText("Synchronisation activée", { exact: true })).toBeVisible();
+  await expect(phone.getByRole("dialog")).toBeHidden();
   await expect(transliteration(phone)).toBeChecked();
   expect((await syncStore(phone)).preferences.sort()).toEqual(["inflectedForms", "readingFont", "tagSort", "theme", "transliterateGreek"]);
 
@@ -186,22 +186,27 @@ test("the bookmarks and the preferences: one key, enabled and stopped type by ty
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByText("Cet appareil synchronise déjà ses signets avec la clé de ce lien.")).toBeVisible();
   await dialog.getByRole("button", { name: "Synchroniser aussi vos préférences" }).click();
-  await expect(dialog.getByText("Préférences à jour")).toBeVisible();
+  // Back to the page, whose card and clouds tell it (not to the list of the
+  // preferences: the choice is made from the card).
+  await expect(page.getByText("Synchronisation activée", { exact: true })).toBeVisible();
+  await expect(dialog).toBeHidden();
   expect(await syncStore(page)).toMatchObject({ bookmarks: true });
   expect((await syncStore(page)).preferences).toHaveLength(5);
 
   // At least one preference stays checked.
+  await page.getByRole("button", { name: "Choisir" }).click();
   await dialog.getByRole("checkbox", { name: "Thème" }).click();
   await dialog.getByRole("checkbox", { name: "Grec translittéré" }).click();
   await dialog.getByRole("checkbox", { name: "Formes fléchies" }).click();
   await dialog.getByRole("checkbox", { name: "Tri des étiquettes" }).click();
   await expect(dialog.getByRole("checkbox", { name: "Police" })).toBeDisabled();
-  // Applied once the window closes, or leaves the view (here, to stop).
+  // Applied once the window closes.
   expect((await syncStore(page)).preferences).toHaveLength(5);
+  await page.keyboard.press("Escape");
+  await expect.poll(async () => (await syncStore(page)).preferences).toEqual(["readingFont"]);
 
   // Stopping the preferences on this device: the bookmarks go on.
-  await dialog.getByRole("button", { name: "Arrêter la synchronisation…" }).click();
-  await expect.poll(async () => (await syncStore(page)).preferences).toEqual(["readingFont"]);
+  await preferencesSwitch(page).click();
   await expect(dialog.getByText("Vos signets restent synchronisés.")).toBeVisible();
   await dialog.getByRole("button", { name: "Désactiver sur cet appareil" }).click();
   await expect(page.getByText("Synchronisation des préférences désactivée sur cet appareil", { exact: true })).toBeVisible();

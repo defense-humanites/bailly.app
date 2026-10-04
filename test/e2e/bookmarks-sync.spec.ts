@@ -77,7 +77,7 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await phone.getByRole("button", { name: "J'ai déjà une clé" }).click();
   await phone.getByRole("textbox").fill(words.map(word => word.normalize("NFD").replace(/\p{M}/gu, "").toUpperCase()).join(" "));
   await phone.getByRole("button", { name: "Rejoindre" }).click();
-  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(phone.getByText("Synchronisation activée", { exact: true })).toBeVisible();
   expect(await bookmarksState(phone)).toEqual({ tags: ["Homère"], tagged: 1, starred: 2 });
   // The excerpts are not synchronized: the phone fetches the one it lacks from the API.
   await expect(phone.getByText(/ἔργα λόγου μέζω/).first()).toBeVisible();
@@ -94,7 +94,7 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await expect(tablet.getByText("Activer la synchronisation sur cet appareil avec la clé de ce lien ?")).toBeVisible();
   expect(new URL(tablet.url()).hash).toBe(""); // The key leaves the address.
   await tablet.getByRole("button", { name: "Activer", exact: true }).click();
-  await expect(tablet.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(tablet.getByText("Synchronisation activée", { exact: true })).toBeVisible();
   expect(await bookmarksState(tablet)).toEqual({ tags: ["Homère"], tagged: 1, starred: 2 });
 
   // The same link, opened again (in the same tab): nothing to replace.
@@ -194,7 +194,7 @@ test("the key can be sent with Enter once its twelfth word is recognized (its fi
   await expect(phone.getByRole("status").filter({ hasText: "Clé complète" })).toHaveText("Clé complète : appuyez sur Entrée pour rejoindre.");
 
   await field.press("Enter");
-  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(phone.getByText("Synchronisation activée", { exact: true })).toBeVisible();
 });
 
 test("a failed first synchronization is reported, and leaves the device as it was", async ({ page, goto, browser, baseURL }) => {
@@ -303,7 +303,7 @@ test("a key whose online bookmarks the server emptied: joining explains it", asy
   });
   await phone.goto(link!);
   await phone.getByRole("button", { name: "Activer", exact: true }).click();
-  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(phone.getByText("Synchronisation activée", { exact: true })).toBeVisible();
   await expect(phone.getByText(/Faute d'activité, le serveur avait effacé vos signets en ligne/).first()).toBeVisible();
 });
 
@@ -395,7 +395,7 @@ test("joining beyond the limits is refused until the device makes room", async (
   });
   await phone.goto(link!);
   await phone.getByRole("button", { name: "Activer", exact: true }).click();
-  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(phone.getByText("Synchronisation activée", { exact: true })).toBeVisible();
   expect((await bookmarksState(phone)).starred).toBe(100);
 });
 
@@ -424,7 +424,7 @@ test("a synchronization beyond the limits waits until the device makes room", as
   const phone = await newDevice(browser, baseURL, "/signets");
   await phone.goto(link!);
   await phone.getByRole("button", { name: "Activer", exact: true }).click();
-  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(phone.getByText("Synchronisation activée", { exact: true })).toBeVisible();
   await phone.keyboard.press("Escape");
 
   // Each device adds its 100th favorite, the phone offline.
@@ -474,7 +474,7 @@ test("the synchronization waits while a tag is being edited", async ({ page, got
   const phone = await newDevice(browser, baseURL, "/");
   await phone.goto(link!);
   await phone.getByRole("button", { name: "Activer", exact: true }).click();
-  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(phone.getByText("Synchronisation activée", { exact: true })).toBeVisible();
   await phone.keyboard.press("Escape");
 
   // The laptop edits a tag while the phone adds a favorite.
@@ -521,7 +521,7 @@ test("a deletion undone is undone on the other devices too", async ({ page, goto
   const phone = await newDevice(browser, baseURL, "/");
   await phone.goto(link!);
   await phone.getByRole("button", { name: "Activer", exact: true }).click();
-  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(phone.getByText("Synchronisation activée", { exact: true })).toBeVisible();
   expect(await bookmarksState(phone)).toMatchObject({ tags: ["Homère"], tagged: 1 });
 
   // The laptop deletes the tag (its store, as the page's button does), which
@@ -569,9 +569,11 @@ test("enabling a key again brings back the online bookmarks deleted meanwhile", 
   const phone = await newDevice(browser, baseURL, "/");
   await phone.goto(link!);
   await phone.getByRole("button", { name: "Activer", exact: true }).click();
-  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(phone.getByText("Synchronisation activée", { exact: true })).toBeVisible();
 
-  // The phone disables the synchronization, then deletes a favorite.
+  // The phone disables the synchronization (the window closed once enabled),
+  // then deletes a favorite.
+  await openSync(phone);
   await phone.getByRole("button", { name: "Arrêter la synchronisation…" }).click();
   await expect(phone.getByText("même ceux que vous y auriez supprimés entre-temps")).toBeVisible();
   await phone.getByRole("button", { name: "Désactiver sur cet appareil" }).click();
@@ -590,8 +592,9 @@ test("enabling a key again brings back the online bookmarks deleted meanwhile", 
   await phone.getByRole("button", { name: "J'ai déjà une clé" }).click();
   await phone.getByRole("textbox").fill(words.join(" "));
   await phone.getByRole("button", { name: "Rejoindre" }).click();
-  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
-  expect((await bookmarksState(phone)).starred).toBe(2);
+  await expect(phone.getByText("Synchronisation activée", { exact: true })).toBeVisible();
+  // (An earlier toast may still show: the state tells.)
+  await expect.poll(async () => (await bookmarksState(phone)).starred).toBe(2);
 
   await page.reload();
   await waitForHydration(page);
