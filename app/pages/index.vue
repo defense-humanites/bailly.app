@@ -149,7 +149,7 @@
               Le texte est celui de l'édition numérique de Gérard Gréco et de son équipe, que ses
               auteurs ont intitulée <em>Bailly 2020 Hugo&nbsp;Chávez</em>.
               <NuxtLink
-                :to="{ path: '/à-propos', hash: '#origine' }"
+                :to="{ path: encodeURI('/à-propos'), hash: '#origine' }"
                 class="underline decoration-dotted underline-offset-4 hover:text-primary"
               >En savoir plus</NuxtLink>
             </p>
