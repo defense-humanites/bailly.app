@@ -434,6 +434,9 @@ export class Idb {
           // the migration fails, aborting it keeps the previous version.
           upgradeToV4(db, oldVersion, transaction).catch((error: unknown) => {
             console.error(error);
+            // Its `done` rejects with the abort, awaited by nobody (`openDB`
+            // rejects anyway): handled, not to be an unhandled rejection.
+            void transaction.done.catch(() => undefined);
             transaction.abort();
           });
         }

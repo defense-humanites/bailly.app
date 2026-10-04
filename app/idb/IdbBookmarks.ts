@@ -111,7 +111,10 @@ export class IdbBookmarks {
         return undefined;
       } catch (e) {
         // Nothing written (refused, or failed; already over if its commit
-        // failed).
+        // failed). The transaction's `done` (created with it by `idb`)
+        // rejects with the abort, and nobody awaits it here: handled, or it
+        // would be an unhandled rejection.
+        void tx.done.catch(() => undefined);
         try {
           tx.abort();
         } catch {
