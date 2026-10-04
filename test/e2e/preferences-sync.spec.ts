@@ -208,8 +208,8 @@ test("the bookmarks and the preferences: one key, enabled and stopped type by ty
   expect(await syncStore(page)).toMatchObject({ bookmarks: true, preferences: [] });
   await expect(page.locator("[data-synced]")).toHaveCount(0);
 
-  // On the card: the bookmarks on, the preferences off.
-  await page.keyboard.press("Escape");
+  // Back to the page; on the card: the bookmarks on, the preferences off.
+  await expect(dialog).toBeHidden();
   await expect(bookmarksSwitch(page)).toBeChecked();
   await expect(preferencesSwitch(page)).not.toBeChecked();
   await expect(page.getByRole("status").filter({ hasText: "Synchronisé à l'instant" })).toBeVisible();

@@ -519,6 +519,9 @@ test("enabling a key again brings back the online bookmarks deleted meanwhile", 
   expect((await bookmarksState(phone)).starred).toBe(1);
 
   // Enabled again with the words: the favorite comes back, and stays on the laptop.
+  // (Disabled, the window had closed, back to the page.)
+  await expect(phone.getByRole("dialog")).toBeHidden();
+  await openSync(phone);
   await phone.getByRole("button", { name: "J'ai déjà une clé" }).click();
   await phone.getByRole("textbox").fill(words.join(" "));
   await phone.getByRole("button", { name: "Rejoindre" }).click();

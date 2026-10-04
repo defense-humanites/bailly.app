@@ -556,8 +556,9 @@
       icon: "i-lucide-circle-check",
       color: "success",
     });
-    if (openedOn.value === "stop") open.value = false;
-    else view.value = "intro";
+    // Back to the page (the toast tells it): not to the invitation to
+    // synchronize again.
+    open.value = false;
   });
 
   /**
