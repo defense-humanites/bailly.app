@@ -253,6 +253,20 @@ test("too many synchronizations enabled from this network today: explained", asy
   await expect(page.getByRole("button", { name: "Activer la synchronisation" })).toBeVisible();
 });
 
+test("the server busy (Cloudflare's rate limiting): a warning, to try again", async ({ page, goto }) => {
+  await goto("/signets", { waitUntil: "hydration" });
+  await page.route("**/api/sync/**", route => (route.request().method() === "PUT"
+    ? route.fulfill({ status: 429, contentType: "text/plain", body: "" })
+    : route.continue()));
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  const message = page.getByText("Le serveur de synchronisation est très sollicité : réessayez dans quelques secondes.", { exact: true });
+  await expect(message).toBeVisible();
+  // In the warning's colors, not the error's.
+  await expect(message.locator("xpath=ancestor::*[contains(@class, 'text-warning')][1]")).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Activer la synchronisation" })).toBeVisible();
+});
+
 test("a device keeps the key once the online bookmarks are merged, even if sending its own fails", async ({ page, goto, browser, baseURL }) => {
   test.setTimeout(60_000);
 

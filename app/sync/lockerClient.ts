@@ -28,9 +28,15 @@ export class SyncNetworkError extends Error {
  * Too many requests from this address (the rate limiting rule of Cloudflare,
  * which blocks for 10 seconds): to retry a little later.
  */
+/**
+ * The message of a busy server (cf. `SyncBusyError`): the dialog of the
+ * synchronization tells it apart (a warning, not an error).
+ */
+export const SYNC_BUSY_MESSAGE = "Le serveur de synchronisation est très sollicité : nouvel essai dans quelques secondes.";
+
 export class SyncBusyError extends SyncNetworkError {
   constructor() {
-    super("Le serveur de synchronisation est très sollicité : nouvel essai dans quelques secondes.");
+    super(SYNC_BUSY_MESSAGE);
     this.name = "SyncBusyError";
   }
 }

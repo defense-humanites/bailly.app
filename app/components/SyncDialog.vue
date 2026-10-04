@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { renderSVG } from "uqr";
   import type { SyncSections } from "~/stores/sync";
+  import { SYNC_BUSY_MESSAGE } from "~/sync/lockerClient";
   import { DEFAULT_SYNCED_PREFERENCES, SYNCABLE_PREFERENCES, type SyncablePreference } from "~/utils/preferences";
 
   const open = defineModel<boolean>("open", { default: false });
@@ -288,6 +289,14 @@
   const actionError = ref<string | null>(null);
 
   /**
+   * A busy server (Cloudflare's rate limiting) is no error: a warning, which
+   * asks to try again (nothing retries an action of the window by itself).
+   */
+  const BUSY_RETRY = "Le serveur de synchronisation est très sollicité : réessayez dans quelques secondes.";
+  const explain = (message: string): string => (message === SYNC_BUSY_MESSAGE ? BUSY_RETRY : message);
+  const actionBusy = computed((): boolean => actionError.value === BUSY_RETRY);
+
+  /**
    * Runs an action of the window: busy meanwhile, and any unexpected error
    * shown (rather than nothing happening).
    */
@@ -307,7 +316,7 @@
   const enable = () => run(async () => {
     const result = await syncStore.enable(sectionsToSync());
     if (result.state === "error") {
-      actionError.value = result.message;
+      actionError.value = explain(result.message);
       return;
     }
     await showKey();
@@ -321,8 +330,9 @@
     const result = await syncStore.setSections(sectionsToSync());
     linkKey.value = null;
     if (result.state === "error") {
-      actionError.value = result.message;
-      // Enabled all the same (e.g. offline: synchronized later).
+      // Enabled all the same (e.g. offline: synchronized later, the
+      // message saying so); otherwise, to be tried again.
+      actionError.value = scopeEnabled.value ? result.message : explain(result.message);
       if (scopeEnabled.value) view.value = "status";
       return;
     }
@@ -406,7 +416,9 @@
     joinError.value = null;
     const result = await syncStore.join(linkKey.value ?? typedWords.value, sectionsToSync());
     if (result.state === "error") {
-      joinError.value = result.message;
+      // The server busy: a warning, the words being right as far as known.
+      if (result.message === SYNC_BUSY_MESSAGE) actionError.value = BUSY_RETRY;
+      else joinError.value = result.message;
       return;
     }
     linkKey.value = null;
@@ -603,7 +615,8 @@
     try {
       const result = await syncStore.deleteRemote();
       if (result.state === "error") {
-        toast.add({ title: result.message, icon: "i-lucide-circle-alert", color: "error" });
+        const isBusy = result.message === SYNC_BUSY_MESSAGE;
+        toast.add({ title: explain(result.message), icon: isBusy ? "i-lucide-cloud-off" : "i-lucide-circle-alert", color: isBusy ? "warning" : "error" });
         return;
       }
       toast.add({ title: "Données supprimées du serveur", icon: "i-lucide-circle-check", color: "success" });
@@ -634,9 +647,9 @@
         <template v-else-if="view === 'intro'">
           <UAlert
             v-if="actionError ?? scopedError"
-            :color="actionError ? 'error' : 'warning'"
+            :color="actionError && !actionBusy ? 'error' : 'warning'"
             variant="subtle"
-            :icon="actionError ? 'i-lucide-circle-alert' : 'i-lucide-info'"
+            :icon="actionError ? (actionBusy ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert') : 'i-lucide-info'"
             :title="actionError ?? scopedError ?? undefined"
           />
           <p>
@@ -645,6 +658,11 @@
           <p v-if="!enabled">
             Une <strong>clé de douze mots</strong> relie vos appareils. {{ texts.encrypted }} : sans la clé,
             personne ne peut les lire, pas même Bailly.app.
+            <!-- What is kept online, and for how long (the window closes with the page). -->
+            <NuxtLink
+              to="/confidentialite"
+              class="font-medium text-highlighted underline decoration-dotted underline-offset-3 hover:text-secondary focus-visible:outline-2 focus-visible:outline-secondary"
+            >Vos données en détail</NuxtLink>.
           </p>
 
           <!--
@@ -788,7 +806,7 @@
             <UFormField
               label="Les douze mots de votre clé"
               help="Dans l'ordre, séparés par des espaces. Accents et majuscules sont facultatifs ; les 4 premières lettres de chaque mot suffisent."
-              :error="joinError ?? actionError ?? (unknownWord ? `« ${unknownWord} » n'est pas un mot de la liste.` : undefined)"
+              :error="joinError ?? (actionBusy ? undefined : actionError) ?? (unknownWord ? `« ${unknownWord} » n'est pas un mot de la liste.` : undefined)"
             >
               <!--
                 Once the key is ready, the key drawn at the bottom right says
@@ -831,10 +849,10 @@
             >{{ keyReady ? "Clé complète : appuyez sur Entrée pour rejoindre." : "" }}</span>
           </form>
           <UAlert
-            v-if="linkKey && (joinError ?? actionError)"
-            color="error"
+            v-if="(linkKey && (joinError ?? actionError)) || (!linkKey && actionBusy)"
+            :color="!joinError && actionBusy ? 'warning' : 'error'"
             variant="subtle"
-            icon="i-lucide-circle-alert"
+            :icon="!joinError && actionBusy ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert'"
             :title="joinError ?? actionError ?? undefined"
           />
         </template>
@@ -1017,9 +1035,9 @@
           />
           <UAlert
             v-if="actionError"
-            color="error"
+            :color="actionBusy ? 'warning' : 'error'"
             variant="subtle"
-            icon="i-lucide-circle-alert"
+            :icon="actionBusy ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert'"
             :title="actionError"
           />
           <!-- The preferences synchronized, applied once the window closes. -->
@@ -1042,9 +1060,9 @@
         <template v-else-if="view === 'preferences'">
           <UAlert
             v-if="actionError"
-            color="error"
+            :color="actionBusy ? 'warning' : 'error'"
             variant="subtle"
-            icon="i-lucide-circle-alert"
+            :icon="actionBusy ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert'"
             :title="actionError"
           />
           <!-- (Its legend is the window's title.) -->
