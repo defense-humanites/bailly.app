@@ -236,17 +236,23 @@
  * the cards in the dark one (with their borders, their text and their hover
  * a shade lighter too: the text keeps its contrast, the muted and dimmed
  * ones at least 5:1), the panels with a stronger shadow. The bar itself only
- * while in use (focused, or one of its panels open): at rest, it has the
- * cards' background. In the light theme, the hover and the highlighted line
+ * while hovered or in use (focused, or one of its panels open), with a light
+ * transition: at rest, it has the cards' background. In the light theme, the hover and the highlighted line
  * barely tinted (the perceived difference matters more than the contrast).
  */
 .search-surface,
+.search-bar:hover,
 .search-bar:focus-within,
 .search-bar:has([aria-expanded="true"]) {
   --ui-bg: #fff;
   /* The hover and open state of the bar's buttons (history, options). */
   --search-hover: color-mix(in oklab, var(--ui-color-neutral-100) 50%, #fff);
   --app-highlight: color-mix(in oklab, var(--ui-color-neutral-100) 60%, #fff);
+}
+
+/* Its input and buttons change color with a light transition. */
+.search-bar :is(input, button) {
+  transition-duration: 250ms;
 }
 
 /* At rest, the buttons' hover as in use. */
@@ -259,6 +265,7 @@
 }
 
 .dark .search-surface,
+.dark .search-bar:hover,
 .dark .search-bar:focus-within,
 .dark .search-bar:has([aria-expanded="true"]) {
   --ui-bg: var(--ui-color-neutral-800);
