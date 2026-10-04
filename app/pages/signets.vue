@@ -196,29 +196,58 @@
 
         <!--
           The introduction, a card before the favorites (on their left from
-          `lg`), in terracotta: what the bookmarks are, and, while they aren't
-          synchronized, that they can be (the bar's button). Dismissed by its
-          close button.
+          `lg`), laid out as theirs (sizes, margins), told from them by its
+          terracotta, its bookmark's outline and its text in a normal weight:
+          what the bookmarks are, and, while they aren't synchronized, that
+          they can be (the bar's button). Dismissed by its button.
         -->
-        <UAlert
+        <UCard
           v-if="!introDismissed"
-          color="primary"
-          variant="subtle"
-          icon="i-lucide-bookmark"
-          title="Vos signets"
-          :ui="{ description: 'text-default opacity-100' }"
-          close
-          @update:open="introDismissed = true"
+          role="group"
+          aria-labelledby="signets-intro"
+          variant="bookmarkGroup"
+          :ui="{
+            root: 'bg-[color-mix(in_srgb,var(--color-terracotta-200)_50%,var(--app-page-bg))] border-terracotta-300/50 dark:bg-[color-mix(in_srgb,var(--color-terracotta-900)_50%,var(--app-page-bg))] dark:border-terracotta-800/60',
+            header: 'flex !px-3 pb-0',
+            body: '!p-3',
+          }"
         >
-          <template #description>
+          <template #header>
+            <div class="flex min-h-8 w-full items-start gap-3 text-terracotta-700 dark:text-terracotta-400">
+              <div class="flex min-w-0 grow items-start">
+                <UIcon
+                  name="i-lucide-bookmark"
+                  class="mx-2 mt-1 size-6 shrink-0"
+                />
+                <h2
+                  id="signets-intro"
+                  class="ml-2 min-w-0 grow py-0.5 pe-2 text-xl/7 font-bold md:py-0 md:text-2xl/8"
+                >
+                  Vos signets
+                </h2>
+              </div>
+              <UTooltip text="Masquer">
+                <UButton
+                  icon="i-lucide-x"
+                  size="sm"
+                  variant="subtle"
+                  color="neutral"
+                  aria-label="Masquer la présentation des signets"
+                  :ui="{ base: 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-terracotta-300/50 text-terracotta-700/75 hover:text-terracotta-700 dark:ring-terracotta-800/60 dark:text-terracotta-400/75 dark:hover:text-terracotta-400' }"
+                  @click="introDismissed = true"
+                />
+              </UTooltip>
+            </div>
+          </template>
+          <p class="ms-12 text-terracotta-700 dark:text-terracotta-400">
             Depuis la barre d'outils d'une entrée, ajoutez-la à vos favoris ou rangez-la sous
             une étiquette : vous la retrouverez ici.
             <template v-if="!syncEnabled">
               Vos signets restent sur cet appareil ; synchronisez-les pour les retrouver sur vos
               autres appareils.
             </template>
-          </template>
-        </UAlert>
+          </p>
+        </UCard>
 
         <!-- Favorites -->
         <BookmarkGroup

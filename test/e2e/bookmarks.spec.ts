@@ -207,14 +207,14 @@ test.describe("bookmarks page", () => {
   // An introduction on the favorites' left, until the user dismisses it (with
   // the other dismissed notices).
   test("an introduction, until dismissed", async ({ page }) => {
-    const intro = page.locator("main [data-slot=root]").filter({ has: page.getByText("Vos signets", { exact: true }) });
+    const intro = page.getByRole("group", { name: "Vos signets" });
     await expect(intro).toBeVisible();
     // A card on the favorites' left.
     const [introBox, favoritesBox] = [(await intro.boundingBox())!, (await card(page, "Favoris").boundingBox())!];
     expect(introBox.x + introBox.width).toBeLessThan(favoritesBox.x);
     expect(Math.abs(introBox.y - favoritesBox.y)).toBeLessThan(2);
 
-    await intro.locator("[data-slot=close]").click();
+    await intro.getByRole("button", { name: "Masquer la présentation des signets" }).click();
     await expect(intro).toBeHidden();
     expect(await page.evaluate(() => localStorage.getItem("bailly:dismissed"))).toBe("[\"bookmarksIntro\"]");
     await page.reload();
