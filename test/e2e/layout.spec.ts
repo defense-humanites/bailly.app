@@ -15,7 +15,7 @@ const header = (page: Page) => page.evaluate(() => {
     right: box.right - parseFloat(style.borderRightWidth) - parseFloat(style.paddingRight),
     center: (box.top + box.bottom) / 2,
   };
-  const [title, menu] = [...nav.querySelectorAll(":scope > nav")].map(n => n.querySelectorAll("a"));
+  const [title, menu] = [...nav.querySelectorAll(":scope > nav, :scope > div > nav")].map(n => n.querySelectorAll("a"));
   const rect = (element: Element) => element.getBoundingClientRect();
   const bar = rect(nav.querySelector(".group\\/search")!);
   return {

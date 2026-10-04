@@ -94,24 +94,40 @@
         From `md`, the menus' items lose their vertical padding (`py-2`), which
         would make the row higher than the header and push it down.
       -->
-      <UNavigationMenu
-        aria-label="Accueil"
-        :items="[{ label: 'Bailly.app', to: '/', active: false }]"
-        :ui="{ item: 'md:py-0', link: 'cursor-pointer py-1.5 md:py-0.5 hover:before:bg-transparent', linkLabel: 'overflow-visible' }"
-      >
-        <template #item-label>
-          <img
-            src="../assets/images/bailly-app-light.svg"
-            alt="Bailly.app"
-            class="h-7 w-auto max-w-none dark:hidden"
-          >
-          <img
-            src="../assets/images/bailly-app-dark.svg"
-            alt="Bailly.app"
-            class="h-7 w-auto max-w-none hidden dark:block"
-          >
-        </template>
-      </UNavigationMenu>
+      <!--
+        On mobile, on the home page only, a heart after the title leads to the
+        donation (the page's own button is left out there, for room).
+      -->
+      <div class="flex min-w-0 items-center gap-1">
+        <UNavigationMenu
+          aria-label="Accueil"
+          :items="[{ label: 'Bailly.app', to: '/', active: false }]"
+          :ui="{ item: 'md:py-0', link: 'cursor-pointer py-1.5 md:py-0.5 hover:before:bg-transparent', linkLabel: 'overflow-visible' }"
+        >
+          <template #item-label>
+            <img
+              src="../assets/images/bailly-app-light.svg"
+              alt="Bailly.app"
+              class="h-7 w-auto max-w-none dark:hidden"
+            >
+            <img
+              src="../assets/images/bailly-app-dark.svg"
+              alt="Bailly.app"
+              class="h-7 w-auto max-w-none hidden dark:block"
+            >
+          </template>
+        </UNavigationMenu>
+        <UButton
+          v-if="route.path === '/'"
+          to="/soutenir"
+          icon="i-lucide-heart"
+          color="primary"
+          variant="ghost"
+          aria-label="Nous soutenir"
+          class="p-2.5 md:hidden"
+          :ui="{ leadingIcon: 'size-5' }"
+        />
+      </div>
       <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:max-w-(--search-width) md:justify-self-center lg:justify-self-start" />
       <UNavigationMenu
         class="header-menu md:col-start-3 md:row-start-1 md:justify-self-end"

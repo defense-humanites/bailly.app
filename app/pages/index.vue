@@ -49,15 +49,43 @@
 <template>
   <div class="mx-auto grid max-w-(--content-max-width) items-center gap-10 px-4 py-8 md:px-6 md:py-12 lg:min-h-[calc(100dvh-(var(--spacing)*14))] lg:grid-cols-2 lg:gap-12 lg:py-10">
     <!--
-      Below `lg`, a grid: on mobile, the title first and the transliteration
-      offer right under it, the donation's button last; on a tablet (`md`),
-      the offer at the top right, beside the donation's button, the title
-      and the text below on the whole width. A column from `lg`. The
+      On mobile, a grid: the title first and the transliteration offer right
+      under it (the donation is the header's heart, cf. `AppNavHorizontal`).
+      On a tablet (`md`), the offer floats on the right, the donation's
+      button, the title and the text around it. A column from `lg`. The
       order is CSS's only, the markup's being the same everywhere.
     -->
-    <section class="@container grid grid-cols-1 justify-items-start gap-5 md:grid-cols-[minmax(0,1fr)_18rem] md:gap-x-10 lg:flex lg:flex-col lg:items-start">
+    <section class="@container grid grid-cols-1 justify-items-start gap-5 md:block lg:flex lg:flex-col lg:items-start">
+      <!--
+        For the readers who don't read Greek: the transliteration preference,
+        whose effect shows at once on the opened entry (and is saved). First
+        in the markup, to float on the right on a tablet (the title and the
+        text around it); last in the column from `lg`.
+      -->
+      <div class="order-2 flex w-full items-start gap-3 rounded-lg bg-default/60 px-4 py-3 ring-1 ring-default md:order-none md:float-right md:mb-4 md:ms-8 md:w-72 lg:float-none lg:order-last lg:m-0 lg:mt-3 lg:w-auto">
+        <USwitch
+          v-model="transliterateGreek"
+          aria-labelledby="translitteration"
+          aria-describedby="translitteration-help"
+          class="mt-0.5"
+        />
+        <div class="text-sm">
+          <p
+            id="translitteration"
+            class="font-medium"
+          >
+            Vous ne lisez pas le grec ?
+          </p>
+          <p
+            id="translitteration-help"
+            class="text-muted"
+          >
+            Affichez-le en caractères latins.
+          </p>
+        </div>
+      </div>
       <UButton
-        class="order-4 md:order-none md:col-start-1 md:self-end lg:self-auto"
+        class="max-md:hidden md:mb-5 md:flex md:w-fit lg:mb-0"
         to="/soutenir"
         size="sm"
         color="primary"
@@ -74,7 +102,7 @@
       -->
       <h1
         aria-labelledby="titre-accueil"
-        class="order-1 font-serif text-2xl/[1.25] font-bold text-balance md:order-none md:col-span-2 md:text-3xl/[1.25] lg:text-[length:min(2.25rem,5.6cqi)]"
+        class="order-1 font-serif text-2xl/[1.25] font-bold text-balance md:order-none md:mb-5 md:text-3xl/[1.25] lg:mb-0 lg:text-[length:min(2.25rem,5.6cqi)]"
       >
         <span id="titre-accueil">Consultez le dictionnaire <br class="max-lg:hidden">grec–français d'Anatole&nbsp;Bailly</span><span class="whitespace-nowrap">&nbsp;<UPopover
           v-model:open="editionOpen"
@@ -107,38 +135,12 @@
           </template>
         </UPopover></span>
       </h1>
-      <p class="order-3 text-lg text-pretty text-muted md:order-none md:col-span-2">
+      <p class="order-3 text-lg text-pretty text-muted md:order-none">
         Une application libre et gratuite, pensée pour la lecture et la recherche (<NuxtLink
           :to="encodeURI('/à-propos')"
           class="underline decoration-dotted underline-offset-4 hover:text-primary"
         >en savoir plus</NuxtLink>).
       </p>
-      <!--
-        For the readers who don't read Greek: the transliteration preference,
-        whose effect shows at once on the opened entry (and is saved).
-      -->
-      <div class="order-2 flex w-full items-start gap-3 rounded-lg bg-default/60 px-4 py-3 ring-1 ring-default md:order-none md:col-start-2 md:row-start-1 lg:mt-3 lg:w-auto">
-        <USwitch
-          v-model="transliterateGreek"
-          aria-labelledby="translitteration"
-          aria-describedby="translitteration-help"
-          class="mt-0.5"
-        />
-        <div class="text-sm">
-          <p
-            id="translitteration"
-            class="font-medium"
-          >
-            Vous ne lisez pas le grec ?
-          </p>
-          <p
-            id="translitteration-help"
-            class="text-muted"
-          >
-            Affichez-le en caractères latins.
-          </p>
-        </div>
-      </div>
     </section>
 
     <RandomOpening data-nosnippet />
