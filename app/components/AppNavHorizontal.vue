@@ -98,7 +98,7 @@
       <UNavigationMenu
         aria-label="Accueil"
         :items="[{ label: 'Bailly.app', to: '/', active: false }]"
-        :ui="{ item: 'md:py-0', link: 'cursor-pointer py-1.5 md:py-0.5 hover:before:bg-transparent', linkLabel: 'overflow-visible' }"
+        :ui="{ item: 'md:py-0', link: 'cursor-pointer select-none py-1.5 md:py-0.5 hover:before:bg-transparent', linkLabel: 'overflow-visible' }"
       >
         <template #item-label>
           <img
