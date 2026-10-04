@@ -560,14 +560,15 @@
               aria-level="2"
               class="ml-2 min-w-0 grow py-0.5 pe-2 text-xl/7 font-bold wrap-break-word md:py-0 md:text-2xl/8"
             >{{ tag.name }}<!--
-              The active tag, marked after its name (as in an entry's panel).
+              The active tag, marked after its name (as in an entry's panel), in
+              the tag's colors inverted: it stands out.
             --><UBadge
               v-if="isActive"
               label="active"
               color="neutral"
               variant="soft"
               size="sm"
-              class="ms-2 -translate-y-0.5 bg-default/60 align-middle font-medium text-tag-text ring ring-inset ring-tag-300/60"
+              class="ms-2 -translate-y-0.5 bg-tag-text align-middle font-medium text-(--ui-bg)"
             /></span>
           </div>
 
@@ -678,8 +679,9 @@
             v-if="editable && !editMode"
             :text="isPinned ? 'Désépingler' : 'Épingler en tête'"
           >
+            <!-- Unpinning: a crossed pin, told from pinning. -->
             <UButton
-              icon="i-lucide-pin"
+              :icon="isPinned ? 'i-lucide-pin-off' : 'i-lucide-pin'"
               size="sm"
               variant="subtle"
               color="neutral"
