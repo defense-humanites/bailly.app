@@ -514,7 +514,7 @@
           color="primary"
           variant="soft"
           :ui="{ description: 'text-default opacity-100' }"
-          description="Les résultats issus de l'analyse morphologique, signalés par une icône scintillante, peuvent être lacunaires. Gardez l'esprit critique !"
+          description="Les résultats issus de l'analyse morphologique, signalés par une icône scintillante, peuvent être lacunaires."
           close
           @update:open="morpheusWarningDismissed = true"
         />
