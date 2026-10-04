@@ -232,8 +232,8 @@
 
 /*
  * The search bar and its panels (results, history, options), raised above
- * the page (4 October 2026): white in the light theme, a shade lighter than
- * the cards in the dark one (with their borders, their text and their hover
+ * the page (4 October 2026): white in the light theme, half a shade lighter
+ * than the cards in the dark one (with their borders, their text and their hover
  * a shade lighter too: the text keeps its contrast, the muted and dimmed
  * ones at least 5:1), the panels with a stronger shadow. The bar itself only
  * while hovered or in use (focused, or one of its panels open), with a light
@@ -268,13 +268,14 @@
 .dark .search-bar:hover,
 .dark .search-bar:focus-within,
 .dark .search-bar:has([aria-expanded="true"]) {
-  --ui-bg: var(--ui-color-neutral-800);
+  /* Between marble 800 and 900: a gentler contrast, as in the light theme. */
+  --ui-bg: color-mix(in oklab, var(--ui-color-neutral-800) 50%, var(--ui-color-neutral-900));
   --ui-bg-elevated: var(--ui-color-neutral-700);
   --ui-border: var(--ui-color-neutral-700);
   --ui-border-accented: var(--ui-color-neutral-700);
-  --ui-text: var(--ui-color-neutral-100); /* 9.3:1 */
-  --ui-text-muted: var(--ui-color-neutral-300); /* 6.9:1 */
-  --ui-text-dimmed: var(--ui-color-neutral-400); /* 5.2:1 */
+  --ui-text: var(--ui-color-neutral-100); /* 11.3:1 */
+  --ui-text-muted: var(--ui-color-neutral-300); /* 8.3:1 */
+  --ui-text-dimmed: var(--ui-color-neutral-400); /* 6.2:1 */
   --app-highlight: color-mix(in oklab, var(--ui-color-neutral-700) 70%, transparent);
   --search-hover: var(--ui-color-neutral-700);
 }
