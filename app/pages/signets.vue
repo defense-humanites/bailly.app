@@ -55,8 +55,6 @@
    */
   const introDismissed = useDismissed("bookmarksIntro");
   // (Its exposed `enabled` is unwrapped on the component's instance.)
-  const syncButton = useTemplateRef<{ enabled: boolean }>("syncButton");
-  const syncEnabled = computed((): boolean => syncButton.value?.enabled ?? false);
 
   /**
    * The tags to choose the active one from, in their order; from
@@ -183,7 +181,6 @@
 
           <!-- Synchronization (its state, and its window) -->
           <SyncButton
-            ref="syncButton"
             scope="bookmarks"
             class="flex h-11 border-s border-default max-lg:overflow-hidden max-lg:rounded-br-(--field-inner-radius) lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
           />

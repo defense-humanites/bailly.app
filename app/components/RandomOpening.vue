@@ -63,7 +63,7 @@
 
 <template>
   <section
-    aria-labelledby="au-hasard"
+    aria-label="Le Bailly ouvert au hasard"
     class="flex flex-col"
   >
     <!-- The opened page, framed like the about page's hero: the neighbors above and below. -->

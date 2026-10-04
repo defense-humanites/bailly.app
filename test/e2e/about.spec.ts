@@ -8,7 +8,7 @@ test.describe("about page", () => {
     await expect(lineage.getByRole("heading", { level: 3 })).toHaveText([
       "Le dictionnaire d'Anatole Bailly",
       "L'édition numérique de Gérard Gréco",
-      "L'application Bailly.app",
+      "L'application Bailly",
     ]);
     // The errors of the text go to the team of the edition, the others to us.
     await expect(lineage.getByRole("link", { name: "Signaler une erreur" }))
@@ -26,7 +26,7 @@ test.describe("about page", () => {
   test("leads to the privacy page", async ({ page, goto }) => {
     await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
     await page.getByRole("link", { name: "confidentialité" }).click();
-    await expect(page).toHaveURL(/\/confidentialité$/);
+    await expect(page).toHaveURL(new RegExp(`${encodeURI("/confidentialité")}$`));
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Vos données");
     await expect(page.getByRole("region", { name: "En bref" })).toBeVisible();
   });

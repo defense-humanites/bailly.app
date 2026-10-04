@@ -70,7 +70,7 @@ test.describe("home page", () => {
   test("names the edition in a popover, after the title", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
     // The heading is named after its text only.
-    await expect(page.getByRole("heading", { level: 1 })).toHaveAccessibleName("Consultez le dictionnaire grec–français d'Anatole Bailly");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveAccessibleName("Consultez le dictionnaire grec-français d'Anatole Bailly");
     const button = page.getByRole("button", { name: "L'édition du texte" });
     const edition = page.getByText("que ses auteurs ont intitulée");
     // Hovered with a mouse: the popover opens, the focus stays where it was.

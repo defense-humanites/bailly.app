@@ -31,15 +31,12 @@
   // the header's menu, toasts).
   useAppShell();
   const toaster: ToasterProps = { expand: false, progress: false };
-
-  // Back home, the error cleared (the search bar's navigation clears it too).
-  const goHome = () => clearError({ redirect: "/" });
 </script>
 
 <template>
   <!--
-    On the pages' single column, under the header and its search bar: the
-    way to go on.
+    On the pages' single column, under the header and its search bar (its
+    navigation clears the error).
   -->
   <UApp :toaster="toaster">
     <NuxtLayout name="single-column">

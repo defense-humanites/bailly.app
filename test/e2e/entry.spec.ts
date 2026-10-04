@@ -37,11 +37,11 @@ test.describe("entry page", () => {
     });
   });
 
-  test("links after the entry: on desktop, only after a long definition", async ({ page, goto }) => {
+  test("links after the entry, on every screen", async ({ page, goto }) => {
     const surround = page.getByRole("navigation", { name: "Entrées voisines" });
     await page.setViewportSize({ width: 1280, height: 800 });
     await goto("/logotechnês", { waitUntil: "hydration" });
-    await expect(surround).toBeHidden();
+    await expect(surround).toBeVisible();
     await goto("/logos", { waitUntil: "hydration" });
     await expect(surround).toBeVisible();
 
