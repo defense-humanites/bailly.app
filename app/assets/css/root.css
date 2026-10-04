@@ -55,7 +55,16 @@
    * the bookmarks' menu bar): a shade darker, as the header menu's, rather
    * than `bg-elevated`, the page's own color in the light theme.
    */
-  --app-button-hover: color-mix(in oklab, var(--ui-bg-accented) 50%, transparent);
+  /*
+   * A surface raised above the cards, when in use (the search bar and its
+   * panels, the hovered fields and buttons of the bookmarks' bar): « marble
+   * 10 », lighter than the cards without the glare of a pure white.
+   */
+  --app-surface-raised: color-mix(in oklab, var(--ui-color-neutral-50) 50%, #fff);
+  --app-button-hover: var(--app-surface-raised);
+  /* The fields of the bookmarks' bar (cf. `FIELD_BACKGROUND`). */
+  --app-field-bg: var(--ui-bg);
+  --app-field-hover: var(--app-surface-raised);
 }
 
 .dark {
@@ -85,7 +94,10 @@
   --app-favorite: var(--color-gold-300);
   --app-page-hover: var(--ui-bg-elevated);
   --app-highlight: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
+  --app-surface-raised: color-mix(in oklab, var(--ui-color-neutral-800) 50%, var(--ui-color-neutral-900));
   --app-button-hover: var(--ui-bg-elevated);
+  --app-field-bg: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
+  --app-field-hover: var(--ui-bg-elevated);
 }
 
 :root {
@@ -232,7 +244,7 @@
 
 /*
  * The search bar and its panels (results, history, options), raised above
- * the page (4 October 2026): white in the light theme, half a shade lighter
+ * the page (4 October 2026): « marble 10 » in the light theme, half a shade lighter
  * than the cards in the dark one (with their borders, their text and their hover
  * a shade lighter too: the text keeps its contrast, the muted and dimmed
  * ones at least 5:1), the panels with a stronger shadow. The bar itself only
@@ -244,10 +256,10 @@
 .search-bar:hover,
 .search-bar:focus-within,
 .search-bar:has([aria-expanded="true"]) {
-  --ui-bg: #fff;
+  --ui-bg: var(--app-surface-raised);
   /* The hover and open state of the bar's buttons (history, options). */
-  --search-hover: color-mix(in oklab, var(--ui-color-neutral-100) 50%, #fff);
-  --app-highlight: color-mix(in oklab, var(--ui-color-neutral-100) 60%, #fff);
+  --search-hover: color-mix(in oklab, var(--ui-color-neutral-100) 50%, var(--app-surface-raised));
+  --app-highlight: color-mix(in oklab, var(--ui-color-neutral-100) 60%, var(--app-surface-raised));
 }
 
 /* Its input and buttons change color with a light transition. */
@@ -286,7 +298,7 @@
 .dark .search-bar:focus-within,
 .dark .search-bar:has([aria-expanded="true"]) {
   /* Between marble 800 and 900: a gentler contrast, as in the light theme. */
-  --ui-bg: color-mix(in oklab, var(--ui-color-neutral-800) 50%, var(--ui-color-neutral-900));
+  --ui-bg: var(--app-surface-raised);
   --app-highlight: color-mix(in oklab, var(--ui-color-neutral-700) 50%, transparent);
 }
 

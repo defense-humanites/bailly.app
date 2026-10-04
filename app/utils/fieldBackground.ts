@@ -1,10 +1,10 @@
 /**
  * The background of the fields of the bookmarks page's menu bar (cf.
- * `signets.vue`, `CreateTag`): in the light theme, the search bar's (the
- * palette's white, as the bar's buttons); in the dark one, Nuxt UI's `soft`
- * variant's.
+ * `signets.vue`, `CreateTag`): in the light theme, the cards', lighter when
+ * hovered or focused (as the search bar); in the dark one, Nuxt UI's `soft`
+ * variant's (cf. `--app-field-bg` and `--app-field-hover`, `root.css`).
  */
-export const FIELD_BACKGROUND = "bg-default hover:bg-elevated/40 focus:bg-default dark:bg-elevated/50 dark:hover:bg-elevated dark:focus:bg-elevated";
+export const FIELD_BACKGROUND = "bg-(--app-field-bg) hover:bg-(--app-field-hover) focus:bg-(--app-field-hover)";
 
 /**
  * Their focus halo (an outline) and ring, as the search bar's, but neutral

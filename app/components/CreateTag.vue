@@ -105,7 +105,10 @@
       >
         <!-- Color picker -->
         <template #leading>
-          <!-- Its corners follow the field's (not the pill buttons'). -->
+          <!--
+            Its corners follow the field's (not the pill buttons'); on the
+            field's background, whatever its state and theme.
+          -->
           <TagColorPicker
             v-model="newTagColor"
             label="Couleur de la nouvelle étiquette"
@@ -116,7 +119,7 @@
                 color="neutral"
                 variant="outline"
                 v-bind="attrs"
-                :ui="{ base: 'rounded-md shadow-none' }"
+                :ui="{ base: 'rounded-md shadow-none bg-transparent' }"
               />
             </template>
           </TagColorPicker>
