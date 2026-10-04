@@ -108,6 +108,10 @@
   const { y } = usePageScroll();
 
   const updateCurrent = (): void => {
+    if (followed) {
+      currentId.value = followed;
+      return;
+    }
     const elements = sections.value
       .map(({ id }) => document.getElementById(id))
       .filter((element): element is HTMLElement => element !== null);
@@ -133,17 +137,32 @@
   watch(y, () => requestAnimationFrame(updateCurrent));
 
   /**
-   * Whether all the cards fit in the window (the page doesn't scroll): the
-   * headwords' column then needs no links.
+   * Follows a headword's link: its card, once reached, is pointed out (as a
+   * bookmarks' card, cf. `highlightCard`).
    */
-  const fits = ref(false);
-  const measureFit = (): void => {
-    const box = scroller.value;
-    fits.value = !!box && box.scrollHeight <= box.clientHeight + 1;
+  const pointOut = (id: string): void => {
+    followed = currentId.value = id;
+    const card = document.getElementById(id);
+    if (card) highlightCard(card);
   };
-  onMounted(measureFit);
-  useResizeObserver(list, measureFit);
-  useEventListener("resize", measureFit);
+
+  /**
+   * The headword followed is the one marked (its card may not reach the
+   * reading line, e.g. near the page's bottom, or all the cards in view),
+   * until the user scrolls by themselves.
+   */
+  let followed: string | undefined;
+  const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
+  const release = (): void => {
+    if (!followed) return;
+    followed = undefined;
+    updateCurrent();
+  };
+  useEventListener("wheel", release, { passive: true });
+  useEventListener("touchmove", release, { passive: true });
+  useEventListener("keydown", (event: KeyboardEvent) => {
+    if (SCROLL_KEYS.has(event.key)) release();
+  });
 
   /**
    * The headwords' table of contents below `xl` (cf. `BookmarksToc`).
@@ -203,10 +222,8 @@
         </p>
 
         <!--
-          From `xl`, the headwords in a column: links to their cards, the one
-          in view marked (in neutral colors), only when the cards don't all fit
-          in the window (`fits`, measured: the server renders links, unmarked,
-          which look the same).
+          From `xl`, the headwords in a column: links to their cards (pointed
+          out once reached), the one in view marked, in neutral colors.
         -->
         <nav
           v-if="sections.length > 1"
@@ -218,16 +235,12 @@
               v-for="{ id, entry } in sections"
               :key="id"
             >
-              <span
-                v-if="fits"
-                class="block truncate px-2.5 py-1.5 font-serif text-sm text-muted"
-              >{{ greek.text(entry.word) }}</span>
               <NuxtLink
-                v-else
                 :to="{ query: route.query, hash: `#${id}` }"
                 :aria-current="currentId === id ? 'location' : undefined"
                 class="block truncate rounded-md px-2.5 py-1.5 font-serif text-sm transition-colors focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)"
-                :class="currentId === id ? 'bg-accented/50 font-semibold text-highlighted' : 'text-muted hover:bg-(--app-page-hover) hover:text-default'"
+                :class="currentId === id ? 'bg-accented/50 font-semibold text-highlighted' : 'text-muted hover:bg-accented/50 hover:text-highlighted'"
+                @click="pointOut(id)"
               >{{ greek.text(entry.word) }}</NuxtLink>
             </li>
           </ul>
@@ -245,7 +258,6 @@
       v-if="sections.length > 1"
       :groups="toc"
       label="Accès rapide aux entrées"
-      :highlight="false"
       class="mb-6 xl:hidden"
     />
 
@@ -258,7 +270,7 @@
         :id="id"
         :key="id"
         :aria-labelledby="`${id}-titre`"
-        class="scroll-mt-[calc(var(--header-bottom)+4.5rem)] xl:scroll-mt-[calc(var(--header-bottom)+1.5rem)]"
+        class="rounded-lg [--card-highlight:var(--ui-color-neutral-400)] scroll-mt-[calc(var(--header-bottom)+4.5rem)] xl:scroll-mt-[calc(var(--header-bottom)+1.5rem)]"
       >
         <h2
           :id="`${id}-titre`"

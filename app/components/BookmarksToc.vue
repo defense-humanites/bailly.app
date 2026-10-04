@@ -25,7 +25,7 @@
     groups: TocGroup[];
     /** The navigation's accessible name. */
     label?: string;
-    /** Whether a card reached is pointed out (in its tag's color, cf. `highlightCard`). */
+    /** Whether a card reached is pointed out (cf. `highlightCard`: in its tag's color, or `--card-highlight`). */
     highlight?: boolean;
   }>(), {
     label: "Sommaire des signets",
@@ -273,7 +273,7 @@
           :aria-current="group.key === current ? 'location' : undefined"
           class="relative flex h-8 items-center gap-1.5 rounded-full pe-3 text-sm ring-inset transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tag-400"
           :class="[!group.color
-            ? 'bg-default text-default ring ring-default hover:bg-elevated focus-visible:outline-(--ui-border-inverted)'
+            ? 'min-w-12 justify-center bg-accented text-highlighted hover:bg-accented/70 focus-visible:outline-(--ui-border-inverted) dark:bg-accented/55 dark:hover:bg-accented/75'
             : group.active
               ? 'bg-tag-text text-tag-100 hover:bg-tag-text/90'
               : 'bg-tag-100 text-tag-text ring ring-tag-300/60 hover:bg-tag-200/80', group.icon ? 'ps-2.5' : 'ps-3', { 'font-serif': group.serif }]"
@@ -299,7 +299,7 @@
         data-toc-mark
         :data-tag-color="mark.color"
         class="pointer-events-none absolute start-0 bottom-0.5 h-0.5 rounded-full duration-300 ease-out motion-reduce:transition-none"
-        :class="[mark.color ? 'bg-tag-text' : 'bg-(--ui-text)', { 'transition-[translate,width,background-color]': markSlides }]"
+        :class="[mark.color ? 'bg-tag-text' : 'bg-(--ui-text-dimmed)/60', { 'transition-[translate,width,background-color]': markSlides }]"
         :style="{ translate: `${mark.left}px 0`, width: `${mark.width}px` }"
       />
     </ul>

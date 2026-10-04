@@ -221,8 +221,9 @@
 /*
  * A bookmarks' card pointed out (reached from the table of contents, or
  * pinned; cf. `utils/cardHighlight.ts`): outlined for a moment in its tag's
- * color, the outline coming out of its edge, then fading; with reduced
- * motion, it only fades.
+ * color (or `--card-highlight`, e.g. the cards of an ambiguous form's page),
+ * the outline coming out of its edge, then fading; with reduced motion, it
+ * only fades.
  */
 [data-card-highlight] {
   animation: card-highlight 1.6s ease-out;
@@ -234,18 +235,18 @@
 
 @keyframes card-highlight {
   0% {
-    outline: 3px solid color-mix(in srgb, var(--tag-400) 0%, transparent);
+    outline: 3px solid color-mix(in srgb, var(--card-highlight, var(--tag-400)) 0%, transparent);
     outline-offset: 0;
   }
 
   20%,
   45% {
-    outline: 3px solid var(--tag-400);
+    outline: 3px solid var(--card-highlight, var(--tag-400));
     outline-offset: 5px;
   }
 
   100% {
-    outline: 3px solid color-mix(in srgb, var(--tag-400) 0%, transparent);
+    outline: 3px solid color-mix(in srgb, var(--card-highlight, var(--tag-400)) 0%, transparent);
     outline-offset: 5px;
   }
 }
@@ -253,12 +254,12 @@
 @keyframes card-highlight-still {
   0%,
   45% {
-    outline: 3px solid var(--tag-400);
+    outline: 3px solid var(--card-highlight, var(--tag-400));
     outline-offset: 5px;
   }
 
   100% {
-    outline: 3px solid color-mix(in srgb, var(--tag-400) 0%, transparent);
+    outline: 3px solid color-mix(in srgb, var(--card-highlight, var(--tag-400)) 0%, transparent);
     outline-offset: 5px;
   }
 }

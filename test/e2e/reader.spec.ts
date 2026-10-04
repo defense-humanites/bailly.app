@@ -39,15 +39,15 @@ test.describe("page of an ambiguous form", () => {
     const [cardBox, titleBox] = [await card.boundingBox(), await page.getByRole("heading", { level: 1 }).boundingBox()];
     expect(titleBox!.x).toBeGreaterThan(cardBox!.x + cardBox!.width);
 
-    // All the cards in view: the headwords, without links.
+    // Links to the cards, the one in view marked; followed, its card is
+    // pointed out (even when all the cards are in view), and marked.
     const nav = page.getByRole("navigation", { name: "Accès rapide aux entrées" });
-    await expect(nav.getByRole("listitem")).toHaveText(["αἱ", "ὁ"]);
-    await expect(nav.getByRole("link")).toHaveCount(0);
-    // A lower window: links, the one in view marked.
-    await page.setViewportSize({ width: 1280, height: 400 });
     const headwords = nav.getByRole("link");
     await expect(headwords).toHaveText(["αἱ", "ὁ"]);
     await expect(headwords.nth(0)).toHaveAttribute("aria-current", "location");
+    await headwords.nth(1).click();
+    await expect(page.locator("#entree-2")).toHaveAttribute("data-card-highlight", "");
+    await expect(headwords.nth(1)).toHaveAttribute("aria-current", "location");
 
     await card.click();
     await expect(page).toHaveURL(/\/ho_\(1\)$/);
@@ -63,6 +63,7 @@ test.describe("page of an ambiguous form", () => {
 
     await chips.nth(1).click();
     await expect(page).toHaveURL(/#entree-2$/);
+    await expect(page.locator("#entree-2")).toHaveAttribute("data-card-highlight", "");
     await expect(chips.nth(1)).toHaveAttribute("aria-current", "location");
     // The table of contents sticks under the header (once the smooth scroll
     // is over).
