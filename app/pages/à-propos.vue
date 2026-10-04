@@ -87,7 +87,22 @@
    * The credits: the authors on one line each, if several (e.g. libmorpheus:
    * those of the original Morpheus, then its own).
    */
-  const credits: { title: string; authors: string | string[]; licence: string; links: Link[]; note?: string }[] = [
+  /**
+   * The contributors to the Bailly 2020 Hugo Chávez (after its four authors,
+   * their « et al. »: cf. the credits), as the published version listed them.
+   */
+  const CONTRIBUTORS_2020 = [
+    "José Antonio Artés", "Anne Bargibant", "Jérôme Bastick", "Adrienne Bernardi", "Adrien Bresson",
+    "Jean Pierre Brèthes", "Hélène Chaillot", "Isabelle Chouinard", "Marine Chovin", "Florent Cistac",
+    "Guillaume Crocquevieille", "Élisa Cuvillier", "Alexia Dedieu", "Blandine Demotz", "Aurélien Dollard",
+    "Thomas Frétard", "Yvon Gicquel", "Stéphanie Groulard", "Stéphane Itic", "Laurence Jénoc",
+    "Annick Judas", "Franck Kempf", "Charlotte Labro", "Xavier Lafontaine", "Sylvie Launay",
+    "Isabelle Le Bris-Leleux", "Annabelle Maniez", "Jean-Baptiste Navlet", "Joseph Ozelz Owono",
+    "Émilie Picard", "Jérémie Pinguet", "Lucas Rascle", "Benjamin Sevestre", "Bernard Simon",
+    "Marie-Dominique Simon", "Anne-Laure Viger", "Christine Vulliard",
+  ];
+
+  const credits: { title: string; authors: string | string[]; contributors?: string[]; licence: string; links: Link[]; note?: string }[] = [
     {
       title: "Application Bailly.app",
       authors: "Antoine Boquet & Benjamin Georges",
@@ -99,7 +114,8 @@
     },
     {
       title: "Bailly 2020 Hugo Chávez",
-      authors: "Gérard Gréco, André Charbonnet, Mark De Wilde, Bernard Maréchal et al.",
+      authors: "Gérard Gréco, André Charbonnet, Mark De Wilde, Bernard Maréchal",
+      contributors: CONTRIBUTORS_2020,
       licence: "Creative Commons Attribution – Pas d'Utilisation Commerciale – Pas de Modification (CC BY-NC-ND 4.0)",
       links: [
         { label: "Licence", href: "https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" },
@@ -585,6 +601,34 @@
               :key="authors"
             >
               {{ authors }}
+              <!-- Their « et al. »: the contributors, in a popover. -->
+              <UPopover
+                v-if="credit.contributors"
+                :content="{ side: 'top', collisionPadding: 12 }"
+                :ui="{ content: 'max-h-[min(24rem,var(--reka-popover-content-available-height))] w-[min(42rem,calc(100vw-1.5rem))] overflow-y-auto p-4' }"
+              >
+                <button
+                  type="button"
+                  class="italic underline decoration-dotted underline-offset-4 hover:text-primary"
+                  :aria-label="`Et al. : les ${credit.contributors.length} contributeurs au ${credit.title}`"
+                >
+                  et al.
+                </button>
+                <template #content>
+                  <p class="mb-3 font-sans text-sm font-semibold">
+                    Contributeurs au {{ credit.title }}
+                  </p>
+                  <ul class="columns-1 gap-6 text-sm sm:columns-2 md:columns-3">
+                    <li
+                      v-for="contributor in credit.contributors"
+                      :key="contributor"
+                      class="break-inside-avoid py-0.5"
+                    >
+                      {{ contributor }}
+                    </li>
+                  </ul>
+                </template>
+              </UPopover>
             </p>
             <p class="text-muted">
               {{ credit.licence }}
