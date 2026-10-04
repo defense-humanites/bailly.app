@@ -25,7 +25,7 @@
       <h1 class="text-3xl font-bold">
         Vos données
       </h1>
-      <p class="mt-2 text-muted">
+      <p class="mt-2 text-muted font-semibold">
         Ce que Bailly.app garde de vos données, où, et pour combien de temps.
       </p>
     </header>
@@ -57,7 +57,7 @@
 
     <section
       aria-label="En détail"
-      class="space-y-4 font-serif text-sm/7"
+      class="space-y-4 text-sm/7"
     >
       <p>
         <strong>Sur votre appareil.</strong> Vos signets (étiquettes et favoris) et
@@ -116,7 +116,8 @@
         <strong>Recherches.</strong> Les recherches et les entrées du dictionnaire
         sont servies par notre API, qui ne conserve rien de vos recherches en
         dehors de ses journaux techniques (pouvant contenir votre adresse IP et
-        les adresses demandées), effacés après vingt-quatre heures.
+        les adresses demandées). La rétention de ces journaux est éphémère, puisque
+        seules les 1.500 dernières lignes sont conservées.
       </p>
 
       <p>
