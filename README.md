@@ -65,9 +65,8 @@ License v3.0 or later_ (AGPL-3.0-or-later).
 Cette application utilise
 [greek-conversion](https://github.com/defense-humanites/greek-conversion)
 (Antoine Boquet), une bibliothèque JavaScript qui convertit le grec polytonique
-et monotonique depuis et vers de nombreuses représentations (bêta code,
-translittération), distribuée sous licence _GNU Affero General Public License
-v3.0 or later_ (AGPL-3.0-or-later).
+et monotonique depuis et vers de nombreuses représentations (beta code,
+translittération), distribuée sous licence _MIT_ (MIT License).
 
 ### Application Bailly (le présent dépôt)
 
