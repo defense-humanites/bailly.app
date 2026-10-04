@@ -203,7 +203,7 @@
         <!--
           The introduction, a card before the favorites (on their left from
           `lg`), laid out as theirs (sizes, margins), told from them by its
-          terracotta, its bookmark's outline, its title and text in a normal weight:
+          marble (neutral), its bookmark's outline, its title and text in a normal weight:
           what the bookmarks are, and, while they aren't synchronized, that
           they can be (the bar's button). Dismissed by its button.
         -->
@@ -213,13 +213,13 @@
           aria-labelledby="signets-intro"
           variant="bookmarkGroup"
           :ui="{
-            root: 'bg-[color-mix(in_srgb,var(--color-terracotta-200)_50%,var(--app-page-bg))] border-terracotta-300/50 dark:bg-[color-mix(in_srgb,var(--color-terracotta-900)_50%,var(--app-page-bg))] dark:border-terracotta-800/60',
+            root: 'bg-[color-mix(in_srgb,var(--color-marble-200)_50%,var(--app-page-bg))] border-marble-300/50 dark:bg-[color-mix(in_srgb,var(--color-marble-900)_50%,var(--app-page-bg))] dark:border-marble-800/60',
             header: 'flex !px-3 pb-0',
             body: '!p-3',
           }"
         >
           <template #header>
-            <div class="flex min-h-8 w-full items-start gap-3 text-terracotta-700 dark:text-terracotta-400">
+            <div class="flex min-h-8 w-full items-start gap-3 text-marble-700 dark:text-marble-400">
               <div class="flex min-w-0 grow items-start">
                 <UIcon
                   name="i-lucide-bookmark"
@@ -239,13 +239,13 @@
                   variant="subtle"
                   color="neutral"
                   aria-label="Masquer la présentation des signets"
-                  :ui="{ base: 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-terracotta-300/50 text-terracotta-700/75 hover:text-terracotta-700 dark:ring-terracotta-800/60 dark:text-terracotta-400/75 dark:hover:text-terracotta-400' }"
+                  :ui="{ base: 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-marble-300/50 text-marble-700/75 hover:text-marble-700 dark:ring-marble-800/60 dark:text-marble-400/75 dark:hover:text-marble-400' }"
                   @click="introDismissed = true"
                 />
               </UTooltip>
             </div>
           </template>
-          <div class="ms-12 text-terracotta-700 dark:text-terracotta-400">
+          <div class="ms-12 text-marble-700 dark:text-marble-400">
             <p class="mb-2">
               Depuis la barre d'outils d'une entrée, ajoutez-la à vos favoris ou rangez-la sous
               une étiquette : vous la retrouverez ici.
