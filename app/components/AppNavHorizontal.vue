@@ -114,10 +114,21 @@
       </UNavigationMenu>
       <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:max-w-(--search-width) md:justify-self-center lg:justify-self-start" />
       <!--
-        The menu; on mobile, on the home page only, a heart first leads to the
-        donation (the page's own button is left out there, for room).
+        The menu; on mobile, on the home page only, cotillons and a heart
+        first lead to the news and the donation (the page's own buttons are
+        left out there, for room).
       -->
       <div class="flex items-center md:col-start-3 md:row-start-1 md:justify-self-end">
+        <UButton
+          v-if="route.path === '/'"
+          :to="encodeURI('/nouveautés')"
+          icon="i-lucide-party-popper"
+          color="primary"
+          variant="ghost"
+          aria-label="Nouveautés"
+          class="p-2.5 md:hidden"
+          :ui="{ leadingIcon: 'size-5' }"
+        />
         <UButton
           v-if="route.path === '/'"
           to="/soutenir"

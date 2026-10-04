@@ -88,4 +88,21 @@ test.describe("home page", () => {
     await page.getByRole("link", { name: "en savoir plus", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`${encodeURI("/à-propos")}$`));
   });
+
+  test("leads to the news: a button, on mobile the header's cotillons", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await goto("/", { waitUntil: "hydration" });
+    await page.getByRole("link", { name: "Nouveautés" }).click();
+    await expect(page).toHaveURL(new RegExp(`${encodeURI("/nouveautés")}$`));
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("L'application Bailly fait peau neuve !");
+    // Their icon only in the header, on the home page only.
+    await page.setViewportSize({ width: 375, height: 800 });
+    await expect(page.locator("header").getByRole("link", { name: "Nouveautés" })).toBeHidden();
+    await goto("/", { waitUntil: "hydration" });
+    const news = page.locator("header").getByRole("link", { name: "Nouveautés" });
+    await expect(news).toBeVisible();
+    await expect(page.locator("main").getByRole("link", { name: "Nouveautés" })).toBeHidden();
+    await news.click();
+    await expect(page).toHaveURL(new RegExp(`${encodeURI("/nouveautés")}$`));
+  });
 });

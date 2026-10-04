@@ -50,7 +50,8 @@
   <div class="mx-auto grid max-w-(--content-max-width) items-center gap-10 px-4 py-8 md:px-6 md:py-12 lg:min-h-[calc(100dvh-(var(--spacing)*14))] lg:grid-cols-2 lg:gap-12 lg:py-10">
     <!--
       On mobile, a grid: the title first and the transliteration offer right
-      under it (the donation is the header's heart, cf. `AppNavHorizontal`).
+      under it (the news and the donation are the header's icons, cf.
+      `AppNavHorizontal`).
       On a tablet (`md`), the offer floats on the right, the donation's
       button, the title and the text around it. A column from `lg`. The
       order is CSS's only, the markup's being the same everywhere.
@@ -84,15 +85,25 @@
           </p>
         </div>
       </div>
-      <UButton
-        class="max-md:hidden md:mb-5 md:flex md:w-fit lg:mb-0"
-        to="/soutenir"
-        size="sm"
-        color="primary"
-        variant="soft"
-        icon="i-lucide-heart"
-        label="Nous soutenir"
-      />
+      <!-- The news and the donation (on mobile, the header's icons). -->
+      <div class="flex gap-2 max-md:hidden md:mb-5 lg:mb-0">
+        <UButton
+          :to="encodeURI('/nouveautés')"
+          size="sm"
+          color="primary"
+          variant="soft"
+          icon="i-lucide-party-popper"
+          label="Nouveautés"
+        />
+        <UButton
+          to="/soutenir"
+          size="sm"
+          color="primary"
+          variant="soft"
+          icon="i-lucide-heart"
+          label="Nous soutenir"
+        />
+      </div>
       <!--
         The title on two lines from `lg`, its size following the column's
         width (`cqi`), so that the longest line, with the popover's button,
