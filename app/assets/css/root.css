@@ -255,8 +255,13 @@
   transition-duration: 250ms;
 }
 
-/* At rest, the buttons' hover as in use. */
+/*
+ * At rest, the buttons' hover as in use. The separators as the field's border,
+ * and the results' count a notch darker, as in the dark theme.
+ */
 .search-bar {
+  --ui-border: var(--ui-color-neutral-300);
+  --ui-bg-elevated: var(--ui-color-neutral-200);
   --search-hover: color-mix(in oklab, var(--ui-color-neutral-100) 50%, var(--ui-bg));
 }
 
