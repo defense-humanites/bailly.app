@@ -62,6 +62,15 @@ test.describe("history of the viewed entries", () => {
     await expect(historyLinks(page).nth(0)).toContainText("λόγος");
   });
 
+  test("on a phone, within the bar (no overflow to its right)", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await goto("/logos", { waitUntil: "hydration" });
+    await openHistory(page);
+    const [dialog, bar] = [await xExtent(page, "[role=dialog]"), await xExtent(page, "header .group\\/search")];
+    expect(Math.abs(dialog[0] - bar[0])).toBeLessThan(1);
+    expect(Math.abs(dialog[1] - bar[1])).toBeLessThan(1);
+  });
+
   test("cleared after a confirmation", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     await openHistory(page);

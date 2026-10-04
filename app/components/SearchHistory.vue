@@ -19,7 +19,7 @@
    */
   const popoverContent = computed(() => ({
     "align": "start",
-    "collisionPadding": 12,
+    "collisionPadding": 8,
     "reference": props.reference,
     "aria-label": "Entrées consultées récemment",
   }) as PopoverProps["content"]);
