@@ -51,7 +51,7 @@
     },
     inflected: {
       title: "Les formes fléchies aussi",
-      text: "L'analyseur morphologique Morpheus retrouve le lemme d'une forme conjuguée ou déclinée.",
+      text: "L'analyseur morphologique libmorpheus, issu de Morpheus, retrouve le lemme d'une forme conjuguée ou déclinée.",
     },
     bookmarks: {
       title: "Vos signets, sur tous vos appareils",
@@ -104,13 +104,33 @@
       note: "Version des données : 28 février 2023.",
     },
     {
-      title: "Analyseur morphologique Morpheus",
-      authors: "Gregory Crane et al., pour l'université Tufts",
-      licence: "Creative Commons Attribution-ShareAlike 3.0 United States (CC BY-SA 3.0 US)",
+      title: "Analyseur morphologique libmorpheus",
+      authors: "Antoine Boquet",
+      licence: "Mozilla Public License 2.0 et GNU Affero General Public License (MPL-2.0 et AGPL-3.0-or-later)",
       links: [
-        { label: "Licence", href: "https://creativecommons.org/licenses/by-sa/3.0/us/deed.en" },
-        { label: "Code source", href: "https://github.com/PerseusDL/morpheus" },
+        { label: "Licence", href: "https://github.com/defense-humanites/libmorpheus#license" },
+        { label: "Code source", href: "https://github.com/defense-humanites/libmorpheus" },
       ],
+      note: "Modernise et étend l'analyseur Morpheus.",
+    },
+    {
+      title: "Analyseur morphologique Morpheus",
+      authors: "Gregory Crane et al., pour l'université Tufts (Perseus Digital Library)",
+      licence: "Mozilla Public License 2.0 (MPL-2.0)",
+      links: [
+        { label: "Licence", href: "https://www.mozilla.org/MPL/2.0/" },
+        { label: "Code source", href: "https://github.com/perseids-tools/morpheus" },
+      ],
+    },
+    {
+      title: "Conversion du grec (greek-conversion)",
+      authors: "Antoine Boquet",
+      licence: "GNU Affero General Public License (AGPL-3.0-or-later)",
+      links: [
+        { label: "Licence", href: "https://www.gnu.org/licenses/agpl-3.0.fr.html" },
+        { label: "Code source", href: "https://github.com/defense-humanites/greek-conversion" },
+      ],
+      note: "Beta code, translittération et grec, dans la recherche et l'affichage.",
     },
   ];
 </script>

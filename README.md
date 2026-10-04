@@ -49,14 +49,25 @@ Les fichiers des fontes, accompagnés de leurs licences, se trouvent dans
 ### Analyse morphologique
 
 Cette application tire parti de
-[libmorpheus](https://github.com/defense-humanites/libmorpheus), une bibliothèque
-logicielle qui modernise et étend les capacités de l'analyseur morphologique
-Morpheus, initialement développé dans le cadre de la Perseus Digital Library
-(Gregory Crane _et al._ pour le compte de l'université Tufts).
+[libmorpheus](https://github.com/defense-humanites/libmorpheus) (Antoine
+Boquet), une bibliothèque logicielle qui modernise et étend les capacités de
+l'analyseur morphologique [Morpheus](https://github.com/perseids-tools/morpheus),
+initialement développé dans le cadre de la Perseus Digital Library (Gregory
+Crane _et al._ pour le compte de l'université Tufts) et distribué sous licence
+_Mozilla Public License 2.0_ (MPL-2.0).
 
 `libmorpheus` est distribuée sous licence
 mixte, _Mozilla Public License 2.0_ (MPL-2.0) et _GNU Affero General Public
 License v3.0 or later_ (AGPL-3.0-or-later).
+
+### Conversion du grec
+
+Cette application utilise
+[greek-conversion](https://github.com/defense-humanites/greek-conversion)
+(Antoine Boquet), une bibliothèque JavaScript qui convertit le grec polytonique
+et monotonique depuis et vers de nombreuses représentations (bêta code,
+translittération), distribuée sous licence _GNU Affero General Public License
+v3.0 or later_ (AGPL-3.0-or-later).
 
 ### Application Bailly (le présent dépôt)
 
