@@ -101,6 +101,24 @@ export default defineAppConfig({
         base: "rounded-full",
       },
     },
+    /*
+     * The windows: narrower side margins on mobile (8px, as the header's),
+     * rather than aligned with the contents under them (16px).
+     */
+    modal: {
+      variants: {
+        fullscreen: {
+          false: {
+            content: "w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)]",
+          },
+        },
+        scrollable: {
+          true: {
+            overlay: "p-2 sm:p-4",
+          },
+        },
+      },
+    },
     card: {
       slots: {
         root: "rounded-lg shadow-xl shadow-black/10",
