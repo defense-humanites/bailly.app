@@ -123,7 +123,7 @@
           v-if="route.path === '/'"
           :to="encodeURI('/nouveautés')"
           icon="i-lucide-party-popper"
-          color="primary"
+          color="secondary"
           variant="ghost"
           aria-label="Nouveautés"
           class="p-2.5 md:hidden"

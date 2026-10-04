@@ -90,7 +90,7 @@
         <UButton
           :to="encodeURI('/nouveautés')"
           size="sm"
-          color="primary"
+          color="secondary"
           variant="soft"
           icon="i-lucide-party-popper"
           label="Nouveautés"
