@@ -1165,8 +1165,9 @@
     >
       <!--
         Replacing this device's key (a link, or words, while it synchronizes
-        with another): in red, given its reach, and the buttons apart, as the
-        stop's window.
+        with another): in gold, as the warning above it (a confirmation, with
+        care: its bookmarks join the new key's for good; red is for what
+        deletes), and the buttons apart, as the stop's window.
       -->
       <template v-if="view === 'join'">
         <UButton
@@ -1191,7 +1192,7 @@
         />
         <UButton
           v-else-if="linkKey && enabled"
-          color="error"
+          color="warning"
           label="Remplacer la clé"
           :loading="busy"
           @click="join"
@@ -1205,7 +1206,7 @@
         />
         <UButton
           v-else
-          :color="enabled ? 'error' : 'secondary'"
+          :color="enabled ? 'warning' : 'secondary'"
           type="submit"
           form="sync-join"
           :label="enabled ? 'Remplacer la clé' : 'Rejoindre'"
