@@ -32,6 +32,31 @@ test.describe("bookmarks page", () => {
     expect(inside).toBe(true);
   });
 
+  test("reloaded, the active tag's field never shows its key", async ({ page }) => {
+    const field = page.getByRole("group", { name: "Étiquettes" }).getByRole("button", { name: "Étiquette active" });
+    await field.click();
+    await page.getByRole("option", { name: "Vide" }).click();
+    await expect(field).toContainText("Vide");
+    const key = await page.evaluate(() => {
+      const root = document.querySelector("#__nuxt") as unknown as { __vue_app__: { config: { globalProperties: { $pinia: { _s: Map<string, { currentTagKey: string | null }> } } } } };
+      return root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks")!.currentTagKey;
+    });
+    expect(key).toBeTruthy();
+    // Every text the field shows, from the first paint.
+    await page.addInitScript(() => {
+      const seen: string[] = [];
+      (window as unknown as { seenTexts: string[] }).seenTexts = seen;
+      new MutationObserver(() => {
+        const text = document.querySelector("[aria-label='Étiquette active']")?.textContent;
+        if (text) seen.push(text);
+      }).observe(document, { subtree: true, childList: true, characterData: true });
+    });
+    await page.reload();
+    await expect(field).toContainText("Vide");
+    const seen = await page.evaluate(() => (window as unknown as { seenTexts: string[] }).seenTexts);
+    expect(seen.some(text => text.includes(key!))).toBe(false);
+  });
+
   test("editing with the keyboard: rename, delete with an undo", async ({ page }) => {
     const edit = page.getByRole("button", { name: "Modifier l'étiquette « Vide »" });
     await edit.focus();

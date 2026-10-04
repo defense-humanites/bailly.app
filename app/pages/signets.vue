@@ -64,6 +64,12 @@
    */
   const ACTIVE_FILTER_FROM = 8;
   const activeItems = computed(() => tags.value.map(tag => ({ label: tag.name, value: tag.key, color: tag.color })));
+  /**
+   * The active tag's key, once its tag is listed only: the field would show
+   * the bare key otherwise (on a reload, the key is known before the tags
+   * are loaded; a new tag, before it is listed).
+   */
+  const activeKey = computed(() => activeItems.value.some(item => item.value === currentTagKey.value) ? currentTagKey.value! : undefined);
 </script>
 
 <template>
@@ -134,7 +140,7 @@
             :class="FIELD_HALO"
           >
             <USelectMenu
-              :model-value="currentTagKey ?? undefined"
+              :model-value="activeKey"
               :items="activeItems"
               value-key="value"
               size="xl"
