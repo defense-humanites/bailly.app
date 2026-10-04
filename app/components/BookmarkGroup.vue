@@ -710,27 +710,33 @@
               @click="addDescription"
             />
           </UTooltip>
-          <UButton
+          <UTooltip
             v-if="editableEditMode"
-            icon="i-lucide-trash-2"
-            size="sm"
-            color="error"
-            variant="outline"
-            class="bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
-            :aria-label="`Supprimer ${groupName}`"
-            @click="onDeleteTag"
-          />
-          <UButton
-            icon="i-lucide-pencil"
-            size="sm"
-            variant="subtle"
-            color="neutral"
-            :class="revealed"
-            :aria-label="`Modifier ${groupName}`"
-            :aria-pressed="editMode"
-            :ui="{ base: editMode ? 'text-white bg-tag-400 hover:bg-tag-400 ring-tag-300/50' : 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
-            @click="toggleEditMode"
-          />
+            text="Supprimer l'étiquette"
+          >
+            <UButton
+              icon="i-lucide-trash-2"
+              size="sm"
+              color="error"
+              variant="outline"
+              class="bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
+              :aria-label="`Supprimer ${groupName}`"
+              @click="onDeleteTag"
+            />
+          </UTooltip>
+          <UTooltip :text="editMode ? 'Terminer les modifications' : 'Modifier'">
+            <UButton
+              icon="i-lucide-pencil"
+              size="sm"
+              variant="subtle"
+              color="neutral"
+              :class="revealed"
+              :aria-label="`Modifier ${groupName}`"
+              :aria-pressed="editMode"
+              :ui="{ base: editMode ? 'text-white bg-tag-400 hover:bg-tag-400 ring-tag-300/50' : 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-tag-300/50 text-tag-text/75 hover:text-tag-text' }"
+              @click="toggleEditMode"
+            />
+          </UTooltip>
         </span>
       </div>
 
@@ -866,7 +872,7 @@
           <UTooltip
             :text="greek.text(entry.excerpt)"
             :disabled="!entry.excerpt || editMode"
-            :delay-duration="500"
+            :delay-duration="1000"
             :content="{ side: 'top' }"
             :ui="{ content: 'max-w-80 h-auto', text: 'line-clamp-4 whitespace-normal font-serif' }"
           >
@@ -877,16 +883,20 @@
               :class="{ 'pe-9': editMode }"
             >{{ greek.text(entry.word) }}</NuxtLink>
           </UTooltip>
-          <UButton
+          <UTooltip
             v-if="editMode"
-            class="absolute end-1 top-1/2 -translate-y-1/2 rounded-md bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
-            icon="i-lucide-x"
-            size="xs"
-            color="error"
-            variant="ghost"
-            :aria-label="`Retirer « ${greek.text(entry.word)} » ${favorites ? 'des favoris' : `de l'étiquette « ${tag.name} »`}`"
-            @click="onDeleteEntry(entry)"
-          />
+            text="Retirer"
+          >
+            <UButton
+              class="absolute end-1 top-1/2 -translate-y-1/2 rounded-md bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
+              icon="i-lucide-x"
+              size="xs"
+              color="error"
+              variant="ghost"
+              :aria-label="`Retirer « ${greek.text(entry.word)} » ${favorites ? 'des favoris' : `de l'étiquette « ${tag.name} »`}`"
+              @click="onDeleteEntry(entry)"
+            />
+          </UTooltip>
         </li>
       </ul>
       <!-- Two columns when the card is wide enough (not on mobile). -->
@@ -909,16 +919,20 @@
             hovered while the cross is (`group/item`). Above the entry's card
             only (`z-1`): under the sticky table of contents (`z-10`).
           -->
-          <UButton
+          <UTooltip
             v-if="editMode"
-            class="absolute top-1.5 right-1.5 z-1 rounded-md bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] shadow-[-0.75rem_0_0.5rem_0.125rem_var(--ui-bg)]"
-            icon="i-lucide-x"
-            size="xs"
-            color="error"
-            variant="ghost"
-            :aria-label="`Retirer « ${greek.text(entry.word)} » ${favorites ? 'des favoris' : `de l'étiquette « ${tag.name} »`}`"
-            @click="onDeleteEntry(entry)"
-          />
+            text="Retirer"
+          >
+            <UButton
+              class="absolute top-1.5 right-1.5 z-1 rounded-md bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] shadow-[-0.75rem_0_0.5rem_0.125rem_var(--ui-bg)]"
+              icon="i-lucide-x"
+              size="xs"
+              color="error"
+              variant="ghost"
+              :aria-label="`Retirer « ${greek.text(entry.word)} » ${favorites ? 'des favoris' : `de l'étiquette « ${tag.name} »`}`"
+              @click="onDeleteEntry(entry)"
+            />
+          </UTooltip>
 
           <!--
             The excerpts follow the reading font, not its size nor its weight
