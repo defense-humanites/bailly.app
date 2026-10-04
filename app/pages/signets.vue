@@ -200,7 +200,8 @@
         <!--
           The introduction, a card before the favorites (on their left from
           `lg`), laid out as theirs (sizes, margins), told from them by its
-          marble (neutral), its bookmark's outline, its title and text in a normal weight:
+          marble (neutral), its text in a normal weight (its filled bookmark and
+          its bold title as the cards'):
           what the bookmarks are, and, while they aren't synchronized, that
           they can be (the bar's button). Dismissed by its button.
         -->
@@ -219,12 +220,12 @@
             <div class="flex min-h-8 w-full items-start gap-3 text-marble-700 dark:text-marble-400">
               <div class="flex min-w-0 grow items-start">
                 <UIcon
-                  name="i-lucide-bookmark"
+                  name="i-bailly-bookmark-filled"
                   class="mx-2 mt-1 size-6 shrink-0"
                 />
                 <h2
                   id="signets-intro"
-                  class="ml-2 min-w-0 grow py-0.5 pe-2 text-xl/7 font-normal md:py-0 md:text-2xl/8"
+                  class="ml-2 min-w-0 grow py-0.5 pe-2 text-xl/7 font-bold md:py-0 md:text-2xl/8"
                 >
                   Vos signets
                 </h2>
