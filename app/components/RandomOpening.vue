@@ -66,13 +66,6 @@
     aria-labelledby="au-hasard"
     class="flex flex-col"
   >
-    <h2
-      id="au-hasard"
-      class="mb-4 text-center text-xs font-semibold tracking-[0.2em] text-muted uppercase"
-    >
-      Le Bailly ouvert au hasard
-    </h2>
-
     <!-- The opened page, framed like the about page's hero: the neighbors above and below. -->
     <div class="rounded-xl border-2 border-terracotta-700 px-3 py-3 shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] sm:px-5 sm:py-4 dark:border-terracotta-700 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)]">
       <template
@@ -139,6 +132,7 @@
       <UButton
         color="neutral"
         variant="ghost"
+        class="hover:bg-(--app-page-hover) active:bg-(--app-page-hover)"
         icon="i-lucide-dices"
         label="Ouvrir à une autre page"
         :loading="loading"
