@@ -181,15 +181,36 @@
   };
 
   /**
-   * Changes the preferences synchronized, once enabled.
+   * Whether the preferences synchronized have been changed (once enabled),
+   * and are yet to be applied.
+   */
+  const preferencesPending = ref(false);
+
+  /**
+   * Changes the preferences synchronized, once enabled: applied when the
+   * window closes (or leaves the view), in one synchronization (cf.
+   * `applyPreferences`), rather than at each box ticked (a few ticks in a row
+   * made as many requests, which the rate limiting rule of Cloudflare
+   * refused).
    */
   const setPreferences = (keys: SyncablePreference[]) => {
     chosenPreferences.value = keys;
-    if (!scopeEnabled.value || !keys.length) return;
-    // One change at a time (the latest changes are sent first, cf. `setSections`).
-    void run(async () => {
-      const result = await syncStore.setSections({ bookmarks: syncedBookmarks.value, preferences: keys });
-      if (result.state === "error") actionError.value = result.message;
+    if (scopeEnabled.value && keys.length) preferencesPending.value = true;
+  };
+
+  /**
+   * Applies the preferences chosen, if changed: a failure (e.g. the server
+   * busy) is told by a toast, the choice being kept on this device and sent
+   * with the next synchronization.
+   */
+  const applyPreferences = (): void => {
+    if (!preferencesPending.value) return;
+    preferencesPending.value = false;
+    const keys = [...chosenPreferences.value];
+    void syncStore.setSections({ bookmarks: syncedBookmarks.value, preferences: keys }).then((result) => {
+      if (result.state === "error") toast.add({ title: result.message, icon: "i-lucide-cloud-off", color: "warning" });
+    }).catch((e: unknown) => {
+      console.error(e);
     });
   };
 
@@ -544,7 +565,10 @@
   // Each opening starts from the state of the synchronization (declared last:
   // it runs at once when the window is created open, e.g. from a link).
   watch(open, (isOpen) => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      applyPreferences();
+      return;
+    }
     joinText.value = "";
     joinError.value = null;
     actionError.value = null;
@@ -566,6 +590,13 @@
     else view.value = scopeEnabled.value ? "status" : "intro";
     openedOn.value = view.value;
   }, { immediate: true });
+
+  // Leaving the view of the choice, or the window removed (e.g. another
+  // page): the choice applied as well.
+  watch(view, () => {
+    applyPreferences();
+  });
+  onBeforeUnmount(applyPreferences);
 
   const deleteRemote = async (): Promise<void> => {
     busy.value = true;
@@ -991,7 +1022,7 @@
             icon="i-lucide-circle-alert"
             :title="actionError"
           />
-          <!-- The preferences synchronized, changed at once. -->
+          <!-- The preferences synchronized, applied once the window closes. -->
           <UCheckboxGroup
             v-if="scope === 'preferences'"
             color="secondary"

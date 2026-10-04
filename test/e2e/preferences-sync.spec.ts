@@ -117,11 +117,13 @@ test("synchronizing the preferences chosen between two devices", async ({ page, 
   await phone.getByRole("button", { name: "Choisir" }).click();
   await expect(phone.getByRole("dialog").getByRole("heading", { name: "Préférences synchronisées" })).toBeVisible();
   await expect(phone.getByRole("dialog").getByRole("button", { name: "Synchroniser maintenant" })).toHaveCount(0);
+  // The choice is applied once the window closes, in one synchronization.
   await phone.getByRole("dialog").getByRole("checkbox", { name: /^Saisie/ }).click();
-  await expect.poll(async () => (await syncStore(phone)).preferences).toContain("inputMode");
   await phone.getByRole("dialog").getByRole("checkbox", { name: "Taille du texte" }).click();
-  await expect.poll(async () => (await syncStore(phone)).preferences).toContain("readingSize");
+  expect((await syncStore(phone)).preferences).not.toContain("inputMode");
   await phone.keyboard.press("Escape");
+  await expect.poll(async () => (await syncStore(phone)).preferences).toContain("inputMode");
+  expect((await syncStore(phone)).preferences).toContain("readingSize");
   await expect(phone.getByRole("group", { name: "Taille du texte (réglage synchronisé avec vos autres appareils)" })).toBeVisible();
   await phone.locator("[data-slot=label]", { hasText: "Très grande" }).click();
   // (The label of a radio button of Nuxt UI takes the click.)
@@ -194,10 +196,12 @@ test("the bookmarks and the preferences: one key, enabled and stopped type by ty
   await dialog.getByRole("checkbox", { name: "Formes fléchies" }).click();
   await dialog.getByRole("checkbox", { name: "Tri des étiquettes" }).click();
   await expect(dialog.getByRole("checkbox", { name: "Police" })).toBeDisabled();
-  await expect.poll(async () => (await syncStore(page)).preferences).toEqual(["readingFont"]);
+  // Applied once the window closes, or leaves the view (here, to stop).
+  expect((await syncStore(page)).preferences).toHaveLength(5);
 
   // Stopping the preferences on this device: the bookmarks go on.
   await dialog.getByRole("button", { name: "Arrêter la synchronisation…" }).click();
+  await expect.poll(async () => (await syncStore(page)).preferences).toEqual(["readingFont"]);
   await expect(dialog.getByText("Vos signets restent synchronisés.")).toBeVisible();
   await dialog.getByRole("button", { name: "Désactiver sur cet appareil" }).click();
   await expect(page.getByText("Synchronisation des préférences désactivée sur cet appareil", { exact: true })).toBeVisible();
