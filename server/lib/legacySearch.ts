@@ -3,7 +3,7 @@ import { normalizeSearchGreek } from "#shared/utils/searchGreek";
 /**
  * The former search links, `/q=<Greek form>`, kept for the links from other
  * sites (notably gaffiot.fr, towards the Greek words it cites). They now lead
- * to the entry of the form or, if several entries match, to the reader.
+ * to the entry of the form or, if several entries match, to the page of the form.
  */
 
 /**
@@ -96,7 +96,7 @@ export async function resolveLegacySearch(form: string, lookup: LegacyLookup): P
 /**
  * Where a former search leads: the page of its entry (a group of homonyms
  * being one entry; a homonym, to its anchor) or, for several entries, the
- * reader, titled with the form.
+ * form's page.
  * @param uris The entries' URIs (at least one).
  */
 export function legacySearchLocation(form: string, uris: readonly string[]): string {
@@ -105,5 +105,5 @@ export function legacySearchLocation(form: string, uris: readonly string[]): str
     return `/${encodeURIComponent(uri!)}${homonym ? `#${homonym}` : ""}`;
   }
 
-  return `/lecteur?q=${encodeURIComponent(uris.join(","))}&forme=${encodeURIComponent(form)}`;
+  return `/forme/${encodeURIComponent(form)}?q=${encodeURIComponent(uris.join(","))}`;
 }

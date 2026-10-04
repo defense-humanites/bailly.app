@@ -25,7 +25,7 @@ test.describe("former search links", () => {
 
   test("an inflected form with several lemmas leads to the reader", async ({ page }) => {
     await page.goto(path("πόλεις"));
-    await expect(page).toHaveURL(/\/lecteur\?q=.*&forme=/);
+    await expect(page).toHaveURL(/\/forme\/[^?]+\?q=/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("πόλεις");
   });
 

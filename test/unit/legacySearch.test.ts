@@ -74,6 +74,6 @@ describe("legacySearchLocation", () => {
 
   test("several entries: the reader, titled with the form", () => {
     expect(legacySearchLocation("χάρις", ["charis", "Charis"]))
-      .toBe(`/lecteur?q=charis%2CCharis&forme=${encodeURIComponent("χάρις")}`);
+      .toBe(`/forme/${encodeURIComponent("χάρις")}?q=charis%2CCharis`);
   });
 });

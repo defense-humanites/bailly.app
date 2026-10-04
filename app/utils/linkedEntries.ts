@@ -3,19 +3,20 @@
  * converter):
  * - `<a href="/uri">`: a link to a single entry;
  * - `<span data-linked-entries="uri1,uri2">`: an ambiguous form, which may
- *   belong to several entries: it is turned into a link to the reader;
+ *   belong to several entries: it is turned into a link to its page
+ *   (`formRoute`);
  * - `<span data-linked-self>`: a form of the current entry, left as is.
  */
 
 /**
- * The route of the reader, which shows several entries at once.
+ * The route of a form's page, which offers the entries it may belong to.
  * @param uris The URIs of the entries.
- * @param form The (ambiguous) form whose link led to the reader.
- * @example readerRoute(["hai_(1)", "ho_(1)"], "αἱ") // "/lecteur?q=hai_(1),ho_(1)&forme=%CE%B1%E1%BC%B1"
+ * @param form The (ambiguous) form whose link leads there.
+ * @example formRoute(["hai_(1)", "ho_(1)"], "αἱ") // "/forme/%CE%B1%E1%BC%B1?q=hai_(1),ho_(1)"
  */
-export function readerRoute(uris: string[], form?: string): string {
+export function formRoute(uris: string[], form?: string): string {
   const query = uris.map(uri => encodeURIComponent(uri).replace(/%2C/gi, ",")).join(",");
-  return `/lecteur?q=${query}${form ? `&forme=${encodeURIComponent(form)}` : ""}`;
+  return `/forme${form ? `/${encodeURIComponent(form)}` : ""}?q=${query}`;
 }
 
 const LINKED_ENTRIES_SPAN = /<span\b([^>]*?)\sdata-linked-entries="([^"]*)"([^>]*)>/g;
@@ -44,7 +45,7 @@ const escapeAttribute = (value: string): string => value.replace(/&/g, "&amp;").
  * @param options.links Whether to keep links: `false` turns them into spans,
  * e.g. when the whole definition is itself a link (links can't be nested).
  * @returns The HTML, where the ambiguous forms (`span[data-linked-entries]`)
- * link to the reader (keeping their attributes), or where no link remains.
+ * link to their form's page (keeping their attributes), or where no link remains.
  */
 export function linkDefinition(html: string, { links = true }: { links?: boolean } = {}): string {
   if (!links) {
@@ -64,7 +65,7 @@ export function linkDefinition(html: string, { links = true }: { links?: boolean
 
     const content = html.slice(contentStart, end - "</span>".length);
     const form = content.replace(/<[^>]*>/g, "").trim();
-    const href = readerRoute(uris.split(",").filter(Boolean), form || undefined);
+    const href = formRoute(uris.split(",").filter(Boolean), form || undefined);
 
     result += html.slice(position, match.index)
       + `<a href="${escapeAttribute(href)}"${before} data-linked-entries="${uris}"${after}>${content}</a>`;

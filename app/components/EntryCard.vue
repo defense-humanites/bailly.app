@@ -28,6 +28,11 @@
      */
     link?: boolean;
     /**
+     * If enabled, the definition has no links (e.g. when the card is inside
+     * a link of its own: links can't be nested).
+     */
+    noLinks?: boolean;
+    /**
      * `NuxtLink` prefetching options (only applies if the `link` property is enabled).
      * @remarks Defaults to `interaction`.
      */
@@ -53,7 +58,7 @@
   const excerptParts = (shown: DisplayedEntry) => splitExcerpt(shown.word, shown.excerpt || shown.word);
 
   const definitionHtml = (htmlDefinition: string): string =>
-    greek.html(linkDefinition(htmlDefinition, { links: !props.link }));
+    greek.html(linkDefinition(htmlDefinition, { links: !props.link && !props.noLinks }));
 
   /**
    * Follows the definition's internal links within the application, rather
@@ -74,6 +79,16 @@
 
   const [DefineEntryCard, ReuseEntryCard] = createReusableTemplate<{
     entry: DisplayedEntry;
+  }>();
+
+  /**
+   * The first card (of the homonyms, if any), where the `aside` slot goes.
+   */
+  const firstCard = computed((): DisplayedEntry => props.entry.children?.[0] ?? props.entry);
+
+  defineSlots<{
+    /** At the top right of the (first) card, the text wrapping around it (e.g. an icon). */
+    aside?: () => unknown;
   }>();
 </script>
 
@@ -113,6 +128,12 @@
         class="float-right"
         :class="[link ? 'ms-2 me-3 mt-3' : 'relative -top-3 -right-3']"
       />
+      <div
+        v-if="$slots.aside && shown.uri === firstCard.uri"
+        class="float-right ms-3"
+      >
+        <slot name="aside" />
+      </div>
 
       <NuxtLink
         v-if="link"

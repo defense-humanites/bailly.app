@@ -27,7 +27,7 @@ test.describe("transliterated Greek", () => {
     await searchInput(page).fill("logos");
     await expect(searchResults(page).getByRole("option", { name: /^logos, ou/ })).toBeVisible();
 
-    await goto(`/lecteur?q=hai_(1),ho_(1)&forme=${encodeURIComponent("αἱ")}`, { waitUntil: "hydration" });
+    await goto(`/forme/${encodeURIComponent("αἱ")}?q=hai_(1),ho_(1)`, { waitUntil: "hydration" });
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("hai");
     await expect(page.getByRole("heading", { level: 2 })).toHaveText(["hai", "ho"]);
   });
