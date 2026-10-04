@@ -83,7 +83,11 @@
 
   type Link = { label: string; href: string };
 
-  const credits: { title: string; authors: string; licence: string; links: Link[]; note?: string }[] = [
+  /**
+   * The credits: the authors on one line each, if several (e.g. libmorpheus:
+   * those of the original Morpheus, then its own).
+   */
+  const credits: { title: string; authors: string | string[]; licence: string; links: Link[]; note?: string }[] = [
     {
       title: "Application Bailly.app",
       authors: "Antoine Boquet & Benjamin Georges",
@@ -105,21 +109,11 @@
     },
     {
       title: "Analyseur morphologique libmorpheus",
-      authors: "Antoine Boquet",
+      authors: ["Gregory Crane et al., pour l'université Tufts (Perseus Digital Library)", "Antoine Boquet"],
       licence: "Mozilla Public License 2.0 et GNU Affero General Public License (MPL-2.0 et AGPL-3.0-or-later)",
       links: [
         { label: "Licence", href: "https://github.com/defense-humanites/libmorpheus#license" },
         { label: "Code source", href: "https://github.com/defense-humanites/libmorpheus" },
-      ],
-      note: "Modernise et étend l'analyseur Morpheus.",
-    },
-    {
-      title: "Analyseur morphologique Morpheus",
-      authors: "Gregory Crane et al., pour l'université Tufts (Perseus Digital Library)",
-      licence: "Mozilla Public License 2.0 (MPL-2.0)",
-      links: [
-        { label: "Licence", href: "https://www.mozilla.org/MPL/2.0/" },
-        { label: "Code source", href: "https://github.com/perseids-tools/morpheus" },
       ],
     },
     {
@@ -586,7 +580,12 @@
             <h3 class="font-bold tracking-wide [font-variant-caps:all-small-caps]">
               {{ credit.title }}
             </h3>
-            <p>{{ credit.authors }}</p>
+            <p
+              v-for="authors in [credit.authors].flat()"
+              :key="authors"
+            >
+              {{ authors }}
+            </p>
             <p class="text-muted">
               {{ credit.licence }}
             </p>
