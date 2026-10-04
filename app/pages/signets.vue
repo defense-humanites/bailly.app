@@ -245,14 +245,16 @@
               </UTooltip>
             </div>
           </template>
-          <p class="ms-12 text-terracotta-700 dark:text-terracotta-400">
-            Depuis la barre d'outils d'une entrée, ajoutez-la à vos favoris ou rangez-la sous
-            une étiquette : vous la retrouverez ici.
-            <template v-if="!syncEnabled">
-              Vos signets restent sur cet appareil ; synchronisez-les pour les retrouver sur vos
-              autres appareils.
-            </template>
-          </p>
+          <div class="ms-12 text-terracotta-700 dark:text-terracotta-400">
+            <p class="mb-2">
+              Depuis la barre d'outils d'une entrée, ajoutez-la à vos favoris ou rangez-la sous
+              une étiquette : vous la retrouverez ici.
+            </p>
+            <p>
+              Vos signets restent sur cet appareil par défaut, mais vous pouvez également
+              choisir de les synchroniser pour les retrouver sur vos autres appareils.
+            </p>
+          </div>
         </UCard>
 
         <!-- Favorites -->
