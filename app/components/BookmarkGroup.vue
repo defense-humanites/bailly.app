@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import type { ColorKey } from "~/enums";
   import { IdbTags, type IdbEntry, type IdbTagWithKey } from "~/idb";
-  import { comparableTagName, type RemovedRecords } from "~/idb/merge";
+  import { comparableTagName, type RemovedRecords, type TagKey } from "~/idb/merge";
 
   const bookmarksStore = useBookmarksStore();
 
@@ -254,7 +254,7 @@
    * Tells a deletion by a toast, which can undo it (as the description's):
    * the records come back as they were (cf. `IdbBookmarks.revive`).
    */
-  const toastUndo = (title: string, removed: RemovedRecords, description?: string): void => {
+  const toastUndo = (title: string, removed: RemovedRecords, description?: string, activeKey?: TagKey): void => {
     toast.add({
       title,
       description,
@@ -265,7 +265,10 @@
         color: "neutral",
         variant: "outline",
         onClick: () => {
-          void bookmarksStore.revive(removed);
+          void bookmarksStore.revive(removed).then((result) => {
+            // The tag active again if it was (cf. `onDeleteTag`).
+            if (result.state === "success" && activeKey) bookmarksStore.setCurrentTag(activeKey);
+          });
         },
       }],
     });
@@ -276,13 +279,14 @@
    * toast can undo it, rather than a confirmation asked first.
    */
   const onDeleteTag = async (): Promise<void> => {
-    const { name } = props.tag;
+    const { name, key } = props.tag;
     const count = props.entries.length;
-    const response = await bookmarksStore.removeTag(props.tag.key);
+    const wasActive = isActive.value;
+    const response = await bookmarksStore.removeTag(key);
     if (response.state !== "success") return;
     toastUndo(`Étiquette « ${name} » supprimée`, response.data, count
       ? `${count === 1 ? "L'entrée qu'elle référençait n'est" : `Les ${count} entrées qu'elle référençait ne sont`} plus étiquetée${count === 1 ? "" : "s"} ainsi.`
-      : undefined);
+      : undefined, wasActive ? key : undefined);
   };
 
   /**

@@ -45,44 +45,80 @@ export class IdbBookmarks {
    * entries, an entry), as they were, with a new stamp: their deletion is
    * undone on the other devices too (the latest version wins). An entry
    * keeps its place (`addedAt`). A record changed meanwhile (e.g. added
-   * again) is left as it is.
+   * again) is left as it is, and so is an entry whose tag is gone. Refused,
+   * leaving everything as it is, if a tag's name has been taken meanwhile,
+   * or beyond the limits (as an addition: cf. `Idb.config`).
    */
   static async revive(removed: RemovedRecords): Promise<IdbResult> {
     return attempt(async () => {
       const db = await Idb.getIndexedDB();
       const tx = db.transaction([IdbStore.Tags, IdbStore.Tagged, IdbStore.Starred, IdbStore.Meta], "readwrite");
-      const updatedAt = await Idb.stamp(tx.objectStore(IdbStore.Meta));
+      try {
+        const updatedAt = await Idb.stamp(tx.objectStore(IdbStore.Meta));
+        const { maxTags, tagMaxItems } = Idb.config;
 
-      const tags = tx.objectStore(IdbStore.Tags);
-      const live = (await tags.getAll()).filter(tag => !tag.deleted);
-      for (const tag of removed.tags) {
-        const stored = await tags.get(tag.key);
-        if (stored && !stored.deleted) continue;
-        if (live.some(other => comparableTagName(other.name) === comparableTagName(tag.name))) {
-          throw new IdbError(`Une autre étiquette s'appelle désormais « ${tag.name} ».`);
+        const tags = tx.objectStore(IdbStore.Tags);
+        const live = (await tags.getAll()).filter(tag => !tag.deleted);
+        const liveKeys = new Set(live.map(tag => tag.key));
+        const revivedTags = [];
+        for (const tag of removed.tags) {
+          if (liveKeys.has(tag.key)) continue;
+          if (live.some(other => comparableTagName(other.name) === comparableTagName(tag.name))) {
+            throw new IdbError(`Impossible d'annuler : une autre étiquette s'appelle désormais « ${tag.name} ».`);
+          }
+          revivedTags.push(tag);
         }
-        const { deleted: _deleted, ...record } = tag;
-        await tags.put({ ...record, updatedAt });
-      }
+        if (live.length + revivedTags.length > maxTags) {
+          throw new IdbError(`Impossible d'annuler : vous ne pouvez pas avoir plus de ${maxTags} étiquettes.`);
+        }
+        for (const tag of revivedTags) {
+          const { deleted: _deleted, ...record } = tag;
+          await tags.put({ ...record, updatedAt });
+          liveKeys.add(tag.key);
+        }
 
-      const tagged = tx.objectStore(IdbStore.Tagged);
-      for (const entry of removed.tagged) {
-        const stored = await tagged.get([entry.tagKey, entry.uri]);
-        if (stored && !stored.deleted) continue;
-        const { deleted: _deleted, ...record } = entry;
-        await tagged.put({ ...record, addedAt: entryAddedAt(entry), updatedAt });
-      }
+        const tagged = tx.objectStore(IdbStore.Tagged);
+        const revivedEntries = new Map<string, number>();
+        for (const entry of removed.tagged) {
+          // An entry whose tag is gone (deleted meanwhile, here or elsewhere).
+          if (!liveKeys.has(entry.tagKey)) continue;
+          const stored = await tagged.get([entry.tagKey, entry.uri]);
+          if (stored && !stored.deleted) continue;
+          const count = revivedEntries.get(entry.tagKey) ?? (await tagged.index("tagKey").getAll(entry.tagKey)).filter(record => !record.deleted).length;
+          if (count >= tagMaxItems) {
+            throw new IdbError(`Impossible d'annuler : une étiquette ne peut contenir plus de ${tagMaxItems} entrées.`);
+          }
+          revivedEntries.set(entry.tagKey, count + 1);
+          const { deleted: _deleted, ...record } = entry;
+          await tagged.put({ ...record, addedAt: entryAddedAt(entry), updatedAt });
+        }
 
-      const starred = tx.objectStore(IdbStore.Starred);
-      for (const entry of removed.starred) {
-        const stored = await starred.get(entry.uri);
-        if (stored && !stored.deleted) continue;
-        const { deleted: _deleted, ...record } = entry;
-        await starred.put({ ...record, addedAt: entryAddedAt(entry), updatedAt });
-      }
+        const starred = tx.objectStore(IdbStore.Starred);
+        let starredCount: number | undefined;
+        for (const entry of removed.starred) {
+          const stored = await starred.get(entry.uri);
+          if (stored && !stored.deleted) continue;
+          starredCount ??= (await starred.getAll()).filter(record => !record.deleted).length;
+          if (starredCount >= tagMaxItems) {
+            throw new IdbError(`Impossible d'annuler : les favoris ne peuvent contenir plus de ${tagMaxItems} entrées.`);
+          }
+          starredCount++;
+          const { deleted: _deleted, ...record } = entry;
+          await starred.put({ ...record, addedAt: entryAddedAt(entry), updatedAt });
+        }
 
-      await tx.done;
-      return undefined;
+        await tx.done;
+        return undefined;
+      } catch (e) {
+        // Nothing written (refused, or failed; already over if its commit
+        // failed).
+        try {
+          tx.abort();
+        } catch {
+          // Already over.
+        }
+        throw e;
+      }
     });
   }
 

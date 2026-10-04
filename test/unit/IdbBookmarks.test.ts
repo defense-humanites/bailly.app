@@ -37,6 +37,51 @@ test("the pinning of the tags is part of the state", async () => {
   expect((await IdbBookmarks.getState()).tags).toEqual([expect.objectContaining({ key: a.key, pinnedAt: pinned.pinnedAt })]);
 });
 
+test("revive undoes a deletion: the tag with its entries, an entry at its place", async () => {
+  const banquet = unwrap(await IdbTags.add(tags.banquet));
+  unwrap(await IdbTaggedEntry.add(entries.rhinokeros, banquet.key));
+  unwrap(await IdbStarred.add(entries.alopex));
+  const removedTag = unwrap(await IdbTags.remove(banquet.key));
+  const removedStar = unwrap(await IdbStarred.remove(entries.alopex.uri));
+
+  unwrap(await IdbBookmarks.revive(removedTag));
+  unwrap(await IdbBookmarks.revive(removedStar));
+  const state = await IdbBookmarks.getState();
+  expect(state.tags).toEqual([expect.objectContaining({ key: banquet.key, name: banquet.name, createdAt: banquet.createdAt })]);
+  expect(state.tags[0]).not.toHaveProperty("deleted");
+  expect(state.tagged).toEqual([expect.objectContaining({ uri: entries.rhinokeros.uri, word: entries.rhinokeros.word })]);
+  expect(state.tagged[0]).not.toHaveProperty("deleted");
+  // Later than the tombstone: it wins on the other devices too.
+  expect(state.tagged[0]!.updatedAt > removedTag.tags[0]!.updatedAt).toBe(true);
+  expect(state.starred).toEqual([expect.objectContaining({ uri: entries.alopex.uri, word: entries.alopex.word })]);
+});
+
+test("revive leaves out an entry whose tag is gone, and refuses a taken name or the limits", async () => {
+  Idb.configure({ maxTags: 1, tagMaxItems: 1 });
+  const banquet = unwrap(await IdbTags.add(tags.banquet));
+  unwrap(await IdbTaggedEntry.add(entries.rhinokeros, banquet.key));
+  const untagged = unwrap(await IdbTaggedEntry.remove(entries.rhinokeros.uri, banquet.key));
+  // Its tag deleted meanwhile: the entry stays detached.
+  const removedTag = unwrap(await IdbTags.remove(banquet.key));
+  unwrap(await IdbBookmarks.revive(untagged));
+  expect((await IdbBookmarks.getState()).tagged.every(record => record.deleted)).toBe(true);
+
+  // A tag of the same name created meanwhile: refused, nothing written.
+  const homonym = unwrap(await IdbTags.add({ name: tags.banquet.name }));
+  expect((await IdbBookmarks.revive(removedTag)).state).toBe("error");
+  expect((await IdbBookmarks.getState()).tags.filter(tag => !tag.deleted)).toEqual([expect.objectContaining({ key: homonym.key })]);
+
+  // Beyond the limits (one tag at most): refused.
+  unwrap(await IdbTags.update(homonym.key, { name: "Autre" }));
+  expect((await IdbBookmarks.revive(removedTag)).state).toBe("error");
+
+  // An entry beyond the limits (one per tag at most): refused.
+  unwrap(await IdbTaggedEntry.add(entries.alopex, homonym.key));
+  const removedAlopex = unwrap(await IdbTaggedEntry.remove(entries.alopex.uri, homonym.key));
+  unwrap(await IdbTaggedEntry.add(entries.rhinokeros, homonym.key));
+  expect((await IdbBookmarks.revive(removedAlopex)).state).toBe("error");
+});
+
 test("merge applies a remote state", async () => {
   const banquet = unwrap(await IdbTags.add(tags.banquet));
   unwrap(await IdbStarred.add(entries.alopex));

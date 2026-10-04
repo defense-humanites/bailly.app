@@ -430,6 +430,48 @@ test("a wrong clock on the device is reported", async ({ page, goto }) => {
   await expect(page.getByText("L'horloge de cet appareil semble en retard de 3 jours.")).toBeVisible();
 });
 
+// An undone deletion reaches the other devices, as the deletion did.
+test("a deletion undone is undone on the other devices too", async ({ page, goto, browser, baseURL }) => {
+  test.setTimeout(60_000);
+  await goto("/signets", { waitUntil: "hydration" });
+  await seedBookmarks(page, { tags: [{ name: "Homère", color: "Blue", entries: [logos] }] });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
+  const link = await syncLink(page);
+  const phone = await newDevice(browser, baseURL, "/");
+  await phone.goto(link!);
+  await phone.getByRole("button", { name: "Activer", exact: true }).click();
+  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  expect(await bookmarksState(phone)).toMatchObject({ tags: ["Homère"], tagged: 1 });
+
+  // The laptop deletes the tag (its store, as the page's button does), which
+  // reaches the phone…
+  await page.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as {
+      tags: { key: string }[];
+      removeTag: (key: string) => Promise<{ state: string; data: unknown }>;
+    };
+    (window as unknown as { removed: unknown }).removed = (await store.removeTag(store.tags[0]!.key)).data;
+  });
+  const phoneTags = async () => {
+    await phone.reload();
+    await waitForHydration(phone);
+    return (await bookmarksState(phone)).tags;
+  };
+  await expect.poll(phoneTags, { timeout: 15_000 }).toEqual([]);
+
+  // …then undoes it: the tag comes back on the phone, with its entry.
+  await page.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { revive: (removed: unknown) => Promise<unknown> };
+    await store.revive((window as unknown as { removed: unknown }).removed);
+  });
+  await expect.poll(phoneTags, { timeout: 15_000 }).toEqual(["Homère"]);
+  expect((await bookmarksState(phone)).tagged).toBe(1);
+});
+
 test("enabling a key again brings back the online bookmarks deleted meanwhile", async ({ page, goto, browser, baseURL }) => {
   test.setTimeout(60_000);
   await goto("/signets", { waitUntil: "hydration" });
