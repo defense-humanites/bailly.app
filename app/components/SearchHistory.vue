@@ -104,21 +104,27 @@
       <div @keydown="onKeydown">
         <h2
           id="search-history-title"
-          class="px-2 pt-1.5 pb-1 text-xs uppercase tracking-wide text-muted"
+          class="p-2 text-xs font-semibold uppercase tracking-wide text-muted"
         >
           Consultées récemment
         </h2>
 
         <p
           v-if="historyStore.loaded && !links.length"
-          class="px-2 py-1.5 text-sm text-muted"
+          class="p-2 text-sm text-muted"
         >
           Aucune entrée consultée pour l'instant.
         </p>
 
+        <!--
+          The rows as the search's results (cf. `SearchBar`): their padding,
+          and their highlight (hover, keyboard focus) on a pseudo-element
+          inset by 1px, with the same transition.
+        -->
         <ul
           v-else
           ref="list"
+          class="isolate"
         >
           <li
             v-for="link in links"
@@ -126,7 +132,7 @@
           >
             <NuxtLink
               :to="link.to"
-              class="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm outline-none hover:bg-(--app-highlight) focus-visible:bg-elevated"
+              class="relative flex items-start gap-2 p-2 text-sm text-default outline-none transition-colors before:absolute before:inset-px before:-z-1 before:rounded-md before:transition-colors hover:text-highlighted hover:before:bg-(--app-highlight) focus-visible:text-highlighted focus-visible:before:bg-(--app-highlight)"
             >
               <span class="line-clamp-2 grow font-serif text-sm/6"><span class="font-semibold">{{ greek.text(link.word) }}</span>{{ greek.text(link.rest) }}</span>
               <EntryBookmarkIndicator
