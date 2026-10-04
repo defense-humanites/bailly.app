@@ -56,13 +56,6 @@ export function useAppShell(): void {
       }),
       { rel: "icon", type: "image/png", href: "/favicon/favicon-96x96.png" },
       { rel: "icon", type: "image/svg+xml", href: "/favicon/favicon.svg" },
-      { rel: "icon", type: "image/x-icon", href: "/favicon/favicon.ico" },
-      {
-        rel: "icon",
-        type: "image/x-icon",
-        href: "/favicon/favicon-dark.ico",
-        media: "(prefers-color-scheme: dark)",
-      },
       { rel: "manifest", href: "/site.webmanifest" },
       {
         rel: "apple-touch-icon",
