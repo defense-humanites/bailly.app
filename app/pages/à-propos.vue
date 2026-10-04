@@ -51,16 +51,16 @@
       text: "En grec, en beta code ou en translittération : les résultats s'affichent dès la première lettre.",
     },
     inflected: {
-      title: "Les formes fléchies aussi",
-      text: "L'analyseur morphologique libmorpheus, issu de Morpheus, retrouve le lemme d'une forme conjuguée ou déclinée.",
+      title: "Atteignez les entrées à partir des formes fléchies",
+      text: "L'analyseur morphologique intégré à la recherche retrouve le lemme d'une forme conjuguée ou déclinée.",
     },
     bookmarks: {
       title: "Vos signets, sur tous vos appareils",
-      text: "Classez vos entrées par étiquettes, et synchronisez-les, chiffrées, sans créer de compte.",
+      text: "Classez vos entrées par étiquettes, et synchronisez-les de manière chiffrée, sans avoir à créer de compte.",
     },
     reading: {
-      title: "Une lecture à votre main",
-      text: "Cinq polices, quatre tailles de texte, et la translittération du grec si vous le souhaitez.",
+      title: "Une lecture sur mesure",
+      text: "Cinq polices, quatre tailles de texte, deux graisses et la translittération du grec au besoin.",
     },
   };
 
@@ -105,11 +105,11 @@
 
   const credits: { title: string; authors: string | string[]; contributors?: string[]; licence: string; links: Link[]; note?: string }[] = [
     {
-      title: "Application Bailly.app",
+      title: "Application Bailly (bailly.app)",
       authors: "Antoine Boquet & Benjamin Georges",
       licence: "GNU Affero General Public License (AGPL-3.0-or-later)",
       links: [
-        { label: "Licence", href: "/COPYING" },
+        { label: "Licence", href: "https://github.com/defense-humanites/bailly.app/#licence" },
         { label: "Code source", href: "https://github.com/defense-humanites/bailly.app" },
       ],
     },
@@ -126,7 +126,7 @@
     },
     {
       title: "Analyseur morphologique libmorpheus",
-      authors: ["Gregory Crane et al., pour l'université Tufts (Perseus Digital Library)", "Antoine Boquet"],
+      authors: ["Gregory Crane et al. pour le code originel de Morpheus", "Antoine Boquet pour les apports propres à libmorpheus"],
       licence: "Mozilla Public License 2.0 et GNU Affero General Public License (MPL-2.0 et AGPL-3.0-or-later)",
       links: [
         { label: "Licence", href: "https://github.com/defense-humanites/libmorpheus#license" },
@@ -136,9 +136,9 @@
     {
       title: "Conversion du grec (greek-conversion)",
       authors: "Antoine Boquet",
-      licence: "GNU Affero General Public License (AGPL-3.0-or-later)",
+      licence: "MIT (MIT License)",
       links: [
-        { label: "Licence", href: "https://www.gnu.org/licenses/agpl-3.0.fr.html" },
+        { label: "Licence", href: "https://github.com/defense-humanites/greek-conversion#license" },
         { label: "Code source", href: "https://github.com/defense-humanites/greek-conversion" },
       ],
       note: "Beta code, translittération et grec, dans la recherche et l'affichage.",
@@ -453,8 +453,11 @@
                   href="http://gerardgreco.free.fr/spip.php?article24"
                   target="_blank"
                   rel="noopener"
-                >édition PDF</a>, mise en page comme l'ouvrage d'origine, est disponible sur le site du
-                projet.
+                >édition PDF</a> est disponible sur le site du projet.
+              </p>
+              <p class="mt-2 text-sm text-muted font-semibold">
+                Les erreurs du texte se signalent à l'équipe de M.&nbsp;Gréco, en précisant l'entrée
+                concernée.
               </p>
               <div class="mt-4 flex flex-wrap gap-2 *:max-w-full max-md:justify-center">
                 <UButton
@@ -473,10 +476,6 @@
                   label="Notice de l'édition"
                 />
               </div>
-              <p class="mt-2 text-sm text-muted">
-                Les erreurs du texte se signalent à l'équipe de M.&nbsp;Gréco, en précisant l'entrée
-                concernée.
-              </p>
             </div>
           </article>
 
@@ -518,12 +517,14 @@
             </div>
             <div class="min-w-0 max-md:text-center">
               <h3 class="font-serif text-lg/8 font-bold">
-                L'application Bailly.app
+                L'application Bailly
               </h3>
               <p class="mt-2 text-muted">
-                Nous ne modifions pas le texte : nous le rendons consultable, avec la recherche,
-                l'analyse des formes fléchies, les signets et les réglages de lecture. L'application est
-                un logiciel libre.
+                Nous ne modifions pas le texte, mais nous le rendons consultable partout
+                ou presque, avec la recherche, l'analyse des formes fléchies, les signets
+                et les réglages de lecture. L'application est un logiciel libre, maintenu
+                de façon bénévole, régulièrement mis à jour et ouvert à vos suggestions
+                et contributions.
               </p>
               <div class="mt-4 flex flex-wrap gap-2 *:max-w-full max-md:justify-center">
                 <UButton
@@ -557,7 +558,7 @@
         >
           Ressources
         </h2>
-        <ol class="mx-auto max-w-2xl">
+        <ol class="mx-auto max-w-2xl text-center">
           <li
             v-for="resource in resources"
             :key="resource.href"
@@ -610,8 +611,7 @@
               <UModal
                 v-if="credit.contributors"
                 :title="`Contributeurs au ${credit.title}`"
-                :description="`${credit.contributors.length} contributeurs, aux côtés de ses auteurs.`"
-                :ui="{ content: 'sm:max-w-2xl', title: 'pe-8' }"
+                :ui="{ content: 'sm:max-w-2xl text-center', title: 'pe-8' }"
               >
                 <button
                   type="button"
@@ -658,7 +658,7 @@
             </p>
           </div>
           <p class="text-muted">
-            Ce que l'application garde de vos données, et où :
+            Concernant l'usage de vos données :
             <NuxtLink
               :to="encodeURI('/confidentialité')"
               class="underline decoration-dotted underline-offset-4 hover:text-primary"
