@@ -126,7 +126,7 @@
         v-if="toolbar"
         :entry="shown"
         class="float-right"
-        :class="[link ? 'ms-2 me-3 mt-3' : 'relative -top-3 -right-3']"
+        :class="[link ? 'ms-2 me-3 mt-3' : 'relative -top-1 -right-1 sm:-top-3 sm:-right-3']"
       />
       <div
         v-if="$slots.aside && shown.uri === firstCard.uri"
