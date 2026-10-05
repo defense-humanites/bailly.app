@@ -63,30 +63,32 @@
         For the readers who don't read Greek: the transliteration preference,
         whose effect shows at once on the opened entry (and is saved). First
         in the markup, to float on the right on a tablet (the title and the
-        text around it); last in the column from `lg`.
+        text around it); last in the column from `lg`. The whole block is
+        the switch's label: a click anywhere toggles it (the focus stays on
+        the switch, its name and description given by the texts' ids).
       -->
-      <div class="order-2 flex w-full items-start gap-3 rounded-lg bg-default/60 px-4 py-3 ring-1 ring-default md:order-none md:float-right md:mb-4 md:ms-8 md:w-72 lg:float-none lg:order-last lg:m-0 lg:mt-3 lg:w-auto">
+      <label class="order-2 flex w-full cursor-pointer items-start gap-3 rounded-lg bg-default/60 px-4 py-3 ring-1 ring-default transition-colors pointer-fine:hover:bg-default md:order-none md:float-right md:mb-4 md:ms-8 md:w-72 lg:float-none lg:order-last lg:m-0 lg:mt-3 lg:w-auto">
         <USwitch
           v-model="transliterateGreek"
           aria-labelledby="translitteration"
           aria-describedby="translitteration-help"
           class="mt-0.5"
         />
-        <div class="text-sm">
-          <p
+        <span class="block text-sm">
+          <span
             id="translitteration"
-            class="font-medium"
+            class="block font-medium"
           >
             Vous ne lisez pas le grec ?
-          </p>
-          <p
+          </span>
+          <span
             id="translitteration-help"
-            class="text-muted"
+            class="block text-muted"
           >
             Affichez-le en caractères latins.
-          </p>
-        </div>
-      </div>
+          </span>
+        </span>
+      </label>
       <!--
         The news and the donation (on mobile, the header's icons), once
         offered (cf. `FEATURES`).
