@@ -103,7 +103,7 @@
     "Marie-Dominique Simon", "Anne-Laure Viger", "Christine Vulliard",
   ];
 
-  const credits: { title: string; authors: string | string[]; contributors?: string[]; licence: string; links: Link[]; note?: string }[] = [
+  const credits: { title: string; description?: string; authors: string | string[]; contributors?: string[]; licence: string; links: Link[]; note?: string }[] = [
     {
       title: "Application Bailly (bailly.app)",
       authors: "Antoine Boquet & Benjamin Georges",
@@ -126,7 +126,10 @@
     },
     {
       title: "Analyseur morphologique libmorpheus",
-      authors: ["Gregory Crane et al. pour le code originel de Morpheus", "Antoine Boquet pour les apports propres à libmorpheus"],
+      description: "Lemmatisation des mots recherchés",
+      authors: [
+        "Gregory Crane et al. pour le code originel de Morpheus",
+        "Antoine Boquet pour les composants originaux de libmorpheus"],
       licence: "Mozilla Public License 2.0 et GNU Affero General Public License (MPL-2.0 et AGPL-3.0-or-later)",
       links: [
         { label: "Licence", href: "https://github.com/defense-humanites/libmorpheus#license" },
@@ -134,14 +137,14 @@
       ],
     },
     {
-      title: "Conversion du grec (greek-conversion)",
+      title: "Convertisseur greek-conversion",
+      description: "Beta code, translittération et grec, dans la recherche et l'affichage",
       authors: "Antoine Boquet",
-      licence: "MIT (MIT License)",
+      licence: "MIT License",
       links: [
         { label: "Licence", href: "https://github.com/defense-humanites/greek-conversion#license" },
         { label: "Code source", href: "https://github.com/defense-humanites/greek-conversion" },
       ],
-      note: "Beta code, translittération et grec, dans la recherche et l'affichage.",
     },
   ];
 </script>
@@ -591,7 +594,7 @@
         >
           Crédits et licences
         </h2>
-        <div class="colophon mx-auto max-w-xl text-center font-serif text-sm/6">
+        <div class="colophon mx-auto max-w-3xl text-center font-serif text-sm/6">
           <div
             v-for="credit in credits"
             :key="credit.title"
@@ -599,6 +602,12 @@
             <h3 class="font-bold tracking-wide [font-variant-caps:all-small-caps]">
               {{ credit.title }}
             </h3>
+            <p
+              v-if="credit.description"
+              class="[font-variant-caps:all-small-caps]"
+            >
+              {{ credit.description }}
+            </p>
             <p
               v-for="authors in [credit.authors].flat()"
               :key="authors"
@@ -641,8 +650,8 @@
               {{ credit.licence }}
             </p>
             <p
-              v-if="credit.note"
-              class="text-muted"
+                v-if="credit.note"
+                class="text-muted"
             >
               {{ credit.note }}
             </p>
