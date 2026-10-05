@@ -55,6 +55,6 @@
     "fsevents@2.3.3": true,
     "unrs-resolver@1.12.2": true,
     "esbuild@0.28.1": true,
-    "workerd@1.20260925.1": true
+    "workerd@1.20261001.1": true
   }
 }
