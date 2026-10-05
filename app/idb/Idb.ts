@@ -256,7 +256,7 @@ type UpgradeTransaction = IDBPTransaction<BaillyDB, StoreNames<BaillyDB>[], "ver
  */
 async function readLegacyData(transaction: UpgradeTransaction): Promise<LegacyData> {
   // The stores still have their version 3 shape: they are read untyped.
-  const store = (name: string) => transaction.objectStore(name as IdbStore.Tags);
+  const store = (name: IdbStore) => transaction.objectStore(name as IdbStore.Tags);
   const tagKeys = (await store(IdbStore.Tags).getAllKeys()) as unknown as number[];
   const tagValues = (await store(IdbStore.Tags).getAll()) as unknown as LegacyTag[];
 

@@ -42,6 +42,9 @@ enum Encoding {
   GzipAuthenticated = 3,
 }
 
+/** Whether a blob's first byte is a known encoding. */
+const isEncoding = (value: number | undefined): value is Encoding => value !== undefined && value in Encoding;
+
 /**
  * The additional (authenticated, not encrypted) data of a blob.
  */
@@ -93,8 +96,8 @@ export async function encryptText(text: string, { key, lockerId }: SyncCredentia
  */
 export async function decryptText(blob: string, { key, lockerId }: SyncCredentials): Promise<string> {
   const bytes = fromBase64url(blob);
-  const encoding = bytes[0] as Encoding;
-  if (!(encoding in Encoding)) throw new Error("Unknown encoding.");
+  const encoding = bytes[0];
+  if (!isEncoding(encoding)) throw new Error("Unknown encoding.");
   const iv = bytes.slice(1, 1 + IV_LENGTH);
   const content = new Uint8Array(await crypto.subtle.decrypt(
     { name: "AES-GCM", iv, additionalData: additionalData(lockerId, encoding) },
