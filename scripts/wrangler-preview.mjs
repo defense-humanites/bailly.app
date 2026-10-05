@@ -14,8 +14,8 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 const PREVIEW = {
-  name: "bailly-app-preview",
-  host: "nuxt.bailly.app",
+  name: "bailly-app-nuxt-preview",
+  host: "pre.bailly.app",
   database: { name: "bailly-sync-preview", id: "e49c1937-0c29-44f7-914c-c7312eff1e86" },
 };
 
