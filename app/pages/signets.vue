@@ -63,6 +63,11 @@
   const createTag = useTemplateRef<{ open: () => void }>("createTag");
   const syncButton = useTemplateRef<{ open: () => void }>("syncButton");
   const filesMenu = useTemplateRef<{ open: () => void }>("filesMenu");
+  /**
+   * The marks named in the introduction (the favorites' star, the active
+   * tag's selected radio button), in the line.
+   */
+  const INLINE_ICON = "inline-block size-4 align-[-0.15em]";
   const INLINE_BUTTON = "inline-flex h-6 cursor-pointer items-center gap-1 rounded-sm bg-default px-1.5 align-[-0.3em] text-sm font-medium text-default ring ring-inset ring-accented transition-colors hover:bg-elevated focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)";
 
   /**
@@ -260,7 +265,8 @@
             </div>
           </template>
           <!--
-            What the bookmarks are (a tag is created here first); that they
+            What the bookmarks are (a tag is created here first; the active
+            tag, with its mark, cf. the bar's select menu); that they
             live in this browser only, and may be lost; the two ways to keep
             them: the synchronization and a file. The bar's field and buttons
             named as there, with their icons (they show alone there below
@@ -270,15 +276,27 @@
           -->
           <div class="ms-12 text-marble-700 dark:text-marble-400 font-medium">
             <p class="mb-2">
-              Les entrées que vous ajoutez à vos favoris depuis leur barre d'outils se retrouvent
-              ici, comme celles que vous rangez sous une étiquette : créez d'abord une
+              Les entrées que vous ajoutez à vos
+              <span class="whitespace-nowrap"><UIcon
+                name="i-bailly-star-filled"
+                data-tag-color="Yellow"
+                :class="INLINE_ICON"
+                class="text-tag-text"
+              /> favoris</span>
+              depuis leur barre d'outils se retrouvent ici, comme celles que vous rangez sous une
+              étiquette : créez d'abord une
               <button
                 type="button"
                 :class="INLINE_BUTTON"
                 @click="createTag?.open()"
               >
                 Nouvelle étiquette
-              </button>.
+              </button>. L'étiquette
+              <span class="whitespace-nowrap">active <UIcon
+                name="i-lucide-circle-dot"
+                :class="INLINE_ICON"
+              /></span>, que vous choisissez ci-dessus ou sur son bloc, est proposée dans la barre
+              d'outils de chaque entrée : un clic suffit pour la lui attribuer.
             </p>
             <p class="mb-2">
               Vos signets sont enregistrés dans ce navigateur,
