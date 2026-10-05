@@ -937,6 +937,16 @@
               Sur votre autre appareil, scannez ce QR code avec l'appareil photo, ou saisissez les douze mots
               (« Synchronisation » > « J'ai déjà une clé »).
             </p>
+            <!--
+              The QR code opens in Safari: an application installed on an
+              iPhone or iPad's home screen keeps its own storage (cf.
+              `useInstalledOnIos`), where the words are to be typed.
+            -->
+            <p class="text-muted">
+              Sur iPhone et iPad, l'application ajoutée à l'écran d'accueil garde ses données à part
+              de Safari, où l'appareil photo ouvre le QR code : dans l'application, saisissez plutôt
+              les douze mots.
+            </p>
             <!-- Hidden until asked: whoever sees the words can read and change the bookmarks. -->
             <div
               v-if="!keyRevealed"

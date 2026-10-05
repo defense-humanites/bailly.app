@@ -54,6 +54,7 @@
    * cf. `SyncButton`). The former single introduction, once dismissed,
    * dismisses both.
    */
+  const installedOnIos = useInstalledOnIos();
   const introDismissed = useDismissed("bookmarksIntro");
   const guideDismissed = useDismissed("bookmarksGuide");
   const keepDismissed = useDismissed("bookmarksKeep");
@@ -336,6 +337,19 @@
             <strong class="font-bold">sur cet appareil seulement</strong> : effacer les données de
             navigation les supprime, et le navigateur peut aussi les effacer de lui-même si son
             espace de stockage vient à manquer.
+          </p>
+          <!--
+            Installed on an iPhone or iPad's home screen, the application keeps
+            its own storage, apart from Safari's: its bookmarks aren't those of
+            Safari (cf. `useInstalledOnIos`).
+          -->
+          <p
+            v-if="installedOnIos"
+            class="mb-2"
+          >
+            Sur iPhone et iPad, l'application ajoutée à l'écran d'accueil garde ses propres
+            signets, à part de ceux de Safari : synchronisez-les pour les retrouver de part et
+            d'autre.
           </p>
           <p class="mb-2">
             Pour ne pas les perdre, vous pouvez les <button
