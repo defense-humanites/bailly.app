@@ -34,7 +34,6 @@
     ? {
       data: "vos signets",
       Data: "Vos signets",
-      encrypted: "Vos signets sont chiffrés sur l'appareil avant d'être envoyés",
       upToDate: "Signets à jour",
       synced: "Signets synchronisés.",
       intro: "Retrouvez vos signets sur tous vos appareils (ordinateur, téléphone…), sans créer de compte.",
@@ -51,7 +50,6 @@
     : {
       data: "vos préférences",
       Data: "Vos préférences",
-      encrypted: "Vos préférences sont chiffrées sur l'appareil avant d'être envoyées",
       upToDate: "Préférences à jour",
       synced: "Préférences synchronisées.",
       intro: "Retrouvez vos préférences sur tous vos appareils (ordinateur, téléphone…), sans créer de compte.",
@@ -712,20 +710,6 @@
           <p>
             {{ texts.intro }}
           </p>
-          <p v-if="!enabled">
-            Une <strong>clé de douze mots</strong> relie vos appareils. {{ texts.encrypted }} : sans la clé,
-            personne ne peut les lire, pas même Bailly.app.
-            <!--
-              What is kept online, and for how long: the privacy page's
-              section, in a new tab (the window stays, the steps unbroken).
-            -->
-            <NuxtLink
-              :to="`${encodeURI('/confidentialité')}#synchronisation`"
-              target="_blank"
-              rel="noopener"
-              class="font-medium text-highlighted underline decoration-dotted underline-offset-3 hover:text-secondary focus-visible:outline-2 focus-visible:outline-secondary"
-            >Vos données en détail<span class="sr-only"> (nouvel onglet)</span></NuxtLink>.
-          </p>
 
           <!--
             The preferences to synchronize: those offered (by default),
@@ -838,7 +822,17 @@
               name="i-lucide-calendar-clock"
               class="mt-0.5 size-4 shrink-0"
             />
-            <span>La copie en ligne est effacée après 18 mois sans aucune synchronisation.</span>
+            <!--
+              What is kept online, and for how long: the privacy page's
+              section, in a new tab (the window stays, the steps unbroken).
+            -->
+            <span>La copie en ligne est effacée après 18 mois sans aucune synchronisation.
+              <NuxtLink
+                :to="`${encodeURI('/confidentialité')}#synchronisation`"
+                target="_blank"
+                rel="noopener"
+                class="font-medium text-highlighted underline decoration-dotted underline-offset-3 hover:text-secondary focus-visible:outline-2 focus-visible:outline-secondary"
+              >En savoir plus<span class="sr-only"> (nouvel onglet)</span></NuxtLink></span>
           </p>
         </template>
 
