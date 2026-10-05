@@ -135,11 +135,15 @@
       :shown="compactBarShown"
     />
     <header ref="title">
+      <!--
+        The links' hover is the header menu's (`bg-elevated`, Nuxt UI's, is
+        the page's own color in the light theme).
+      -->
       <UNavigationMenu
         :ui="{
           root: '[&>div]:w-full',
           item: '[&:not(:has(h1))]:flex-1 [&:has(h1)]:grow',
-          link: 'font-serif font-bold text-base/7',
+          link: 'font-serif font-bold text-base/7 hover:before:bg-(--app-page-hover)/50',
           linkLabel: 'grow',
         }"
         :items="items"
