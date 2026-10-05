@@ -291,7 +291,10 @@
                 :class="INLINE_BUTTON"
                 @click="createTag?.open()"
               >
-                Nouvelle étiquette
+                <UIcon
+                  name="i-lucide-tag-plus"
+                  class="size-4 shrink-0"
+                />Nouvelle étiquette
               </button>. L'étiquette
               <span class="whitespace-nowrap">active <UIcon
                 name="i-bailly-circle-dot-bold"
