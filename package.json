@@ -18,11 +18,12 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@humanities/greek-conversion": "^1.0.0-beta.6",
-    "@nuxt/ui": "^4.11.2",
+    "@humanities/greek-conversion": "^1.0.0-beta.9",
+    "@nuxt/ui": "^4.11.3",
     "@pinia/nuxt": "^1.0.2",
     "@scure/bip39": "^2.4.0",
     "@vueuse/nuxt": "^15.0.0",
+    "h3": "^1.15.11",
     "idb": "^8.0.3",
     "nuxt": "^4.5.2",
     "pinia": "^4.0.3",
@@ -33,20 +34,20 @@
     "vue-router": "^5.3.1"
   },
   "devDependencies": {
-    "@iconify-json/lucide": "^1.2.136",
+    "@iconify-json/lucide": "^1.2.140",
     "@nuxt/eslint": "^1.17.0",
-    "@nuxt/test-utils": "^4.3.2",
+    "@nuxt/test-utils": "^4.3.3",
     "@playwright/test": "^1.63.0",
-    "@types/node": "^22.20.4",
+    "@types/node": "^22.20.5",
     "@vue/test-utils": "^2.5.1",
-    "eslint": "^10.11.0",
+    "eslint": "^10.12.0",
     "fake-indexeddb": "^6.2.5",
     "fast-check": "^4.10.2",
     "happy-dom": "^20.14.5",
     "typescript": "~6.0.3",
-    "vitest": "^5.0.1",
-    "vue-tsc": "^3.3.11",
-    "wrangler": "^4.141.0"
+    "vitest": "^5.0.3",
+    "vue-tsc": "^3.3.12",
+    "wrangler": "^4.147.0"
   },
   "allowScripts": {
     "vue-demi@0.14.10": true,
