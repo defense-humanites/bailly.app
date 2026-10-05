@@ -140,7 +140,9 @@ export function workCitation(style: CitationStyle, { version = DATA_VERSION, acc
         { italic: "Dictionnaire grec-français" },
         `. 1894. Sous la direction de Gérard Gréco, avec le concours d'André Charbonnet et al., ${edition}. `,
         { italic: "Bailly.app" },
-        `, par Antoine Boquet et Benjamin Georges, Association pour la défense des humanités, bailly.app. Consulté le ${accessDate(accessed)}.`,
+        // The site as a second container: its title and address, its publisher
+        // (the association, not the persons: as in the other styles).
+        `, Association pour la défense des humanités, bailly.app. Consulté le ${accessDate(accessed)}.`,
       ]);
     case "iso":
       return render([
