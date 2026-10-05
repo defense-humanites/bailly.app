@@ -65,10 +65,11 @@
   const filesMenu = useTemplateRef<{ open: () => void }>("filesMenu");
   /**
    * The marks named in the introduction (the favorites' star, the active
-   * tag's selected radio button), in the line.
+   * tag's selected radio button, bolder to stand out in the text), in the
+   * line.
    */
   const INLINE_ICON = "inline-block size-4 align-[-0.15em]";
-  const INLINE_BUTTON = "inline-flex h-6 cursor-pointer items-center gap-1 rounded-sm bg-default px-1.5 align-[-0.3em] text-sm font-medium text-default ring ring-inset ring-accented transition-colors hover:bg-elevated focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)";
+  const INLINE_BUTTON = "inline-flex h-6 cursor-pointer items-center gap-1 rounded-sm bg-default px-1.5 align-middle text-sm font-medium text-default ring ring-inset ring-accented transition-colors hover:bg-elevated focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)";
 
   /**
    * The tags to choose the active one from, in their order; from
@@ -293,10 +294,12 @@
                 Nouvelle étiquette
               </button>. L'étiquette
               <span class="whitespace-nowrap">active <UIcon
-                name="i-lucide-circle-dot"
+                name="i-bailly-circle-dot-bold"
                 :class="INLINE_ICON"
-              /></span>, que vous choisissez ci-dessus ou sur son bloc, est proposée dans la barre
-              d'outils de chaque entrée : un clic suffit pour la lui attribuer.
+              /></span>
+              (la dernière créée, ou celle que vous choisissez ci-dessus ou sur son bloc) est
+              proposée dans la barre d'outils de chaque entrée : un clic suffit pour la lui
+              attribuer.
             </p>
             <p class="mb-2">
               Vos signets sont enregistrés dans ce navigateur,
