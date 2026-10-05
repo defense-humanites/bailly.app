@@ -243,14 +243,38 @@
               </UTooltip>
             </div>
           </template>
+          <!--
+            What the bookmarks are; that they live in this browser only, and
+            may be lost; the two ways to keep them: the synchronization and
+            a file. The buttons named with their icons, as in the bar (where
+            they show alone below `xl`).
+          -->
           <div class="ms-12 text-marble-700 dark:text-marble-400 font-semibold">
             <p class="mb-2">
               Depuis la barre d'outils d'une entrée, ajoutez-la à vos favoris ou rangez-la sous
               une étiquette : vous la retrouverez ici.
             </p>
+            <p class="mb-2">
+              Vos signets sont enregistrés dans ce navigateur,
+              <strong class="font-bold">sur cet appareil seulement</strong>. Ils peuvent disparaître
+              si vous effacez l'historique ou les données de navigation ; certains navigateurs, comme
+              Safari, les effacent aussi d'eux-mêmes après quelques jours sans visite.
+            </p>
+            <p class="mb-2">
+              Pour ne pas les perdre, activez la synchronisation (bouton
+              <span class="whitespace-nowrap font-bold"><UIcon
+                name="i-lucide-cloud-upload"
+                class="me-1 inline-block size-[1.1em] align-[-0.2em]"
+              />Synchroniser</span>) : vos signets sont alors sauvegardés en ligne et vous les
+              retrouvez sur vos autres appareils et navigateurs.
+            </p>
             <p>
-              Vos signets restent sur cet appareil par défaut, mais vous pouvez également
-              choisir de les synchroniser pour les retrouver sur vos autres appareils.
+              Vous pouvez aussi les enregistrer dans un fichier (menu
+              <span class="whitespace-nowrap font-bold"><UIcon
+                name="i-lucide-folder-open"
+                class="me-1 inline-block size-[1.1em] align-[-0.2em]"
+              />Fichiers</span>) : gardez-le en lieu sûr, puis importez-le pour les rétablir ici ou
+              les transférer ailleurs.
             </p>
           </div>
         </UCard>

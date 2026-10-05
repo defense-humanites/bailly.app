@@ -490,13 +490,14 @@ test.describe("bookmarks page, pinning and scrolling", () => {
     // Pointed out, as from the table of contents.
     await expect(last).toHaveAttribute("data-card-highlight", "");
 
-    await page.evaluate(() => {
-      document.getElementById("page")!.scrollTo(0, 0);
-    });
+    // Unpinned (the button in view, the page still): the page doesn't follow it.
+    await pin.scrollIntoViewIfNeeded();
+    const scrollTop = () => page.evaluate(() => document.getElementById("page")!.scrollTop);
+    const before = await scrollTop();
     await pin.click();
     await expect(pin).toHaveAttribute("aria-pressed", "false");
     await page.waitForTimeout(500);
-    expect(await page.evaluate(() => document.getElementById("page")!.scrollTop)).toBe(0);
+    expect(await scrollTop()).toBe(before);
     await expect(last).not.toBeInViewport();
   });
 });
