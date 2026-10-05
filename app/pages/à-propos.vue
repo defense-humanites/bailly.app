@@ -124,7 +124,7 @@
         { label: "Fonte", href: "https://software.sil.org/gentium/" },
       ],
     },
-    ...["Didot", "Artemisia", "Bodoni", "Neohellenic"].map((name): FontCredit => ({
+    ...["Artemisia", "Bodoni", "Didot", "Neohellenic"].map((name): FontCredit => ({
       title: `GFS ${name}`,
       description: "Fonte de lecture au choix",
       authors: "Greek Font Society",
@@ -184,7 +184,7 @@
         { label: "Licence", href: "https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" },
         { label: "Source", href: "http://gerardgreco.free.fr/spip.php?article24" },
       ],
-      note: "Version des données : 28 février 2023.",
+      note: "Version des données : 28 février 2023",
     },
     {
       title: "Analyseur morphologique libmorpheus",
