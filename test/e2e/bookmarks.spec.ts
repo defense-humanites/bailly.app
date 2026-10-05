@@ -502,9 +502,10 @@ test.describe("bookmarks page, pinning and scrolling", () => {
     await seedBookmarks(page, {
       tags: Array.from({ length: 12 }, (_, i) => ({ name: `Étiquette ${String(i + 1).padStart(2, "0")}`, color: "Sky", entries: [logos] })),
     });
-    const last = card(page, "Étiquette 12");
+    // The last card, by latest addition (the default): the first created.
+    const last = card(page, "Étiquette 01");
     await last.scrollIntoViewIfNeeded();
-    const pin = page.getByRole("button", { name: "Épingler l'étiquette « Étiquette 12 »" });
+    const pin = page.getByRole("button", { name: "Épingler l'étiquette « Étiquette 01 »" });
     await pin.click();
     await expect(pin).toHaveAttribute("aria-pressed", "true");
     // Followed: under the header and the table of contents, at the top.
@@ -567,7 +568,8 @@ test.describe("bookmarks page, sorting and pinning", () => {
         { name: "Gamma", color: "Sky", entries: [logos] },
       ],
     });
-    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Alpha", "Bêta", "Gamma"]);
+    // By latest addition by default.
+    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Gamma", "Alpha", "Bêta"]);
 
     const sortBy = async (label: string): Promise<void> => {
       await page.getByRole("button", { name: "Affichage" }).click();
@@ -575,15 +577,15 @@ test.describe("bookmarks page, sorting and pinning", () => {
     };
     await sortBy("Par nombre d'entrées");
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Gamma", "Alpha"]);
-    await sortBy("Par ajout récent");
-    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Gamma", "Alpha", "Bêta"]);
+    await sortBy("Par nom");
+    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Alpha", "Bêta", "Gamma"]);
     await page.getByRole("button", { name: "Affichage" }).click();
-    await expect(page.getByRole("menuitemcheckbox", { name: "Par ajout récent" })).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByRole("menuitemcheckbox", { name: "Par nom", exact: true })).toHaveAttribute("aria-checked", "true");
     await page.keyboard.press("Escape");
 
     // Kept on the device.
     await page.reload();
-    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Gamma", "Alpha", "Bêta"]);
+    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Alpha", "Bêta", "Gamma"]);
 
     // A pinned tag comes first, whatever the sorting; a pin is its icon (on
     // its card and in the table of contents). The edit button comes last.
@@ -592,13 +594,13 @@ test.describe("bookmarks page, sorting and pinning", () => {
     await expect(beta.locator("[data-slot=header] button").last()).toHaveAccessibleName("Modifier l'étiquette « Bêta »");
     await pin.click();
     await expect(pin).toHaveAttribute("aria-pressed", "true");
-    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Gamma", "Alpha"]);
-    await expect(beta.locator("[data-slot=header] .iconify.i-bailly\\:pin-filled").first()).toBeVisible();
-    await sortBy("Par nom");
     await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Alpha", "Gamma"]);
+    await expect(beta.locator("[data-slot=header] .iconify.i-bailly\\:pin-filled").first()).toBeVisible();
+    await sortBy("Par ajout récent");
+    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Bêta", "Gamma", "Alpha"]);
     await pin.click();
     await expect(pin).toHaveAttribute("aria-pressed", "false");
-    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Alpha", "Bêta", "Gamma"]);
+    await expect.poll(() => cardNames(page)).toEqual(["Favoris", "Gamma", "Alpha", "Bêta"]);
   });
 });
 
@@ -617,8 +619,8 @@ test.describe("bookmarks page, table of contents", () => {
     });
     const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
     const links = toc.getByRole("link");
-    // The favorites, then the tags in their order (by name, none pinned).
-    const names = ["Favoris, 1 entrée", "Deux, 0 entrée", "Quatre, 2 entrées, étiquette active", "Trois, 0 entrée", "Un, 0 entrée"];
+    // The favorites, then the tags by latest addition (the default, none pinned).
+    const names = ["Favoris, 1 entrée", "Quatre, 2 entrées, étiquette active", "Trois, 0 entrée", "Deux, 0 entrée", "Un, 0 entrée"];
     await expect(links).toHaveCount(names.length);
     for (const [i, name] of names.entries()) await expect(links.nth(i)).toHaveAccessibleName(name);
 
@@ -716,8 +718,8 @@ test.describe("bookmarks page, table of contents", () => {
       await expect(card(page, "Étiquette numéro 24")).toBeAttached();
       await page.mouse.move(640, 400);
       await page.mouse.wheel(0, 100000);
-      // The last cards (by name, numbers by value): 21 to 24.
-      await expect(toc.locator("[aria-current=location]")).toHaveAccessibleName(/^Étiquette numéro 2[1-4],/);
+      // The last cards (by latest addition, the default): 4 to 1.
+      await expect(toc.locator("[aria-current=location]")).toHaveAccessibleName(/^Étiquette numéro [1-4],/);
       const row = toc.locator("ul");
       if (reducedMotion === "reduce") {
         await page.waitForTimeout(500);

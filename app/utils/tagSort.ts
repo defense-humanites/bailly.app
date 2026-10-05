@@ -2,19 +2,20 @@ import type { IdbTagged, IdbTagWithKey } from "~/idb";
 
 /**
  * How the tags that are not pinned are sorted on the bookmarks page (cards
- * and table of contents): by name (the store's order, cf. `orderTags`), by
- * number of entries, or by their latest addition (an entry added, or the
- * tag's creation). A choice of the device, not synchronized.
+ * and table of contents): by their latest addition (an entry added, or the
+ * tag's creation; the default, first in the menus), by name (the store's
+ * order, cf. `orderTags`), or by number of entries. A preference, which may
+ * be synchronized.
  */
-export const TAG_SORTS = ["name", "count", "recent"] as const;
+export const TAG_SORTS = ["recent", "name", "count"] as const;
 export type TagSort = typeof TAG_SORTS[number];
 
 export const isTagSort = (value: unknown): value is TagSort => TAG_SORTS.includes(value as TagSort);
 
 export const TAG_SORT_LABELS: Record<TagSort, string> = {
+  recent: "Par ajout récent",
   name: "Par nom",
   count: "Par nombre d'entrées",
-  recent: "Par ajout récent",
 };
 
 /**

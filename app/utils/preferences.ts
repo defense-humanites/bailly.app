@@ -51,7 +51,7 @@ export const DEFAULT_PREFERENCES: Readonly<Preferences> = {
   inputMode: InputMode.BetaCode,
   inflectedForms: true,
   bookmarksDisplay: "excerpts",
-  tagSort: "name",
+  tagSort: "recent",
 };
 
 export const PREFERENCES_COOKIE = "bailly-preferences";
