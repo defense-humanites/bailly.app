@@ -335,12 +335,16 @@ test.describe("bookmarks page", () => {
   });
 
   test("removing a favorite, with an undo", async ({ page }) => {
-    await page.getByRole("button", { name: "Modifier les favoris" }).click();
+    const edit = page.getByRole("button", { name: "Modifier les favoris" });
+    await edit.click();
     await page.getByRole("button", { name: "Retirer « λόγος » des favoris" }).click();
     await expect.poll(async () => (await bookmarksState(page)).starred).toBe(0);
+    // Empty, nothing to edit: no edit button (the edit mode is over).
+    await expect(edit).toHaveCount(0);
     const toast = page.locator("li").filter({ hasText: "« λόγος » retirée des favoris" });
     await toast.getByRole("button", { name: "Annuler" }).click();
     await expect.poll(async () => (await bookmarksState(page)).starred).toBe(1);
+    await expect(edit).toHaveAttribute("aria-pressed", "false");
   });
 
   // The edit button toggles the mode from the same place, in the corner.

@@ -365,6 +365,16 @@
     (): string => props.favorites ? "les favoris" : `l'étiquette « ${props.tag.name} »`,
   );
 
+  /**
+   * Whether the group has something to edit: a tag always (its name, color,
+   * description), the favorites only while they have entries; the edit mode
+   * ends when the last one is removed.
+   */
+  const canEdit = computed((): boolean => props.editable || props.entries.length > 0);
+  watch(canEdit, (can) => {
+    if (!can && editMode.value) exitEditMode();
+  });
+
   const enterEditMode = (): void => {
     editMode.value = true;
   };
@@ -653,7 +663,8 @@
           other tags) and the pin (pressed on a pinned tag, whose icon is a
           pin); in edit mode, in their place, adding a description (none
           yet) and the tag deletion; last, in the corner and at the same place in both modes,
-          the edit button, which toggles the mode. Out of edit mode, they show
+          the edit button, which toggles the mode (not on the favorites while
+          they are empty: nothing to edit). Out of edit mode, they show
           on hover, on focus and on a touch screen (`revealed`).
         -->
         <!--
@@ -724,7 +735,10 @@
               @click="onDeleteTag"
             />
           </UTooltip>
-          <UTooltip :text="editMode ? 'Terminer les modifications' : 'Modifier'">
+          <UTooltip
+            v-if="canEdit"
+            :text="editMode ? 'Terminer les modifications' : 'Modifier'"
+          >
             <UButton
               icon="i-lucide-pencil"
               size="sm"
