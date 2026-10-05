@@ -1,0 +1,37 @@
+<script setup lang="ts">
+  import type { CitedEntry } from "~/utils/citation";
+
+  defineProps<{
+    /** The entry cited (a homonym: the one read). */
+    entry: CitedEntry;
+    /** The data's version (the API's). */
+    version?: string;
+  }>();
+</script>
+
+<!--
+  The citation in a window, opened by an icon at an entry card's top, beside
+  the bookmarks' toolbar (framed alike, but apart: it isn't about
+  bookmarks); on the entry page below `xl` (from `xl`, the citation lies on
+  the column's right), and on the home page's random entry.
+-->
+<template>
+  <UModal
+    title="Citer cette entrée"
+    :ui="{ content: 'sm:max-w-lg' }"
+  >
+    <UButton
+      icon="i-lucide-quote"
+      aria-label="Citer cette entrée"
+      color="neutral"
+      variant="ghost"
+      class="rounded-lg border border-default shadow-xs"
+    />
+    <template #body>
+      <EntryCitation
+        :entry="entry"
+        :version="version"
+      />
+    </template>
+  </UModal>
+</template>

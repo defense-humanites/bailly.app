@@ -5,6 +5,8 @@
   type Shown = {
     entry: Entry<"word" | "uri" | "excerpt" | "htmlDefinition">;
     siblings: Siblings<"word" | "uri" | "excerpt">;
+    /** The data's version (for the citation). */
+    version: string;
   };
 
   const { $api } = useNuxtApp();
@@ -32,7 +34,7 @@
         } satisfies RandomEntryParams<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">),
       });
       // A group of homonyms: its first entry.
-      shown.value = { entry: data.entry.children?.[0] ?? data.entry, siblings: data.siblings ?? {} };
+      shown.value = { entry: data.entry.children?.[0] ?? data.entry, siblings: data.siblings ?? {}, version: data.version };
     } catch {
       failed.value = true;
     } finally {
@@ -92,7 +94,17 @@
               root: 'h-full flex overflow-hidden bg-transparent shadow-none ring-0 rounded-none [--ui-bg-elevated:var(--ui-bg)]',
               body: 'h-full mask-b-from-80%',
             }"
-          />
+          >
+            <!-- The citation, as on the entry's page (a demonstration of the application). -->
+            <template #aside>
+              <div class="mt-3">
+                <EntryCitationButton
+                  :entry="shown.entry"
+                  :version="shown.version"
+                />
+              </div>
+            </template>
+          </EntryCard>
           <p
             v-else-if="failed"
             class="flex h-full items-center justify-center p-4 text-center text-muted"

@@ -32,17 +32,23 @@ test.describe("citing an entry", () => {
       .toContainText("« 2 λογάδες », https://bailly.app/logades#2");
   });
 
-  test("below lg, in a window", async ({ page, goto }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await goto("/logos", { waitUntil: "hydration" });
-    await expect(page.getByRole("complementary", { name: "Citer cette entrée" })).toBeHidden();
-    // At the card's top, and at the entry's end.
-    await page.getByRole("button", { name: "Citer cette entrée" }).click();
-    const dialog = page.getByRole("dialog", { name: "Citer cette entrée" });
-    await expect(dialog.getByText("Bailly, A. (2023).", { exact: false })).toBeVisible();
-    await page.keyboard.press("Escape");
-    await expect(dialog).toBeHidden();
-    await page.getByRole("button", { name: "Citer", exact: true }).click();
-    await expect(dialog).toBeVisible();
+  test("below xl, from the card's top, in a window", async ({ page, goto }) => {
+    for (const width of [390, 1150]) {
+      await page.setViewportSize({ width, height: 844 });
+      await goto("/logos", { waitUntil: "hydration" });
+      await expect(page.getByRole("complementary", { name: "Citer cette entrée" })).toBeHidden();
+      await page.getByRole("button", { name: "Citer cette entrée" }).click();
+      const dialog = page.getByRole("dialog", { name: "Citer cette entrée" });
+      await expect(dialog.getByText("Bailly, A. (2023).", { exact: false })).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
+    }
+  });
+
+  test("on the home page's random entry", async ({ page, goto }) => {
+    await goto("/", { waitUntil: "hydration" });
+    const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });
+    await opening.getByRole("button", { name: "Citer cette entrée" }).click();
+    await expect(page.getByRole("dialog", { name: "Citer cette entrée" }).getByText("https://bailly.app/", { exact: false }).first()).toBeVisible();
   });
 });
