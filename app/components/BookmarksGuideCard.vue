@@ -16,10 +16,11 @@
   }>();
 
   /**
-   * The marble background (`--guide-bg`); tinted, a glow of the color in
-   * the bottom left corner over it, and a border of the color.
+   * The background (`--guide-bg`): in the light theme, the cards' (lighter
+   * than the page); in the dark one, a marble. Tinted, a glow of the color
+   * in the bottom left corner over it, and a border of the color.
    */
-  const BACKGROUND = "[--guide-bg:color-mix(in_srgb,var(--color-marble-200)_30%,var(--app-page-bg))] dark:[--guide-bg:color-mix(in_srgb,var(--color-marble-900)_50%,var(--app-page-bg))] bg-(--guide-bg)";
+  const BACKGROUND = "[--guide-bg:color-mix(in_srgb,var(--ui-bg)_50%,var(--app-page-bg))] dark:[--guide-bg:color-mix(in_srgb,var(--color-marble-900)_50%,var(--app-page-bg))] bg-(--guide-bg)";
   const NEUTRAL = "border-marble-300/40 dark:border-marble-800/60";
   /**
    * The icon and the title, the marble of the text slightly tinted with the
