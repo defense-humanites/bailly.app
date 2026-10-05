@@ -266,8 +266,9 @@
             </div>
           </template>
           <!--
-            What the bookmarks are (a tag is created here first; the active
-            tag, with its mark, cf. the bar's select menu); that they
+            What the bookmarks are (a tag is created here first); the active
+            tag, and the pinned ones, with their marks (in the text's
+            strongest color, the favorites in their own); that they
             live in this browser only, and may be lost; the two ways to keep
             them: the synchronization and a file. The bar's field and buttons
             named as there, with their icons (they show alone there below
@@ -278,11 +279,12 @@
           <div class="ms-12 text-marble-700 dark:text-marble-400 font-medium">
             <p class="mb-2">
               Les entrées que vous ajoutez à vos
-              <span class="whitespace-nowrap"><UIcon
-                name="i-bailly-star-filled"
+              <span
                 data-tag-color="Yellow"
+                class="whitespace-nowrap font-bold text-tag-text"
+              ><UIcon
+                name="i-bailly-star-filled"
                 :class="INLINE_ICON"
-                class="text-tag-text"
               /> favoris</span>
               depuis leur barre d'outils se retrouvent ici, comme celles que vous rangez sous une
               étiquette : créez d'abord une
@@ -295,14 +297,20 @@
                   name="i-lucide-tag-plus"
                   class="size-4 shrink-0"
                 />Nouvelle étiquette
-              </button>. L'étiquette
-              <span class="whitespace-nowrap">active <UIcon
+              </button>.
+            </p>
+            <p class="mb-2">
+              La dernière étiquette créée devient
+              <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
                 name="i-bailly-circle-dot-bold"
                 :class="INLINE_ICON"
-              /></span>
-              (la dernière créée, ou celle que vous choisissez ci-dessus ou sur son bloc) est
-              proposée dans la barre d'outils de chaque entrée : un clic suffit pour la lui
-              attribuer.
+              /> active</span> : elle est alors accessible en un clic depuis la barre d'outils
+              de chaque entrée. Vous pouvez également
+              <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
+                name="i-bailly-pin-filled"
+                :class="INLINE_ICON"
+              /> épingler</span>
+              les étiquettes sur cette page pour les conserver en haut.
             </p>
             <p class="mb-2">
               Vos signets sont enregistrés dans ce navigateur,
