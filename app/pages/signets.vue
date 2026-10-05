@@ -249,7 +249,7 @@
                   id="signets-intro"
                   class="ml-2 min-w-0 grow py-0.5 pe-2 text-xl/7 font-bold md:py-0 md:text-2xl/8"
                 >
-                  Vos signets
+                  Guide des signets
                 </h2>
               </div>
               <UTooltip text="Masquer">
@@ -281,8 +281,8 @@
             window and the menu (their buttons focused), and point them out.
           -->
           <div class="ms-12 text-marble-700 dark:text-marble-400 font-medium">
-            <h3 class="mb-1 font-bold">
-              Ranger vos entrées
+            <h3 class="mb-1 text-xl font-semibold">
+              Organiser vos entrées
             </h3>
             <p class="mb-2">
               Les entrées que vous ajoutez à vos
@@ -294,7 +294,7 @@
                 :class="INLINE_ICON"
               /> favoris</span>
               depuis leur barre d'outils se retrouvent ici, comme celles que vous rangez sous une
-              étiquette : créez d'abord une
+              étiquette. Créez d'abord une
               <button
                 type="button"
                 :class="INLINE_BUTTON"
@@ -312,31 +312,25 @@
                 name="i-bailly-circle-dot-bold"
                 :class="INLINE_ICON"
               /> active</span> : elle est alors accessible en un clic depuis la barre d'outils
-              de chaque entrée. Vous pouvez en choisir une autre à tout moment, dans le menu qui
-              l'affiche ci-dessus ou avec le bouton
-              <UIcon
-                name="i-lucide-circle-dot"
-                :class="INLINE_ICON"
-              />
-              du bloc d'une étiquette. Vous pouvez également
+              de chaque entrée. Vous pouvez en choisir une autre à tout moment. Vous pouvez également
               <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
                 name="i-bailly-pin-filled"
                 :class="INLINE_ICON"
               /> épingler</span>
-              les étiquettes sur cette page pour les conserver en haut.
+              les étiquettes sur cette page pour les garder en haut.
             </p>
-            <h3 class="mb-1 font-bold">
+            <h3 class="mb-1 text-xl font-semibold">
               Conserver vos signets
             </h3>
             <p class="mb-2">
               Vos signets sont enregistrés dans ce navigateur,
               <strong class="font-bold">sur cet appareil seulement</strong> : effacer les données de
               navigation les supprime, et le navigateur peut aussi les effacer de lui-même si son
-              espace de stockage vient à manquer. Pour ne pas les perdre :
+              espace de stockage vient à manquer. Pour ne pas les perdre, vous pouvez :
             </p>
             <ul class="list-disc space-y-1 ps-5 marker:text-marble-400 dark:marker:text-marble-600">
               <li>
-                <button
+                Les <button
                   type="button"
                   :class="INLINE_BUTTON"
                   @click="syncButton?.open()"
@@ -345,23 +339,21 @@
                     name="i-lucide-cloud-upload"
                     class="size-4 shrink-0"
                   />Synchroniser
-                </button>
-                : vos signets sont sauvegardés en ligne, et vous les retrouvez sur vos autres
-                appareils et navigateurs ;
+                </button> en ligne, afin de les sauvegarder et de les retrouver sur vos autres
+                appareils ;
               </li>
               <li>
-                <button
+                Les enregistrer dans des <button
                   type="button"
                   :class="INLINE_BUTTON"
                   @click="filesMenu?.open()"
                 >
                   <UIcon
-                    name="i-lucide-folder-open"
-                    class="size-4 shrink-0"
+                      name="i-lucide-folder-open"
+                      class="size-4 shrink-0"
                   />Fichiers
-                </button>
-                : enregistrez-les dans un fichier à garder en lieu sûr, puis importez-le pour les
-                rétablir ici ou les transférer ailleurs.
+                </button> à garder en lieu sûr, puis les importer pour les
+                rétablir ici ou les transférer.
               </li>
             </ul>
           </div>
