@@ -12,12 +12,6 @@
   const { initialized, tags, starredEntries, currentTagKey, currentTag } = storeToRefs(bookmarksStore);
 
   /**
-   * From this number of tags, a table of contents under the header leads to
-   * their cards (below, they all show at a glance).
-   */
-  const TOC_FROM = 4;
-
-  /**
    * The id of a group's card (the target of its link in the table of
    * contents).
    */
@@ -46,7 +40,11 @@
       active: tag.key === currentTagKey.value,
     })),
   ]);
-  const showToc = computed((): boolean => initialized.value && tags.value.length >= TOC_FROM);
+  /**
+   * Once there is a tag, a table of contents under the header leads to the
+   * cards (the favorites' and the tags').
+   */
+  const showToc = computed((): boolean => initialized.value && tags.value.length > 0);
 
   /**
    * The introduction to the bookmarks, until the user dismisses it (on every

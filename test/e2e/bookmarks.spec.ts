@@ -584,17 +584,16 @@ test.describe("bookmarks page, sorting and pinning", () => {
 test.describe("bookmarks page, table of contents", () => {
   const tagNames = ["Un", "Deux", "Trois"];
 
-  test("from four tags: a link per group, with its count, to its card", async ({ page, goto }) => {
+  test("from one tag: a link per group, with its count, to its card", async ({ page, goto }) => {
     await goto("/signets", { waitUntil: "hydration" });
-    await seedBookmarks(page, {
-      starred: [logos],
-      tags: tagNames.map(name => ({ name, color: "Sky" })),
-    });
-    // Three tags: no table of contents.
-    await expect(card(page, "Trois")).toBeVisible();
+    await seedBookmarks(page, { starred: [logos] });
+    // The favorites only: no table of contents.
+    await expect(card(page, "Favoris").getByRole("button", { name: "Modifier les favoris" })).toBeAttached();
     await expect(page.getByRole("navigation", { name: "Sommaire des signets" })).toHaveCount(0);
 
-    await seedBookmarks(page, { tags: [{ name: "Quatre", color: "Rose", entries: [anax, menis] }] });
+    await seedBookmarks(page, {
+      tags: [...tagNames.map(name => ({ name, color: "Sky" })), { name: "Quatre", color: "Rose", entries: [anax, menis] }],
+    });
     const toc = page.getByRole("navigation", { name: "Sommaire des signets" });
     const links = toc.getByRole("link");
     // The favorites, then the tags in their order (by name, none pinned).
