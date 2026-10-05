@@ -32,11 +32,17 @@ test.describe("citing an entry", () => {
       .toContainText("« 2 λογάδες », https://bailly.app/logades#2");
   });
 
-  test("below xl, in a window", async ({ page, goto }) => {
+  test("below lg, in a window", async ({ page, goto }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await goto("/logos", { waitUntil: "hydration" });
     await expect(page.getByRole("complementary", { name: "Citer cette entrée" })).toBeHidden();
+    // At the card's top, and at the entry's end.
+    await page.getByRole("button", { name: "Citer cette entrée" }).click();
+    const dialog = page.getByRole("dialog", { name: "Citer cette entrée" });
+    await expect(dialog.getByText("Bailly, A. (2023).", { exact: false })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
     await page.getByRole("button", { name: "Citer", exact: true }).click();
-    await expect(page.getByRole("dialog", { name: "Citer cette entrée" }).getByText("Bailly, A. (2023).", { exact: false })).toBeVisible();
+    await expect(dialog).toBeVisible();
   });
 });

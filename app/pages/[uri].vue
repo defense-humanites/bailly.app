@@ -53,7 +53,7 @@
     return children.find(child => homonymAnchor(child.uri) === anchor) ?? children[0] ?? entry;
   });
   const dataVersion = data.value?.version;
-  const [DefineCiteButton, ReuseCiteButton] = createReusableTemplate();
+  const [DefineCiteButton, ReuseCiteButton] = createReusableTemplate<{ compact?: boolean }>();
 
   // The entry is added to the history of the viewed entries (in the browser).
   const historyStore = useHistoryStore();
@@ -171,12 +171,25 @@
       />
     </header>
     <!-- The button opening the citation in a window (below `xl`; defined before its uses). -->
-    <DefineCiteButton>
+    <DefineCiteButton v-slot="{ compact }">
       <UModal
         title="Citer cette entrée"
         :ui="{ content: 'sm:max-w-lg' }"
       >
+        <!--
+          Compact, at the card's top: an icon, framed as the bookmarks'
+          toolbar beside it (but apart: it isn't about bookmarks).
+        -->
         <UButton
+          v-if="compact"
+          icon="i-lucide-quote"
+          aria-label="Citer cette entrée"
+          color="neutral"
+          variant="ghost"
+          class="rounded-lg border border-default bg-default shadow-xs"
+        />
+        <UButton
+          v-else
           label="Citer"
           icon="i-lucide-quote"
           size="sm"
@@ -204,7 +217,18 @@
         <EntryCard
           :entry="entry"
           toolbar
-        />
+        >
+          <!--
+            Below `lg`, the citation's button at the card's top, beside the
+            toolbar (and aligned on it): reached at once, however long the
+            entry.
+          -->
+          <template #aside>
+            <div class="relative -top-1 sm:-top-3 lg:hidden">
+              <ReuseCiteButton :compact="true" />
+            </div>
+          </template>
+        </EntryCard>
       </section>
       <aside
         aria-labelledby="citer"
@@ -237,7 +261,7 @@
     <!--
       The links to the neighbouring entries, again after the entry, on every
       screen (on mobile, the header only has arrows). Below `lg`, the
-      citation's button before them.
+      citation's button before them too (when the reading ends).
     -->
     <footer class="mt-8">
       <div class="mb-4 flex justify-end lg:hidden">
