@@ -248,6 +248,7 @@
           title="Organiser vos entrées"
           icon="i-bailly-bookmark-filled"
           title-id="signets-organiser"
+          tint="primary"
           @dismiss="guideDismissed = true"
         >
           <p class="mb-2">

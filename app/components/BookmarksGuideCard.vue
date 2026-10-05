@@ -7,10 +7,12 @@
     /** The title's id (the card's name). */
     titleId: string;
     /**
-     * A tint telling the card's subject: the synchronization's Aegean blue
-     * (`secondary`), as its card on the preferences page (cf. `SyncCard`).
+     * A tint telling the card's subject: the application's terracotta
+     * (`primary`, its signature: the bookmarks, among its most valuable
+     * features), or the synchronization's Aegean blue (`secondary`, as its
+     * card on the preferences page, cf. `SyncCard`).
      */
-    tint?: "secondary";
+    tint?: "primary" | "secondary";
   }>();
 
   /**
@@ -19,7 +21,9 @@
    */
   const BACKGROUND = "[--guide-bg:color-mix(in_srgb,var(--color-marble-200)_30%,var(--app-page-bg))] dark:[--guide-bg:color-mix(in_srgb,var(--color-marble-900)_50%,var(--app-page-bg))] bg-(--guide-bg)";
   const NEUTRAL = "border-marble-300/40 dark:border-marble-800/60";
-  const SECONDARY = "[--guide-tint:color-mix(in_oklab,var(--guide-bg)_88%,var(--ui-color-secondary-500))] dark:[--guide-tint:color-mix(in_oklab,var(--guide-bg)_80%,var(--ui-color-secondary-500))] bg-[radial-gradient(ellipse_at_bottom_left,var(--guide-bg)_70%,var(--guide-tint))] border-secondary/20";
+  const GLOW = "bg-[radial-gradient(ellipse_at_bottom_left,var(--guide-bg)_70%,var(--guide-tint))]";
+  const PRIMARY = `[--guide-tint:color-mix(in_oklab,var(--guide-bg)_88%,var(--ui-color-primary-500))] dark:[--guide-tint:color-mix(in_oklab,var(--guide-bg)_80%,var(--ui-color-primary-500))] ${GLOW} border-primary/20`;
+  const SECONDARY = `[--guide-tint:color-mix(in_oklab,var(--guide-bg)_88%,var(--ui-color-secondary-500))] dark:[--guide-tint:color-mix(in_oklab,var(--guide-bg)_80%,var(--ui-color-secondary-500))] ${GLOW} border-secondary/20`;
 
   defineEmits<{
     /** The user dismissed the card. */
@@ -39,7 +43,7 @@
     :aria-labelledby="titleId"
     variant="bookmarkGroup"
     :ui="{
-      root: `${BACKGROUND} ${tint === 'secondary' ? SECONDARY : NEUTRAL}`,
+      root: `${BACKGROUND} ${tint === 'primary' ? PRIMARY : tint === 'secondary' ? SECONDARY : NEUTRAL}`,
       header: 'flex !px-3 pb-0',
       body: '!p-3',
     }"
