@@ -30,10 +30,9 @@
   /**
    * The page's sections, for its table of contents (from `xl`, on the
    * column's right, as the ambiguous forms' headwords, cf. `forme`): the
-   * summary, then the details (the donations once offered).
+   * details (the donations once offered), not the summary above them.
    */
   const sections = [
-    { id: "en-bref", title: "En bref" },
     { id: "sur-votre-appareil", title: "Sur votre appareil" },
     { id: "preferences", title: "Préférences" },
     { id: "synchronisation", title: "Synchronisation" },
@@ -104,7 +103,7 @@
       >
         <h2
           id="en-bref"
-          class="scroll-mt-[calc(var(--header-bottom)+1.5rem)] font-semibold"
+          class="font-semibold"
         >
           En bref
         </h2>
