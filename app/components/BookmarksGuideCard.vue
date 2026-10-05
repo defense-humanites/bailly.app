@@ -21,6 +21,15 @@
    */
   const BACKGROUND = "[--guide-bg:color-mix(in_srgb,var(--color-marble-200)_30%,var(--app-page-bg))] dark:[--guide-bg:color-mix(in_srgb,var(--color-marble-900)_50%,var(--app-page-bg))] bg-(--guide-bg)";
   const NEUTRAL = "border-marble-300/40 dark:border-marble-800/60";
+  /**
+   * The icon and the title, the marble of the text slightly tinted with the
+   * card's color (the close button, as the text, in marble).
+   */
+  const TITLE = {
+    neutral: "",
+    primary: "text-[color-mix(in_oklab,var(--color-marble-700)_65%,var(--ui-color-primary-700))] dark:text-[color-mix(in_oklab,var(--color-marble-400)_65%,var(--ui-color-primary-400))]",
+    secondary: "text-[color-mix(in_oklab,var(--color-marble-700)_65%,var(--ui-color-secondary-700))] dark:text-[color-mix(in_oklab,var(--color-marble-400)_65%,var(--ui-color-secondary-400))]",
+  };
   const GLOW = "bg-[radial-gradient(ellipse_at_bottom_left,var(--guide-bg)_70%,var(--guide-tint))]";
   const PRIMARY = `[--guide-tint:color-mix(in_oklab,var(--guide-bg)_88%,var(--ui-color-primary-500))] dark:[--guide-tint:color-mix(in_oklab,var(--guide-bg)_80%,var(--ui-color-primary-500))] ${GLOW} border-primary/20`;
   const SECONDARY = `[--guide-tint:color-mix(in_oklab,var(--guide-bg)_88%,var(--ui-color-secondary-500))] dark:[--guide-tint:color-mix(in_oklab,var(--guide-bg)_80%,var(--ui-color-secondary-500))] ${GLOW} border-secondary/20`;
@@ -50,7 +59,10 @@
   >
     <template #header>
       <div class="flex min-h-8 w-full items-start gap-3 text-marble-700 dark:text-marble-400">
-        <div class="flex min-w-0 grow items-start">
+        <div
+          class="flex min-w-0 grow items-start"
+          :class="TITLE[tint ?? 'neutral']"
+        >
           <UIcon
             :name="icon"
             class="mx-2 mt-1 size-6 shrink-0"
