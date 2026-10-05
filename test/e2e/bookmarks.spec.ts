@@ -232,7 +232,7 @@ test.describe("bookmarks page", () => {
   // An introduction on the favorites' left, until the user dismisses it (with
   // the other dismissed notices).
   test("an introduction, until dismissed", async ({ page }) => {
-    const intro = page.getByRole("group", { name: "Vos signets" });
+    const intro = page.getByRole("group", { name: "Guide des signets" });
     await expect(intro).toBeVisible();
     // A card on the favorites' left.
     const [introBox, favoritesBox] = [(await intro.boundingBox())!, (await card(page, "Favoris").boundingBox())!];
@@ -244,7 +244,7 @@ test.describe("bookmarks page", () => {
     expect(await page.evaluate(() => localStorage.getItem("bailly:dismissed"))).toBe("[\"bookmarksIntro\"]");
     await page.reload();
     await expect(card(page, "Favoris")).toBeVisible();
-    await expect(page.getByText("Vos signets", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Guide des signets", { exact: true })).toHaveCount(0);
   });
 
   // A solid button keeps its pressed look while its menu or dialog is open

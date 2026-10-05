@@ -349,8 +349,8 @@
                   @click="filesMenu?.open()"
                 >
                   <UIcon
-                      name="i-lucide-folder-open"
-                      class="size-4 shrink-0"
+                    name="i-lucide-folder-open"
+                    class="size-4 shrink-0"
                   />Fichiers
                 </button> à garder en lieu sûr, puis les importer pour les
                 rétablir ici ou les transférer.
