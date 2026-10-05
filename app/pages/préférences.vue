@@ -13,6 +13,9 @@
 
   const { preference, reset: resetPreferences } = usePreferences();
   const syncStore = useSyncStore();
+  // The switches, labelled by their rows' texts (cf. `SettingsRow`).
+  const transliterateId = useId();
+  const inflectedFormsId = useId();
 
   /**
    * Whether a preference is synchronized with the other devices (shown by a
@@ -189,8 +192,10 @@
             label="Grec translittéré"
             description="Le grec en caractères latins, pour les non-hellénistes."
             :synced="synced('transliterateGreek')"
+            :control="transliterateId"
           >
             <USwitch
+              :id="transliterateId"
               v-model="transliterateGreek"
               :aria-label="syncedLabel('Grec translittéré', 'transliterateGreek')"
             />
@@ -219,8 +224,10 @@
             label="Formes fléchies"
             description="Chercher aussi les formes déclinées ou conjuguées (analyse morphologique)."
             :synced="synced('inflectedForms')"
+            :control="inflectedFormsId"
           >
             <USwitch
+              :id="inflectedFormsId"
               v-model="inflectedForms"
               :aria-label="syncedLabel('Formes fléchies', 'inflectedForms')"
             />

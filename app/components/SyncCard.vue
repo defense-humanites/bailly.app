@@ -26,6 +26,9 @@
   }));
 
   const syncStore = useSyncStore();
+  // The switches, labelled by their rows' texts (cf. `SettingsRow`).
+  const bookmarksSwitchId = useId();
+  const preferencesSwitchId = useId();
   const { loaded, enabled, syncedBookmarks, syncedPreferences, status, error, errorNeedsAction, errorSection } = storeToRefs(syncStore);
   const toast = useToast();
 
@@ -146,8 +149,10 @@
     <SettingsRow
       label="Signets"
       description="Étiquettes, entrées et épingles."
+      :control="bookmarksSwitchId"
     >
       <USwitch
+        :id="bookmarksSwitchId"
         color="secondary"
         :model-value="bookmarksOn"
         :loading="busy === 'bookmarks'"
@@ -155,7 +160,10 @@
         @update:model-value="(value) => toggle('bookmarks', value)"
       />
     </SettingsRow>
-    <SettingsRow label="Préférences">
+    <SettingsRow
+      label="Préférences"
+      :control="preferencesSwitchId"
+    >
       <template #description>
         <template v-if="preferencesOn">
           {{ preferencesCount }} d'un nuage ·
@@ -173,6 +181,7 @@
         </template>
       </template>
       <USwitch
+        :id="preferencesSwitchId"
         color="secondary"
         :model-value="preferencesOn"
         :loading="busy === 'preferences'"
