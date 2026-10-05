@@ -103,6 +103,10 @@
     "Marie-Dominique Simon", "Anne-Laure Viger", "Christine Vulliard",
   ];
 
+  /** The fonts' licence (all but IFAOGrec). */
+  const OFL = "SIL Open Font License 1.1 (OFL-1.1)";
+  const OFL_URL = "https://openfontlicense.org/open-font-license-official-text/";
+
   const credits: { title: string; description?: string; authors: string | string[]; contributors?: string[]; licence: string; links: Link[]; note?: string }[] = [
     {
       title: "Application Bailly (bailly.app)",
@@ -144,6 +148,45 @@
       links: [
         { label: "Licence", href: "https://github.com/defense-humanites/greek-conversion#license" },
         { label: "Code source", href: "https://github.com/defense-humanites/greek-conversion" },
+      ],
+    },
+    // The fonts (cf. the README and `app/assets/fonts/`, each with its licence).
+    {
+      title: "Fonte de lecture Bailly Book",
+      description: "Sous-ensemble renommé de Gentium Book Plus, fonte de lecture par défaut",
+      authors: "SIL International",
+      licence: OFL,
+      links: [
+        { label: "Licence", href: OFL_URL },
+        { label: "Fonte", href: "https://software.sil.org/gentium/" },
+      ],
+    },
+    {
+      title: "Fontes GFS Didot, Artemisia, Bodoni et Neohellenic",
+      description: "Fontes de lecture au choix",
+      authors: "Greek Font Society",
+      licence: OFL,
+      links: [
+        { label: "Licence", href: OFL_URL },
+        { label: "Fontes", href: "https://www.greekfontsociety-gfs.gr/" },
+      ],
+    },
+    {
+      title: "Fonte d'interface Inter",
+      authors: "Rasmus Andersson",
+      licence: OFL,
+      links: [
+        { label: "Licence", href: OFL_URL },
+        { label: "Fonte", href: "https://rsms.me/inter/" },
+      ],
+    },
+    {
+      title: "Fonte IFAOGrec",
+      description: "Les caractères grecs les plus spécifiques",
+      authors: "Jean-Luc Fournet, Ralph Hancock & Adam Bülow-Jacobsen",
+      licence: "Libre de tous droits",
+      links: [
+        { label: "Fonte", href: "https://www.ifao.egnet.net/publications/outils/polices/#grec" },
       ],
     },
   ];
