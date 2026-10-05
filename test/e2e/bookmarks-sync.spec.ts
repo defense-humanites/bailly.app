@@ -40,6 +40,9 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   const syncButton = page.getByRole("button", { name: /^Synchronisation/ });
   await expect(syncButton.getByText("Synchroniser", { exact: true })).toBeVisible();
   await expect(syncButton).toHaveClass(/button-relief/);
+  // The guide's card on keeping the bookmarks, while they aren't synchronized.
+  const keepCard = page.getByRole("group", { name: "Conserver vos signets" });
+  await expect(keepCard).toBeVisible();
   await openSync(page);
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
   // The key is kept first; the words and the QR code are in the other tab.
@@ -62,6 +65,7 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await page.keyboard.press("Escape");
   await expect(syncButton.getByText("Synchronisé", { exact: true })).toBeVisible();
   await expect(syncButton.getByText("Synchroniser", { exact: true })).toBeHidden();
+  await expect(keepCard).toHaveCount(0);
   await expect(syncButton).not.toHaveClass(/button-relief/);
   // The server renders it so at once (a cookie tells it).
   await expect.poll(async () => (await page.context().cookies()).find(cookie => cookie.name === "bailly-sync")?.value)

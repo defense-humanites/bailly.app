@@ -229,22 +229,39 @@ test.describe("bookmarks page", () => {
     await expect(excerpt).toHaveCSS("font-weight", "400");
   });
 
-  // An introduction on the favorites' left, until the user dismisses it (with
-  // the other dismissed notices).
-  test("an introduction, until dismissed", async ({ page }) => {
-    const intro = page.getByRole("group", { name: "Guide des signets" });
-    await expect(intro).toBeVisible();
-    // A card on the favorites' left.
-    const [introBox, favoritesBox] = [(await intro.boundingBox())!, (await card(page, "Favoris").boundingBox())!];
-    expect(introBox.x + introBox.width).toBeLessThan(favoritesBox.x);
-    expect(Math.abs(introBox.y - favoritesBox.y)).toBeLessThan(2);
+  // A guide in two cards before the favorites, each until the user dismisses
+  // it (with the other dismissed notices); the former introduction, once
+  // dismissed, dismissing both.
+  test("a guide in two cards, each until dismissed", async ({ page }) => {
+    const organise = page.getByRole("group", { name: "Organiser vos entrées" });
+    const keep = page.getByRole("group", { name: "Conserver vos signets" });
+    await expect(organise).toBeVisible();
+    await expect(keep).toBeVisible();
+    // Before the favorites.
+    const favoritesBox = (await card(page, "Favoris").boundingBox())!;
+    for (const guide of [organise, keep]) {
+      const box = (await guide.boundingBox())!;
+      expect(box.y < favoritesBox.y - 1 || box.x + box.width < favoritesBox.x).toBe(true);
+    }
 
-    await intro.getByRole("button", { name: "Masquer la présentation des signets" }).click();
-    await expect(intro).toBeHidden();
-    expect(await page.evaluate(() => localStorage.getItem("bailly:dismissed"))).toBe("[\"bookmarksIntro\"]");
+    await organise.getByRole("button", { name: "Masquer « Organiser vos entrées »" }).click();
+    await expect(organise).toBeHidden();
+    await expect(keep).toBeVisible();
+    await keep.getByRole("button", { name: "Masquer « Conserver vos signets »" }).click();
+    await expect(keep).toBeHidden();
+    expect(JSON.parse((await page.evaluate(() => localStorage.getItem("bailly:dismissed")))!)).toEqual(["bookmarksGuide", "bookmarksKeep"]);
     await page.reload();
     await expect(card(page, "Favoris")).toBeVisible();
-    await expect(page.getByText("Guide des signets", { exact: true })).toHaveCount(0);
+    await expect(organise).toHaveCount(0);
+    await expect(keep).toHaveCount(0);
+
+    await page.evaluate(() => {
+      localStorage.setItem("bailly:dismissed", JSON.stringify(["bookmarksIntro"]));
+    });
+    await page.reload();
+    await expect(card(page, "Favoris")).toBeVisible();
+    await expect(organise).toHaveCount(0);
+    await expect(keep).toHaveCount(0);
   });
 
   // A solid button keeps its pressed look while its menu or dialog is open

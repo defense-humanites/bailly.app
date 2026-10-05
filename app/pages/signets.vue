@@ -47,11 +47,23 @@
   const showToc = computed((): boolean => initialized.value && tags.value.length > 0);
 
   /**
-   * The introduction to the bookmarks, until the user dismisses it (on every
-   * device whose preferences are synchronized, cf. `useDismissed`); with an
-   * invitation to synchronize them while they aren't.
+   * The guide, two cards each dismissed on its own (on every device whose
+   * preferences are synchronized, cf. `useDismissed`): how to file the
+   * entries; how to keep the bookmarks, while they aren't synchronized (the
+   * cookie telling it until the settings are loaded, as the bar's button,
+   * cf. `SyncButton`). The former single introduction, once dismissed,
+   * dismisses both.
    */
   const introDismissed = useDismissed("bookmarksIntro");
+  const guideDismissed = useDismissed("bookmarksGuide");
+  const keepDismissed = useDismissed("bookmarksKeep");
+  const syncStore = useSyncStore();
+  const { loaded: syncLoaded, syncedBookmarks } = storeToRefs(syncStore);
+  const syncHint = useCookie<unknown>(SYNC_HINT_COOKIE, { ...syncHintCookieOptions, readonly: true });
+  const bookmarksSynced = computed((): boolean =>
+    syncLoaded.value ? syncedBookmarks.value : parseSyncHint(syncHint.value).includes("bookmarks"));
+  const showGuide = computed((): boolean => !introDismissed.value && !guideDismissed.value);
+  const showKeep = computed((): boolean => !introDismissed.value && !keepDismissed.value && !bookmarksSynced.value);
 
   /**
    * The bar's new tag field, synchronization button and files menu, reached
@@ -218,143 +230,103 @@
         />
 
         <!--
-          The introduction, a card before the favorites (on their left from
-          `lg`), laid out as theirs (sizes, margins), told from them by its
-          marble (neutral), its text in a normal weight (its filled bookmark and
-          its bold title as the cards'):
-          what the bookmarks are, and, while they aren't synchronized, that
-          they can be (the bar's button). Dismissed by its button.
+          The guide, two cards before the favorites (cf. `BookmarksGuideCard`).
+          Filing the entries: the favorites, the tags (created here first),
+          the active tag (the last created, or the one chosen) and the pinned
+          ones, with their marks (bold, in the text's strongest color, the
+          favorites in their own).
+          Keeping them (while they aren't synchronized): they live in this
+          browser only, and may be lost; the two ways to keep them, side by
+          side in a list: the synchronization and a file.
+          The bar's field and buttons named as there, with their icons (they
+          show alone there below `xl`), drawn as keys (as the new tag field's
+          Enter), in the sentences: they focus the field, open the window and
+          the menu (their buttons focused), and point them out.
         -->
-        <UCard
-          v-if="!introDismissed"
-          role="group"
-          aria-labelledby="signets-intro"
-          variant="bookmarkGroup"
-          :ui="{
-            root: 'bg-[color-mix(in_srgb,var(--color-marble-200)_50%,var(--app-page-bg))] border-marble-300/50 dark:bg-[color-mix(in_srgb,var(--color-marble-900)_50%,var(--app-page-bg))] dark:border-marble-800/60',
-            header: 'flex !px-3 pb-0',
-            body: '!p-3',
-          }"
+        <BookmarksGuideCard
+          v-if="showGuide"
+          title="Organiser vos entrées"
+          icon="i-bailly-bookmark-filled"
+          title-id="signets-organiser"
+          @dismiss="guideDismissed = true"
         >
-          <template #header>
-            <div class="flex min-h-8 w-full items-start gap-3 text-marble-700 dark:text-marble-400">
-              <div class="flex min-w-0 grow items-start">
-                <UIcon
-                  name="i-bailly-bookmark-filled"
-                  class="mx-2 mt-1 size-6 shrink-0"
-                />
-                <h2
-                  id="signets-intro"
-                  class="ml-2 min-w-0 grow py-0.5 pe-2 text-xl/7 font-bold md:py-0 md:text-2xl/8"
-                >
-                  Guide des signets
-                </h2>
-              </div>
-              <UTooltip text="Masquer">
-                <UButton
-                  icon="i-lucide-x"
-                  size="sm"
-                  variant="subtle"
-                  color="neutral"
-                  aria-label="Masquer la présentation des signets"
-                  :ui="{ base: 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-marble-300/50 text-marble-700/75 hover:text-marble-700 dark:ring-marble-800/60 dark:text-marble-400/75 dark:hover:text-marble-400' }"
-                  @click="introDismissed = true"
-                />
-              </UTooltip>
-            </div>
-          </template>
-          <!--
-            In two parts, each under a subtitle (as bold as the title, its
-            size the text's).
-            Filing the entries: the favorites, the tags (created here first),
-            the active tag (the last created, or the one chosen) and the
-            pinned ones, with their marks (bold, in the text's strongest
-            color, the favorites in their own).
-            Keeping them: they live in this browser only, and may be lost;
-            the two ways to keep them, side by side in a list: the
-            synchronization and a file.
-            The bar's field and buttons named as there, with their icons
-            (they show alone there below `xl`), drawn as keys (as the new tag
-            field's Enter), in the sentences: they focus the field, open the
-            window and the menu (their buttons focused), and point them out.
-          -->
-          <div class="ms-12 text-marble-700 dark:text-marble-400 font-medium">
-            <h3 class="mb-1 text-xl font-semibold">
-              Organiser vos entrées
-            </h3>
-            <p class="mb-2">
-              Les entrées que vous ajoutez aux
-              <span
-                data-tag-color="Yellow"
-                class="whitespace-nowrap font-bold text-tag-text"
-              ><UIcon
-                name="i-bailly-star-filled"
-                :class="INLINE_ICON"
-              /> favoris</span>
-              depuis leur barre d'outils se retrouvent ici, comme celles que vous rangez sous une
-              <button
+          <p class="mb-2">
+            Les entrées que vous ajoutez aux
+            <span
+              data-tag-color="Yellow"
+              class="whitespace-nowrap font-bold text-tag-text"
+            ><UIcon
+              name="i-bailly-star-filled"
+              :class="INLINE_ICON"
+            /> favoris</span>
+            depuis leur barre d'outils se retrouvent ici, comme celles que vous rangez sous une
+            <button
+              type="button"
+              :class="INLINE_BUTTON"
+              @click="createTag?.open()"
+            >
+              <UIcon
+                name="i-lucide-tag-plus"
+                class="size-4 shrink-0"
+              />Nouvelle étiquette
+            </button>.
+          </p>
+          <p>
+            La dernière étiquette créée devient
+            <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
+              name="i-bailly-circle-dot-bold"
+              :class="INLINE_ICON"
+            /> active</span> : elle est alors accessible en un clic depuis la barre d'outils
+            de chaque entrée. Vous pouvez choisir d'en activer une autre à tout moment. Vous pouvez également
+            <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
+              name="i-bailly-pin-filled"
+              :class="INLINE_ICON"
+            /> épingler</span>
+            vos étiquettes sur cette page pour les garder en haut.
+          </p>
+        </BookmarksGuideCard>
+        <BookmarksGuideCard
+          v-if="showKeep"
+          title="Conserver vos signets"
+          icon="i-bailly-shield-check-filled"
+          title-id="signets-conserver"
+          @dismiss="keepDismissed = true"
+        >
+          <p class="mb-2">
+            Vos signets sont enregistrés dans ce navigateur,
+            <strong class="font-bold">sur cet appareil seulement</strong> : effacer les données de
+            navigation les supprime, et le navigateur peut aussi les effacer de lui-même si son
+            espace de stockage vient à manquer. Pour ne pas les perdre, vous pouvez :
+          </p>
+          <ul class="list-disc space-y-1 ps-5 marker:text-marble-400 dark:marker:text-marble-600">
+            <li>
+              Les <button
                 type="button"
                 :class="INLINE_BUTTON"
-                @click="createTag?.open()"
+                @click="syncButton?.open()"
               >
                 <UIcon
-                  name="i-lucide-tag-plus"
+                  name="i-lucide-cloud-upload"
                   class="size-4 shrink-0"
-                />Nouvelle étiquette
-              </button>.
-            </p>
-            <p class="mb-4">
-              La dernière étiquette créée devient
-              <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
-                name="i-bailly-circle-dot-bold"
-                :class="INLINE_ICON"
-              /> active</span> : elle est alors accessible en un clic depuis la barre d'outils
-              de chaque entrée. Vous pouvez choisir d'en activer une autre à tout moment. Vous pouvez également
-              <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
-                name="i-bailly-pin-filled"
-                :class="INLINE_ICON"
-              /> épingler</span>
-              vos étiquettes sur cette page pour les garder en haut.
-            </p>
-            <h3 class="mb-1 text-xl font-semibold">
-              Conserver vos signets
-            </h3>
-            <p class="mb-2">
-              Vos signets sont enregistrés dans ce navigateur,
-              <strong class="font-bold">sur cet appareil seulement</strong> : effacer les données de
-              navigation les supprime, et le navigateur peut aussi les effacer de lui-même si son
-              espace de stockage vient à manquer. Pour ne pas les perdre, vous pouvez :
-            </p>
-            <ul class="list-disc space-y-1 ps-5 marker:text-marble-400 dark:marker:text-marble-600">
-              <li>
-                Les <button
-                  type="button"
-                  :class="INLINE_BUTTON"
-                  @click="syncButton?.open()"
-                >
-                  <UIcon
-                    name="i-lucide-cloud-upload"
-                    class="size-4 shrink-0"
-                  />Synchroniser
-                </button> en ligne, afin de les sauvegarder et de les retrouver sur vos autres
-                appareils ;
-              </li>
-              <li>
-                Les enregistrer dans des <button
-                  type="button"
-                  :class="INLINE_BUTTON"
-                  @click="filesMenu?.open()"
-                >
-                  <UIcon
-                    name="i-lucide-folder-open"
-                    class="size-4 shrink-0"
-                  />Fichiers
-                </button> à garder en lieu sûr, puis les importer pour les
-                rétablir ici ou les transférer.
-              </li>
-            </ul>
-          </div>
-        </UCard>
+                />Synchroniser
+              </button> en ligne, afin de les sauvegarder et de les retrouver sur vos autres
+              appareils ;
+            </li>
+            <li>
+              Les enregistrer dans des <button
+                type="button"
+                :class="INLINE_BUTTON"
+                @click="filesMenu?.open()"
+              >
+                <UIcon
+                  name="i-lucide-folder-open"
+                  class="size-4 shrink-0"
+                />Fichiers
+              </button> à garder en lieu sûr, puis les importer pour les
+              rétablir ici ou les transférer.
+            </li>
+          </ul>
+        </BookmarksGuideCard>
 
         <!-- Favorites -->
         <BookmarkGroup
