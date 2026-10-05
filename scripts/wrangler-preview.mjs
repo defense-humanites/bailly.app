@@ -16,7 +16,7 @@ import { readFile, writeFile } from "node:fs/promises";
 const PREVIEW = {
   name: "bailly-app-nuxt-preview",
   host: "pre.bailly.app",
-  database: { name: "bailly-sync-preview", id: "e49c1937-0c29-44f7-914c-c7312eff1e86" },
+  database: { name: "bailly-sync-preview", id: "3a15b6aa-d242-42e2-9993-2506b780879d" },
 };
 
 const source = new URL("../.output/server/wrangler.json", import.meta.url);

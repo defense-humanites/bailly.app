@@ -3,15 +3,18 @@
 	// Production: the Worker serves `bailly.app` (a custom domain); no
 	// `workers.dev` address nor version URLs, which would duplicate the site.
 	"routes": [
-		{ "pattern": "bailly.app", "custom_domain": true }
+		{
+			"pattern": "bailly.app",
+			"custom_domain": true
+		}
 	],
 	"workers_dev": false,
 	"preview_urls": false,
 	"d1_databases": [
 		{
 			"binding": "SYNC_DB",
-            "database_name": "bailly-sync",
-            "database_id": "3f883a76-e0ff-4814-a49c-53c008101105"
+			"database_name": "bailly-sync",
+			"database_id": "3f883a76-e0ff-4814-a49c-53c008101105"
 		}
 	],
 	"observability": {
