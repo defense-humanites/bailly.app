@@ -384,10 +384,6 @@
         >
           D'où vient le texte
         </h2>
-        <p class="mx-auto mt-2 max-w-2xl text-center text-muted">
-          Trois ouvrages en un : le dictionnaire, son édition numérique, et l'application qui vous la
-          présente. Voici la même entrée, ῥινόκερως (le rhinocéros), dans chacun d'eux.
-        </p>
 
         <!--
           A triptych: the entry in its three states, side by side from `lg`
@@ -446,11 +442,11 @@
             </div>
             <div class="min-w-0 max-md:text-center">
               <h3 class="font-serif text-lg/8 font-bold">
-                L'édition numérique de Gérard Gréco
+                L'édition numérique de Gérard&nbsp;Gréco
               </h3>
               <p class="mt-2 text-muted">
                 Gérard Gréco et son équipe ont numérisé le texte, l'ont corrigé à la main d'après les
-                ouvrages de référence, puis ont mis à jour les étymologies et la toponymie, et normalisé
+                ouvrages de référence, puis ont mis à jour les étymologies et la toponymie, et finalement normalisé
                 les références ; ils l'ont intitulée <em>Bailly 2020 Hugo&nbsp;Chávez</em>. C'est leur texte que vous lisez ici. Une
                 <a
                   href="http://gerardgreco.free.fr/spip.php?article24"
@@ -476,7 +472,7 @@
                   color="neutral"
                   variant="ghost"
                   icon="i-lucide-file-text"
-                  label="Notice de l'édition"
+                  label="Notice"
                 />
               </div>
             </div>
