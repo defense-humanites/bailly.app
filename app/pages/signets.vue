@@ -54,6 +54,15 @@
    * invitation to synchronize them while they aren't.
    */
   const introDismissed = useDismissed("bookmarksIntro");
+
+  /**
+   * The bar's synchronization button and files menu, opened from the
+   * introduction's buttons, drawn as keys (as the new tag field's Enter, cf.
+   * `UKbd`).
+   */
+  const syncButton = useTemplateRef<{ open: () => void }>("syncButton");
+  const filesMenu = useTemplateRef<{ open: () => void }>("filesMenu");
+  const INLINE_BUTTON = "inline-flex h-6 cursor-pointer items-center gap-1 rounded-sm bg-default px-1.5 align-[-0.3em] text-sm font-medium text-default ring ring-inset ring-accented transition-colors hover:bg-elevated focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)";
   // (Its exposed `enabled` is unwrapped on the component's instance.)
 
   /**
@@ -177,10 +186,14 @@
           <BookmarksDisplayMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
 
           <!-- Export, import -->
-          <BookmarksMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
+          <BookmarksMenu
+            ref="filesMenu"
+            class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
+          />
 
           <!-- Synchronization (its state, and its window) -->
           <SyncButton
+            ref="syncButton"
             scope="bookmarks"
             class="flex h-11 border-s border-default max-lg:overflow-hidden max-lg:rounded-br-(--field-inner-radius) lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
           />
@@ -246,10 +259,11 @@
           <!--
             What the bookmarks are; that they live in this browser only, and
             may be lost; the two ways to keep them: the synchronization and
-            a file. The buttons named with their icons, as in the bar (where
-            they show alone below `xl`).
+            a file. The buttons named as in the bar, with their icons (they
+            show alone there below `xl`), drawn as keys (as the new tag field's
+            Enter): they open the bar's window and menu, its buttons focused.
           -->
-          <div class="ms-12 text-marble-700 dark:text-marble-400 font-semibold">
+          <div class="ms-12 text-marble-700 dark:text-marble-400 font-medium">
             <p class="mb-2">
               Depuis la barre d'outils d'une entrée, ajoutez-la à vos favoris ou rangez-la sous
               une étiquette : vous la retrouverez ici.
@@ -257,23 +271,36 @@
             <p class="mb-2">
               Vos signets sont enregistrés dans ce navigateur,
               <strong class="font-bold">sur cet appareil seulement</strong>. Ils peuvent disparaître
-              si vous effacez l'historique ou les données de navigation ; certains navigateurs, comme
-              Safari, les effacent aussi d'eux-mêmes après quelques jours sans visite.
+              si vous effacez l'historique ou les données de navigation, et certains navigateurs
+              effacent parfois d'eux-mêmes les données des sites, par exemple quand l'espace de
+              stockage vient à manquer.
             </p>
             <p class="mb-2">
               Pour ne pas les perdre, activez la synchronisation (bouton
-              <span class="whitespace-nowrap font-bold"><UIcon
-                name="i-lucide-cloud-upload"
-                class="me-1 inline-block size-[1.1em] align-[-0.2em]"
-              />Synchroniser</span>) : vos signets sont alors sauvegardés en ligne et vous les
+              <button
+                type="button"
+                :class="INLINE_BUTTON"
+                @click="syncButton?.open()"
+              >
+                <UIcon
+                  name="i-lucide-cloud-upload"
+                  class="size-4 shrink-0"
+                />Synchroniser
+              </button>) : vos signets sont alors sauvegardés en ligne et vous les
               retrouvez sur vos autres appareils et navigateurs.
             </p>
             <p>
               Vous pouvez aussi les enregistrer dans un fichier (menu
-              <span class="whitespace-nowrap font-bold"><UIcon
-                name="i-lucide-folder-open"
-                class="me-1 inline-block size-[1.1em] align-[-0.2em]"
-              />Fichiers</span>) : gardez-le en lieu sûr, puis importez-le pour les rétablir ici ou
+              <button
+                type="button"
+                :class="INLINE_BUTTON"
+                @click="filesMenu?.open()"
+              >
+                <UIcon
+                  name="i-lucide-folder-open"
+                  class="size-4 shrink-0"
+                />Fichiers
+              </button>) : gardez-le en lieu sûr, puis importez-le pour les rétablir ici ou
               les transférer ailleurs.
             </p>
           </div>

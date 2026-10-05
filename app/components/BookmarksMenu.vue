@@ -172,11 +172,25 @@
       },
     },
   ];
+
+  /**
+   * The menu, opened from elsewhere too (e.g. the bookmarks' introduction),
+   * its button focused first: the focus comes back to it once it closes.
+   */
+  const isMenuOpen = ref(false);
+  const root = useTemplateRef<HTMLElement>("root");
+  const open = (): void => {
+    root.value?.querySelector<HTMLButtonElement>("button")?.focus();
+    isMenuOpen.value = true;
+  };
+
+  defineExpose({ open });
 </script>
 
 <template>
-  <div>
+  <div ref="root">
     <UDropdownMenu
+      v-model:open="isMenuOpen"
       :items="items"
       :content="{ align: 'end' }"
     >

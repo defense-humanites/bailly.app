@@ -126,13 +126,23 @@
     isSyncOpen.value = true;
   };
 
-  // For the page's texts (e.g. the bookmarks' introduction, which tells
-  // that they can be synchronized while they aren't).
-  defineExpose({ enabled });
+  const root = useTemplateRef<HTMLElement>("root");
+
+  /**
+   * Opens the window from elsewhere (e.g. the bookmarks' introduction),
+   * the button focused first: the focus comes back to it once the window
+   * closes.
+   */
+  const open = (): void => {
+    root.value?.querySelector<HTMLButtonElement>("button")?.focus();
+    openSync();
+  };
+
+  defineExpose({ enabled, open });
 </script>
 
 <template>
-  <div>
+  <div ref="root">
     <!--
       An item of the bookmarks page's menu bar (cf. `signets.vue`), as
       « Fichiers » (cf. `BookmarksMenu`): square-cornered, as high as the bar.
