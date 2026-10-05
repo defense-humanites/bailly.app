@@ -20,7 +20,9 @@
   (as the large titles of iOS), exactly as wide as the definition's card.
   It sticks in a zero-height wrapper, so that
   it takes no room in the page; hidden, it is out of the tab order and of
-  the accessibility tree (`invisible`).
+  the accessibility tree (`invisible`). The arrows' hover is the header
+  menu's (`bg-elevated`, Nuxt UI's, is the bar's own color in the light
+  theme).
 -->
 <template>
   <div class="pointer-events-none sticky top-(--header-bottom) z-20 h-0 transition-[top] duration-300 ease-out motion-reduce:transition-none">
@@ -37,6 +39,7 @@
         variant="ghost"
         size="sm"
         :aria-label="`Entrée précédente : ${greek.text(siblings.previous.word)}`"
+        class="hover:bg-(--app-page-hover)/50 active:bg-(--app-page-hover)/50"
       />
       <span
         v-else
@@ -54,6 +57,7 @@
         variant="ghost"
         size="sm"
         :aria-label="`Entrée suivante : ${greek.text(siblings.next.word)}`"
+        class="hover:bg-(--app-page-hover)/50 active:bg-(--app-page-hover)/50"
       />
       <span
         v-else
