@@ -272,18 +272,22 @@
               />Nouvelle étiquette
             </button>.
           </p>
-          <p>
+          <p class="mb-2">
             La dernière étiquette créée devient
             <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
               name="i-bailly-circle-dot-bold"
               :class="INLINE_ICON"
             /> active</span> : elle est alors accessible en un clic depuis la barre d'outils
-            de chaque entrée. Vous pouvez choisir d'en activer une autre à tout moment. Vous pouvez également
+            de chaque entrée. Vous pouvez choisir d'en activer une autre à tout moment.
+          </p>
+          <p>
+            Vous pouvez également
             <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
               name="i-bailly-pin-filled"
               :class="INLINE_ICON"
             /> épingler</span>
-            vos étiquettes sur cette page pour les garder en haut.
+            vos étiquettes sur cette page pour les garder en haut. Par défaut, le tri des autres
+            étiquettes se fait du plus récent au plus ancien.
           </p>
         </BookmarksGuideCard>
         <BookmarksGuideCard
@@ -298,36 +302,33 @@
             Vos signets sont enregistrés dans ce navigateur,
             <strong class="font-bold">sur cet appareil seulement</strong> : effacer les données de
             navigation les supprime, et le navigateur peut aussi les effacer de lui-même si son
-            espace de stockage vient à manquer. Pour ne pas les perdre, vous pouvez :
+            espace de stockage vient à manquer.
           </p>
-          <ul class="list-disc space-y-1 ps-5 marker:text-marble-400 dark:marker:text-marble-600">
-            <li>
-              Les <button
-                type="button"
-                :class="INLINE_BUTTON"
-                @click="syncButton?.open()"
-              >
-                <UIcon
-                  name="i-lucide-cloud-upload"
-                  class="size-4 shrink-0"
-                />Synchroniser
-              </button> en ligne, afin de les sauvegarder et de les retrouver sur vos autres
-              appareils ;
-            </li>
-            <li>
-              Les enregistrer dans des <button
-                type="button"
-                :class="INLINE_BUTTON"
-                @click="filesMenu?.open()"
-              >
-                <UIcon
-                  name="i-lucide-folder-open"
-                  class="size-4 shrink-0"
-                />Fichiers
-              </button> à garder en lieu sûr, puis les importer pour les
-              rétablir ici ou les transférer.
-            </li>
-          </ul>
+          <p class="mb-2">
+            Pour ne pas les perdre, vous pouvez les <button
+              type="button"
+              :class="INLINE_BUTTON"
+              @click="syncButton?.open()"
+          >
+            <UIcon
+                name="i-lucide-cloud-upload"
+                class="size-4 shrink-0"
+            />Synchroniser
+          </button> : ils sont alors sauvegardés en ligne et vous les retrouvez sur vos autres appareils et
+            navigateurs.
+          </p>
+          <p class="mb-2">
+            Vous pouvez aussi les récupérer dans des <button
+              type="button"
+              :class="INLINE_BUTTON"
+              @click="filesMenu?.open()"
+          >
+            <UIcon
+                name="i-lucide-folder-open"
+                class="size-4 shrink-0"
+            />Fichiers
+          </button> à garder en lieu sûr, puis les importer pour les rétablir ou les transférer.
+          </p>
         </BookmarksGuideCard>
 
         <!-- Favorites -->
