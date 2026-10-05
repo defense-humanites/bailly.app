@@ -690,7 +690,7 @@
                 >
                   <span class="underline decoration-dotted underline-offset-4">{{ credit.details.label }}</span>
                   <UIcon
-                    name="i-lucide-list"
+                    name="i-lucide-type"
                     class="size-4 self-center not-italic"
                   />
                 </button>
@@ -739,6 +739,8 @@
               >
                 <em v-if="index">et al.</em>{{ part }}
               </template>
+              <!-- A space before the contributors' « et al. » (the loop's last one is dropped). -->
+              {{ " " }}
               <!--
                 Their « et al. »: the contributors (a long list), in a window;
                 the icon tells there is more behind it.
