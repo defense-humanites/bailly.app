@@ -53,6 +53,7 @@
     return children.find(child => homonymAnchor(child.uri) === anchor) ?? children[0] ?? entry;
   });
   const dataVersion = data.value?.version;
+  const [DefineCiteButton, ReuseCiteButton] = createReusableTemplate();
 
   // The entry is added to the history of the viewed entries (in the browser).
   const historyStore = useHistoryStore();
@@ -169,67 +170,80 @@
         color="neutral"
       />
     </header>
-    <section>
-      <EntryCard
-        :entry="entry"
-        toolbar
-      />
-    </section>
-    <!--
-      The links to the neighbouring entries, again after the entry, on every
-      screen (on mobile, the header only has arrows).
-    -->
-    <footer class="mt-8">
-      <!-- Below `xl`, the citation in a window (from `xl`, on the right). -->
-      <div class="mb-4 flex justify-end xl:hidden">
-        <UModal
-          title="Citer cette entrée"
-          :ui="{ content: 'sm:max-w-lg' }"
-        >
-          <UButton
-            label="Citer"
-            icon="i-lucide-quote"
-            size="sm"
-            color="neutral"
-            variant="ghost"
-            class="hover:bg-(--app-page-hover)/50 active:bg-(--app-page-hover)/50"
+    <!-- The button opening the citation in a window (below `xl`; defined before its uses). -->
+    <DefineCiteButton>
+      <UModal
+        title="Citer cette entrée"
+        :ui="{ content: 'sm:max-w-lg' }"
+      >
+        <UButton
+          label="Citer"
+          icon="i-lucide-quote"
+          size="sm"
+          color="neutral"
+          variant="ghost"
+          class="hover:bg-(--app-page-hover)/50 active:bg-(--app-page-hover)/50"
+        />
+        <template #body>
+          <EntryCitation
+            :entry="citedEntry"
+            :version="dataVersion"
           />
-          <template #body>
+        </template>
+      </UModal>
+    </DefineCiteButton>
+
+    <!--
+      The entry, and its tools on the column's right, from its card's top
+      (not beside the title): from `xl`, the citation (sticky under the
+      header, as the ambiguous forms' headwords, cf. `forme`); from `lg`,
+      where the column stays offset, a button opening it in a window.
+    -->
+    <div class="relative">
+      <section>
+        <EntryCard
+          :entry="entry"
+          toolbar
+        />
+      </section>
+      <aside
+        aria-labelledby="citer"
+        class="absolute start-full top-0 hidden h-full lg:block lg:ms-4 xl:ms-12 xl:w-64"
+      >
+        <div class="sticky top-[calc(var(--header-bottom)+1.5rem)]">
+          <div class="xl:hidden">
+            <ReuseCiteButton />
+          </div>
+          <div class="hidden xl:block">
+            <h2
+              id="citer"
+              class="mb-3 flex items-center gap-2 font-semibold text-highlighted"
+            >
+              <UIcon
+                name="i-lucide-quote"
+                class="size-4 shrink-0 text-muted"
+              />
+              Citer cette entrée
+            </h2>
             <EntryCitation
               :entry="citedEntry"
               :version="dataVersion"
             />
-          </template>
-        </UModal>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!--
+      The links to the neighbouring entries, again after the entry, on every
+      screen (on mobile, the header only has arrows). Below `lg`, the
+      citation's button before them.
+    -->
+    <footer class="mt-8">
+      <div class="mb-4 flex justify-end lg:hidden">
+        <ReuseCiteButton />
       </div>
       <EntrySurround :siblings="siblings" />
     </footer>
-
-    <!--
-      From `xl`, the citation on the column's right (where it leaves room),
-      sticky under the header, as the ambiguous forms' headwords (cf.
-      `forme`): the first of the entry's tools.
-    -->
-    <aside
-      aria-labelledby="citer"
-      class="absolute start-full top-0 ms-12 hidden h-full w-64 xl:block"
-    >
-      <div class="sticky top-[calc(var(--header-bottom)+1.5rem)]">
-        <h2
-          id="citer"
-          class="mb-3 flex items-center gap-2 font-semibold text-highlighted"
-        >
-          <UIcon
-            name="i-lucide-quote"
-            class="size-4 shrink-0 text-muted"
-          />
-          Citer cette entrée
-        </h2>
-        <EntryCitation
-          :entry="citedEntry"
-          :version="dataVersion"
-        />
-      </div>
-    </aside>
   </article>
 </template>
