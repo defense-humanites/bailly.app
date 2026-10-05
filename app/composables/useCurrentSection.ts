@@ -10,7 +10,8 @@ const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home
  * the page's top, or the last one at the bottom of a page that scrolled.
  * A section reached by a link (`follow`) is the one marked (it may not reach
  * the reading line, e.g. near the page's bottom, or all of them in view),
- * until the user scrolls by themselves.
+ * until the user scrolls by themselves; so is the one a page is opened at
+ * (`#id`).
  * @param ids The sections' elements' ids, in their order.
  */
 export function useCurrentSection(ids: MaybeRefOrGetter<string[]>): {
@@ -48,8 +49,9 @@ export function useCurrentSection(ids: MaybeRefOrGetter<string[]>): {
     currentId.value = atBottom ? elements.at(-1)!.id : current.id;
   };
 
-  onMounted(update);
   watch(y, () => requestAnimationFrame(update));
+  // The scroller is set once the layout is mounted, after the page.
+  watch(scroller, update);
 
   const release = (): void => {
     if (!followed) return;
@@ -68,6 +70,17 @@ export function useCurrentSection(ids: MaybeRefOrGetter<string[]>): {
   const follow = (id: string): void => {
     followed = currentId.value = id;
   };
+
+  onMounted(() => {
+    let hash = "";
+    try {
+      hash = decodeURIComponent(location.hash.slice(1));
+    } catch {
+      // A malformed hash: no section.
+    }
+    if (toValue(ids).includes(hash)) follow(hash);
+    else update();
+  });
 
   return { currentId, follow };
 }
