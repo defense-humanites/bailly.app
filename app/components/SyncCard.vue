@@ -150,6 +150,7 @@
       label="Signets"
       description="Étiquettes, entrées et épingles."
       :control="bookmarksSwitchId"
+      inline
     >
       <USwitch
         :id="bookmarksSwitchId"
@@ -163,6 +164,7 @@
     <SettingsRow
       label="Préférences"
       :control="preferencesSwitchId"
+      inline
     >
       <template #description>
         <template v-if="preferencesOn">

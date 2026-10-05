@@ -193,6 +193,7 @@
             description="Le grec en caractères latins, pour les non-hellénistes."
             :synced="synced('transliterateGreek')"
             :control="transliterateId"
+            inline
           >
             <USwitch
               :id="transliterateId"
@@ -225,6 +226,7 @@
             description="Chercher aussi les formes déclinées ou conjuguées (analyse morphologique)."
             :synced="synced('inflectedForms')"
             :control="inflectedFormsId"
+            inline
           >
             <USwitch
               :id="inflectedFormsId"
@@ -299,6 +301,7 @@
           <SettingsRow
             label="Police"
             :synced="synced('readingFont')"
+            inline
           >
             <USelect
               v-model="readingFont"
