@@ -66,17 +66,27 @@
   const showKeep = computed((): boolean => !introDismissed.value && !keepDismissed.value && !bookmarksSynced.value);
 
   /**
-   * The bar's new tag field, synchronization button and files menu, reached
-   * from the introduction's buttons, drawn as keys (as the new tag field's
-   * Enter, cf. `UKbd`).
+   * The bar's new tag field, active tag field, display menu,
+   * synchronization button and files menu, reached from the guide's
+   * buttons, drawn as keys (as the new tag field's Enter, cf. `UKbd`).
    */
   const createTag = useTemplateRef<{ open: () => void }>("createTag");
+  const activeField = useTemplateRef<HTMLElement>("activeField");
+  /**
+   * The active tag's field, reached from the guide: its menu's button
+   * focused (not opened), the field pointed out (as the new tag field).
+   */
+  const reachActiveField = (): void => {
+    if (!activeField.value) return;
+    activeField.value.querySelector<HTMLButtonElement>("button")?.focus();
+    pointOut(activeField.value);
+  };
   const syncButton = useTemplateRef<{ open: () => void }>("syncButton");
   const filesMenu = useTemplateRef<{ open: () => void }>("filesMenu");
+  const displayMenu = useTemplateRef<{ open: () => void }>("displayMenu");
   /**
-   * The marks named in the introduction (the favorites' star, the active
-   * tag's selected radio button, bolder to stand out in the text), in the
-   * line.
+   * The marks named in the guide (the favorites' star, the pin), in the
+   * line; the active tag's (its selected radio button) is on its key.
    */
   const INLINE_ICON = "inline-block size-4 align-[-0.15em]";
   // Its negative margins keep it within the line (a key 24 px high, as the
@@ -165,6 +175,7 @@
             tag): its place is kept.
           -->
           <div
+            ref="activeField"
             class="flex h-11 min-w-0 grow basis-24 border-default max-lg:rounded-bl-(--field-inner-radius) lg:basis-0 lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
             :class="FIELD_HALO"
           >
@@ -205,7 +216,10 @@
           </div>
 
           <!-- Display: the entries, the sorting of the tags -->
-          <BookmarksDisplayMenu class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
+          <BookmarksDisplayMenu
+            ref="displayMenu"
+            class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
+          />
 
           <!-- Export, import -->
           <BookmarksMenu
@@ -263,7 +277,7 @@
               name="i-bailly-star-filled"
               :class="INLINE_ICON"
             /> favoris</span>
-            depuis leur barre d'outils se retrouvent ici, comme celles que vous rangez sous une
+            depuis leur barre d'outils se retrouvent ici, comme celles que vous rangerez sous une
             <button
               type="button"
               :class="INLINE_BUTTON"
@@ -276,12 +290,18 @@
             </button>.
           </p>
           <p class="mb-2">
-            La dernière étiquette créée devient
-            <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
-              name="i-bailly-circle-dot-bold"
-              :class="INLINE_ICON"
-            /> active</span> : elle est alors accessible en un clic depuis la barre d'outils
-            de chaque entrée. Vous pouvez choisir d'en activer une autre à tout moment.
+            Créer une étiquette la rend
+            <button
+              type="button"
+              :class="INLINE_BUTTON"
+              @click="reachActiveField"
+            >
+              <UIcon
+                name="i-lucide-circle-dot"
+                class="size-4 shrink-0"
+              />active
+            </button> : elle est alors accessible en un clic depuis la barre d'outils de chaque
+            entrée. Vous pouvez en activer une autre depuis cette page.
           </p>
           <p>
             Vous pouvez également
@@ -289,8 +309,18 @@
               name="i-bailly-pin-filled"
               :class="INLINE_ICON"
             /> épingler</span>
-            vos étiquettes sur cette page pour les garder en haut. Par défaut, le tri des autres
-            étiquettes se fait du plus récent au plus ancien.
+            vos étiquettes sur cette page pour les garder en haut. Par défaut, le
+            <button
+              type="button"
+              :class="INLINE_BUTTON"
+              @click="displayMenu?.open()"
+            >
+              <UIcon
+                name="i-lucide-layout-list"
+                class="size-4 shrink-0"
+              />tri
+            </button>
+            des autres étiquettes se fait du plus récent au plus ancien.
           </p>
         </BookmarksGuideCard>
         <BookmarksGuideCard

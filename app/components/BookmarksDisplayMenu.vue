@@ -36,11 +36,28 @@
       })),
     ],
   ]);
+
+  /**
+   * The menu, opened from elsewhere too (e.g. the bookmarks' guide): its
+   * button focused first (the focus comes back to it once it closes) and
+   * pointed out (`pointOut`, in `--card-highlight`).
+   */
+  const isMenuOpen = ref(false);
+  const root = useTemplateRef<HTMLElement>("root");
+  const open = (): void => {
+    if (!root.value) return;
+    root.value.querySelector<HTMLButtonElement>("button")?.focus();
+    pointOut(root.value);
+    isMenuOpen.value = true;
+  };
+
+  defineExpose({ open });
 </script>
 
 <template>
-  <div>
+  <div ref="root">
     <UDropdownMenu
+      v-model:open="isMenuOpen"
       :items="items"
       :content="{ align: 'end' }"
     >
