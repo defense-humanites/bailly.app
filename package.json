@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
+    "deploy:preview": "node scripts/wrangler-preview.mjs && wrangler deploy --config .output/server/wrangler.preview.json",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
