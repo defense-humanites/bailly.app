@@ -646,8 +646,8 @@
               {{ credit.licence }}
             </p>
             <p
-                v-if="credit.note"
-                class="text-muted"
+              v-if="credit.note"
+              class="text-muted"
             >
               {{ credit.note }}
             </p>
