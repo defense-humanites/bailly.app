@@ -97,72 +97,20 @@
   });
 
   /**
-   * The entry in view: the last one whose top has passed a "reading line"
-   * (a quarter of the window), the first one at the page's top, or the last
-   * one at the bottom of a page that scrolled. It
-   * is marked in the headwords' column (from `xl`; below, the table of
-   * contents finds it by itself).
+   * The entry in view, marked in the headwords' column (from `xl`; below,
+   * the table of contents finds it by itself), cf. `useCurrentSection`.
    */
-  const currentId = ref<string>();
-  const scroller = usePageScroller();
-  const { y } = usePageScroll();
-
-  const updateCurrent = (): void => {
-    if (followed) {
-      currentId.value = followed;
-      return;
-    }
-    const elements = sections.value
-      .map(({ id }) => document.getElementById(id))
-      .filter((element): element is HTMLElement => element !== null);
-    if (!elements.length) return;
-
-    const box = scroller.value;
-    // At the bottom of a page that scrolled (all the cards may fit).
-    const atBottom = box ? box.scrollTop > 0 && box.clientHeight + box.scrollTop >= box.scrollHeight - 2 : false;
-    // The reading line, lower than where a headword's link brings its card
-    // (its scroll margin), on a short window too.
-    const margin = Number.parseFloat(getComputedStyle(elements[0]!).scrollMarginTop) || 0;
-    const readingLine = Math.max(window.innerHeight / 4, (box?.getBoundingClientRect().top ?? 0) + margin + 1);
-    let current = elements[0]!;
-    for (const element of elements) {
-      if (element.getBoundingClientRect().top <= readingLine) current = element;
-    }
-    // At the page's top, the first one (all the cards may be in view).
-    if (!box?.scrollTop) current = elements[0]!;
-    currentId.value = atBottom ? elements.at(-1)!.id : current.id;
-  };
-
-  onMounted(updateCurrent);
-  watch(y, () => requestAnimationFrame(updateCurrent));
+  const { currentId, follow } = useCurrentSection(() => sections.value.map(({ id }) => id));
 
   /**
    * Follows a headword's link: its card, once reached, is pointed out (as a
    * bookmarks' card, cf. `highlightCard`).
    */
   const pointOut = (id: string): void => {
-    followed = currentId.value = id;
+    follow(id);
     const card = document.getElementById(id);
     if (card) highlightCard(card);
   };
-
-  /**
-   * The headword followed is the one marked (its card may not reach the
-   * reading line, e.g. near the page's bottom, or all the cards in view),
-   * until the user scrolls by themselves.
-   */
-  let followed: string | undefined;
-  const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
-  const release = (): void => {
-    if (!followed) return;
-    followed = undefined;
-    updateCurrent();
-  };
-  useEventListener("wheel", release, { passive: true });
-  useEventListener("touchmove", release, { passive: true });
-  useEventListener("keydown", (event: KeyboardEvent) => {
-    if (SCROLL_KEYS.has(event.key)) release();
-  });
 
   /**
    * The headwords' table of contents below `xl` (cf. `BookmarksToc`).
