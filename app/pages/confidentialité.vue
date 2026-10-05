@@ -82,7 +82,7 @@
         Sur votre appareil
       </h2>
       <p>
-        Vos signets (étiquettes et favoris) et l'historique des entrées consultées sont
+        Vos signets et l'historique des entrées consultées sont
         enregistrés dans votre navigateur (IndexedDB), sur votre appareil seulement, jusqu'à ce
         que vous les effaciez. Certains navigateurs effacent parfois d'eux-mêmes les données des
         sites, par exemple quand l'espace de stockage vient à manquer&nbsp;: exportez vos

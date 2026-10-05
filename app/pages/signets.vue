@@ -283,7 +283,7 @@
               Organiser vos entrées
             </h3>
             <p class="mb-2">
-              Les entrées que vous ajoutez à vos
+              Les entrées que vous ajoutez aux
               <span
                 data-tag-color="Yellow"
                 class="whitespace-nowrap font-bold text-tag-text"
@@ -292,7 +292,6 @@
                 :class="INLINE_ICON"
               /> favoris</span>
               depuis leur barre d'outils se retrouvent ici, comme celles que vous rangez sous une
-              étiquette. Créez d'abord une
               <button
                 type="button"
                 :class="INLINE_BUTTON"
@@ -310,12 +309,12 @@
                 name="i-bailly-circle-dot-bold"
                 :class="INLINE_ICON"
               /> active</span> : elle est alors accessible en un clic depuis la barre d'outils
-              de chaque entrée. Vous pouvez en choisir une autre à tout moment. Vous pouvez également
+              de chaque entrée. Vous pouvez choisir d'en activer une autre à tout moment. Vous pouvez également
               <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
                 name="i-bailly-pin-filled"
                 :class="INLINE_ICON"
               /> épingler</span>
-              les étiquettes sur cette page pour les garder en haut.
+              vos étiquettes sur cette page pour les garder en haut.
             </p>
             <h3 class="mb-1 text-xl font-semibold">
               Conserver vos signets
