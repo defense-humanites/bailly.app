@@ -27,9 +27,9 @@ de Modification_ (CC&nbsp;BY-NC-ND&nbsp;4.0).
 Cette application utilise les fontes de lecture « Bailly Book » (par défaut),
 sous-ensemble renommé de
 [Gentium Book Plus](https://software.sil.org/gentium/) (SIL International),
-[GFS Didot](https://www.greekfontsociety-gfs.gr/typefaces/19th_century),
 [GFS Artemisia](https://www.greekfontsociety-gfs.gr/typefaces/20th_21st_century),
-[GFS Bodoni](https://www.greekfontsociety-gfs.gr/typefaces/19th_century) et
+[GFS Bodoni](https://www.greekfontsociety-gfs.gr/typefaces/19th_century),
+[GFS Didot](https://www.greekfontsociety-gfs.gr/typefaces/19th_century) et
 [GFS Neohellenic](https://www.greekfontsociety-gfs.gr/typefaces/20th_21st_century)
 (Greek Font Society), et la fonte d'interface [Inter](https://rsms.me/inter/)
 (Rasmus Andersson), distribuées sous licence _SIL Open Font License 1.1_, ainsi
