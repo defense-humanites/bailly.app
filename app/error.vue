@@ -17,7 +17,7 @@
 
   const description = computed((): string => {
     if (notFound.value) return "Cette adresse ne mène à aucune entrée du dictionnaire ni à aucune page de l'application.";
-    const message = props.error.statusText ?? "";
+    const message = props.error.message;
     return OWN_MESSAGES.has(message) ? `${message} Réessayez dans un instant.` : "La page n'a pas pu être affichée. Réessayez dans un instant.";
   });
 

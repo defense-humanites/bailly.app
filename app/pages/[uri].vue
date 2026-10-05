@@ -19,7 +19,7 @@
   if (error.value) {
     throw createError({
       status: error.value.status ?? 500,
-      statusText: "L'entrée n'a pas pu être chargée.",
+      message: "L'entrée n'a pas pu être chargée.",
     });
   }
 
@@ -27,7 +27,7 @@
   if (!entry) {
     throw createError({
       status: 404,
-      statusText: "La page demandée n'existe pas.",
+      message: "La page demandée n'existe pas.",
     });
   }
 

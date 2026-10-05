@@ -36,7 +36,7 @@
   if (error.value) {
     throw createError({
       status: error.value.status ?? 500,
-      statusText: "Les entrées n'ont pas pu être chargées.",
+      message: "Les entrées n'ont pas pu être chargées.",
     });
   }
 
