@@ -42,7 +42,8 @@ export default defineAppConfig({
       // The text in a hue of the palette rather than plain white or black:
       // gold on terracotta (the cream gold, 4.7:1; in the dark theme, the
       // darkest gold, 5.1:1), the Aegean blue in its lightest shade on the
-      // dark blue (7:1) and conversely (5.9:1). Hovered, pressed, or while
+      // blue (in the light theme, a shade lighter than the accent, 600: 5.3:1)
+      // and conversely (5.9:1). Hovered, pressed, or while
       // the panel it opens is open (`aria-expanded`: a menu, a dialog; not
       // `data-state`, which a tooltip around the button sets too, to its own
       // state), the button takes the next shade, further from its text (the
@@ -59,7 +60,7 @@ export default defineAppConfig({
         {
           color: "secondary",
           variant: "solid",
-          class: "text-(--ui-color-secondary-100) dark:text-(--ui-color-secondary-900) hover:bg-(--ui-color-secondary-800) active:bg-(--ui-color-secondary-800) aria-expanded:bg-(--ui-color-secondary-800) dark:hover:bg-(--ui-color-secondary-200) dark:active:bg-(--ui-color-secondary-200) dark:aria-expanded:bg-(--ui-color-secondary-200)",
+          class: "text-(--ui-color-secondary-100) dark:text-(--ui-color-secondary-900) bg-(--ui-color-secondary-600) disabled:bg-(--ui-color-secondary-600) aria-disabled:bg-(--ui-color-secondary-600) dark:bg-secondary dark:disabled:bg-secondary dark:aria-disabled:bg-secondary hover:bg-(--ui-color-secondary-700) active:bg-(--ui-color-secondary-700) aria-expanded:bg-(--ui-color-secondary-700) dark:hover:bg-(--ui-color-secondary-200) dark:active:bg-(--ui-color-secondary-200) dark:aria-expanded:bg-(--ui-color-secondary-200)",
         },
         { color: "success", variant: "solid", class: "hover:bg-success active:bg-success aria-expanded:bg-success hover:brightness-90 active:brightness-90 aria-expanded:brightness-90" },
         { color: "info", variant: "solid", class: "hover:bg-info active:bg-info aria-expanded:bg-info hover:brightness-90 active:brightness-90 aria-expanded:brightness-90" },
