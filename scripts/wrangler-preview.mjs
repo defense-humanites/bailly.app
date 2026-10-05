@@ -2,9 +2,10 @@
  * The preview Worker's Wrangler configuration, derived from the one Nitro
  * generates for production (`.output/server/wrangler.json`, from
  * `wrangler.jsonc`): the same build (entry, assets, compatibility), deployed
- * as another Worker, on its own host (behind Cloudflare Access) and with its
- * own synchronization database, so that the `dev` branch never touches the
- * production data.
+ * as another Worker, on its `workers.dev` address (no custom domain: a
+ * deployment with the production's configuration once took `bailly.app`
+ * over) and with its own synchronization database, so that the `dev` branch
+ * never touches the production data.
  *
  * Nitro's build redirects Wrangler to its generated configuration
  * (`.wrangler/deploy/config.json`), where Wrangler environments (`--env`) are
@@ -15,7 +16,6 @@ import { readFile, writeFile } from "node:fs/promises";
 
 const PREVIEW = {
   name: "bailly-app-nuxt-preview",
-  host: "pre.bailly.app",
   database: { name: "bailly-sync-preview", id: "3a15b6aa-d242-42e2-9993-2506b780879d" },
 };
 
@@ -27,10 +27,10 @@ delete config.env;
 const preview = {
   ...config,
   name: PREVIEW.name,
-  // Its host only: no `workers.dev` address nor version URLs, outside of
-  // the Access application.
-  routes: [{ pattern: PREVIEW.host, custom_domain: true }],
-  workers_dev: false,
+  // Its `workers.dev` address only: no route nor custom domain (never the
+  // production's), no version URLs.
+  routes: [],
+  workers_dev: true,
   preview_urls: false,
   d1_databases: (config.d1_databases ?? []).map(database => database.binding === "SYNC_DB"
     ? { ...database, database_name: PREVIEW.database.name, database_id: PREVIEW.database.id }
@@ -40,4 +40,4 @@ if (!preview.d1_databases.some(database => database.binding === "SYNC_DB")) {
   throw new Error("No `SYNC_DB` binding in the generated configuration.");
 }
 await writeFile(target, `${JSON.stringify(preview, null, 2)}\n`);
-console.log(`Preview configuration written: ${PREVIEW.name} on ${PREVIEW.host}, database ${PREVIEW.database.name}.`);
+console.log(`Preview configuration written: ${PREVIEW.name} on workers.dev, database ${PREVIEW.database.name}.`);
