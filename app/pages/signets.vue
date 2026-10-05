@@ -309,7 +309,7 @@
               name="i-bailly-pin-filled"
               :class="INLINE_ICON"
             /> épingler</span>
-            vos étiquettes sur cette page pour les garder en haut. Par défaut, le
+            vos étiquettes pour les garder en haut. Par défaut, le
             <button
               type="button"
               :class="INLINE_BUTTON"
@@ -351,7 +351,7 @@
             appareils et navigateurs.
           </p>
           <p>
-            Vous pouvez aussi les récupérer dans des <button
+            Ou sauvegardez-les dans des <button
               type="button"
               :class="INLINE_BUTTON"
               @click="filesMenu?.open()"
@@ -360,7 +360,7 @@
                 name="i-lucide-folder-open"
                 class="size-4 shrink-0"
               />Fichiers
-            </button> à garder en lieu sûr, puis les importer pour les rétablir ou les transférer.
+            </button> à garder en lieu sûr, puis importez-les pour les rétablir ou les transférer.
           </p>
         </BookmarksGuideCard>
 
