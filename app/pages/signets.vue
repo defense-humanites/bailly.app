@@ -266,8 +266,8 @@
           -->
           <div class="ms-12 text-marble-700 dark:text-marble-400 font-medium">
             <p class="mb-2">
-              Depuis la barre d'outils d'une entrée, ajoutez-la à vos favoris ou rangez-la sous
-              une étiquette : vous la retrouverez ici.
+              Les entrées que vous ajoutez à vos favoris ou rangez sous une étiquette depuis leur
+              barre d'outils se retrouvent ici.
             </p>
             <p class="mb-2">
               Vos signets sont enregistrés dans ce navigateur,
