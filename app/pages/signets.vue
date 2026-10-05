@@ -347,8 +347,8 @@
                 name="i-lucide-cloud-upload"
                 class="size-4 shrink-0"
               />Synchroniser
-            </button> : ils sont alors sauvegardés en ligne et vous les retrouvez sur vos autres
-            appareils et navigateurs.
+            </button> : ils seront sauvegardés en ligne, en privé, et vous les retrouverez sur vos
+            autres appareils et navigateurs.
           </p>
           <p>
             Ou sauvegardez-les dans des <button
