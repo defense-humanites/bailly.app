@@ -44,7 +44,13 @@
    * Compact rows: a label on the left, the control on the right.
    */
   const radioUi = { legend: "sr-only", fieldset: "w-full", item: "flex-1 justify-center py-1 px-2" };
-  const switchUi = { root: "flex-row-reverse items-center justify-between gap-3", wrapper: "ms-0", label: "text-sm font-normal" };
+  // The label toggles the switch: a pointer on it, unless disabled (Nuxt UI's
+  // `cursor-not-allowed` then, which a class given here would override).
+  const switchUi = (disabled = false) => ({
+    root: "flex-row-reverse items-center justify-between gap-3",
+    wrapper: "ms-0",
+    label: disabled ? "text-sm font-normal" : "cursor-pointer text-sm font-normal",
+  });
 </script>
 
 <template>
@@ -129,7 +135,7 @@
           v-model="diacriticSensitive"
           label="Diacritiques"
           size="sm"
-          :ui="switchUi"
+          :ui="switchUi()"
         />
 
         <USeparator />
@@ -144,7 +150,7 @@
           :label="inflectedFormsLabel"
           :disabled="!lemmatizable"
           size="sm"
-          :ui="switchUi"
+          :ui="switchUi(!lemmatizable)"
         />
 
         <div class="flex flex-col gap-1 @2xs:flex-row @2xs:items-center @2xs:gap-3">
