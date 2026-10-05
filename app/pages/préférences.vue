@@ -301,7 +301,6 @@
           <SettingsRow
             label="Police"
             :synced="synced('readingFont')"
-            inline
           >
             <USelect
               v-model="readingFont"

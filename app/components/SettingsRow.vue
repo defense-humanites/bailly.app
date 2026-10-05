@@ -14,8 +14,8 @@
      */
     control?: string;
     /**
-     * Whether the control stays on the right whatever the width (a switch,
-     * a short select): the name and the help wrap instead.
+     * Whether the control stays on the right whatever the width (a switch):
+     * the name and the help wrap instead.
      */
     inline?: boolean;
   }>();
