@@ -346,6 +346,8 @@ test.describe("bookmarks page", () => {
   // The edit button toggles the mode from the same place, in the corner.
   test("the edit button stays in its corner in both modes", async ({ page }) => {
     const edit = page.getByRole("button", { name: "Modifier l'étiquette « Vide »" });
+    // In view first (below the introduction): the click doesn't scroll.
+    await edit.scrollIntoViewIfNeeded();
     const before = (await edit.boundingBox())!;
     await edit.click();
     await expect(edit).toHaveAttribute("aria-pressed", "true");

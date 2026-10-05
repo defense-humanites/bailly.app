@@ -266,17 +266,24 @@
             </div>
           </template>
           <!--
-            What the bookmarks are (a tag is created here first); the active
-            tag, and the pinned ones, with their marks (in the text's
-            strongest color, the favorites in their own); that they
-            live in this browser only, and may be lost; the two ways to keep
-            them: the synchronization and a file. The bar's field and buttons
-            named as there, with their icons (they show alone there below
-            `xl`), drawn as keys (as the new tag field's Enter), in the
-            sentences: they focus the field, open the window and the menu
-            (their buttons focused), and point them out.
+            In two parts, each under a subtitle (as bold as the title, its
+            size the text's).
+            Filing the entries: the favorites, the tags (created here first),
+            the active tag (the last created, or the one chosen) and the
+            pinned ones, with their marks (bold, in the text's strongest
+            color, the favorites in their own).
+            Keeping them: they live in this browser only, and may be lost;
+            the two ways to keep them, side by side in a list: the
+            synchronization and a file.
+            The bar's field and buttons named as there, with their icons
+            (they show alone there below `xl`), drawn as keys (as the new tag
+            field's Enter), in the sentences: they focus the field, open the
+            window and the menu (their buttons focused), and point them out.
           -->
           <div class="ms-12 text-marble-700 dark:text-marble-400 font-medium">
+            <h3 class="mb-1 font-bold">
+              Ranger vos entrées
+            </h3>
             <p class="mb-2">
               Les entrées que vous ajoutez à vos
               <span
@@ -299,54 +306,64 @@
                 />Nouvelle étiquette
               </button>.
             </p>
-            <p class="mb-2">
+            <p class="mb-4">
               La dernière étiquette créée devient
               <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
                 name="i-bailly-circle-dot-bold"
                 :class="INLINE_ICON"
               /> active</span> : elle est alors accessible en un clic depuis la barre d'outils
-              de chaque entrée. Vous pouvez également
+              de chaque entrée. Vous pouvez en choisir une autre à tout moment, dans le menu qui
+              l'affiche ci-dessus ou avec le bouton
+              <UIcon
+                name="i-lucide-circle-dot"
+                :class="INLINE_ICON"
+              />
+              du bloc d'une étiquette. Vous pouvez également
               <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
                 name="i-bailly-pin-filled"
                 :class="INLINE_ICON"
               /> épingler</span>
               les étiquettes sur cette page pour les conserver en haut.
             </p>
+            <h3 class="mb-1 font-bold">
+              Conserver vos signets
+            </h3>
             <p class="mb-2">
               Vos signets sont enregistrés dans ce navigateur,
               <strong class="font-bold">sur cet appareil seulement</strong> : effacer les données de
               navigation les supprime, et le navigateur peut aussi les effacer de lui-même si son
-              espace de stockage vient à manquer.
+              espace de stockage vient à manquer. Pour ne pas les perdre :
             </p>
-            <p class="mb-2">
-              Pour ne pas les perdre, vous pouvez les
-              <button
-                type="button"
-                :class="INLINE_BUTTON"
-                @click="syncButton?.open()"
-              >
-                <UIcon
-                  name="i-lucide-cloud-upload"
-                  class="size-4 shrink-0"
-                />Synchroniser
-              </button>
-              : ils sont alors sauvegardés en ligne et vous les retrouvez sur vos autres appareils et
-              navigateurs.
-            </p>
-            <p>
-              Vous pouvez aussi les enregistrer dans des
-              <button
-                type="button"
-                :class="INLINE_BUTTON"
-                @click="filesMenu?.open()"
-              >
-                <UIcon
-                  name="i-lucide-folder-open"
-                  class="size-4 shrink-0"
-                />Fichiers
-              </button>
-              à garder en lieu sûr, puis les importer pour les rétablir ici ou les transférer ailleurs.
-            </p>
+            <ul class="list-disc space-y-1 ps-5 marker:text-marble-400 dark:marker:text-marble-600">
+              <li>
+                <button
+                  type="button"
+                  :class="INLINE_BUTTON"
+                  @click="syncButton?.open()"
+                >
+                  <UIcon
+                    name="i-lucide-cloud-upload"
+                    class="size-4 shrink-0"
+                  />Synchroniser
+                </button>
+                : vos signets sont sauvegardés en ligne, et vous les retrouvez sur vos autres
+                appareils et navigateurs ;
+              </li>
+              <li>
+                <button
+                  type="button"
+                  :class="INLINE_BUTTON"
+                  @click="filesMenu?.open()"
+                >
+                  <UIcon
+                    name="i-lucide-folder-open"
+                    class="size-4 shrink-0"
+                  />Fichiers
+                </button>
+                : enregistrez-les dans un fichier à garder en lieu sûr, puis importez-le pour les
+                rétablir ici ou les transférer ailleurs.
+              </li>
+            </ul>
           </div>
         </UCard>
 
