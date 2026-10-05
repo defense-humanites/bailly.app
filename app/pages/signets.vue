@@ -79,7 +79,10 @@
    * line.
    */
   const INLINE_ICON = "inline-block size-4 align-[-0.15em]";
-  const INLINE_BUTTON = "inline-flex h-6 cursor-pointer items-center gap-1 rounded-sm bg-default px-1.5 align-middle text-sm font-medium text-default ring ring-inset ring-accented transition-colors hover:bg-elevated focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)";
+  // Its negative margins keep it within the line (a key 24 px high, as the
+  // line, set in its middle, overflowed it by 2 px): a line with a key is
+  // as high as the others.
+  const INLINE_BUTTON = "-my-0.5 inline-flex h-6 cursor-pointer items-center gap-1 rounded-sm bg-default px-1.5 align-middle text-sm font-medium text-default ring ring-inset ring-accented transition-colors hover:bg-elevated focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)";
 
   /**
    * The tags to choose the active one from, in their order; from
@@ -309,25 +312,25 @@
               type="button"
               :class="INLINE_BUTTON"
               @click="syncButton?.open()"
-          >
-            <UIcon
+            >
+              <UIcon
                 name="i-lucide-cloud-upload"
                 class="size-4 shrink-0"
-            />Synchroniser
-          </button> : ils sont alors sauvegardés en ligne et vous les retrouvez sur vos autres appareils et
-            navigateurs.
+              />Synchroniser
+            </button> : ils sont alors sauvegardés en ligne et vous les retrouvez sur vos autres
+            appareils et navigateurs.
           </p>
-          <p class="mb-2">
+          <p>
             Vous pouvez aussi les récupérer dans des <button
               type="button"
               :class="INLINE_BUTTON"
               @click="filesMenu?.open()"
-          >
-            <UIcon
+            >
+              <UIcon
                 name="i-lucide-folder-open"
                 class="size-4 shrink-0"
-            />Fichiers
-          </button> à garder en lieu sûr, puis les importer pour les rétablir ou les transférer.
+              />Fichiers
+            </button> à garder en lieu sûr, puis les importer pour les rétablir ou les transférer.
           </p>
         </BookmarksGuideCard>
 
