@@ -63,6 +63,19 @@
       failure.value = response.message;
     }
   };
+
+  /**
+   * The field, reached from elsewhere (e.g. the bookmarks' introduction):
+   * focused and pointed out (`pointOut`, in `--card-highlight`).
+   */
+  const field = useTemplateRef<{ inputRef: HTMLInputElement | null; $el: HTMLElement }>("field");
+  const open = (): void => {
+    if (!field.value) return;
+    field.value.inputRef?.focus();
+    pointOut(field.value.$el);
+  };
+
+  defineExpose({ open });
 </script>
 
 <template>
@@ -87,6 +100,7 @@
   >
     <template #anchor>
       <UInput
+        ref="field"
         v-bind="$attrs"
         v-model="newTagName"
         size="xl"

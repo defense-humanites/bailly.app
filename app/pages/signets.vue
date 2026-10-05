@@ -56,14 +56,14 @@
   const introDismissed = useDismissed("bookmarksIntro");
 
   /**
-   * The bar's synchronization button and files menu, opened from the
-   * introduction's buttons, drawn as keys (as the new tag field's Enter, cf.
-   * `UKbd`).
+   * The bar's new tag field, synchronization button and files menu, reached
+   * from the introduction's buttons, drawn as keys (as the new tag field's
+   * Enter, cf. `UKbd`).
    */
+  const createTag = useTemplateRef<{ open: () => void }>("createTag");
   const syncButton = useTemplateRef<{ open: () => void }>("syncButton");
   const filesMenu = useTemplateRef<{ open: () => void }>("filesMenu");
   const INLINE_BUTTON = "inline-flex h-6 cursor-pointer items-center gap-1 rounded-sm bg-default px-1.5 align-[-0.3em] text-sm font-medium text-default ring ring-inset ring-accented transition-colors hover:bg-elevated focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)";
-  // (Its exposed `enabled` is unwrapped on the component's instance.)
 
   /**
    * The tags to choose the active one from, in their order; from
@@ -134,7 +134,10 @@
             (each framed, slightly apart) on one line, the fields sharing the
             width left by the buttons.
           -->
-          <CreateTag class="h-11 min-w-0 basis-full border-default max-lg:rounded-t-(--field-inner-radius) max-lg:border-b lg:basis-0 lg:grow lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs" />
+          <CreateTag
+            ref="createTag"
+            class="h-11 min-w-0 basis-full border-default max-lg:rounded-t-(--field-inner-radius) max-lg:border-b lg:basis-0 lg:grow lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
+          />
 
           <!--
             The active tag (the one an entry's toolbar adds it to in one
@@ -257,18 +260,25 @@
             </div>
           </template>
           <!--
-            What the bookmarks are; that they live in this browser only, and
-            may be lost; the two ways to keep them: the synchronization and
-            a file. The buttons named as in the bar, with their icons (they
-            show alone there below `xl`), drawn as keys (as the new tag field's
-            Enter), in the sentences: they open the bar's window and menu, its
-            buttons focused and pointed out.
+            What the bookmarks are (a tag is created here first); that they
+            live in this browser only, and may be lost; the two ways to keep
+            them: the synchronization and a file. The bar's field and buttons
+            named as there, with their icons (they show alone there below
+            `xl`), drawn as keys (as the new tag field's Enter), in the
+            sentences: they focus the field, open the window and the menu
+            (their buttons focused), and point them out.
           -->
           <div class="ms-12 text-marble-700 dark:text-marble-400 font-medium">
             <p class="mb-2">
               Les entrées que vous ajoutez à vos favoris depuis leur barre d'outils se retrouvent
-              ici, comme celles que vous rangez sous une étiquette, une fois celle-ci créée dans le
-              champ « Nouvelle étiquette » ci-dessus.
+              ici, comme celles que vous rangez sous une étiquette : créez d'abord une
+              <button
+                type="button"
+                :class="INLINE_BUTTON"
+                @click="createTag?.open()"
+              >
+                Nouvelle étiquette
+              </button>.
             </p>
             <p class="mb-2">
               Vos signets sont enregistrés dans ce navigateur,
