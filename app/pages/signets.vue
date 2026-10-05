@@ -290,6 +290,7 @@
           title="Conserver vos signets"
           icon="i-bailly-shield-check-filled"
           title-id="signets-conserver"
+          tint="secondary"
           @dismiss="keepDismissed = true"
         >
           <p class="mb-2">
