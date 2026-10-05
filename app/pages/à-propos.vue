@@ -107,7 +107,65 @@
   const OFL = "SIL Open Font License 1.1 (OFL-1.1)";
   const OFL_URL = "https://openfontlicense.org/open-font-license-official-text/";
 
-  const credits: { title: string; description?: string; authors: string | string[]; contributors?: string[]; licence: string; links: Link[]; note?: string }[] = [
+  type FontCredit = { title: string; description?: string; authors: string; licence: string; links: Link[] };
+
+  /**
+   * The fonts (cf. the README and `app/assets/fonts/`, each with its
+   * licence), detailed in a window from their item of the credits.
+   */
+  const FONTS: FontCredit[] = [
+    {
+      title: "Bailly Book",
+      description: "Fonte de lecture par défaut, sous-ensemble renommé de Gentium Book Plus",
+      authors: "SIL International",
+      licence: OFL,
+      links: [
+        { label: "Licence", href: OFL_URL },
+        { label: "Fonte", href: "https://software.sil.org/gentium/" },
+      ],
+    },
+    ...["Didot", "Artemisia", "Bodoni", "Neohellenic"].map((name): FontCredit => ({
+      title: `GFS ${name}`,
+      description: "Fonte de lecture au choix",
+      authors: "Greek Font Society",
+      licence: OFL,
+      links: [
+        { label: "Licence", href: OFL_URL },
+        { label: "Fonte", href: "https://www.greekfontsociety-gfs.gr/" },
+      ],
+    })),
+    {
+      title: "Inter",
+      description: "Fonte d'interface",
+      authors: "Rasmus Andersson",
+      licence: OFL,
+      links: [
+        { label: "Licence", href: OFL_URL },
+        { label: "Fonte", href: "https://rsms.me/inter/" },
+      ],
+    },
+    {
+      title: "IFAOGrec",
+      description: "Les caractères grecs les plus spécifiques",
+      authors: "Jean-Luc Fournet, Ralph Hancock & Adam Bülow-Jacobsen",
+      licence: "Libre de tous droits",
+      links: [
+        { label: "Fonte", href: "https://www.ifao.egnet.net/publications/outils/polices/#grec" },
+      ],
+    },
+  ];
+
+  const credits: {
+    title: string;
+    description?: string;
+    authors?: string | string[];
+    contributors?: string[];
+    /** Credits detailed in a window (e.g. the fonts). */
+    details?: { label: string; items: FontCredit[] };
+    licence?: string;
+    links?: Link[];
+    note?: string;
+  }[] = [
     {
       title: "Application Bailly (bailly.app)",
       authors: "Antoine Boquet & Benjamin Georges",
@@ -150,44 +208,11 @@
         { label: "Code source", href: "https://github.com/defense-humanites/greek-conversion" },
       ],
     },
-    // The fonts (cf. the README and `app/assets/fonts/`, each with its licence).
+    // The fonts, in one item (their details in a window).
     {
-      title: "Fonte de lecture Bailly Book",
-      description: "Sous-ensemble renommé de Gentium Book Plus, fonte de lecture par défaut",
-      authors: "SIL International",
-      licence: OFL,
-      links: [
-        { label: "Licence", href: OFL_URL },
-        { label: "Fonte", href: "https://software.sil.org/gentium/" },
-      ],
-    },
-    {
-      title: "Fontes GFS Didot, Artemisia, Bodoni et Neohellenic",
-      description: "Fontes de lecture au choix",
-      authors: "Greek Font Society",
-      licence: OFL,
-      links: [
-        { label: "Licence", href: OFL_URL },
-        { label: "Fontes", href: "https://www.greekfontsociety-gfs.gr/" },
-      ],
-    },
-    {
-      title: "Fonte d'interface Inter",
-      authors: "Rasmus Andersson",
-      licence: OFL,
-      links: [
-        { label: "Licence", href: OFL_URL },
-        { label: "Fonte", href: "https://rsms.me/inter/" },
-      ],
-    },
-    {
-      title: "Fonte IFAOGrec",
-      description: "Les caractères grecs les plus spécifiques",
-      authors: "Jean-Luc Fournet, Ralph Hancock & Adam Bülow-Jacobsen",
-      licence: "Libre de tous droits",
-      links: [
-        { label: "Fonte", href: "https://www.ifao.egnet.net/publications/outils/polices/#grec" },
-      ],
+      title: "Fontes d'interface et de lecture",
+      description: FONTS.map(font => font.title).join(", "),
+      details: { label: "Détail des fontes", items: FONTS },
     },
   ];
 </script>
@@ -647,8 +672,61 @@
             >
               {{ credit.description }}
             </p>
+            <!--
+              Credits detailed in a window (the fonts), as the « et al. » of
+              the Bailly 2020.
+            -->
+            <p v-if="credit.details">
+              <UModal
+                :title="credit.title"
+                :ui="{ content: 'sm:max-w-2xl text-center', title: 'pe-8' }"
+              >
+                <button
+                  type="button"
+                  class="inline-flex items-baseline gap-1 italic hover:text-primary"
+                >
+                  <span class="underline decoration-dotted underline-offset-4">{{ credit.details.label }}</span>
+                  <UIcon
+                    name="i-lucide-type"
+                    class="size-4 self-center not-italic"
+                  />
+                </button>
+                <template #body>
+                  <div class="space-y-5 font-serif text-sm/6">
+                    <div
+                      v-for="item in credit.details.items"
+                      :key="item.title"
+                    >
+                      <h4 class="font-bold tracking-wide [font-variant-caps:all-small-caps]">
+                        {{ item.title }}
+                      </h4>
+                      <p
+                        v-if="item.description"
+                        class="[font-variant-caps:all-small-caps]"
+                      >
+                        {{ item.description }}
+                      </p>
+                      <p>{{ item.authors }}</p>
+                      <p class="text-muted">
+                        {{ item.licence }}
+                      </p>
+                      <p class="mt-1 flex justify-center gap-4 font-sans">
+                        <a
+                          v-for="link in item.links"
+                          :key="link.href"
+                          :href="link.href"
+                          target="_blank"
+                          rel="noopener"
+                          class="underline decoration-dotted underline-offset-4 hover:text-primary"
+                        >{{ link.label }}</a>
+                      </p>
+                    </div>
+                  </div>
+                </template>
+              </UModal>
+            </p>
             <p
-              v-for="authors in [credit.authors].flat()"
+              v-for="authors in [credit.authors ?? []].flat()"
               :key="authors"
             >
               {{ authors }}
@@ -685,7 +763,10 @@
                 </template>
               </UModal>
             </p>
-            <p class="text-muted">
+            <p
+              v-if="credit.licence"
+              class="text-muted"
+            >
               {{ credit.licence }}
             </p>
             <p
@@ -694,7 +775,10 @@
             >
               {{ credit.note }}
             </p>
-            <p class="mt-1 flex justify-center gap-4 font-sans">
+            <p
+              v-if="credit.links"
+              class="mt-1 flex justify-center gap-4 font-sans"
+            >
               <a
                 v-for="link in credit.links"
                 :key="link.href"
