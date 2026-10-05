@@ -670,6 +670,17 @@
       busy.value = false;
     }
   };
+
+  /**
+   * The tiles of the ways in (a new key, a key already there, adding a type
+   * to the key): lifted a little when hovered (a shadow, a step up; not with
+   * reduced motion), pressed back; their icon in a round badge. The new key's
+   * in the synchronization's Aegean blue (`secondary`), the other neutral.
+   */
+  const TILE = "flex w-full items-start gap-3 rounded-lg p-4 text-start ring-1 transition-[background-color,box-shadow,translate] duration-150 ease-out hover:shadow-md motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 active:shadow-none focus-visible:outline-2 disabled:opacity-75";
+  const TILE_ACCENT = `${TILE} bg-secondary/10 ring-secondary/30 hover:bg-secondary/15 hover:ring-secondary/50 focus-visible:outline-secondary disabled:cursor-wait`;
+  const TILE_NEUTRAL = `${TILE} bg-elevated/50 ring-accented hover:bg-elevated focus-visible:outline-inverted`;
+  const BADGE = "flex size-10 shrink-0 items-center justify-center rounded-full";
 </script>
 
 <template>
@@ -751,26 +762,28 @@
           <button
             v-if="enabled"
             type="button"
-            class="flex w-full items-start gap-3 rounded-lg bg-secondary/10 p-4 text-start ring-1 ring-secondary/25 transition-colors hover:bg-secondary/15 focus-visible:outline-2 focus-visible:outline-secondary disabled:cursor-wait disabled:opacity-75"
+            :class="TILE_ACCENT"
             :disabled="busy"
             @click="addScope"
           >
-            <UIcon
-              :name="busy ? 'i-lucide-loader-circle' : 'i-lucide-cloud-upload'"
-              class="mt-0.5 size-6 shrink-0 text-secondary"
-              :class="{ 'animate-spin': busy }"
-            />
+            <span :class="[BADGE, 'bg-secondary/15 text-secondary']">
+              <UIcon
+                :name="busy ? 'i-lucide-loader-circle' : 'i-lucide-cloud-upload'"
+                class="size-5"
+                :class="{ 'animate-spin': busy }"
+              />
+            </span>
             <span>
-              <span class="block font-semibold text-highlighted">{{ texts.add }}</span>
-              <span class="mt-1 block text-muted">{{ texts.addDescription }}</span>
+              <span class="block font-bold text-highlighted">{{ texts.add }}</span>
+              <span class="mt-1 block font-semibold text-muted">{{ texts.addDescription }}</span>
             </span>
           </button>
 
           <!--
-            The two ways in, as tiles: each explains itself, and is large and
-            apart enough not to be touched for the other. The first (a new
-            key) in the synchronization's Aegean blue (`secondary`, as its
-            button and card), the other neutral.
+            The two ways in, as tiles (cf. `TILE`): each explains itself, and
+            is large and apart enough not to be touched for the other. The
+            first (a new key) in the synchronization's Aegean blue
+            (`secondary`, as its button and card), the other neutral.
           -->
           <div
             v-else
@@ -778,34 +791,38 @@
           >
             <button
               type="button"
-              class="flex items-start gap-3 rounded-lg bg-secondary/10 p-4 text-start ring-1 ring-secondary/25 transition-colors hover:bg-secondary/15 focus-visible:outline-2 focus-visible:outline-secondary disabled:cursor-wait disabled:opacity-75"
+              :class="TILE_ACCENT"
               :disabled="busy"
               @click="enable"
             >
-              <UIcon
-                :name="busy ? 'i-lucide-loader-circle' : 'i-lucide-cloud-upload'"
-                class="mt-0.5 size-6 shrink-0 text-secondary"
-                :class="{ 'animate-spin': busy }"
-              />
+              <span :class="[BADGE, 'bg-secondary/15 text-secondary']">
+                <UIcon
+                  :name="busy ? 'i-lucide-loader-circle' : 'i-lucide-cloud-upload'"
+                  class="size-5"
+                  :class="{ 'animate-spin': busy }"
+                />
+              </span>
               <span>
-                <span class="block font-semibold text-highlighted">Activer la synchronisation</span>
-                <span class="mt-1 block text-muted">Première fois : une clé est créée pour cet appareil et vos
+                <span class="block font-bold text-highlighted">Activer la synchronisation</span>
+                <span class="mt-1 block font-semibold text-muted">Première fois : une clé est créée pour cet appareil et vos
                   autres appareils.</span>
               </span>
             </button>
             <button
               type="button"
-              class="flex items-start gap-3 rounded-lg bg-elevated/50 p-4 text-start ring-1 ring-default transition-colors hover:bg-elevated focus-visible:outline-2 focus-visible:outline-inverted disabled:opacity-75"
+              :class="TILE_NEUTRAL"
               :disabled="busy"
               @click="view = 'join'"
             >
-              <UIcon
-                name="i-lucide-key-round"
-                class="mt-0.5 size-6 shrink-0 text-muted"
-              />
+              <span :class="[BADGE, 'bg-accented/70 text-default']">
+                <UIcon
+                  name="i-lucide-key-round"
+                  class="size-5"
+                />
+              </span>
               <span>
-                <span class="block font-semibold text-highlighted">J'ai déjà une clé</span>
-                <span class="mt-1 block text-muted">Déjà activée sur un autre appareil : saisissez sa clé ou
+                <span class="block font-bold text-highlighted">J'ai déjà une clé</span>
+                <span class="mt-1 block font-semibold text-muted">Déjà activée sur un autre appareil : saisissez sa clé ou
                   scannez son QR code.</span>
               </span>
             </button>
