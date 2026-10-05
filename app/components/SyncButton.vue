@@ -129,13 +129,23 @@
   const root = useTemplateRef<HTMLElement>("root");
 
   /**
-   * Opens the window from elsewhere (e.g. the bookmarks' introduction),
-   * the button focused first: the focus comes back to it once the window
-   * closes.
+   * How long the button is pointed out before its window opens from
+   * elsewhere (its outline at its fullest, cf. `card-highlight` in
+   * `components.css`): the window's overlay would hide it.
+   */
+  const OPEN_DELAY = 400;
+
+  /**
+   * Opens the window from elsewhere (e.g. the bookmarks' introduction): the
+   * button focused (the focus comes back to it once the window closes) and
+   * pointed out (`pointOut`, in `--card-highlight`), the window opened a
+   * moment later.
    */
   const open = (): void => {
-    root.value?.querySelector<HTMLButtonElement>("button")?.focus();
-    openSync();
+    if (!root.value) return;
+    root.value.querySelector<HTMLButtonElement>("button")?.focus();
+    pointOut(root.value);
+    setTimeout(openSync, OPEN_DELAY);
   };
 
   defineExpose({ enabled, open });

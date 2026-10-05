@@ -124,7 +124,7 @@
         <div
           role="group"
           aria-label="Étiquettes"
-          class="flex flex-wrap rounded-lg border border-default bg-default shadow-xs [--field-inner-radius:calc(var(--radius-lg)-1px)] lg:flex-nowrap lg:gap-2 lg:border-0 lg:bg-transparent lg:shadow-none"
+          class="flex flex-wrap rounded-lg border border-default bg-default shadow-xs [--card-highlight:var(--ui-color-neutral-400)] [--field-inner-radius:calc(var(--radius-lg)-1px)] lg:flex-nowrap lg:gap-2 lg:border-0 lg:bg-transparent lg:shadow-none"
         >
           <!--
             Below `lg`, one compact block on two lines (the field keeps a fair
@@ -261,7 +261,8 @@
             may be lost; the two ways to keep them: the synchronization and
             a file. The buttons named as in the bar, with their icons (they
             show alone there below `xl`), drawn as keys (as the new tag field's
-            Enter): they open the bar's window and menu, its buttons focused.
+            Enter), in the sentences: they open the bar's window and menu, its
+            buttons focused and pointed out.
           -->
           <div class="ms-12 text-marble-700 dark:text-marble-400 font-medium">
             <p class="mb-2">
@@ -270,13 +271,12 @@
             </p>
             <p class="mb-2">
               Vos signets sont enregistrés dans ce navigateur,
-              <strong class="font-bold">sur cet appareil seulement</strong>. Ils peuvent disparaître
-              si vous effacez l'historique ou les données de navigation, et certains navigateurs
-              effacent parfois d'eux-mêmes les données des sites, par exemple quand l'espace de
-              stockage vient à manquer.
+              <strong class="font-bold">sur cet appareil seulement</strong> : effacer les données de
+              navigation les supprime, et le navigateur peut aussi les effacer de lui-même si son
+              espace de stockage vient à manquer.
             </p>
             <p class="mb-2">
-              Pour ne pas les perdre, activez la synchronisation (bouton
+              Pour ne pas les perdre, vous pouvez les
               <button
                 type="button"
                 :class="INLINE_BUTTON"
@@ -286,11 +286,12 @@
                   name="i-lucide-cloud-upload"
                   class="size-4 shrink-0"
                 />Synchroniser
-              </button>) : vos signets sont alors sauvegardés en ligne et vous les
-              retrouvez sur vos autres appareils et navigateurs.
+              </button>
+              : ils sont alors sauvegardés en ligne et vous les retrouvez sur vos autres appareils et
+              navigateurs.
             </p>
             <p>
-              Vous pouvez aussi les enregistrer dans un fichier (menu
+              Vous pouvez aussi les enregistrer dans des
               <button
                 type="button"
                 :class="INLINE_BUTTON"
@@ -300,8 +301,8 @@
                   name="i-lucide-folder-open"
                   class="size-4 shrink-0"
                 />Fichiers
-              </button>) : gardez-le en lieu sûr, puis importez-le pour les rétablir ici ou
-              les transférer ailleurs.
+              </button>
+              à garder en lieu sûr, puis les importer pour les rétablir ici ou les transférer ailleurs.
             </p>
           </div>
         </UCard>

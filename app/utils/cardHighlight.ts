@@ -35,22 +35,28 @@ export function afterScroll(callback: () => void): void {
 }
 
 /**
- * Points a bookmarks' card out, once the page has scrolled to it (from the
- * table of contents, or pinning it): outlined for a moment
- * (`[data-card-highlight]`, cf. `components.css`), started again if it
- * already is.
+ * Points an element out: outlined for a moment (`[data-card-highlight]`, cf.
+ * `components.css`, in `--card-highlight`), started again if it already is.
+ */
+export function pointOut(element: HTMLElement): void {
+  element.removeAttribute("data-card-highlight");
+  // Restarts the animation (a reflow between removing and setting).
+  element.getBoundingClientRect();
+  element.setAttribute("data-card-highlight", "");
+  const end = (event: AnimationEvent): void => {
+    if (event.target !== element) return;
+    element.removeAttribute("data-card-highlight");
+    element.removeEventListener("animationend", end);
+  };
+  element.addEventListener("animationend", end);
+}
+
+/**
+ * Points a bookmarks' card out (`pointOut`), once the page has scrolled to it
+ * (from the table of contents, or pinning it).
  */
 export function highlightCard(card: HTMLElement): void {
   afterScroll(() => {
-    card.removeAttribute("data-card-highlight");
-    // Restarts the animation (a reflow between removing and setting).
-    card.getBoundingClientRect();
-    card.setAttribute("data-card-highlight", "");
-    const end = (event: AnimationEvent): void => {
-      if (event.target !== card) return;
-      card.removeAttribute("data-card-highlight");
-      card.removeEventListener("animationend", end);
-    };
-    card.addEventListener("animationend", end);
+    pointOut(card);
   });
 }
