@@ -68,7 +68,7 @@
       as: "h1",
       label: greek.text(entry.word),
       active: true,
-      class: "text-2xl text-center before:bg-transparent",
+      class: "text-2xl text-center before:bg-transparent hover:before:bg-transparent",
     },
     siblings.next
       ? {
