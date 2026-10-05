@@ -103,6 +103,9 @@
     "Marie-Dominique Simon", "Anne-Laure Viger", "Christine Vulliard",
   ];
 
+  /** « et al. » in the authors, set in italics (cf. the template). */
+  const ET_AL = "et al.";
+
   /** The fonts' licence (all but IFAOGrec). */
   const OFL = "SIL Open Font License 1.1 (OFL-1.1)";
   const OFL_URL = "https://openfontlicense.org/open-font-license-official-text/";
@@ -687,7 +690,7 @@
                 >
                   <span class="underline decoration-dotted underline-offset-4">{{ credit.details.label }}</span>
                   <UIcon
-                    name="i-lucide-type"
+                    name="i-lucide-list"
                     class="size-4 self-center not-italic"
                   />
                 </button>
@@ -729,7 +732,13 @@
               v-for="authors in [credit.authors ?? []].flat()"
               :key="authors"
             >
-              {{ authors }}
+              <!-- « et al. » in italics, as a Latin phrase. -->
+              <template
+                v-for="(part, index) in authors.split(ET_AL)"
+                :key="index"
+              >
+                <em v-if="index">et al.</em>{{ part }}
+              </template>
               <!--
                 Their « et al. »: the contributors (a long list), in a window;
                 the icon tells there is more behind it.
