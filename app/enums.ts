@@ -57,6 +57,14 @@ export enum StorageKey {
    * The notices the user dismissed (a list of ids, e.g. `morpheusWarning`).
    */
   Dismissed = "bailly:dismissed",
+  /**
+   * The form of an entry's reference last chosen (cf. `EntryCitation`).
+   */
+  CitationForm = "bailly:citationForm",
+  /**
+   * The bibliography's style last chosen (cf. `EntryCitation`).
+   */
+  CitationStyle = "bailly:citationStyle",
 }
 
 /**

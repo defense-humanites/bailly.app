@@ -161,7 +161,7 @@
           pour que les pages s'affichent dans le bon thème dès leur chargement.
         </p>
         <p>
-          L'état de l'interface (étiquette active, avis masqués) est gardé dans le stockage local
+          L'état de l'interface (étiquette active, avis masqués, formes de citation choisies) est gardé dans le stockage local
           de votre navigateur. Ces données ne contiennent aucun identifiant et ne servent qu'au
           fonctionnement de l'application.
         </p>

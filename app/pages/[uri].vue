@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import type { NavigationMenuItem } from "@nuxt/ui";
   import { convert } from "@humanities/greek-conversion";
+  import type { CitedEntry } from "~/utils/citation";
 
   definePageMeta({
     layout: "single-column",
@@ -40,6 +41,18 @@
 
   // Greek may be transliterated (a preference).
   const greek = useGreek();
+
+  /**
+   * The entry cited (cf. `EntryCitation`): of homonyms, the one the address
+   * points to (e.g. `oudos#2`), the first one otherwise; with the data's
+   * version.
+   */
+  const citedEntry = computed((): CitedEntry => {
+    const children = entry.children ?? [];
+    const anchor = route.hash.slice(1);
+    return children.find(child => homonymAnchor(child.uri) === anchor) ?? children[0] ?? entry;
+  });
+  const dataVersion = data.value?.version;
 
   // The entry is added to the history of the viewed entries (in the browser).
   const historyStore = useHistoryStore();
@@ -131,7 +144,7 @@
 </script>
 
 <template>
-  <article>
+  <article class="relative">
     <EntryCompactBar
       ref="compactBar"
       :word="greek.text(entry.word)"
@@ -167,7 +180,56 @@
       screen (on mobile, the header only has arrows).
     -->
     <footer class="mt-8">
+      <!-- Below `xl`, the citation in a window (from `xl`, on the right). -->
+      <div class="mb-4 flex justify-end xl:hidden">
+        <UModal
+          title="Citer cette entrée"
+          :ui="{ content: 'sm:max-w-lg' }"
+        >
+          <UButton
+            label="Citer"
+            icon="i-lucide-quote"
+            size="sm"
+            color="neutral"
+            variant="ghost"
+            class="hover:bg-(--app-page-hover)/50 active:bg-(--app-page-hover)/50"
+          />
+          <template #body>
+            <EntryCitation
+              :entry="citedEntry"
+              :version="dataVersion"
+            />
+          </template>
+        </UModal>
+      </div>
       <EntrySurround :siblings="siblings" />
     </footer>
+
+    <!--
+      From `xl`, the citation on the column's right (where it leaves room),
+      sticky under the header, as the ambiguous forms' headwords (cf.
+      `forme`): the first of the entry's tools.
+    -->
+    <aside
+      aria-labelledby="citer"
+      class="absolute start-full top-0 ms-12 hidden h-full w-64 xl:block"
+    >
+      <div class="sticky top-[calc(var(--header-bottom)+1.5rem)]">
+        <h2
+          id="citer"
+          class="mb-3 flex items-center gap-2 font-semibold text-highlighted"
+        >
+          <UIcon
+            name="i-lucide-quote"
+            class="size-4 shrink-0 text-muted"
+          />
+          Citer cette entrée
+        </h2>
+        <EntryCitation
+          :entry="citedEntry"
+          :version="dataVersion"
+        />
+      </div>
+    </aside>
   </article>
 </template>
