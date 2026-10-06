@@ -72,27 +72,14 @@
   <article class="space-y-6">
     <!--
       The title, without a card (which would vie with the survey's and the
-      contact's, beside it from `xl`): the party popper (the news' icon, in
-      their color, Aegean blue, as the button leading here) and the date as
-      an eyebrow, a larger title, a rule under the subtitle.
+      contact's, beside it from `xl`): the news' eyebrow (the party popper,
+      their icon, in their color, as the button leading here).
     -->
-    <header class="border-b border-default pb-6">
-      <p class="flex items-center gap-2 text-sm font-semibold text-secondary">
-        <span class="grid size-8 place-items-center rounded-full bg-secondary/10 ring-1 ring-secondary/20">
-          <UIcon
-            name="i-lucide-party-popper"
-            class="size-4.5"
-          />
-        </span>
-        Nouveautés &middot; octobre 2026
-      </p>
-      <h1 class="mt-4 text-3xl/tight font-bold text-balance text-highlighted md:text-4xl/tight">
-        Une nouvelle application Bailly
-      </h1>
-      <p class="mt-3 text-xl text-pretty text-muted">
-        Des fonctions repensées, et quelques nouveautés attendues.
-      </p>
-    </header>
+    <PageHeader
+      :eyebrow="{ label: 'Nouveautés · octobre 2026', icon: 'i-lucide-party-popper' }"
+      title="Une nouvelle application Bailly"
+      subtitle="Des fonctions repensées, et quelques nouveautés attendues."
+    />
 
     <div class="relative space-y-6">
       <ul class="space-y-6">

@@ -49,14 +49,10 @@
 
 <template>
   <article class="space-y-8">
-    <header>
-      <h1 class="text-3xl font-bold">
-        Vos données
-      </h1>
-      <p class="mt-2 text-muted font-semibold">
-        Ce que Bailly.app garde de vos données, où, et pour combien de temps.
-      </p>
-    </header>
+    <PageHeader
+      title="Vos données"
+      subtitle="Ce que Bailly.app garde de vos données, où, et pour combien de temps."
+    />
 
     <div class="relative space-y-8">
       <!--
