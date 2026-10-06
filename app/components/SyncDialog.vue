@@ -793,7 +793,11 @@
               </span>
               <span>
                 <span class="block font-bold text-secondary">Activer la synchronisation</span>
-                <span class="mt-1 block font-semibold text-muted">Première fois : une clé est créée pour cet appareil et vos
+                <!--
+                  The text's color drawn towards the blue (not the warm grey
+                  of the neutral tile, dull on the blue).
+                -->
+                <span class="mt-1 block font-semibold text-[color-mix(in_oklab,var(--ui-text)_60%,var(--ui-secondary))]">Première fois : une clé est créée pour cet appareil et vos
                   autres appareils.</span>
               </span>
             </button>
