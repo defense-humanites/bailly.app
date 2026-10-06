@@ -835,8 +835,9 @@
           Un dictionnaire libre, porté par une association
         </h2>
         <p class="mx-auto mt-3 max-w-2xl text-pretty">
-          Bailly.app est gratuit et le restera. Vos dons couvrent l'hébergement et le temps consacré à
-          l'application.
+          L'application Bailly est gratuite, comme le veut la licence de son texte, et libre par
+          choix. Vos dons couvrent ses frais d'entretien : nom de domaine, hébergement et outils de
+          développement.
         </p>
         <div class="mt-8 flex flex-wrap justify-center gap-3">
           <UButton
