@@ -26,6 +26,12 @@
    * The icon and the title, the marble of the text slightly tinted with the
    * card's color (the close button, as the text, in marble).
    */
+  /** The close button's ring: in the card's color, to be seen. */
+  const CLOSE_RING = {
+    neutral: "ring-marble-300/50 dark:ring-marble-800/60",
+    primary: "ring-primary/50 dark:ring-primary/40",
+    secondary: "ring-secondary/50 dark:ring-secondary/40",
+  };
   const TITLE = {
     neutral: "",
     primary: "text-[color-mix(in_oklab,var(--color-marble-700)_65%,var(--ui-color-primary-700))] dark:text-[color-mix(in_oklab,var(--color-marble-400)_65%,var(--ui-color-primary-400))]",
@@ -82,7 +88,7 @@
             variant="subtle"
             color="neutral"
             :aria-label="`Masquer « ${title} »`"
-            :ui="{ base: 'bg-default/50 hover:bg-default/90 active:bg-default/75 ring-marble-300/50 text-marble-700/75 hover:text-marble-700 dark:ring-marble-800/60 dark:text-marble-400/75 dark:hover:text-marble-400' }"
+            :ui="{ base: `bg-default/50 hover:bg-default/90 active:bg-default/75 text-marble-700/75 hover:text-marble-700 dark:text-marble-400/75 dark:hover:text-marble-400 ${CLOSE_RING[tint ?? 'neutral']}` }"
             @click="$emit('dismiss')"
           />
         </UTooltip>
