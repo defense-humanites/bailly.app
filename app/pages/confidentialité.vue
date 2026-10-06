@@ -30,7 +30,7 @@
   /**
    * The page's sections, for its table of contents (from `xl`, on the
    * column's right, as the ambiguous forms' headwords, cf. `forme`): the
-   * details (the survey and the donations once offered), not the summary above them.
+   * details (the survey and the donations once offered, the latter with the news too), not the summary above them.
    */
   const sections = [
     { id: "sur-votre-appareil", title: "Sur votre appareil" },
@@ -41,7 +41,7 @@
     { id: "mesure-d-audience", title: "Mesure d'audience" },
     { id: "hebergement", title: "Hébergement" },
     ...(FEATURES.news ? [{ id: "questionnaire", title: "Questionnaire" }] : []),
-    ...(FEATURES.donations ? [{ id: "dons", title: "Dons" }] : []),
+    ...(FEATURES.news || FEATURES.donations ? [{ id: "dons", title: "Dons" }] : []),
     { id: "contact", title: "Contact" },
   ];
   const { currentId, follow } = useCurrentSection(sections.map(({ id }) => id));
@@ -355,9 +355,12 @@
         </p>
       </section>
 
-      <!-- Once the donations are offered (cf. `FEATURES`). -->
+      <!--
+        Once the donations are offered, or the news (which link to PayPal's
+        donation page; cf. `FEATURES`).
+      -->
       <section
-        v-if="FEATURES.donations"
+        v-if="FEATURES.news || FEATURES.donations"
         aria-labelledby="dons"
         class="space-y-3"
       >
@@ -373,8 +376,8 @@
         </h2>
         <p>
           Les dons passent par PayPal&nbsp;: le formulaire de don est celui de PayPal, qui traite
-          vos informations selon sa propre politique de confidentialité. Bailly.app n'a jamais
-          accès à vos coordonnées bancaires.
+          vos informations selon sa propre politique de confidentialité. L'application Bailly n'a
+          jamais accès à vos coordonnées bancaires.
         </p>
       </section>
 
