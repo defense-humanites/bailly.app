@@ -171,7 +171,7 @@
   }[] = [
     {
       title: "Application Bailly (bailly.app)",
-      authors: "Antoine Boquet & Benjamin Georges",
+      authors: ["Antoine Boquet & Benjamin Georges", "Association pour la défense des humanités"],
       licence: "GNU Affero General Public License (AGPL-3.0-or-later)",
       links: [
         { label: "Licence", href: "https://github.com/defense-humanites/bailly.app/#licence" },
@@ -193,7 +193,7 @@
       title: "Analyseur morphologique libmorpheus",
       description: "Lemmatisation des mots recherchés",
       authors: [
-        "Gregory Crane et al. pour le code originel de Morpheus",
+        "Gregory Crane et al. (université Tufts) pour le code originel de Morpheus",
         "Antoine Boquet pour les composants originaux de libmorpheus"],
       licence: "Mozilla Public License 2.0 et GNU Affero General Public License (MPL-2.0 et AGPL-3.0-or-later)",
       links: [
