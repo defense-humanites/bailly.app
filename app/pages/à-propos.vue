@@ -688,9 +688,9 @@
               >
                 <button
                   type="button"
-                  class="inline-flex items-baseline gap-1 italic hover:text-primary"
+                  class="link inline-flex items-baseline gap-1 italic"
                 >
-                  <span class="link">{{ credit.details.label }}</span>
+                  <span>{{ credit.details.label }}</span>
                   <UIcon
                     name="i-lucide-type"
                     class="size-4 self-center not-italic"
@@ -754,10 +754,10 @@
               >
                 <button
                   type="button"
-                  class="inline-flex items-baseline gap-1 italic hover:text-primary"
+                  class="link inline-flex items-baseline gap-1 italic"
                   :aria-label="`Et al. : les ${credit.contributors.length} contributeurs au ${credit.title}`"
                 >
-                  <span class="link">et al.</span>
+                  <span>et al.</span>
                   <UIcon
                     name="i-lucide-users-round"
                     class="size-4 self-center not-italic"
