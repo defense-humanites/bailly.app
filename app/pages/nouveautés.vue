@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import { SURVEY_URL } from "~/utils/survey";
+
   definePageMeta({
     layout: "single-column",
   });
@@ -58,7 +60,7 @@
 </script>
 
 <template>
-  <article class="space-y-6 [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2">
+  <article class="space-y-6 [&_p_a]:text-primary [&_p_a]:underline [&_p_a]:underline-offset-2">
     <header>
       <h1 class="text-3xl font-bold">
         Une nouvelle application Bailly
@@ -93,6 +95,21 @@
     <p class="text-muted">
       &mdash; Antoine Boquet, le 4 octobre 2026.
     </p>
+
+    <aside class="space-y-4 rounded-lg bg-secondary/5 p-4 ring-1 ring-secondary/20 md:p-6">
+      <p>
+        <strong>Et ensuite&nbsp;?</strong> Aidez-nous à choisir les prochaines fonctions de
+        l'application&nbsp;: le questionnaire est anonyme et prend environ deux minutes.
+      </p>
+      <UButton
+        :to="SURVEY_URL"
+        target="_blank"
+        color="secondary"
+        icon="i-lucide-clipboard-list"
+        trailing-icon="i-lucide-external-link"
+        label="Répondre au questionnaire"
+      />
+    </aside>
 
     <aside class="rounded-lg bg-primary/5 p-4 ring-1 ring-primary/15 md:p-6">
       <p>
