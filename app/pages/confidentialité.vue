@@ -7,7 +7,7 @@
 
   useSeoMeta({
     title: "Confidentialité",
-    description: "Ce que Bailly.app garde de vos données, où, et pour combien de temps.",
+    description: "Ce que l'application Bailly garde de vos données, où, et pour combien de temps.",
   });
 
   /**
@@ -51,7 +51,7 @@
   <article class="space-y-8">
     <PageHeader
       title="Vos données"
-      subtitle="Ce que Bailly.app garde de vos données, où, et pour combien de temps."
+      subtitle="Ce que l'application Bailly garde de vos données, où, et pour combien de temps."
     />
 
     <div class="relative space-y-8">
