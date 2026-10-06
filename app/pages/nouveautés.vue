@@ -14,67 +14,83 @@
 
   useSeoMeta({
     title: "Nouveautés",
-    description: "L'application Bailly a été entièrement réécrite : ce qui change.",
+    description: "Une nouvelle application Bailly : des fonctions repensées, et quelques nouveautés attendues.",
   });
+
+  const searchOptionsPanel = useSearchOptionsPanel();
+
+  /**
+   * A part of a news' text: a string, or a key naming a control, which it
+   * points out (cf. `INLINE_BUTTON`).
+   */
+  type NewsPart = string | { key: string; icon: string; action: () => void };
 
   /**
    * The news of this version (at most eight), their texts here to be easily
    * reworded. The previous article (10 October 2024) is in the history of
    * the old application's repository.
    */
-  const news = [
-    {
-      icon: "i-lucide-sparkles",
-      title: "Une interface entièrement repensée.",
-      text: "Une palette inspirée de la Grèce classique, une barre de recherche toujours à portée de main, un thème sombre retravaillé et une mise en page pensée aussi bien pour les téléphones que pour les grands écrans.",
-    },
-    {
-      icon: "i-lucide-link",
-      title: "Des définitions reliées entre elles.",
-      text: "Les mots grecs cités dans les définitions mènent à leurs entrées ; une forme qui peut relever de plusieurs entrées ouvre une page qui les propose toutes. Attendue de longue date, cette fonction demandait un travail de fond sur les données : elle est arrivée quelques jours avant cette nouvelle version.",
-    },
-    {
-      icon: "i-lucide-search",
-      title: "Une recherche plus souple.",
-      text: "Les résultats distinguent les correspondances exactes des autres entrées. Les options de recherche (position dans l'entrée, diacritiques, caractères jokers « ? » et « * ») sont réunies dans un panneau, et l'historique garde les entrées que vous avez consultées. Le grec se saisit en bêta code ou en translittération.",
-    },
-    {
-      icon: "i-lucide-book-open",
-      title: "Une lecture à votre mesure.",
-      text: "Choisissez la police du texte grec (Bailly Book, GFS Didot, Artemisia, Bodoni ou NeoHellenic), sa taille et sa graisse. Vous ne lisez pas le grec ? Affichez-le en caractères latins.",
-    },
+  const news: { icon: string; title: string; text: string | NewsPart[] }[] = [
     {
       icon: "i-lucide-bookmark",
       title: "Des signets mieux organisés.",
-      text: "Donnez à vos étiquettes une couleur et une description, épinglez les plus utiles, triez-les, affichez les extraits des entrées ou leurs seules vedettes. Une suppression s'annule d'un geste, et vos signets se sauvegardent dans un fichier.",
+      text: "Donnez à vos étiquettes une couleur et une description, épinglez les plus utiles, triez-les, affichez les extraits des entrées ou leurs seules vedettes. Une suppression s'annule d'un geste. Vous pouvez aussi enregistrer vos signets dans un fichier, pour les conserver ou les importer ailleurs.",
     },
     {
       icon: "i-lucide-cloud",
       title: "Vos signets et vos préférences sur tous vos appareils.",
-      text: "La synchronisation ne demande aucun compte : vos données sont chiffrées sur votre appareil avant d'être envoyées, avec une clé de douze mots que vous seul détenez. Nous ne pouvons pas les lire.",
+      text: "Activez la synchronisation sur un premier appareil, puis ajoutez les autres avec votre clé : un QR code à scanner, ou douze mots à saisir. Vos signets et vos réglages vous suivent alors de l'ordinateur au téléphone. Aucun compte à créer, et tout reste privé : vos données sont chiffrées avant même de quitter votre appareil.",
     },
     {
-      icon: "i-lucide-shuffle",
-      title: "Le Bailly ouvert au hasard.",
-      text: "La page d'accueil ouvre le dictionnaire sur une entrée tirée au sort, entre ses voisines, pour le plaisir de feuilleter.",
+      icon: "i-lucide-link",
+      title: "Des définitions reliées entre elles.",
+      text: "Les mots grecs cités dans les définitions mènent à leurs entrées ; une forme qui peut relever de plusieurs entrées ouvre une page qui les propose toutes.",
     },
     {
-      icon: "i-lucide-info",
-      title: "L'histoire du texte, et vos données.",
-      text: "La page « À propos » retrace le chemin du dictionnaire, de l'édition de 1935 au Bailly 2020 Hugo Chávez de Gérard Gréco et de son équipe ; la page « Vos données » détaille ce que l'application conserve, et où.",
+      icon: "i-lucide-search",
+      title: "Une recherche plus souple.",
+      text: [
+        "Les résultats distinguent mieux les correspondances exactes des autres entrées, et les options de recherche (position dans l'entrée, diacritiques, caractères jokers « ? » et « * ») sont désormais réunies dans un panneau, qui s'ouvre d'un clic sur le bouton des ",
+        { key: "filtres", icon: "i-lucide-list-filter", action: searchOptionsPanel.open },
+        ", au bout de la barre de recherche.",
+      ],
+    },
+    {
+      icon: "i-lucide-book-open",
+      title: "Une lecture sur mesure.",
+      text: "Choisissez parmi cinq polices grecques, et réglez la taille et la graisse du texte selon votre convenance. Vous ne lisez pas le grec ? Affichez-le en caractères latins dans des préférences.",
+    },
+    {
+      icon: "i-lucide-palette",
+      title: "Une interface rafraîchie.",
+      text: "Une palette inspirée de la Grèce classique (le marbre des temples, la terre cuite des vases attiques, le bleu de l'Égée et l'or des offrandes), un thème sombre au noir lustré des céramiques, une barre de recherche toujours à portée de main et une mise en page pensée aussi bien pour les téléphones que pour les grands écrans.",
     },
   ];
 </script>
 
 <template>
   <article class="space-y-6 [&_p_a]:text-primary [&_p_a]:underline [&_p_a]:underline-offset-2">
-    <header>
-      <h1 class="text-3xl font-bold">
+    <!--
+      The title, without a card (which would vie with the survey's and the
+      contact's, beside it from `xl`): the party popper (the news' icon, in
+      their color, Aegean blue, as the button leading here) and the date as
+      an eyebrow, a larger title, a rule under the subtitle.
+    -->
+    <header class="border-b border-default pb-6">
+      <p class="flex items-center gap-2 text-sm font-semibold text-secondary">
+        <span class="grid size-8 place-items-center rounded-full bg-secondary/10 ring-1 ring-secondary/20">
+          <UIcon
+            name="i-lucide-party-popper"
+            class="size-4.5"
+          />
+        </span>
+        Nouveautés &middot; octobre 2026
+      </p>
+      <h1 class="mt-4 text-3xl/tight font-bold text-balance text-highlighted md:text-4xl/tight">
         Une nouvelle application Bailly
       </h1>
-      <p class="mt-2 text-muted">
-        L'application Bailly a été entièrement réécrite. Voici ce qui
-        change&nbsp;:
+      <p class="mt-3 text-xl text-pretty text-muted">
+        Des fonctions repensées, et quelques nouveautés attendues.
       </p>
     </header>
 
@@ -94,15 +110,32 @@
               {{ item.title }}
             </h2>
             <p class="mt-1">
-              {{ item.text }}
+              <template v-if="typeof item.text === 'string'">
+                {{ item.text }}
+              </template>
+              <template
+                v-for="(part, index) in item.text"
+                v-else
+                :key="index"
+              >
+                <!-- Inline, not to add spaces around the keys (e.g. before a comma). -->
+                <span v-if="typeof part === 'string'">{{ part }}</span>
+                <button
+                  v-else
+                  type="button"
+                  :class="INLINE_BUTTON"
+                  @click="part.action()"
+                >
+                  <UIcon
+                    :name="part.icon"
+                    class="size-4 shrink-0"
+                  />{{ part.key }}
+                </button>
+              </template>
             </p>
           </div>
         </li>
       </ul>
-
-      <p class="text-muted">
-        &mdash; Antoine Boquet, le 4 octobre 2026.
-      </p>
 
       <!--
         The survey and the contact: below the news; from `xl`, on the
@@ -115,7 +148,7 @@
           <aside class="space-y-4 rounded-lg bg-secondary/5 p-4 ring-1 ring-secondary/20 md:p-6 xl:p-5">
             <p>
               <strong>Et ensuite&nbsp;?</strong> Aidez-nous à choisir les prochaines fonctions de
-              l'application&nbsp;: le questionnaire est anonyme et prend environ deux minutes.
+              l'application&nbsp;: le questionnaire est anonyme et ne vous prendra qu'environ deux minutes.
             </p>
             <UButton
               :to="SURVEY_URL"
@@ -131,13 +164,13 @@
               Si vous souhaitez nous faire part de votre avis ou nous contacter pour
               toute autre raison, vous pouvez nous joindre par
               <a href="mailto:contact@bailly.app">courriel</a>. Et si l'application vous est
-              utile, vous pouvez aussi
+              utile, vous pouvez
               <!-- PayPal's page directly, not the donation flow (`/soutenir`, not offered yet). -->
               <a
                 :href="DONATION_URL"
                 target="_blank"
                 rel="noopener"
-              >nous soutenir</a>.
+              >participer</a> à ses frais.
             </p>
           </aside>
         </div>
