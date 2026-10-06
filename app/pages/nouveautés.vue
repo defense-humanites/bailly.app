@@ -69,7 +69,11 @@
 </script>
 
 <template>
-  <article class="space-y-6 [&_p_a]:text-primary [&_p_a]:underline [&_p_a]:underline-offset-2">
+  <article class="space-y-6 [&_p_a]:underline [&_p_a]:decoration-dotted [&_p_a]:underline-offset-4 [&_p_a]:transition-colors [&_p_a:hover]:text-primary">
+    <!--
+      (The links in the text, as elsewhere, e.g. the home and privacy pages:
+      a dotted underline, the main color on hover.)
+    -->
     <!--
       The title, without a card (which would vie with the survey's and the
       contact's, beside it from `xl`): the party popper (the news' icon, in
