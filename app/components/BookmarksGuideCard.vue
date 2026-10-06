@@ -16,30 +16,30 @@
   }>();
 
   /**
-   * The background (`--guide-bg`): in the light theme, the cards' (lighter
-   * than the page); in the dark one, a marble. Tinted, a glow of the color
-   * in the bottom left corner over it, and a border of the color.
+   * The surface, as the news' asides (the survey's, the contact's): tinted,
+   * a pale background and a border of the color; neutral, the bookmarks'
+   * cards' (the variant's).
    */
-  const BACKGROUND = "[--guide-bg:color-mix(in_srgb,var(--ui-bg)_50%,var(--app-page-bg))] dark:[--guide-bg:color-mix(in_srgb,var(--color-marble-900)_50%,var(--app-page-bg))] bg-(--guide-bg)";
-  const NEUTRAL = "border-marble-300/40 dark:border-marble-800/60";
-  /**
-   * The icon and the title, the marble of the text slightly tinted with the
-   * card's color (the close button, as the text, in marble).
-   */
+  const SURFACE = {
+    neutral: "",
+    primary: "bg-primary/5 border-primary/15",
+    secondary: "bg-secondary/5 border-secondary/20",
+  };
   /** The close button's ring: in the card's color, to be seen. */
   const CLOSE_RING = {
     neutral: "ring-marble-300/50 dark:ring-marble-800/60",
     primary: "ring-primary/50 dark:ring-primary/40",
     secondary: "ring-secondary/50 dark:ring-secondary/40",
   };
+  /**
+   * The icon and the title, the marble of the text slightly tinted with the
+   * card's color (the close button, as the text, in marble).
+   */
   const TITLE = {
     neutral: "",
     primary: "text-[color-mix(in_oklab,var(--color-marble-700)_65%,var(--ui-color-primary-700))] dark:text-[color-mix(in_oklab,var(--color-marble-400)_65%,var(--ui-color-primary-400))]",
     secondary: "text-[color-mix(in_oklab,var(--color-marble-700)_65%,var(--ui-color-secondary-700))] dark:text-[color-mix(in_oklab,var(--color-marble-400)_65%,var(--ui-color-secondary-400))]",
   };
-  const GLOW = "bg-[radial-gradient(ellipse_at_bottom_left,var(--guide-bg)_70%,var(--guide-tint))]";
-  const PRIMARY = `[--guide-tint:color-mix(in_oklab,var(--guide-bg)_88%,var(--ui-color-primary-500))] dark:[--guide-tint:color-mix(in_oklab,var(--guide-bg)_80%,var(--ui-color-primary-500))] ${GLOW} border-primary/20`;
-  const SECONDARY = `[--guide-tint:color-mix(in_oklab,var(--guide-bg)_88%,var(--ui-color-secondary-500))] dark:[--guide-tint:color-mix(in_oklab,var(--guide-bg)_80%,var(--ui-color-secondary-500))] ${GLOW} border-secondary/20`;
 
   defineEmits<{
     /** The user dismissed the card. */
@@ -59,7 +59,7 @@
     :aria-labelledby="titleId"
     variant="bookmarkGroup"
     :ui="{
-      root: `${BACKGROUND} ${tint === 'primary' ? PRIMARY : tint === 'secondary' ? SECONDARY : NEUTRAL}`,
+      root: SURFACE[tint ?? 'neutral'],
       header: 'flex !px-3 pb-0',
       body: '!p-3',
     }"
