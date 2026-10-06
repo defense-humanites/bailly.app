@@ -30,7 +30,7 @@
   /**
    * The page's sections, for its table of contents (from `xl`, on the
    * column's right, as the ambiguous forms' headwords, cf. `forme`): the
-   * details (the donations once offered), not the summary above them.
+   * details (the survey and the donations once offered), not the summary above them.
    */
   const sections = [
     { id: "sur-votre-appareil", title: "Sur votre appareil" },
@@ -40,6 +40,7 @@
     { id: "recherches", title: "Recherches" },
     { id: "mesure-d-audience", title: "Mesure d'audience" },
     { id: "hebergement", title: "Hébergement" },
+    ...(FEATURES.news ? [{ id: "questionnaire", title: "Questionnaire" }] : []),
     ...(FEATURES.donations ? [{ id: "dons", title: "Dons" }] : []),
     { id: "contact", title: "Contact" },
   ];
@@ -329,6 +330,35 @@
           Pour distinguer les visites des robots, Cloudflare peut déposer un cookie de sécurité
           (<code>__cf_bm</code>), strictement nécessaire&nbsp;: propre à ce site, chiffré, il ne
           sert pas au suivi et expire après trente minutes d'inactivité.
+        </p>
+      </section>
+
+      <!-- With the news, which offer it (cf. `FEATURES`). -->
+      <section
+        v-if="FEATURES.news"
+        aria-labelledby="questionnaire"
+        class="space-y-3"
+      >
+        <h2
+          id="questionnaire"
+          :class="HEADING"
+        >
+          <UIcon
+            name="i-lucide-clipboard-list"
+            :class="HEADING_ICON"
+          />
+          Questionnaire
+        </h2>
+        <p>
+          Le questionnaire proposé sur la page des nouveautés est hébergé par Tally, dont les
+          serveurs sont situés dans l'Union européenne, et qui traite vos réponses selon sa
+          <a
+            target="_blank"
+            rel="noopener"
+            href="https://tally.so/help/privacy-policy"
+            :class="LINK"
+          >politique de confidentialité</a>. Il est anonyme&nbsp;: il ne demande ni nom ni
+          adresse, et vos réponses ne sont reliées à aucune de vos données dans l'application.
         </p>
       </section>
 
