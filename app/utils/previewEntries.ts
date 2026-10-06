@@ -1,21 +1,19 @@
 /**
- * Short real entries (30) to preview the reading settings (cf. the
+ * Short real entries (27) to preview the reading settings (cf. the
  * preferences page), one drawn at each visit. Each takes three lines on a desktop screen
  * (the definition on two, the etymology on one) whatever the font, size and
  * weight, so that the preview keeps its height when they change (checked by
- * a test, `settings.spec.ts`, with every reading font). Their HTML
- * comes from the API (`htmlDefinition`), as it was on 1 October 2026.
+ * a test, `settings.spec.ts`, with every reading font), with a margin: they
+ * keep their three lines in a preview 16 px narrower (three entries, within
+ * 4 px of a fourth line at the largest size, took one in Chrome 153, the
+ * CI's, and were removed on 6 October 2026). Their HTML comes from the API
+ * (`htmlDefinition`), as it was on 1 October 2026.
  */
 export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string }[] = [
   {
     word: "ὀψομανής",
     uri: "opsomanês",
     html: "<span class=\"entreea\"><span class=\"grec\">ὀψο·μανής,</span></span> <span class=\"des\">ής, ές</span>\n[<span class=\"grec\">ᾰ</span>] passionné pour la bonne chère,\ngourmet, <span class=\"aut\">Ath.</span> <span class=\"refpa\">464</span><span class=\"refpb\">e</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/opson\">ὄψον</a>, <a href=\"/mainomai\">μαίνομαι</a></span>.</div>\n",
-  },
-  {
-    word: "θελξίνοος-ους",
-    uri: "thelxinoos-ous",
-    html: "<span class=\"entreea\"><span class=\"grec\">θελξί·νοος-ους,</span></span> <span class=\"des\">οος-ους,\nοον-ουν</span> [<span class=\"grec\">ῐ</span>] qui charme l’esprit\n<span class=\"ital\">ou</span> le cœur, <span class=\"aut\">Mus.</span>\n<span class=\"refch\">147 ;</span> <span class=\"aut\">Anth.</span>\n<span class=\"refch\">6, 88</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">θ. <a href=\"/noos-nous\">νόος</a></span>.</div>\n",
   },
   {
     word: "ἀμετροπαθής",
@@ -93,11 +91,6 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
     html: "<span class=\"entreea\"><span class=\"grec\">δρυΐνας</span></span> (<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)\n[<span class=\"grec\">ῠῐ</span>] serpent qui se cache dans les chênes\ncreux, <span class=\"aut\">Nic.</span> <span class=\"oeuv\">Th.</span>\n<span class=\"refch\">411</span> (<span class=\"ital\">gén.</span>\n<span class=\"grec\">-αο</span>).\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/drus\">δρῦς</a></span>.</div>\n",
   },
   {
-    word: "ἔλασμα",
-    uri: "elasma",
-    html: "<span class=\"entreea\"><span class=\"grec\">ἔλασμα,</span></span> <span class=\"gens\">ατος</span>\n(<span class=\"grec\"><span data-linked-entries=\"ho_(1),to\">τὸ</span></span>) lame métallique, <span class=\"aut\">Paus.</span> <span class=\"refch\">10, 16, 1 ;</span>\n<span class=\"aut\">Str.</span> <span class=\"refch\">240 ;</span>\n<span class=\"aut\">Spt.</span> <span class=\"oeuv\">Hab.</span>\n<span class=\"refch\">2, 19 ;</span> <span class=\"aut\">Diosc.</span>\n<span class=\"refch\">5, 96</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><span data-linked-entries=\"elaunô,elaô-ô,elaô\">ἐλάω</span></span>.</div>\n",
-  },
-  {
     word: "ἀϋλία",
     uri: "aulia",
     html: "<span class=\"entreea\"><span class=\"grec\">ἀϋλία,</span></span> <span class=\"gens\">ας</span>\n(<span class=\"grec\"><span data-linked-entries=\"hê_(1),ho_(1)\">ἡ</span></span>) [<span class=\"grec\">ᾰῡ</span>] nature\nimmatérielle <span class=\"ital\">ou</span> incorporelle,\n<span class=\"aut\">Hiérocl.</span> <span class=\"oeuv\">C. aur.</span>\n<span class=\"refch\">p. 479 Mullach</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/aulos_(2)\">ἄϋλος</a></span>.</div>\n",
@@ -146,11 +139,6 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
     word: "διανάγκασις",
     uri: "dianankasis",
     html: "<span class=\"entreea\"><span class=\"grec\">διανάγκασις,</span></span> <span class=\"gens\">εως</span>\n<span class=\"art\">(<span class=\"grec\"><span data-linked-entries=\"hê_(1),ho_(1)\">ἡ</span></span>)</span>\n[<span class=\"grec-longueur\">ᾰν</span>] action de réduire un membre\nluxé, <span class=\"aut\">Hpc.</span> <span class=\"refpa\">863</span><span class=\"refpb\">g</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/dianankazô\">διαναγκάζω</a></span>.</div>\n",
-  },
-  {
-    word: "ἐκδύσια",
-    uri: "ekdusia",
-    html: "<span class=\"entreea\"><span class=\"grec\">ἐκδύσια,</span></span> <span class=\"gens\">ων</span>\n(<span class=\"grec\"><span data-linked-entries=\"ho_(1),ta_(1),tis_(1)\">τὰ</span></span>) [<span class=\"grec\">ῠ</span>] fête à\nPhæstos, en Crète, lorsque l’enfant déposait le peplum,\n<span class=\"aut\">A. Lib.</span> <span class=\"refch\">18</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/ekduô\">ἐκδύω</a></span>.</div>\n",
   },
   {
     word: "ἀναλακτίζω",
