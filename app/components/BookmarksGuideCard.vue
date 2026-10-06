@@ -25,15 +25,18 @@
     primary: "bg-primary/5 border-primary/15",
     secondary: "bg-secondary/5 border-secondary/20",
   };
-  /** The close button's ring: in the card's color, to be seen. */
-  const CLOSE_RING = {
-    neutral: "ring-marble-300/50 dark:ring-marble-800/60",
-    primary: "ring-primary/50 dark:ring-primary/40",
-    secondary: "ring-secondary/50 dark:ring-secondary/40",
+  /**
+   * The close button's ring and cross: in the card's color, as the buttons
+   * of the bookmarks' cards in their tag's (cf. `BookmarkGroup`).
+   */
+  const CLOSE = {
+    neutral: "ring-marble-300/50 dark:ring-marble-800/60 text-marble-700/75 hover:text-marble-700 dark:text-marble-400/75 dark:hover:text-marble-400",
+    primary: "ring-primary/50 dark:ring-primary/40 text-primary/75 hover:text-primary",
+    secondary: "ring-secondary/50 dark:ring-secondary/40 text-secondary/75 hover:text-secondary",
   };
   /**
    * The icon and the title, the marble of the text slightly tinted with the
-   * card's color (the close button, as the text, in marble).
+   * card's color.
    */
   const TITLE = {
     neutral: "",
@@ -88,7 +91,7 @@
             variant="subtle"
             color="neutral"
             :aria-label="`Masquer « ${title} »`"
-            :ui="{ base: `bg-default/50 hover:bg-default/90 active:bg-default/75 text-marble-700/75 hover:text-marble-700 dark:text-marble-400/75 dark:hover:text-marble-400 ${CLOSE_RING[tint ?? 'neutral']}` }"
+            :ui="{ base: `bg-default/50 hover:bg-default/90 active:bg-default/75 ${CLOSE[tint ?? 'neutral']}` }"
             @click="$emit('dismiss')"
           />
         </UTooltip>
