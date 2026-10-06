@@ -165,13 +165,14 @@ test.describe("settings", () => {
       }
       return result;
     });
-    // Inter's thin space: 0.18 em, scaled as the font (100 px: 20 to 25 px);
-    // the exclamation mark was 53 px wide in Didot. Bailly Book's own: 0.15 to
+    // Inter's thin space: 0.18 em, scaled as the font, narrower in bold (100
+    // px: 15 to 25 px; in Chrome 153, 15 exactly for Artemisia's bold); the
+    // exclamation mark was 53 px wide in Didot. Bailly Book's own: 0.15 to
     // 0.17 em, scaled.
     for (const [face, { narrow, thin }] of Object.entries(widths)) {
-      expect(narrow, face).toBeGreaterThan(15);
+      expect(narrow, face).toBeGreaterThan(12);
       expect(narrow, face).toBeLessThan(30);
-      expect(thin, face).toBeGreaterThan(15);
+      expect(thin, face).toBeGreaterThan(12);
       expect(thin, face).toBeLessThan(30);
       // The GFS fonts' come from Inter (the same width).
       if (face.startsWith("GFS")) expect(thin, face).toBeCloseTo(narrow, 1);
@@ -251,6 +252,8 @@ test.describe("settings", () => {
           for (const font of ["book", "didot", "artemisia", "bodoni", "neohellenic"]) {
             for (const weight of ["normal", "bold"]) {
               Object.assign(root.dataset, { readingFont: font, readingSize: size, readingWeight: weight });
+              // The new font requested (by a layout) before waiting for it.
+              preview.getBoundingClientRect();
               await document.fonts.ready;
               heights.add(Math.round(preview.getBoundingClientRect().height));
             }
