@@ -12,8 +12,9 @@
  * line): the color of the surrounding text, a thin solid underline in the
  * main color, a little faded, which thickens and takes its full color on
  * hover (`--link-accent`, cf. `link-secondary`); an outline on keyboard
- * focus. Distinct from the definitions' links, more discreet (a dotted
- * underline in the text's color, `.definition a`, cf. `components.css`).
+ * focus; an arrow after those opening another tab. Distinct from the
+ * definitions' links, more discreet (a dotted underline in the text's color,
+ * `.definition a`, cf. `components.css`).
  * Set by its class, not on every `a` (Nuxt UI's links and buttons have their
  * own look).
  */
@@ -32,6 +33,25 @@
       text-decoration-thickness: 2px;
       text-decoration-color: var(--link-accent, var(--ui-primary));
     }
+  }
+
+  /*
+   * Opening in another tab: an arrow after it, as high as the text (an icon
+   * of the line, not an exponent), in the accent, out of the underline (an
+   * inline block), told to screen readers (the alternative text of
+   * `content`, the plain one first for the browsers without it). The buttons
+   * opening another tab (e.g. the survey's) have none.
+   */
+  &[target="_blank"]::after {
+    content: "";
+    content: "" / " (nouvel onglet)";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-inline-start: 0.1em;
+    vertical-align: -0.125em;
+    background-color: var(--link-accent, var(--ui-primary));
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E") center / contain no-repeat;
   }
 
   &:focus-visible {

@@ -832,7 +832,7 @@
                 target="_blank"
                 rel="noopener"
                 class="link link-secondary font-medium text-highlighted"
-              >En savoir plus<span class="sr-only"> (nouvel onglet)</span></NuxtLink></span>
+              >En savoir plus</NuxtLink></span>
           </p>
         </template>
 
