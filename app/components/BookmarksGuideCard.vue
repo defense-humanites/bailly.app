@@ -98,8 +98,8 @@
         </UTooltip>
       </div>
     </template>
-    <!-- The text a shade darker than the marble 700/400 of the header. -->
-    <div class="ms-3 sm:ms-12 text-marble-800 dark:text-marble-300">
+    <!-- The text in its usual color, as the news' asides. -->
+    <div class="ms-3 sm:ms-12 text-default">
       <slot />
     </div>
   </UCard>
