@@ -792,7 +792,7 @@
                 />
               </span>
               <span>
-                <span class="block font-bold text-highlighted">Activer la synchronisation</span>
+                <span class="block font-bold text-secondary">Activer la synchronisation</span>
                 <span class="mt-1 block font-semibold text-muted">Première fois : une clé est créée pour cet appareil et vos
                   autres appareils.</span>
               </span>
