@@ -9,23 +9,28 @@
 
 /*
  * The common links, and the buttons read as links (e.g. « Choisir » within a
- * line): the color of the surrounding text, a dotted underline, the main
- * color on hover (`--link-hover`, cf. `link-secondary`), an outline on
- * keyboard focus. Set by its class, not on every `a` (Nuxt UI's links and
- * buttons have their own look). Not the definitions' links, more discreet
- * (`.definition a`, cf. `components.css`). A utility, so that its hover color
- * prevails over a color given beside it (e.g. `text-highlighted`).
+ * line): the color of the surrounding text, a thin solid underline in the
+ * main color, a little faded, which thickens and takes its full color on
+ * hover (`--link-accent`, cf. `link-secondary`); an outline on keyboard
+ * focus. Distinct from the definitions' links, more discreet (a dotted
+ * underline in the text's color, `.definition a`, cf. `components.css`).
+ * Set by its class, not on every `a` (Nuxt UI's links and buttons have their
+ * own look).
  */
 @utility link {
   text-decoration-line: underline;
-  text-decoration-style: dotted;
+  text-decoration-style: solid;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--link-accent, var(--ui-primary)) 60%, transparent);
+  text-decoration-skip-ink: auto;
   text-underline-offset: 0.25em;
-  transition-property: color;
+  transition-property: text-decoration-color, text-decoration-thickness;
   transition-duration: 150ms;
 
   @media (hover: hover) {
     &:hover {
-      color: var(--link-hover, var(--ui-primary));
+      text-decoration-thickness: 2px;
+      text-decoration-color: var(--link-accent, var(--ui-primary));
     }
   }
 
@@ -38,6 +43,6 @@
 
 /* The links of the synchronization's surfaces, in their Aegean blue. */
 @utility link-secondary {
-  --link-hover: var(--ui-secondary);
+  --link-accent: var(--ui-secondary);
   --link-focus: var(--ui-secondary);
 }
