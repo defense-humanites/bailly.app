@@ -9,7 +9,7 @@
   });
 
   /**
-   * The news of this version (at most seven), their texts here to be easily
+   * The news of this version (at most eight), their texts here to be easily
    * reworded. The previous article (10 October 2024) is in the history of
    * the old application's repository.
    */
@@ -18,6 +18,11 @@
       icon: "i-lucide-sparkles",
       title: "Une interface entièrement repensée.",
       text: "Une palette inspirée de la Grèce classique, une barre de recherche toujours à portée de main, un thème sombre retravaillé et une mise en page pensée aussi bien pour les téléphones que pour les grands écrans.",
+    },
+    {
+      icon: "i-lucide-link",
+      title: "Des définitions reliées entre elles.",
+      text: "Les mots grecs cités dans les définitions mènent à leurs entrées ; une forme qui peut relever de plusieurs entrées ouvre une page qui les propose toutes. Attendue de longue date, cette fonction demandait un travail de fond sur les données : elle est arrivée quelques jours avant cette nouvelle version.",
     },
     {
       icon: "i-lucide-search",
