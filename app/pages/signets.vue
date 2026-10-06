@@ -312,7 +312,7 @@
           </p>
           <p>
             Vous pouvez également
-            <span class="whitespace-nowrap font-bold text-highlighted"><UIcon
+            <span class="whitespace-nowrap font-semibold text-highlighted"><UIcon
               name="i-bailly-pin-filled"
               :class="INLINE_ICON"
             /> épingler</span>
@@ -340,7 +340,7 @@
         >
           <p class="mb-2">
             Vos signets sont enregistrés dans ce navigateur,
-            <strong class="font-bold">sur cet appareil seulement</strong> : effacer les données de
+            <strong class="font-semibold">sur cet appareil seulement</strong> : effacer les données de
             navigation les supprime, et le navigateur peut aussi les effacer de lui-même si son
             espace de stockage vient à manquer.
           </p>

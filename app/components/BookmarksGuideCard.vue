@@ -50,7 +50,7 @@
 <!--
   A card of the bookmarks page's guide (cf. `signets.vue`), before the
   favorites, laid out as theirs (sizes, margins), told from them by its marble
-  (neutral), its text in a medium weight (its icon and its bold title as the
+  (neutral), its text in a normal weight (its icon and its bold title as the
   cards'). Dismissed by its button.
 -->
 <template>
@@ -94,7 +94,7 @@
         </UTooltip>
       </div>
     </template>
-    <div class="ms-12 font-medium text-marble-700 dark:text-marble-400">
+    <div class="ms-3 sm:ms-12 text-marble-700 dark:text-marble-400">
       <slot />
     </div>
   </UCard>
