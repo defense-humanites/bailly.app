@@ -42,15 +42,16 @@
    * without it). Never on a line of its own: not an inline block (a break
    * may come before one), but an inline box holding a word joiner (U+2060,
    * no break on either side), the arrow drawn in its start padding (out of
-   * the underline). The buttons opening another tab (e.g. the survey's) have
-   * none.
+   * the underline). Drawn as a background image in the accent's colors
+   * (`--link-mark`, cf. `root.css`), not as a mask: Safari doesn't mask an inline
+   * box (it showed a filled block). The buttons opening another tab (e.g.
+   * the survey's) have none.
    */
   &[target="_blank"]::after {
     content: "\2060";
     content: "\2060" / " (nouvel onglet)";
     padding-inline-start: 0.82em;
-    background-color: var(--link-accent, var(--ui-primary));
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 16 16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E") no-repeat 100% 50% / 0.7em 0.7em;
+    background: var(--link-mark, var(--link-mark-primary)) no-repeat 100% 50% / 0.7em 0.7em;
   }
 
   &:focus-visible {
@@ -64,4 +65,5 @@
 @utility link-secondary {
   --link-accent: var(--ui-secondary);
   --link-focus: var(--ui-secondary);
+  --link-mark: var(--link-mark-secondary);
 }
