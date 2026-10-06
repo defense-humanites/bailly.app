@@ -162,19 +162,21 @@
           <aside class="rounded-lg bg-primary/5 p-4 ring-1 ring-primary/15 md:p-6 xl:p-5">
             <p>
               Si vous souhaitez nous faire part de votre avis ou nous contacter pour
-              toute autre raison, vous pouvez nous joindre par
+              toute autre raison, vous pouvez
               <a
                 href="mailto:contact@bailly.app"
                 class="link"
-              >courriel</a>. Et si l'application vous est
-              utile, vous pouvez
-              <!-- PayPal's page directly, not the donation flow (`/soutenir`, not offered yet). -->
+              >nous joindre</a> par courriel. Et si l'application vous est utile,
+              <!--
+                PayPal's page directly, not the donation flow (`/soutenir`, not
+                offered yet). Never broken: rather the next line, whole.
+              -->
               <a
                 :href="DONATION_URL"
                 target="_blank"
                 rel="noopener"
-                class="link"
-              >participer</a> à ses frais.
+                class="link whitespace-nowrap"
+              >participez aux frais</a> d'entretien pour en assurer la pérennité.
             </p>
           </aside>
         </div>
