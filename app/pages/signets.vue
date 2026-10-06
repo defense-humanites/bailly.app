@@ -54,7 +54,14 @@
    * cf. `SyncButton`). The former single introduction, once dismissed,
    * dismisses both.
    */
+  /**
+   * Installed on an iPhone or iPad's home screen, the application keeps its
+   * own storage, apart from Safari's (cf. `useInstalledOnIos`): told in a
+   * notice above the cards while the bookmarks aren't synchronized, until
+   * dismissed.
+   */
   const installedOnIos = useInstalledOnIos();
+  const installedNoticeDismissed = useDismissed("installedOnIosBookmarks");
   const introDismissed = useDismissed("bookmarksIntro");
   const guideDismissed = useDismissed("bookmarksGuide");
   const keepDismissed = useDismissed("bookmarksKeep");
@@ -65,6 +72,8 @@
     syncLoaded.value ? syncedBookmarks.value : parseSyncHint(syncHint.value).includes("bookmarks"));
   const showGuide = computed((): boolean => !introDismissed.value && !guideDismissed.value);
   const showKeep = computed((): boolean => !introDismissed.value && !keepDismissed.value && !bookmarksSynced.value);
+  const showInstalledNotice = computed((): boolean =>
+    installedOnIos.value && !bookmarksSynced.value && !installedNoticeDismissed.value);
 
   /**
    * The bar's new tag field, active tag field, display menu,
@@ -247,6 +256,21 @@
           :groups="toc"
         />
 
+        <!-- The installed application's own bookmarks (on iOS), with its action. -->
+        <UAlert
+          v-if="showInstalledNotice"
+          class="col-span-full"
+          icon="i-lucide-smartphone"
+          color="warning"
+          variant="soft"
+          title="Application installée : des signets à part"
+          description="Sur iPhone et iPad, l'application ajoutée à l'écran d'accueil garde ses propres signets, à part de ceux de Safari. Synchronisez-les pour les retrouver de part et d'autre."
+          :ui="{ description: 'text-default opacity-100' }"
+          :actions="[{ label: 'Synchroniser', icon: 'i-lucide-cloud-upload', color: 'secondary', variant: 'solid', onClick: () => syncButton?.open() }]"
+          close
+          @update:open="installedNoticeDismissed = true"
+        />
+
         <!--
           The guide, two cards before the favorites (cf. `BookmarksGuideCard`).
           Filing the entries: the favorites, the tags (created here first),
@@ -337,19 +361,6 @@
             <strong class="font-bold">sur cet appareil seulement</strong> : effacer les données de
             navigation les supprime, et le navigateur peut aussi les effacer de lui-même si son
             espace de stockage vient à manquer.
-          </p>
-          <!--
-            Installed on an iPhone or iPad's home screen, the application keeps
-            its own storage, apart from Safari's: its bookmarks aren't those of
-            Safari (cf. `useInstalledOnIos`).
-          -->
-          <p
-            v-if="installedOnIos"
-            class="mb-2"
-          >
-            Sur iPhone et iPad, l'application ajoutée à l'écran d'accueil garde ses propres
-            signets, à part de ceux de Safari : synchronisez-les pour les retrouver de part et
-            d'autre.
           </p>
           <p class="mb-2">
             Pour ne pas les perdre, vous pouvez les <button
