@@ -13,6 +13,7 @@
 
   const { preference, reset: resetPreferences } = usePreferences();
   const syncStore = useSyncStore();
+  const syncCard = useTemplateRef<{ open: (scope: SyncScope) => void }>("syncCard");
   // The switches, labelled by their rows' texts (cf. `SettingsRow`).
   const transliterateId = useId();
   const inflectedFormsId = useId();
@@ -137,6 +138,13 @@
         Préférences
       </h1>
 
+      <!-- The installed application's own data (on iOS), first, across the columns. -->
+      <InstalledOnIosNotice
+        page="preferences"
+        class="order-first lg:col-span-2"
+        @synchronize="(scope) => syncCard?.open(scope)"
+      />
+
       <!--
         Two columns from `lg`, balanced (the tallest card, Reading, with
         Bookmarks and the reset, the shorter column; Synchronization, General
@@ -151,6 +159,7 @@
           in the Aegean blue of that button.
         -->
         <SyncCard
+          ref="syncCard"
           class="order-1"
           :ui="cardUi"
         />

@@ -54,14 +54,6 @@
    * cf. `SyncButton`). The former single introduction, once dismissed,
    * dismisses both.
    */
-  /**
-   * Installed on an iPhone or iPad's home screen, the application keeps its
-   * own storage, apart from Safari's (cf. `useInstalledOnIos`): told in a
-   * notice above the cards while the bookmarks aren't synchronized, until
-   * dismissed.
-   */
-  const installedOnIos = useInstalledOnIos();
-  const installedNoticeDismissed = useDismissed("installedOnIosBookmarks");
   const introDismissed = useDismissed("bookmarksIntro");
   const guideDismissed = useDismissed("bookmarksGuide");
   const keepDismissed = useDismissed("bookmarksKeep");
@@ -72,8 +64,6 @@
     syncLoaded.value ? syncedBookmarks.value : parseSyncHint(syncHint.value).includes("bookmarks"));
   const showGuide = computed((): boolean => !introDismissed.value && !guideDismissed.value);
   const showKeep = computed((): boolean => !introDismissed.value && !keepDismissed.value && !bookmarksSynced.value);
-  const showInstalledNotice = computed((): boolean =>
-    installedOnIos.value && !bookmarksSynced.value && !installedNoticeDismissed.value);
 
   /**
    * The bar's new tag field, active tag field, display menu,
@@ -257,18 +247,10 @@
         />
 
         <!-- The installed application's own bookmarks (on iOS), with its action. -->
-        <UAlert
-          v-if="showInstalledNotice"
+        <InstalledOnIosNotice
+          page="bookmarks"
           class="col-span-full"
-          icon="i-lucide-smartphone"
-          color="warning"
-          variant="soft"
-          title="Application installée : des signets à part"
-          description="Sur iPhone et iPad, iOS isole l'application ajoutée à l'écran d'accueil de Safari : elle n'a pas accès aux signets enregistrés dans Safari. Pour les y retrouver, synchronisez-les ; le QR code s'ouvrant dans Safari, saisissez dans l'application les douze mots de votre clé."
-          :ui="{ description: 'text-default opacity-100' }"
-          :actions="[{ label: 'Synchroniser', icon: 'i-lucide-cloud-upload', color: 'secondary', variant: 'solid', onClick: () => syncButton?.open() }]"
-          close
-          @update:open="installedNoticeDismissed = true"
+          @synchronize="syncButton?.open()"
         />
 
         <!--

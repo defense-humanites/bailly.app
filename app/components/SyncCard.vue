@@ -125,6 +125,10 @@
    * The preferences synchronized, e.g. « 4 sur 8 » (once loaded).
    */
   const preferencesCount = computed(() => (loaded.value ? `${syncedPreferences.value.length} sur ${SYNCABLE_PREFERENCES.length}, marquées` : "Marquées"));
+
+  // The window, opened from elsewhere too (e.g. the installed application's
+  // notice, cf. `InstalledOnIosNotice`).
+  defineExpose({ open: openDialog });
 </script>
 
 <template>
