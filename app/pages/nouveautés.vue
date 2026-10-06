@@ -1,6 +1,13 @@
 <script setup lang="ts">
   import { SURVEY_URL } from "~/utils/survey";
 
+  /**
+   * The donation, on PayPal's page (as the former application), the same
+   * button as the donation flow's (cf. `PaypalDonateButton`).
+   */
+  const { paypalDonateButtonId } = useRuntimeConfig().public;
+  const DONATION_URL = `https://www.paypal.com/donate/?hosted_button_id=${paypalDonateButtonId}&locale.x=fr`;
+
   definePageMeta({
     layout: "single-column",
   });
@@ -71,52 +78,71 @@
       </p>
     </header>
 
-    <ul class="space-y-6">
-      <li
-        v-for="item in news"
-        :key="item.title"
-        class="flex gap-3"
-      >
-        <UIcon
-          :name="item.icon"
-          class="mt-0.5 size-5 shrink-0 text-primary"
-        />
-        <div>
-          <h2 class="font-semibold">
-            {{ item.title }}
-          </h2>
-          <p class="mt-1">
-            {{ item.text }}
-          </p>
+    <div class="relative space-y-6">
+      <ul class="space-y-6">
+        <li
+          v-for="item in news"
+          :key="item.title"
+          class="flex gap-3"
+        >
+          <UIcon
+            :name="item.icon"
+            class="mt-0.5 size-5 shrink-0 text-primary"
+          />
+          <div>
+            <h2 class="font-semibold">
+              {{ item.title }}
+            </h2>
+            <p class="mt-1">
+              {{ item.text }}
+            </p>
+          </div>
+        </li>
+      </ul>
+
+      <p class="text-muted">
+        &mdash; Antoine Boquet, le 4 octobre 2026.
+      </p>
+
+      <!--
+        The survey and the contact: below the news; from `xl`, on the
+        column's right (where it leaves room, as the privacy page's table of
+        contents), beside the news, sticky under the header: the survey in
+        view from the start.
+      -->
+      <div class="space-y-6 xl:absolute xl:start-full xl:top-0 xl:ms-12 xl:h-full xl:w-72">
+        <div class="space-y-6 xl:sticky xl:top-[calc(var(--header-bottom)+1.5rem)]">
+          <aside class="space-y-4 rounded-lg bg-secondary/5 p-4 ring-1 ring-secondary/20 md:p-6 xl:p-5">
+            <p>
+              <strong>Et ensuite&nbsp;?</strong> Aidez-nous à choisir les prochaines fonctions de
+              l'application&nbsp;: le questionnaire est anonyme et prend environ deux minutes.
+            </p>
+            <UButton
+              :to="SURVEY_URL"
+              target="_blank"
+              color="secondary"
+              icon="i-lucide-clipboard-list"
+              label="Répondre au questionnaire"
+            />
+          </aside>
+
+          <aside class="space-y-4 rounded-lg bg-primary/5 p-4 ring-1 ring-primary/15 md:p-6 xl:p-5">
+            <p>
+              Si vous souhaitez nous faire part de votre avis ou nous contacter pour
+              toute autre raison, vous pouvez nous joindre par
+              <a href="mailto:contact@bailly.app">courriel</a>. Et si l'application vous est
+              utile, vous pouvez aussi nous soutenir par un don.
+            </p>
+            <!-- PayPal's page directly, not the donation flow (`/soutenir`, not offered yet). -->
+            <UButton
+              :to="DONATION_URL"
+              target="_blank"
+              icon="i-lucide-heart"
+              label="Nous soutenir"
+            />
+          </aside>
         </div>
-      </li>
-    </ul>
-
-    <p class="text-muted">
-      &mdash; Antoine Boquet, le 4 octobre 2026.
-    </p>
-
-    <aside class="space-y-4 rounded-lg bg-secondary/5 p-4 ring-1 ring-secondary/20 md:p-6">
-      <p>
-        <strong>Et ensuite&nbsp;?</strong> Aidez-nous à choisir les prochaines fonctions de
-        l'application&nbsp;: le questionnaire est anonyme et prend environ deux minutes.
-      </p>
-      <UButton
-        :to="SURVEY_URL"
-        target="_blank"
-        color="secondary"
-        icon="i-lucide-clipboard-list"
-        trailing-icon="i-lucide-external-link"
-        label="Répondre au questionnaire"
-      />
-    </aside>
-
-    <aside class="rounded-lg bg-primary/5 p-4 ring-1 ring-primary/15 md:p-6">
-      <p>
-        Si vous souhaitez nous faire part de votre avis ou nous contacter pour
-        toute autre raison, vous pouvez nous joindre par
-        <a href="mailto:contact@bailly.app">courriel</a>.
-      </p>
-    </aside>
+      </div>
+    </div>
   </article>
 </template>
