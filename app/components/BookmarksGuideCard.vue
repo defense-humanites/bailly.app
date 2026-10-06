@@ -35,13 +35,14 @@
     secondary: "ring-secondary/50 dark:ring-secondary/40 text-secondary/75 hover:text-secondary",
   };
   /**
-   * The icon and the title, the marble of the text slightly tinted with the
-   * card's color.
+   * The icon and the title in the card's color (the accent, as readable as
+   * the text: `--ui-primary`, `--ui-secondary`), as the bookmarks' cards'
+   * in their tag's (cf. `BookmarkGroup`).
    */
   const TITLE = {
     neutral: "",
-    primary: "text-[color-mix(in_oklab,var(--color-marble-700)_65%,var(--ui-color-primary-700))] dark:text-[color-mix(in_oklab,var(--color-marble-400)_65%,var(--ui-color-primary-400))]",
-    secondary: "text-[color-mix(in_oklab,var(--color-marble-700)_65%,var(--ui-color-secondary-700))] dark:text-[color-mix(in_oklab,var(--color-marble-400)_65%,var(--ui-color-secondary-400))]",
+    primary: "text-primary",
+    secondary: "text-secondary",
   };
 
   defineEmits<{
