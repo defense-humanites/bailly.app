@@ -126,20 +126,19 @@
             />
           </aside>
 
-          <aside class="space-y-4 rounded-lg bg-primary/5 p-4 ring-1 ring-primary/15 md:p-6 xl:p-5">
+          <aside class="rounded-lg bg-primary/5 p-4 ring-1 ring-primary/15 md:p-6 xl:p-5">
             <p>
               Si vous souhaitez nous faire part de votre avis ou nous contacter pour
               toute autre raison, vous pouvez nous joindre par
               <a href="mailto:contact@bailly.app">courriel</a>. Et si l'application vous est
-              utile, vous pouvez aussi nous soutenir par un don.
+              utile, vous pouvez aussi
+              <!-- PayPal's page directly, not the donation flow (`/soutenir`, not offered yet). -->
+              <a
+                :href="DONATION_URL"
+                target="_blank"
+                rel="noopener"
+              >nous soutenir</a>.
             </p>
-            <!-- PayPal's page directly, not the donation flow (`/soutenir`, not offered yet). -->
-            <UButton
-              :to="DONATION_URL"
-              target="_blank"
-              icon="i-lucide-heart"
-              label="Nous soutenir"
-            />
           </aside>
         </div>
       </div>
