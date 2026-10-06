@@ -137,6 +137,7 @@
       :word="greek.text(entry.word)"
       :siblings="siblings"
       :shown="compactBarShown"
+      :homonyms="!!entry.children?.length"
     />
     <header ref="title">
       <!--

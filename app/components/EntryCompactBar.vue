@@ -8,6 +8,8 @@
     siblings: Siblings<"word" | "uri">;
     /** Whether the bar is shown (once the entry's title is out of sight). */
     shown: boolean;
+    /** Whether the entry groups homonyms (an icon before the word). */
+    homonyms?: boolean;
   }>();
 
   // Greek may be transliterated (a preference).
@@ -48,7 +50,11 @@
       <span
         class="min-w-0 grow truncate text-center font-serif text-xs/6 font-bold"
         :lang="greek.lang.value"
-      >{{ word }}</span>
+      ><!-- Homonyms: a fan of cards, as in the page's title. --><UIcon
+        v-if="homonyms"
+        name="i-lucide-playing-cards-fan"
+        class="me-1 inline-block size-4 align-[-0.2em] text-muted"
+      />{{ word }}</span>
       <UButton
         v-if="siblings.next"
         :to="`/${siblings.next.uri}`"
