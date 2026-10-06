@@ -175,7 +175,7 @@
           {{ preferencesCount }} d'un nuage ·
           <button
             type="button"
-            class="font-medium text-default underline decoration-dotted underline-offset-3 hover:text-highlighted focus-visible:outline-2 focus-visible:outline-inverted"
+            class="link link-secondary font-medium text-default"
             aria-haspopup="dialog"
             @click="openDialog('preferences', 'preferences')"
           >
@@ -218,7 +218,7 @@
           <button
             v-else
             type="button"
-            class="ms-1 font-medium underline decoration-dotted underline-offset-3 hover:text-highlighted"
+            class="link link-secondary ms-1 font-medium"
             aria-haspopup="dialog"
             @click="openDialog(errorSection ?? mainScope)"
           >

@@ -6,3 +6,38 @@
   grid-template-columns: var(--header-title-track) minmax(0, 1fr) var(--header-menu-width);
   column-gap: var(--header-gap);
 }
+
+/*
+ * The common links, and the buttons read as links (e.g. « Choisir » within a
+ * line): the color of the surrounding text, a dotted underline, the main
+ * color on hover (`--link-hover`, cf. `link-secondary`), an outline on
+ * keyboard focus. Set by its class, not on every `a` (Nuxt UI's links and
+ * buttons have their own look). Not the definitions' links, more discreet
+ * (`.definition a`, cf. `components.css`). A utility, so that its hover color
+ * prevails over a color given beside it (e.g. `text-highlighted`).
+ */
+@utility link {
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 0.25em;
+  transition-property: color;
+  transition-duration: 150ms;
+
+  @media (hover: hover) {
+    &:hover {
+      color: var(--link-hover, var(--ui-primary));
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--link-focus, var(--ui-border-inverted));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+/* The links of the synchronization's surfaces, in their Aegean blue. */
+@utility link-secondary {
+  --link-hover: var(--ui-secondary);
+  --link-focus: var(--ui-secondary);
+}

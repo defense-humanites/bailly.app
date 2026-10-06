@@ -494,6 +494,7 @@
                   href="https://archive.org/details/BaillyDictionnaireGrecFrancais"
                   target="_blank"
                   rel="noopener"
+                  class="link"
                 >fac-similé</a> est disponible sur l'<em>Internet Archive</em>.
               </p>
             </div>
@@ -523,6 +524,7 @@
                   href="http://gerardgreco.free.fr/spip.php?article24"
                   target="_blank"
                   rel="noopener"
+                  class="link"
                 >édition PDF</a> est disponible sur le site du projet.
               </p>
               <p class="mt-2 text-sm text-muted font-semibold">
@@ -688,7 +690,7 @@
                   type="button"
                   class="inline-flex items-baseline gap-1 italic hover:text-primary"
                 >
-                  <span class="underline decoration-dotted underline-offset-4">{{ credit.details.label }}</span>
+                  <span class="link">{{ credit.details.label }}</span>
                   <UIcon
                     name="i-lucide-type"
                     class="size-4 self-center not-italic"
@@ -720,7 +722,7 @@
                           :href="link.href"
                           target="_blank"
                           rel="noopener"
-                          class="underline decoration-dotted underline-offset-4 hover:text-primary"
+                          class="link"
                         >{{ link.label }}</a>
                       </p>
                     </div>
@@ -755,7 +757,7 @@
                   class="inline-flex items-baseline gap-1 italic hover:text-primary"
                   :aria-label="`Et al. : les ${credit.contributors.length} contributeurs au ${credit.title}`"
                 >
-                  <span class="underline decoration-dotted underline-offset-4">et al.</span>
+                  <span class="link">et al.</span>
                   <UIcon
                     name="i-lucide-users-round"
                     class="size-4 self-center not-italic"
@@ -796,7 +798,7 @@
                 :href="link.href"
                 target="_blank"
                 rel="noopener"
-                class="underline decoration-dotted underline-offset-4 hover:text-primary"
+                class="link"
               >{{ link.label }}</a>
             </p>
           </div>
@@ -804,7 +806,7 @@
             Concernant l'usage de vos données :
             <NuxtLink
               :to="encodeURI('/confidentialité')"
-              class="underline decoration-dotted underline-offset-4 hover:text-primary"
+              class="link"
             >confidentialité</NuxtLink>.
           </p>
         </div>

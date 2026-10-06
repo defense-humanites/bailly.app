@@ -257,7 +257,7 @@
               >
                 <button
                   type="button"
-                  class="underline decoration-dotted underline-offset-3 hover:text-default focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)"
+                  class="link"
                 >
                   Table de correspondance
                 </button>

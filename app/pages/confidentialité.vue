@@ -45,9 +45,6 @@
     { id: "contact", title: "Contact" },
   ];
   const { currentId, follow } = useCurrentSection(sections.map(({ id }) => id));
-
-  /** The links in the text (as the about page's). */
-  const LINK = "underline decoration-dotted underline-offset-4 hover:text-primary";
 </script>
 
 <template>
@@ -287,7 +284,7 @@
             target="_blank"
             rel="noopener"
             href="https://docs.simpleanalytics.com/what-we-collect"
-            :class="LINK"
+            class="link"
           >Simple Analytics</a>, qui ne dépose aucun cookie et n'utilise aucune technique
           équivalente (stockage local, empreinte du navigateur). Votre adresse IP n'est ni
           conservée ni enregistrée.
@@ -323,7 +320,7 @@
             target="_blank"
             rel="noopener"
             href="https://www.cloudflare.com/privacypolicy/"
-            :class="LINK"
+            class="link"
           >politique de confidentialité</a>.
         </p>
         <p>
@@ -356,7 +353,7 @@
             target="_blank"
             rel="noopener"
             href="https://tally.so/help/privacy-policy"
-            :class="LINK"
+            class="link"
           >politique de confidentialité</a>. Il est anonyme&nbsp;: il ne demande ni nom ni
           adresse, et vos réponses ne sont reliées à aucune de vos données dans l'application.
         </p>
@@ -404,7 +401,7 @@
           effacement), écrivez à
           <a
             href="mailto:contact@bailly.app"
-            :class="LINK"
+            class="link"
           >contact@bailly.app</a>. Comme nous ne pouvons relier aucune copie en ligne à une
           personne, l'effacement de vos données en ligne se fait depuis la fenêtre de
           synchronisation, avec votre clé.

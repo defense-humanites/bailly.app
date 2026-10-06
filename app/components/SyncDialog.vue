@@ -728,7 +728,7 @@
             seront aussi sur vos autres appareils.
             <button
               type="button"
-              class="font-medium text-highlighted underline decoration-dotted underline-offset-3 hover:text-secondary focus-visible:outline-2 focus-visible:outline-secondary"
+              class="link link-secondary font-medium text-highlighted"
               :aria-expanded="customizing"
               aria-controls="sync-preferences-choice"
               @click="customizing = !customizing"
@@ -831,7 +831,7 @@
                 :to="`${encodeURI('/confidentialité')}#synchronisation`"
                 target="_blank"
                 rel="noopener"
-                class="font-medium text-highlighted underline decoration-dotted underline-offset-3 hover:text-secondary focus-visible:outline-2 focus-visible:outline-secondary"
+                class="link link-secondary font-medium text-highlighted"
               >En savoir plus<span class="sr-only"> (nouvel onglet)</span></NuxtLink></span>
           </p>
         </template>

@@ -152,7 +152,7 @@
               auteurs ont intitulée <em>Bailly 2020 Hugo&nbsp;Chávez</em>.
               <NuxtLink
                 :to="{ path: encodeURI('/à-propos'), hash: '#origine' }"
-                class="underline decoration-dotted underline-offset-4 hover:text-primary"
+                class="link"
               >En savoir plus</NuxtLink>
             </p>
           </template>
@@ -161,7 +161,7 @@
       <p class="order-3 text-lg text-pretty text-muted md:order-none">
         Une application libre et gratuite, pensée pour la lecture et la recherche (<NuxtLink
           :to="encodeURI('/à-propos')"
-          class="underline decoration-dotted underline-offset-4 hover:text-primary"
+          class="link"
         >en savoir plus</NuxtLink>).
       </p>
     </section>
