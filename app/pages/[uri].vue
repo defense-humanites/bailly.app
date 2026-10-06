@@ -142,12 +142,13 @@
     <header ref="title">
       <!--
         The links' hover is the header menu's (`bg-elevated`, Nuxt UI's, is
-        the page's own color in the light theme).
+        the page's own color in the light theme). The items without Nuxt UI's
+        top padding (8 px above the title, under the layout's own margin).
       -->
       <UNavigationMenu
         :ui="{
           root: '[&>div]:w-full',
-          item: '[&:not(:has(h1))]:flex-1 [&:has(h1)]:grow',
+          item: 'pt-0 [&:not(:has(h1))]:flex-1 [&:has(h1)]:grow',
           link: 'font-serif font-bold text-base/7 hover:before:bg-(--app-page-hover)/50',
           linkLabel: 'grow',
         }"
