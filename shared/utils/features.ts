@@ -9,7 +9,7 @@
  * page). Their tests are skipped meanwhile.
  */
 export const FEATURES: { news: boolean; donations: boolean; aboutClosing: boolean } = {
-  news: false,
+  news: true,
   donations: false,
   aboutClosing: false,
 };
