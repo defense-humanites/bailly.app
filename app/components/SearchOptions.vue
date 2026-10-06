@@ -18,6 +18,21 @@
    */
   const popoverContent = { "align": "end", "collisionPadding": 12, "aria-label": "Options de recherche" } as PopoverProps["content"];
 
+  /**
+   * The panel, opened from elsewhere too (e.g. the news): its button focused
+   * first (the focus comes back to it once it closes) and pointed out
+   * (`pointOut`).
+   */
+  const isOpen = ref(false);
+  const trigger = useTemplateRef<{ $el: HTMLElement }>("trigger");
+  watch(useSearchOptionsPanel().request, () => {
+    const button = trigger.value?.$el;
+    if (!button) return;
+    button.focus();
+    pointOut(button);
+    isOpen.value = true;
+  });
+
   const lemmatizable = computed((): boolean => isLemmatizable(position.value, props.wildcards));
 
   const positionItems: RadioGroupItem[] = [
@@ -55,6 +70,7 @@
 
 <template>
   <UPopover
+    v-model:open="isOpen"
     :content="popoverContent"
     :ui="{ content: 'search-surface search-panel' }"
   >
@@ -66,10 +82,11 @@
       of the top and bottom edges (`inset-y-px`), not to cut the ring there.
     -->
     <UButton
+      ref="trigger"
       color="neutral"
       variant="outline"
       size="lg"
-      class="relative w-12 shrink-0 justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border) hover:bg-(--search-hover) active:bg-(--search-hover) data-[state=open]:bg-(--search-hover) group-has-[input:focus-visible]/search:ring-primary"
+      class="relative w-12 shrink-0 [--card-highlight:var(--ui-primary)] justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border) hover:bg-(--search-hover) active:bg-(--search-hover) data-[state=open]:bg-(--search-hover) group-has-[input:focus-visible]/search:ring-primary"
       aria-label="Options de recherche"
     >
       <UChip

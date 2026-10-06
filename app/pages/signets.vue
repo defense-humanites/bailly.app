@@ -89,10 +89,6 @@
    * line; the active tag's (its selected radio button) is on its key.
    */
   const INLINE_ICON = "inline-block size-4 align-[-0.15em]";
-  // Its negative margins keep it within the line (a key 24 px high, as the
-  // line, set in its middle, overflowed it by 2 px): a line with a key is
-  // as high as the others.
-  const INLINE_BUTTON = "-my-0.5 inline-flex h-6 cursor-pointer items-center gap-1 rounded-sm bg-default px-1.5 align-middle text-sm font-medium text-default ring ring-inset ring-accented transition-colors hover:bg-elevated focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)";
 
   /**
    * The tags to choose the active one from, in their order; from
