@@ -264,7 +264,7 @@
           color="warning"
           variant="soft"
           title="Application installée : des signets à part"
-          description="Sur iPhone et iPad, iOS isole l'application ajoutée à l'écran d'accueil de Safari : elle n'a pas accès aux signets enregistrés dans Safari. Pour les y retrouver, synchronisez-les ; le QR code s'ouvrant dans Safari, saisissez dans l'application les douze mots de votre clé, ou envoyez-les-vous pour les y coller."
+          description="Sur iPhone et iPad, iOS isole l'application ajoutée à l'écran d'accueil de Safari : elle n'a pas accès aux signets enregistrés dans Safari. Pour les y retrouver, synchronisez-les ; le QR code s'ouvrant dans Safari, saisissez dans l'application les douze mots de votre clé."
           :ui="{ description: 'text-default opacity-100' }"
           :actions="[{ label: 'Synchroniser', icon: 'i-lucide-cloud-upload', color: 'secondary', variant: 'solid', onClick: () => syncButton?.open() }]"
           close
