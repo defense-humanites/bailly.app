@@ -63,12 +63,16 @@
         "tooltip": { text: "Entrée précédente", kbds: ["arrowleft"] },
       }
       : placeholder,
-    // The title: active (no hover effect), without the active background.
+    // The title: active (no hover effect), without the active background;
+    // homonyms (several entries under one word) told by a fan of cards.
     {
       as: "h1",
       label: greek.text(entry.word),
+      ...(entry.children?.length ? { icon: "i-lucide-playing-cards-fan" } : {}),
       active: true,
-      class: "text-2xl text-center before:bg-transparent hover:before:bg-transparent",
+      // Centered with its icon, if any (the label not growing).
+      class: "justify-center text-2xl text-center before:bg-transparent hover:before:bg-transparent",
+      ui: { linkLabel: "grow-0", linkLeadingIcon: "size-6 text-muted" },
     },
     siblings.next
       ? {
