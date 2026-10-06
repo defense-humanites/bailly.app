@@ -175,16 +175,21 @@
 
   /**
    * The menu, opened from elsewhere too (e.g. the bookmarks' introduction):
-   * its button focused first (the focus comes back to it once it closes) and
-   * pointed out (`pointOut`, in `--card-highlight`).
+   * brought into view (`revealThen`), its button focused first (the focus
+   * comes back to it once it closes) and pointed out (`pointOut`, in
+   * `--card-highlight`).
    */
   const isMenuOpen = ref(false);
   const root = useTemplateRef<HTMLElement>("root");
   const open = (): void => {
-    if (!root.value) return;
-    root.value.querySelector<HTMLButtonElement>("button")?.focus();
-    pointOut(root.value);
-    isMenuOpen.value = true;
+    const element = root.value;
+    if (!element) return;
+    // Brought into view first (not to open the menu off the screen).
+    revealThen(element, () => {
+      element.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
+      pointOut(element);
+      isMenuOpen.value = true;
+    });
   };
 
   defineExpose({ open });
@@ -195,7 +200,8 @@
     <UDropdownMenu
       v-model:open="isMenuOpen"
       :items="items"
-      :content="{ align: 'end' }"
+      :content="{ align: 'end', collisionPadding: 8 }"
+      :ui="{ content: 'max-w-[calc(var(--app-width)-1rem)]' }"
     >
       <!--
         An item of the bookmarks page's menu bar (cf. `signets.vue`): a ghost

@@ -746,6 +746,24 @@ test.describe("bookmarks page on a touch screen", () => {
     await page.getByRole("button", { name: "Retirer « ἄναξ » de l'étiquette « Homère »" }).tap();
     await expect.poll(async () => (await bookmarksState(page)).tagged).toBe(1);
   });
+
+  // The guide's keys open the bar's menus within the screen, even from below
+  // the bar (« Fichiers », in the second card, the bar then out of view).
+  for (const [key, guide] of [["tri", "Organiser vos entrées"], ["Fichiers", "Conserver vos signets"]] as const) {
+    test(`the guide's « ${key} » opens its menu in view`, async ({ page, goto }) => {
+      await goto("/signets", { waitUntil: "hydration" });
+      const button = page.getByRole("group", { name: guide }).getByRole("button", { name: key, exact: true });
+      await button.scrollIntoViewIfNeeded();
+      await button.tap();
+      const menu = page.getByRole("menu");
+      await expect(menu).toBeVisible();
+      const box = (await menu.boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(390);
+      expect(box.y + box.height).toBeLessThanOrEqual(844);
+    });
+  }
 });
 
 test("bookmarks page, server-rendered: placeholders until IndexedDB is loaded", async ({ browser, baseURL }) => {

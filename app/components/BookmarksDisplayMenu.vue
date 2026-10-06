@@ -38,17 +38,22 @@
   ]);
 
   /**
-   * The menu, opened from elsewhere too (e.g. the bookmarks' guide): its
-   * button focused first (the focus comes back to it once it closes) and
-   * pointed out (`pointOut`, in `--card-highlight`).
+   * The menu, opened from elsewhere too (e.g. the bookmarks' guide):
+   * brought into view (`revealThen`), its button focused first (the focus
+   * comes back to it once it closes) and pointed out (`pointOut`, in
+   * `--card-highlight`).
    */
   const isMenuOpen = ref(false);
   const root = useTemplateRef<HTMLElement>("root");
   const open = (): void => {
-    if (!root.value) return;
-    root.value.querySelector<HTMLButtonElement>("button")?.focus();
-    pointOut(root.value);
-    isMenuOpen.value = true;
+    const element = root.value;
+    if (!element) return;
+    // Brought into view first (not to open the menu off the screen).
+    revealThen(element, () => {
+      element.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
+      pointOut(element);
+      isMenuOpen.value = true;
+    });
   };
 
   defineExpose({ open });

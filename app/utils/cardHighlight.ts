@@ -60,3 +60,22 @@ export function highlightCard(card: HTMLElement): void {
     pointOut(card);
   });
 }
+
+/**
+ * Calls back once an element is in view: at once if it is, or once the
+ * page has scrolled to it (smoothly, unless reduced motion is preferred),
+ * e.g. a menu's button out of view (on a phone, the bookmarks' bar, from
+ * the guide below), its menu then opened by it, not off the screen.
+ */
+export function revealThen(element: HTMLElement, callback: () => void): void {
+  const scroller = document.getElementById("page");
+  const box = element.getBoundingClientRect();
+  const view = scroller?.getBoundingClientRect() ?? { top: 0, bottom: window.innerHeight };
+  if (box.top >= view.top && box.bottom <= view.bottom) {
+    callback();
+    return;
+  }
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  element.scrollIntoView({ block: "nearest", behavior: reduced ? "instant" : "smooth" });
+  afterScroll(callback);
+}
