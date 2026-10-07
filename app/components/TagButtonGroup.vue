@@ -27,36 +27,6 @@
   );
 
   /**
-   * The current tag's button, when it shows once the toolbar is there (the
-   * bookmarks are loaded after the page; or the first tag was just created
-   * elsewhere): it widens from nothing and fades in, rather than appearing
-   * at once, the toolbar (floated) making room smoothly. Not when the
-   * toolbar shows with it, nor if the user prefers less motion.
-   */
-  const currentButton = useTemplateRef<ComponentPublicInstance>("currentButton");
-  const reducedMotion = usePreferredReducedMotion();
-  let mounted = false;
-  onMounted(() => {
-    mounted = true;
-  });
-
-  watch(() => currentTag.value !== null, async (shown, wasShown) => {
-    if (!shown || wasShown || !mounted || reducedMotion.value === "reduce") return;
-    await nextTick();
-    const button = currentButton.value?.$el as HTMLElement | undefined;
-    if (!button) return;
-    const { width } = button.getBoundingClientRect();
-    button.style.overflow = "hidden";
-    const growing = button.animate(
-      [{ width: "0px", paddingInline: "0px", opacity: 0 }, { width: `${width}px`, opacity: 1 }],
-      { duration: 250, easing: "ease-out" },
-    );
-    void growing.finished.catch(() => {}).finally(() => {
-      button.style.overflow = "";
-    });
-  });
-
-  /**
    * The panel (a dialog) is named after its trigger by Reka
    * (`aria-labelledby`); the `aria-label` is a fallback, for the trigger's
    * id may differ between the server and the client (then the reference is
@@ -154,7 +124,6 @@
       :text="taggedAsCurrent ? `Retirer de « ${currentTag.name} »` : `Ajouter à « ${currentTag.name} »`"
     >
       <UButton
-        ref="currentButton"
         :label="currentTag.name"
         :aria-label="`Étiquette active : ${currentTag.name}`"
         :aria-pressed="taggedAsCurrent"
