@@ -57,6 +57,9 @@
    */
   const greek = useGreek();
 
+  /** The toolbar's place in the card (cf. the template). */
+  const toolbarPlace = computed((): string => props.link ? "ms-2 me-3 mt-3" : "relative -top-1 -right-1 sm:-top-3 sm:-right-3");
+
   /**
    * An excerpt split around its headword (or, not known yet, the word).
    */
@@ -127,12 +130,24 @@
       :class="{ '[&>*]:p-0': link }"
       :ui="ui"
     >
-      <TagButtonGroup
-        v-if="toolbar"
-        :entry="shown"
-        class="float-right"
-        :class="[link ? 'ms-2 me-3 mt-3' : 'relative -top-1 -right-1 sm:-top-3 sm:-right-3']"
-      />
+      <!--
+        The toolbar is interactive once the page is hydrated (its state, the
+        bookmarks, only exists in the browser); before, and on the server,
+        its markup alone, much lighter to render (cf. `TagButtonGroupStatic`).
+      -->
+      <ClientOnly v-if="toolbar">
+        <TagButtonGroup
+          :entry="shown"
+          class="float-right"
+          :class="toolbarPlace"
+        />
+        <template #fallback>
+          <TagButtonGroupStatic
+            class="float-right"
+            :class="toolbarPlace"
+          />
+        </template>
+      </ClientOnly>
       <div
         v-if="$slots.aside && shown.uri === firstCard.uri"
         class="float-right ms-3"

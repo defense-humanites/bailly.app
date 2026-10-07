@@ -114,3 +114,28 @@ test.describe("entry page", () => {
     expect(Math.abs((arrow.top + arrow.bottom) / 2 - (text.top + text.bottom) / 2)).toBeLessThan(4);
   });
 });
+
+// Until the page is interactive, the toolbar's markup alone (cf.
+// `TagButtonGroupStatic`): the page's scripts are held back to reach it.
+test("the entry's toolbar, the same before the page is interactive", async ({ page }) => {
+  let release!: () => void;
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route(/\/_nuxt\/.+\.js$/, async (route) => {
+    await released;
+    await route.continue();
+  });
+  await page.goto("/logos", { waitUntil: "commit" });
+  const toolbar = page.locator("main article section [aria-label='Toutes les étiquettes']").locator("..");
+  await expect(toolbar).toBeVisible();
+  const boxes = () => toolbar.evaluate(group => [group, ...group.children].map((element) => {
+    const { x, y, width, height } = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
+    return { x, y, width, height, background: style.backgroundColor, border: style.borderColor, radius: style.borderRadius, shadow: style.boxShadow };
+  }));
+  const before = await boxes();
+  release();
+  await expect(page.locator("main article section button[aria-haspopup=dialog]")).toBeVisible();
+  expect(await boxes()).toEqual(before);
+});
