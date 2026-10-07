@@ -30,6 +30,16 @@
     }
   }
 
+  /*
+   * The pictures (scans, screenshots) a little dimmed in the dark theme: their
+   * white paper would glare on the dark page. A filter dims the element's own
+   * background too (e.g. the paper around a contained scan). Not the SVG
+   * (the logos, drawn for each theme; small ones inlined by Vite).
+   */
+  .dark img:not([src$=".svg"], [src^="data:image/svg"]) {
+    filter: brightness(0.85);
+  }
+
   body {
     background-color: var(--app-page-bg);
     /* Cf. `--app-min-width` (root.css). */

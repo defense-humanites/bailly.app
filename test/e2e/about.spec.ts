@@ -63,3 +63,14 @@ test.describe("about page: the hero", () => {
     expect((await sizes(page))[2]).toBeLessThan(60);
   });
 });
+
+test.describe("dark theme", () => {
+  test.use({ colorScheme: "dark" });
+
+  test("the pictures dimmed, not the logo", async ({ page, goto }) => {
+    await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
+    await expect(page.locator("html")).toHaveClass(/\bdark\b/);
+    await expect(page.locator("img[src$='.webp']").first()).toHaveCSS("filter", "brightness(0.85)");
+    await expect(page.locator("header img").last()).toHaveCSS("filter", "none");
+  });
+});

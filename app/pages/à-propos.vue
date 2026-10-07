@@ -473,8 +473,11 @@
           </p>
 
           <article class="flex flex-col gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-8 lg:flex lg:col-start-1 lg:row-start-2">
-            <div class="mx-auto aspect-[4/3] w-full max-w-sm bg-[#fbfbfb] overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
-              <!-- Whole (contained, on the scan's paper): its first and last lines not cut. -->
+            <div class="mx-auto aspect-[4/3] w-full max-w-sm overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
+              <!--
+                Whole (contained, on the scan's paper, its own background:
+                dimmed with it in the dark theme): its first and last lines not cut.
+              -->
               <img
                 src="/images/bailly-1935-rhinokeros.webp"
                 width="644"
@@ -482,7 +485,7 @@
                 alt="L'entrée ῥινόκερως dans l'édition de 1935 (fac-similé)."
                 loading="lazy"
                 decoding="async"
-                class="size-full object-contain"
+                class="size-full bg-[#fbfbfb] object-contain"
               >
             </div>
             <div class="min-w-0 max-md:text-center">
@@ -503,7 +506,7 @@
           </article>
 
           <article class="flex flex-col gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-8 lg:flex lg:col-start-2 lg:row-start-2">
-            <div class="mx-auto aspect-[4/3] w-full max-w-sm bg-white overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
+            <div class="mx-auto aspect-[4/3] w-full max-w-sm overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
               <img
                 src="/images/bailly-2020-rhinokeros.webp"
                 width="720"
@@ -511,7 +514,7 @@
                 alt="L'entrée ῥινόκερως dans l'édition PDF de 2020."
                 loading="lazy"
                 decoding="async"
-                class="size-full object-cover"
+                class="size-full bg-white object-cover"
               >
             </div>
             <div class="min-w-0 max-md:text-center">
