@@ -234,7 +234,8 @@
           Pour limiter les abus, notre serveur compte chaque jour les envois de synchronisation de
           chaque adresse IP. Il ne garde pas l'adresse elle-même, mais un pseudonyme (une
           empreinte renouvelée chaque jour), effacé après deux jours. Les journaux techniques de
-          l'application ne contiennent ni adresse IP ni adresse des pages consultées.
+          l'application ne contiennent pas votre adresse IP, ni l'adresse des pages consultées,
+          sauf en cas d'erreur.
         </p>
       </section>
 
@@ -256,7 +257,7 @@
           Les recherches et les entrées du dictionnaire sont servies par notre API, qui ne
           conserve rien de vos recherches en dehors de ses journaux techniques (pouvant contenir
           votre adresse IP et les adresses demandées). La rétention de ces journaux est éphémère,
-          puisque seules les 1.500 dernières lignes sont conservées.
+          puisque seules les 1&#8239;500 dernières lignes sont conservées.
         </p>
       </section>
 
