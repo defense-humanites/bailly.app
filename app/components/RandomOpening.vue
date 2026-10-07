@@ -14,6 +14,13 @@
   const loading = ref(false);
   const failed = ref(false);
 
+  /*
+   * Its links (the entry, its neighbors) are `nofollow`: drawn at random,
+   * they shouldn't weigh as the home page's links do for the search engines
+   * (which run the page's script, and would see them), nor show under the
+   * site in their results.
+   */
+
   /**
    * Opens the dictionary at random: a random entry with its neighbors, in a
    * single request. Fetched once the page is mounted, so that each visit
@@ -88,6 +95,7 @@
             :entry="shown.entry"
             toolbar
             link
+            link-rel="nofollow"
             :ui="{
               root: 'h-full flex overflow-hidden bg-transparent shadow-none ring-0 rounded-none [--ui-bg-elevated:var(--ui-bg)]',
               body: 'h-full mask-b-from-80%',
@@ -119,6 +127,7 @@
           <NuxtLink
             v-if="shown?.siblings[position]"
             :to="entryRoute(shown.siblings[position].uri)"
+            rel="nofollow"
             :aria-label="`${position === 'previous' ? 'Entrée précédente' : 'Entrée suivante'} : ${greek.text(shown.siblings[position].word)}`"
             class="block rounded-md px-4 py-1 opacity-60 transition-opacity hover:opacity-100 focus-visible:opacity-100"
           >

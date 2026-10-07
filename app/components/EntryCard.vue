@@ -38,6 +38,11 @@
      */
     prefetchOn?: NuxtLinkProps["prefetchOn"];
     /**
+     * The link's `rel` (only applies if the `link` property is enabled), e.g.
+     * `nofollow` for an entry drawn at random (cf. `RandomOpening`).
+     */
+    linkRel?: string;
+    /**
      * Extended Nuxt UI theming for the card component.
      */
     ui?: CardProps["ui"] & { entry?: string };
@@ -139,6 +144,7 @@
         v-if="link"
         :class="[shown.htmlDefinition ? '[&>*]:p-4 [&>*]:sm:p-6' : '']"
         :to="entryRoute(shown.uri)"
+        :rel="linkRel"
         :prefetch-on="prefetchOn ?? 'interaction'"
       >
         <ReuseEntry :entry="shown" />

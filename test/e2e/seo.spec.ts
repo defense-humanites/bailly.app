@@ -19,6 +19,24 @@ test.describe("search engines", () => {
     await expect(page).toHaveTitle("À propos");
   });
 
+  // The canonical address: the site's host, the path without the query.
+  test("a canonical address, without the query", async ({ page, goto }) => {
+    await goto("/logos?source=test", { waitUntil: "hydration" });
+    await expect(page.locator("link[rel=canonical]")).toHaveAttribute("href", "https://bailly.app/logos");
+    await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
+    await expect(page.locator("link[rel=canonical]")).toHaveAttribute("href", `https://bailly.app${encodeURI("/à-propos")}`);
+  });
+
+  // The entry drawn at random on the home page: its links `nofollow`.
+  test("the random entry's links are nofollow", async ({ page, goto }) => {
+    await goto("/", { waitUntil: "hydration" });
+    const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });
+    await expect(opening.locator("a").first()).toBeVisible();
+    const rels = await opening.locator("a").evaluateAll(links => links.map(link => link.getAttribute("rel")));
+    expect(rels.length).toBeGreaterThan(0);
+    expect(rels.every(rel => rel === "nofollow")).toBe(true);
+  });
+
   // The site map: the fixed pages (the news while offered), and its address
   // in robots.txt.
   test("a site map, named in robots.txt", async ({ request }) => {
