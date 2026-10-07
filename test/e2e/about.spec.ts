@@ -39,3 +39,27 @@ test.describe("about page", () => {
     await expect(list.first()).toHaveText("José Antonio Artés");
   });
 });
+
+test.describe("about page: the hero", () => {
+  const sizes = (page: import("@playwright/test").Page) => page.locator("main h1").evaluate((title) => {
+    const subtitle = title.nextElementSibling!;
+    const logo = title.previousElementSibling!;
+    return [getComputedStyle(title).fontSize, getComputedStyle(subtitle).fontSize, logo.getBoundingClientRect().height];
+  });
+
+  test("from md, its texts a notch smaller on a short window", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
+    expect((await sizes(page)).slice(0, 2)).toEqual(["36px", "20px"]);
+    await page.setViewportSize({ width: 1280, height: 650 });
+    expect((await sizes(page)).slice(0, 2)).toEqual(["30px", "18px"]);
+  });
+
+  test("on a tall phone, a larger logo", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
+    expect((await sizes(page))[2]).toBeGreaterThan(80);
+    await page.setViewportSize({ width: 390, height: 560 });
+    expect((await sizes(page))[2]).toBeLessThan(60);
+  });
+});
