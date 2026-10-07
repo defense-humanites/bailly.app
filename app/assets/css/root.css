@@ -110,7 +110,9 @@
      900), half a shade gentler than `bg-elevated` on the dark cards. */
   --app-button-hover: var(--app-surface-raised);
   --app-field-ring: var(--ui-color-neutral-500);
-  --app-field-halo: color-mix(in oklab, var(--ui-color-neutral-500) 25%, transparent);
+  /* The halo bluish (Aegean, the secondary accent): a light marble halo
+     didn't sit well on the dark page. */
+  --app-field-halo: color-mix(in oklab, var(--ui-secondary) 25%, transparent);
   --link-mark-primary: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 16 16' fill='none' stroke='%23dc7643' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
   --link-mark-secondary: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 16 16' fill='none' stroke='%2386b6e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
 }
