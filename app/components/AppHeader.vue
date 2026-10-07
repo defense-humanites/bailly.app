@@ -1,8 +1,10 @@
 <script setup lang="ts">
-  import type { NavigationMenuItem } from "@nuxt/ui";
   import AppNavHorizontal from "./AppNavHorizontal.vue";
 
-  const items = ref<NavigationMenuItem[]>([
+  /** A link of the header's menu. */
+  export type HeaderLink = { label: string; icon: string; to: string };
+
+  const items: HeaderLink[] = [
     {
       label: "Signets",
       icon: "i-lucide-bookmark",
@@ -18,7 +20,7 @@
       icon: "i-lucide-info",
       to: encodeURI("/à-propos"),
     },
-  ]);
+  ];
 </script>
 
 <template>
