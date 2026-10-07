@@ -68,10 +68,11 @@
   --app-field-hover: var(--app-button-hover);
   /* Their focus halo in the secondary accent (Aegean blue, 25 %), told
      from the search bar's (the main accent); their ring neutral, softened:
-     the inverted color a quarter blended into the cards (in the dark theme,
-     marble 500 likewise). Tried and set aside: a marble halo, the main
-     accent's, a bluish ring. */
-  --app-field-ring: color-mix(in oklab, var(--ui-border-inverted) 75%, var(--ui-bg));
+     the inverted color 40 % blended into the cards (the light theme being
+     less contrasted in places; in the dark theme, marble 500 a quarter
+     blended). Tried and set aside: a marble halo, the main accent's, a
+     bluish ring. */
+  --app-field-ring: color-mix(in oklab, var(--ui-border-inverted) 60%, var(--ui-bg));
   --app-field-halo: color-mix(in oklab, var(--ui-secondary) 25%, transparent);
 
   /* The external links' arrow (cf. the `link` utility), in the main and
