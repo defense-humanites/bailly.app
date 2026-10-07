@@ -31,8 +31,13 @@ export function useAppShell(): void {
     script: analytics
       ? [{ src: "https://scripts.simpleanalyticscdn.com/latest.js", async: true, tagPosition: "bodyClose" }]
       : [],
+    /*
+     * A page's title, followed by the site's name (e.g. « λόγος (logos) —
+     * Bailly.app », as one searches « logos bailly »); without one (the home
+     * page), the site's own.
+     */
     titleTemplate: (title) => {
-      return title ? title : "Bailly.app — Dictionnaire grec-français en ligne";
+      return title ? `${title} — Bailly.app` : "Bailly.app — Dictionnaire grec-français en ligne";
     },
     meta: [
       {
@@ -40,6 +45,7 @@ export function useAppShell(): void {
         content:
           "Consultez le dictionnaire grec-français d'Anatole Bailly, dans une application libre et gratuite.",
       },
+      { property: "og:site_name", content: "Bailly.app" },
     ],
     htmlAttrs: {
       "lang": "fr",
