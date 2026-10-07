@@ -62,9 +62,10 @@
    */
   --app-surface-raised: color-mix(in oklab, var(--ui-color-neutral-50) 50%, #fff);
   --app-button-hover: var(--app-surface-raised);
-  /* The fields of the bookmarks' bar (cf. `FIELD_BACKGROUND`). */
+  /* The fields of the bookmarks' bar (cf. `FIELD_BACKGROUND`): as its
+     buttons, in both themes. */
   --app-field-bg: var(--ui-bg);
-  --app-field-hover: var(--app-surface-raised);
+  --app-field-hover: var(--app-button-hover);
   /* Their focus ring and halo: the inverted color (in the dark theme, a
      softer marble 500, its halo stronger, to stand out from the page). */
   --app-field-ring: var(--ui-border-inverted);
@@ -106,8 +107,6 @@
   --app-highlight: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
   --app-surface-raised: color-mix(in oklab, var(--ui-color-neutral-800) 50%, var(--ui-color-neutral-900));
   --app-button-hover: var(--ui-bg-elevated);
-  --app-field-bg: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
-  --app-field-hover: var(--ui-bg-elevated);
   --app-field-ring: var(--ui-color-neutral-500);
   --app-field-halo: color-mix(in oklab, var(--ui-color-neutral-500) 45%, transparent);
   --link-mark-primary: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 16 16' fill='none' stroke='%23dc7643' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
