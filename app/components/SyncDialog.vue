@@ -268,8 +268,18 @@
     keyRevealed.value = false;
   });
 
+  /**
+   * Whether the key has been shown on the screen to add a device (its tab,
+   * the key revealed): another device may have read it since.
+   */
+  const keyShown = ref(false);
+  watch([keyTab, keyRevealed, view], () => {
+    if (view.value === "key" && keyTab.value === "device" && keyRevealed.value) keyShown.value = true;
+  });
+
   const showKey = async (fromStatus = false, tab: KeyTab = "save"): Promise<void> => {
     words.value = await syncStore.words();
+    if (!fromStatus) keyShown.value = false;
     keyFromStatus.value = fromStatus;
     keyTab.value = tab;
     await nextTick();
@@ -653,6 +663,29 @@
   });
   onBeforeUnmount(applyPreferences);
 
+  /**
+   * « J'avais déjà une clé »: the synchronization was just enabled by
+   * mistake (a new key created, while another device already has one). The
+   * new key is revoked (the locker just created deleted, the key forgotten:
+   * it only held this device's data, which stay here), and the words of the
+   * other key asked for. Offered right after the creation only, until the
+   * key is shown to add a device (another device may have joined it).
+   */
+  const hadKey = () => run(async () => {
+    const result = await syncStore.deleteRemote();
+    if (result.state === "error") {
+      // The new key stays (nothing half done): to be tried again.
+      actionError.value = explain(result.message);
+      actionWarning.value = true;
+      actionRetry.value = result.message !== SYNC_BUSY_MESSAGE;
+      return;
+    }
+    joinText.value = "";
+    joinError.value = null;
+    linkKey.value = null;
+    view.value = "join";
+  });
+
   const deleteRemote = async (): Promise<void> => {
     busy.value = true;
     try {
@@ -927,6 +960,15 @@
 
         <!-- The key: to add a device, or to keep it -->
         <template v-else-if="view === 'key'">
+          <!-- « J'avais déjà une clé » failed (cf. `hadKey`). -->
+          <UAlert
+            v-if="actionError"
+            :color="actionWarning ? 'warning' : 'error'"
+            variant="subtle"
+            :icon="actionWarning ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert'"
+            :title="actionError"
+            :description="actionRetry ? 'Réessayez dans quelques instants.' : undefined"
+          />
           <UTabs
             v-model="keyTab"
             color="secondary"
@@ -1245,7 +1287,11 @@
       </template>
 
       <template v-else-if="view === 'key'">
-        <!-- Revoking the key: when it was opened to be managed (not right after its creation). -->
+        <!--
+          Revoking the key: when it was opened to be managed. Right after its
+          creation, undoing it instead, for whoever already had a key (cf.
+          `hadKey`), until it is shown to add a device.
+        -->
         <UButton
           v-if="keyFromStatus"
           label="Révoquer cette clé…"
@@ -1255,9 +1301,19 @@
           @click="view = 'delete'"
         />
         <UButton
+          v-else-if="!keyShown"
+          label="J'avais déjà une clé"
+          color="neutral"
+          variant="ghost"
+          class="me-auto"
+          :loading="busy"
+          @click="hadKey"
+        />
+        <UButton
           :label="keyFromStatus ? (openedOn === 'key' ? 'Fermer' : 'Retour') : 'J\'ai conservé ma clé'"
           :color="keyFromStatus ? 'neutral' : 'secondary'"
           :variant="keyFromStatus ? 'outline' : 'solid'"
+          :disabled="busy"
           @click="keyFromStatus ? back() : keyKept()"
         />
       </template>
