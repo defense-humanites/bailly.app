@@ -29,6 +29,16 @@ test.describe("home page", () => {
     await expect(page).toHaveURL(new RegExp(`${href}$`));
   });
 
+  test("fetches the random entry once, preloaded with the page", async ({ page, goto }) => {
+    const requests: string[] = [];
+    page.on("request", request => request.url().includes("/entry/random") && requests.push(request.url()));
+    await goto("/", { waitUntil: "hydration" });
+    await expect(page.getByRole("region", { name: "Le Bailly ouvert au hasard" }).getByRole("status")).toHaveText(/^Entrée ouverte : /);
+    // The preload's request, which the fetch took.
+    expect(requests).toHaveLength(1);
+    await expect(page.locator("link[rel=preload][as=fetch]")).toHaveAttribute("href", requests[0]!);
+  });
+
   test("gives the focus to the search field on opening, but not on a touch screen", async ({ page, goto, browser }) => {
     await goto("/", { waitUntil: "hydration" });
     await expect(searchInput(page)).toBeFocused();

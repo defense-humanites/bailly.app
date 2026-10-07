@@ -11,6 +11,31 @@
   const greek = useGreek();
   const { preference } = usePreferences();
   const readingWeight = preference("readingWeight");
+  const { apiHost } = useRuntimeConfig().public;
+
+  /**
+   * The request of a random entry with its neighbors, as an absolute URL: the
+   * very same for the preload link and the fetch, which takes the preloaded
+   * response only if their URLs are identical.
+   */
+  const url = new URL("entry/random", apiHost.endsWith("/") ? apiHost : `${apiHost}/`);
+  url.search = new URLSearchParams(toApiQuery({
+    fields: ["word", "uri", "excerpt", "htmlDefinition"],
+    lengthRange: [400, 700],
+    siblings: true,
+    siblingsFields: ["word", "uri", "excerpt"],
+  } satisfies RandomEntryParams<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">)).toString();
+  const RANDOM_ENTRY = url.href;
+
+  /*
+   * The page served preloads it: the browser fetches the entry while it
+   * loads the scripts, rather than once the page is interactive. Not on a
+   * navigation within the application, where the fetch starts at once (the
+   * link would only add a request).
+   */
+  if (import.meta.server) {
+    useHead({ link: [{ rel: "preload", as: "fetch", href: RANDOM_ENTRY, crossorigin: "anonymous" }] });
+  }
 
   const shown = ref<Shown | null>(null);
   const loading = ref(false);
@@ -49,14 +74,7 @@
     failed.value = false;
     try {
       const [{ data }] = await Promise.all([
-        $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>("entry/random", {
-          query: toApiQuery({
-            fields: ["word", "uri", "excerpt", "htmlDefinition"],
-            lengthRange: [400, 700],
-            siblings: true,
-            siblingsFields: ["word", "uri", "excerpt"],
-          } satisfies RandomEntryParams<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">),
-        }),
+        $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>(RANDOM_ENTRY),
         loadFaces(),
       ]);
       // A group of homonyms: its first entry.
