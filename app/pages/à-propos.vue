@@ -807,14 +807,18 @@
               >{{ link.label }}</a>
             </p>
           </div>
-          <p class="text-muted">
-            Concernant l'usage de vos données :
-            <NuxtLink
-              :to="encodeURI('/confidentialité')"
-              class="link"
-            >confidentialité</NuxtLink>.
-          </p>
         </div>
+        <!--
+          Not a credit: apart, under a short rule in the chapters' color, in
+          the interface's font.
+        -->
+        <p class="mx-auto mt-8 max-w-3xl text-center text-sm text-muted before:mx-auto before:mb-6 before:block before:h-px before:w-16 before:bg-(--rule-color)/50">
+          Ce que l'application garde de vos données, où et pour combien de temps :
+          <NuxtLink
+            :to="encodeURI('/confidentialité')"
+            class="link"
+          >Confidentialité</NuxtLink>.
+        </p>
       </section>
     </div>
 
