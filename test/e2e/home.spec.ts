@@ -37,6 +37,12 @@ test.describe("home page", () => {
     // The preload's request, which the fetch took.
     expect(requests).toHaveLength(1);
     await expect(page.locator("link[rel=preload][as=fetch]")).toHaveAttribute("href", requests[0]!);
+
+    // Another draw: not at the preloaded URL (a browser may serve the
+    // preloaded response again).
+    await page.getByRole("button", { name: "Ouvrir à une autre page" }).click();
+    await expect.poll(() => requests.length).toBe(2);
+    expect(requests[1]).not.toBe(requests[0]);
   });
 
   test("gives the focus to the search field on opening, but not on a touch screen", async ({ page, goto, browser }) => {

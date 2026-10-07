@@ -14,17 +14,24 @@
   const { apiHost } = useRuntimeConfig().public;
 
   /**
-   * The request of a random entry with its neighbors, as an absolute URL: the
-   * very same for the preload link and the fetch, which takes the preloaded
-   * response only if their URLs are identical.
+   * The query of a random entry with its neighbors.
    */
-  const url = new URL("entry/random", apiHost.endsWith("/") ? apiHost : `${apiHost}/`);
-  url.search = new URLSearchParams(toApiQuery({
+  const RANDOM_QUERY = toApiQuery({
     fields: ["word", "uri", "excerpt", "htmlDefinition"],
     lengthRange: [400, 700],
     siblings: true,
     siblingsFields: ["word", "uri", "excerpt"],
-  } satisfies RandomEntryParams<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">)).toString();
+  } satisfies RandomEntryParams<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">);
+
+  /**
+   * The preloaded request, as an absolute URL: the very same for the preload
+   * link and the first fetch, which takes the preloaded response only if
+   * their URLs are identical. The next draws must not take it: a browser
+   * may keep serving a preloaded response to the requests of its URL (seen
+   * in Safari: the same entry again, the button seeming to do nothing).
+   */
+  const url = new URL("entry/random", apiHost.endsWith("/") ? apiHost : `${apiHost}/`);
+  url.search = new URLSearchParams(RANDOM_QUERY).toString();
   const RANDOM_ENTRY = url.href;
 
   /*
@@ -68,13 +75,18 @@
    * single request. Fetched once the page is mounted, so that each visit
    * draws a new entry; the frame keeps its place meanwhile, until the entry
    * and its faces have come.
+   * @param preloaded Whether to take the preloaded response (the first draw):
+   *   the next ones are requested at another URL (the same query, its commas
+   *   not encoded), bypassing the browser's caches.
    */
-  async function draw(): Promise<void> {
+  async function draw(preloaded = false): Promise<void> {
     loading.value = true;
     failed.value = false;
     try {
       const [{ data }] = await Promise.all([
-        $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>(RANDOM_ENTRY),
+        preloaded
+          ? $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>(RANDOM_ENTRY)
+          : $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>("entry/random", { query: RANDOM_QUERY, cache: "no-store" }),
         loadFaces(),
       ]);
       // A group of homonyms: its first entry.
@@ -86,7 +98,7 @@
     }
   }
 
-  onMounted(draw);
+  onMounted(() => draw(true));
 
   /**
    * A neighbor's excerpt without its word, which it starts with, possibly with
@@ -184,7 +196,7 @@
         icon="i-lucide-dices"
         label="Ouvrir à une autre page"
         :loading="loading"
-        @click="draw"
+        @click="draw()"
       />
     </div>
     <p
