@@ -4,6 +4,9 @@
 
   const searchFocus = useSearchFocus();
 
+  // Its title is bold, as the headwords of the entry drawn at random.
+  usePreloadBoldFace();
+
   /**
    * The home page: the site's title (the template's, without a page title)
    * and a description of its own, after the page's text (the search engines

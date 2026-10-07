@@ -9,6 +9,8 @@
 
   const { $api } = useNuxtApp();
   const greek = useGreek();
+  const { preference } = usePreferences();
+  const readingWeight = preference("readingWeight");
 
   const shown = ref<Shown | null>(null);
   const loading = ref(false);
@@ -22,22 +24,41 @@
    */
 
   /**
+   * Loads the faces of the reading font an entry uses (its text, its bold
+   * headwords, its italics), for at most 3 s (the time `fonts.css` lets a
+   * face keep its text invisible): the entry is shown once they have come,
+   * rather than its lines moving as each face arrives (a layout shift, on
+   * slow networks).
+   */
+  function loadFaces(): Promise<unknown> {
+    const family = readingFamily();
+    if (!family) return Promise.resolve();
+    const text = readingWeight.value === "bold" ? "bold" : "normal";
+    const faces = [text, "bold", `italic ${text}`].map(face => document.fonts.load(`${face} 1em ${family}`, "α").catch(() => {}));
+    return Promise.race([Promise.all(faces), new Promise(resolve => setTimeout(resolve, 3000))]);
+  }
+
+  /**
    * Opens the dictionary at random: a random entry with its neighbors, in a
    * single request. Fetched once the page is mounted, so that each visit
-   * draws a new entry; the frame keeps its place meanwhile.
+   * draws a new entry; the frame keeps its place meanwhile, until the entry
+   * and its faces have come.
    */
   async function draw(): Promise<void> {
     loading.value = true;
     failed.value = false;
     try {
-      const { data } = await $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>("entry/random", {
-        query: toApiQuery({
-          fields: ["word", "uri", "excerpt", "htmlDefinition"],
-          lengthRange: [400, 700],
-          siblings: true,
-          siblingsFields: ["word", "uri", "excerpt"],
-        } satisfies RandomEntryParams<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">),
-      });
+      const [{ data }] = await Promise.all([
+        $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>("entry/random", {
+          query: toApiQuery({
+            fields: ["word", "uri", "excerpt", "htmlDefinition"],
+            lengthRange: [400, 700],
+            siblings: true,
+            siblingsFields: ["word", "uri", "excerpt"],
+          } satisfies RandomEntryParams<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">),
+        }),
+        loadFaces(),
+      ]);
       // A group of homonyms: its first entry.
       shown.value = { entry: data.entry.children?.[0] ?? data.entry, siblings: data.siblings ?? {} };
     } catch {
