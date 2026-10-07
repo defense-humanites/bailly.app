@@ -74,3 +74,15 @@ test.describe("dark theme", () => {
     await expect(page.locator("header img").last()).toHaveCSS("filter", "none");
   });
 });
+
+// An e-mail address leaves the application too: the external links' arrow,
+// told to screen readers as the mail application.
+test("an e-mail link has the external links' arrow", async ({ page, goto }) => {
+  await goto(encodeURI("/confidentialité"), { waitUntil: "hydration" });
+  const mark = await page.locator("a.link[href^='mailto:']").first().evaluate((link) => {
+    const style = getComputedStyle(link, "::after");
+    return [style.backgroundImage !== "none", style.content];
+  });
+  expect(mark[0]).toBe(true);
+  expect(mark[1]).toContain("messagerie");
+});

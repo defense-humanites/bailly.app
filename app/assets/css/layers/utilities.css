@@ -45,13 +45,19 @@
    * the underline). Drawn as a background image in the accent's colors
    * (`--link-mark`, cf. `root.css`), not as a mask: Safari doesn't mask an inline
    * box (it showed a filled block). The buttons opening another tab (e.g.
-   * the survey's) have none.
+   * the survey's) have none. The same arrow for an e-mail address: it leaves
+   * the application too, for the mail application (which may be missing:
+   * the link then does nothing), told to screen readers as such.
    */
-  &[target="_blank"]::after {
+  &:is([target="_blank"], [href^="mailto:"])::after {
     content: "\2060";
     content: "\2060" / " (nouvel onglet)";
     padding-inline-start: 0.82em;
     background: var(--link-mark, var(--link-mark-primary)) no-repeat 100% 50% / 0.7em 0.7em;
+  }
+
+  &[href^="mailto:"]::after {
+    content: "\2060" / " (messagerie)";
   }
 
   &:focus-visible {
