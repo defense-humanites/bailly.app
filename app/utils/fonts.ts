@@ -53,3 +53,12 @@ export const READING_FONTS = {
 } as const satisfies Record<string, { label: string; files: Record<ReadingWeight, string> }>;
 
 export type ReadingFont = keyof typeof READING_FONTS;
+
+/**
+ * The family of the reading font chosen, as `fonts.css` names it: the first
+ * of `--font-serif` (the next ones, IFAOGrec…, are its fallbacks, which
+ * `document.fonts.load` would fetch too). In the browser only.
+ */
+export function readingFamily(): string | undefined {
+  return getComputedStyle(document.documentElement).getPropertyValue("--font-serif").split(",")[0]?.trim() || undefined;
+}

@@ -10,9 +10,7 @@
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.hook("app:suspense:resolve", () => {
     const fetchFaces = (): void => {
-      // The reading font alone (the first of `--font-serif`): the fallback
-      // fonts (IFAOGrec) would be fetched too.
-      const family = getComputedStyle(document.documentElement).getPropertyValue("--font-serif").split(",")[0]?.trim();
+      const family = readingFamily();
       if (!family) return;
       for (const weight of ["normal", "bold"]) {
         document.fonts.load(`${weight} 1em ${family}`, "α").catch(() => {});
