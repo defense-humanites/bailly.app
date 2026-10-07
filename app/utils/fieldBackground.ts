@@ -9,8 +9,8 @@
 export const FIELD_BACKGROUND = "bg-(--app-field-bg) hover:bg-(--app-field-hover) focus:bg-(--app-field-hover) disabled:bg-(--app-field-bg)";
 
 /**
- * Their focus halo (an outline) and ring, as the search bar's, but neutral
- * (the accent stays the search bar's): outside the item that holds the
+ * Their focus halo (an outline) and ring, as the search bar's: the halo in
+ * its accent, the ring neutral (which tells them from it): outside the item that holds the
  * field (whatever part of it has the keyboard focus), over its neighbours
  * (`z-10`): below `lg`, a ring just outside its edge (an inset one would
  * be painted under the field's background), the halo around it; from `lg`,
