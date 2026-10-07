@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { FEATURES } from "#shared/utils/features";
+  import { SITE_URL } from "#shared/utils/site";
 
   const searchFocus = useSearchFocus();
 
@@ -14,7 +15,7 @@
     ogTitle: "Bailly.app — Dictionnaire grec-français en ligne",
     ogDescription: DESCRIPTION,
     ogType: "website",
-    ogUrl: "https://bailly.app/",
+    ogUrl: `${SITE_URL}/`,
   });
 
   /**
@@ -30,7 +31,7 @@
         "@type": "WebSite",
         "name": "Bailly.app",
         "alternateName": ["Bailly", "Bailly en ligne"],
-        "url": "https://bailly.app/",
+        "url": `${SITE_URL}/`,
       }),
     }],
   });

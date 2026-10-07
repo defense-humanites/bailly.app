@@ -1,9 +1,5 @@
 import { FEATURES } from "#shared/utils/features";
-
-/**
- * The site's address, the one the search engines index (not a preview's).
- */
-const SITE = "https://bailly.app";
+import { SITE_URL } from "#shared/utils/site";
 
 /**
  * The site map (`/sitemap.xml`, cf. `robots.txt`): the fixed pages, the
@@ -24,7 +20,7 @@ export default defineEventHandler((event) => {
   return [
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
     "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">",
-    ...pages.map(path => `  <url><loc>${SITE}${encodeURI(path)}</loc></url>`),
+    ...pages.map(path => `  <url><loc>${SITE_URL}${encodeURI(path)}</loc></url>`),
     "</urlset>",
     "",
   ].join("\n");
