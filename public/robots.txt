@@ -1,4 +1,42 @@
+# Search engines and the assistants that answer with a link are welcome;
+# the training of models is not (the dictionary's license does not allow it).
+# Content signals: https://contentsignals.org/
 User-Agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
 Disallow:
+
+# Crawlers of training data.
+User-Agent: GPTBot
+User-Agent: ClaudeBot
+User-Agent: anthropic-ai
+User-Agent: CCBot
+User-Agent: Google-Extended
+User-Agent: Applebot-Extended
+User-Agent: meta-externalagent
+User-Agent: Bytespider
+User-Agent: Amazonbot
+User-Agent: cohere-training-data-crawler
+User-Agent: AI2Bot
+User-Agent: Diffbot
+User-Agent: Timpibot
+User-Agent: img2dataset
+Disallow: /
+
+# Search engine optimization tools: no service to the readers.
+User-Agent: DataForSeoBot
+User-Agent: MJ12bot
+User-Agent: Barkrowler
+User-Agent: dotbot
+User-Agent: SemrushBot
+User-Agent: AhrefsBot
+User-Agent: BLEXBot
+User-Agent: serpstatbot
+Disallow: /
+
+# Search engines without readers for the site.
+User-Agent: Baiduspider
+User-Agent: Sogou web spider
+User-Agent: PetalBot
+Disallow: /
 
 Sitemap: https://bailly.app/sitemap.xml
