@@ -269,8 +269,17 @@
   });
 
   /**
-   * Whether the key has been shown on the screen to add a device (its tab,
-   * the key revealed): another device may have read it since.
+   * Whether the key of the view was drawn here just now (`enable`), rather
+   * than reached otherwise (from the state, or another key): « J'avais déjà
+   * une clé » may only revoke such a key, whose locker holds this device's
+   * data alone (cf. `hadKey`).
+   */
+  const keyJustCreated = ref(false);
+
+  /**
+   * Whether the key has left the window since (another device may have it):
+   * shown on the screen to add a device (its tab, the key revealed), copied,
+   * shared, or written in a recovery kit.
    */
   const keyShown = ref(false);
   watch([keyTab, keyRevealed, view], () => {
@@ -279,7 +288,8 @@
 
   const showKey = async (fromStatus = false, tab: KeyTab = "save"): Promise<void> => {
     words.value = await syncStore.words();
-    if (!fromStatus) keyShown.value = false;
+    if (fromStatus) keyJustCreated.value = false;
+    else keyShown.value = false;
     keyFromStatus.value = fromStatus;
     keyTab.value = tab;
     await nextTick();
@@ -364,6 +374,7 @@
       showFailure(result);
       return;
     }
+    keyJustCreated.value = true;
     await showKey();
   });
 
@@ -517,6 +528,7 @@
       "",
     ].join("\n");
 
+    keyShown.value = true;
     const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -536,6 +548,7 @@
   const copyWords = async (): Promise<void> => {
     try {
       await navigator.clipboard.writeText(words.value.join(" "));
+      keyShown.value = true;
       copied.value = true;
       clearTimeout(copiedTimer);
       copiedTimer = setTimeout(() => {
@@ -551,6 +564,7 @@
   const shareWords = async (): Promise<void> => {
     try {
       await navigator.share({ title: "Clé de synchronisation de Bailly.app", text: numberedWords() });
+      keyShown.value = true;
     } catch {
       // Cancelled.
     }
@@ -637,6 +651,7 @@
     actionError.value = null;
     actionWarning.value = false;
     actionRetry.value = false;
+    keyJustCreated.value = false;
     linkKey.value = props.linkSecret ?? null;
     customizing.value = false;
     chosenPreferences.value = syncedPreferences.value.length ? [...syncedPreferences.value] : [...DEFAULT_SYNCED_PREFERENCES];
@@ -668,8 +683,13 @@
    * mistake (a new key created, while another device already has one). The
    * new key is revoked (the locker just created deleted, the key forgotten:
    * it only held this device's data, which stay here), and the words of the
-   * other key asked for. Offered right after the creation only, until the
-   * key is shown to add a device (another device may have joined it).
+   * other key asked for. Offered right after the creation only
+   * (`keyJustCreated`), until the key leaves the window (`keyShown`:
+   * another device may have joined it). The new key is revoked first: if
+   * the other key's words are not given (the window closed, a wrong word),
+   * the device stays without a key, as before enabling. The reverse order
+   * (joining first, then deleting the old locker) would need to keep the
+   * abandoned key's credentials.
    */
   const hadKey = () => run(async () => {
     const result = await syncStore.deleteRemote();
@@ -680,6 +700,7 @@
       actionRetry.value = result.message !== SYNC_BUSY_MESSAGE;
       return;
     }
+    keyJustCreated.value = false;
     joinText.value = "";
     joinError.value = null;
     linkKey.value = null;
@@ -1300,15 +1321,19 @@
           class="me-auto"
           @click="view = 'delete'"
         />
-        <UButton
-          v-else-if="!keyShown"
-          label="J'avais déjà une clé"
-          color="neutral"
-          variant="ghost"
-          class="me-auto"
-          :loading="busy"
-          @click="hadKey"
-        />
+        <UTooltip
+          v-else-if="keyJustCreated && !keyShown"
+          :text="`La clé créée à l'instant sera révoquée. ${texts.Data} restent sur cet appareil.`"
+        >
+          <UButton
+            label="J'avais déjà une clé"
+            color="neutral"
+            variant="ghost"
+            class="me-auto"
+            :loading="busy"
+            @click="hadKey"
+          />
+        </UTooltip>
         <UButton
           :label="keyFromStatus ? (openedOn === 'key' ? 'Fermer' : 'Retour') : 'J\'ai conservé ma clé'"
           :color="keyFromStatus ? 'neutral' : 'secondary'"

@@ -650,6 +650,27 @@ test("« J'avais déjà une clé » is no longer offered once the key was shown 
   await expect(page.getByRole("button", { name: "J'avais déjà une clé" })).toHaveCount(0);
 });
 
+test("« J'avais déjà une clé » is no longer offered once the key was copied, or its kit downloaded", async ({ page, goto }) => {
+  await goto("/signets", { waitUntil: "hydration" });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.getByRole("button", { name: "Copier la clé" }).click();
+  await expect(page.getByRole("button", { name: "J'avais déjà une clé" })).toHaveCount(0);
+
+  await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
+  await openSync(page);
+  await page.getByRole("button", { name: "Arrêter la synchronisation…" }).click();
+  await page.getByRole("button", { name: "Désactiver sur cet appareil" }).click();
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await expect(page.getByRole("button", { name: "J'avais déjà une clé" })).toBeVisible();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Télécharger le kit de récupération" }).click();
+  await download;
+  await expect(page.getByRole("button", { name: "J'avais déjà une clé" })).toHaveCount(0);
+});
+
 test("« J'avais déjà une clé » failing (the server unreachable): the new key stays, to try again", async ({ page, goto }) => {
   await goto("/signets", { waitUntil: "hydration" });
   await openSync(page);
