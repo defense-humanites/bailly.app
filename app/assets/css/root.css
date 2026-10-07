@@ -66,13 +66,13 @@
      buttons, in both themes. */
   --app-field-bg: var(--ui-bg);
   --app-field-hover: var(--app-button-hover);
-  /* Their focus halo, the search bar's (the main accent at 25 %), and
-     their ring, neutral, which tells them from it: the inverted color (in
-     the dark theme, marble 500 a quarter blended into the cards: softer).
-     Tried and set aside in the dark theme: a marble halo, a bluish ring
-     and halo. */
-  --app-field-ring: var(--ui-border-inverted);
-  --app-field-halo: color-mix(in oklab, var(--ui-primary) 25%, transparent);
+  /* Their focus halo in the secondary accent (Aegean blue, 25 %), told
+     from the search bar's (the main accent); their ring neutral, softened:
+     the inverted color a quarter blended into the cards (in the dark theme,
+     marble 500 likewise). Tried and set aside: a marble halo, the main
+     accent's, a bluish ring. */
+  --app-field-ring: color-mix(in oklab, var(--ui-border-inverted) 75%, var(--ui-bg));
+  --app-field-halo: color-mix(in oklab, var(--ui-secondary) 25%, transparent);
 
   /* The external links' arrow (cf. the `link` utility), in the main and
      secondary colors (`--ui-primary`, `--ui-secondary`: a background image
