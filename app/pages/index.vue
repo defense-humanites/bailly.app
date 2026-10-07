@@ -4,6 +4,38 @@
   const searchFocus = useSearchFocus();
 
   /**
+   * The home page: the site's title (the template's, without a page title)
+   * and a description of its own, after the page's text (the search engines
+   * rewrite a description farther from it).
+   */
+  const DESCRIPTION = "Le dictionnaire grec-français d'Anatole Bailly, dans le texte révisé par Gérard Gréco et son équipe : une application libre et gratuite, sans compte ni publicité.";
+  useSeoMeta({
+    description: DESCRIPTION,
+    ogTitle: "Bailly.app — Dictionnaire grec-français en ligne",
+    ogDescription: DESCRIPTION,
+    ogType: "website",
+    ogUrl: "https://bailly.app/",
+  });
+
+  /**
+   * The site's name, as the search engines should show it (Google's
+   * « WebSite » structured data, read on the home page): « Bailly.app », as
+   * the header's logo, rather than one it makes up (« app Bailly »).
+   */
+  useHead({
+    script: [{
+      type: "application/ld+json",
+      innerHTML: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Bailly.app",
+        "alternateName": ["Bailly", "Bailly en ligne"],
+        "url": "https://bailly.app/",
+      }),
+    }],
+  });
+
+  /**
    * The search is the page's main action: its field gets the focus on
    * opening, except with a coarse pointer (a touch screen), where it would
    * bring up the virtual keyboard, and when it holds a search (e.g. back from
