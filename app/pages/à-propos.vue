@@ -809,10 +809,11 @@
           </div>
         </div>
         <!--
-          Not a credit: apart, under a short rule in the chapters' color, in
-          the interface's font.
+          Not a credit: apart, in the interface's font, under a short double
+          rule (a thick and a thin one, as the hero's frame) in the chapters'
+          color: a single rule read as a link's underline.
         -->
-        <p class="mx-auto mt-8 max-w-3xl text-center text-sm text-muted before:mx-auto before:mb-6 before:block before:h-px before:w-16 before:bg-(--rule-color)/50">
+        <p class="mx-auto mt-8 max-w-3xl text-center text-sm text-muted before:mx-auto before:mb-6 before:block before:h-[6px] before:w-16 before:border-t-2 before:border-b before:border-(--rule-color)/60">
           Ce que l'application garde de vos données, où et pour combien de temps :
           <NuxtLink
             :to="encodeURI('/confidentialité')"
