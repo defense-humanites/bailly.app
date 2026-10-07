@@ -136,6 +136,18 @@ test.describe("search bar", () => {
       await expect(searchResults(page)).toBeHidden();
     });
 
+    // The search bar is mounted again by the entry's layout (once hydrated).
+    test("the results remain after opening the entry", async ({ page }) => {
+      const input = searchInput(page);
+      await input.click();
+      await input.pressSequentially("lo/gos");
+      await expect(searchResults(page).getByRole("option").first()).toBeVisible();
+      await input.press("Enter");
+      await expect(page).toHaveURL(/\/logos$/);
+      await searchInput(page).focus();
+      await expect(searchResults(page).getByRole("option").filter({ hasText: "λόγος" }).first()).toBeVisible();
+    });
+
     test("highlights the first result without an exact match, then opens it", async ({ page }) => {
       await searchInput(page).fill("log");
       const first = searchResults(page).getByRole("option").first();
