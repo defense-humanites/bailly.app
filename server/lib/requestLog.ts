@@ -26,7 +26,7 @@ export type RequestCf = {
   verifiedBotCategory?: string;
 };
 
-export type PageKind = "home" | "entry" | "form" | "reader" | "page" | "legacy" | "api" | "other";
+export type PageKind = "home" | "entry" | "form" | "reader" | "search" | "page" | "legacy" | "api" | "other";
 
 /**
  * The share of the apparent browsers' requests kept.
@@ -56,6 +56,8 @@ export function pageKind(path: string): PageKind {
   if (first === undefined) return "other";
   if (first === "forme") return "form";
   if (first === "lecteur" && segments.length === 1) return "reader";
+  // The search bar's form, submitted before the page is interactive.
+  if (first === "recherche" && segments.length === 1) return "search";
   if (PAGES.has(first)) return "page";
   // An entry's URI: a single segment, neither a file (`wp-login.php`) nor
   // Nuxt's (`_nuxt`, `__nuxt_error`).

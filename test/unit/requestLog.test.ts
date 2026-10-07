@@ -22,6 +22,7 @@ describe("pageKind", () => {
     expect(pageKind("/opsoman%C3%AAs")).toBe("entry");
     expect(pageKind(`/forme/${encodeURIComponent("ἡ")}`)).toBe("form");
     expect(pageKind("/lecteur")).toBe("reader");
+    expect(pageKind("/recherche")).toBe("search");
     expect(pageKind(encodeURI("/à-propos"))).toBe("page");
     expect(pageKind("/soutenir/merci")).toBe("page");
     expect(pageKind("/sitemap.xml")).toBe("page");

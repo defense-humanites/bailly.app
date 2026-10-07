@@ -3,7 +3,8 @@
 # Content signals: https://contentsignals.org/
 User-Agent: *
 Content-Signal: search=yes, ai-input=yes, ai-train=no
-Disallow:
+# The search bar's form, before the page is interactive: no page of its own.
+Disallow: /recherche
 
 # Crawlers of training data.
 User-Agent: GPTBot

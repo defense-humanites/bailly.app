@@ -68,7 +68,16 @@ export function legacySearchForm(path: string): string | null | undefined {
     return null;
   }
 
-  form = normalizeSearchGreek(form.trim());
+  return searchForm(form);
+}
+
+/**
+ * A Greek form to look up as a whole (cf. `resolveLegacySearch`).
+ * @returns The form, normalized (NFC, letter variants, final sigma), with
+ * its diacritics; `null` if it isn't a Greek word (or is too long).
+ */
+export function searchForm(input: string): string | null {
+  const form = normalizeSearchGreek(input.trim());
   return form.length <= MAX_FORM_LENGTH && /^[\p{Script=Greek}\p{M}]+$/u.test(form) && /\p{L}/u.test(form)
     ? form
     : null;

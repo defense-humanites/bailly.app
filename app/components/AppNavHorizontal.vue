@@ -57,6 +57,9 @@
     return opacity < 1 ? opacity : null;
   });
 
+  /** The search bar's place: the second row below `md`, the middle track from `md`. */
+  const SEARCH_BAR = "col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:max-w-(--search-width) md:justify-self-center lg:justify-self-start";
+
   /**
    * A bar stuck under the header draws the border under both.
    */
@@ -148,7 +151,17 @@
           </ul>
         </div>
       </nav>
-      <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:max-w-(--search-width) md:justify-self-center lg:justify-self-start" />
+      <!--
+        The search bar is interactive once the page is hydrated; before, and
+        on the server, its markup alone, much lighter to render (cf.
+        `SearchBarStatic`).
+      -->
+      <ClientOnly>
+        <SearchBar :class="SEARCH_BAR" />
+        <template #fallback>
+          <SearchBarStatic :class="SEARCH_BAR" />
+        </template>
+      </ClientOnly>
       <!--
         The menu; on mobile, on the home page only, cotillons and a heart
         first lead to the news and the donation (the page's own buttons are
