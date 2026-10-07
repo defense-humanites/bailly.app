@@ -32,12 +32,12 @@ export function useAppShell(): void {
       ? [{ src: "https://scripts.simpleanalyticscdn.com/latest.js", async: true, tagPosition: "bodyClose" }]
       : [],
     /*
-     * A page's title, followed by the site's name (e.g. « λόγος (logos) —
-     * Bailly.app », as one searches « logos bailly »); without one (the home
-     * page), the site's own.
+     * A page's own title, bare (more readable, in a tab as in the results;
+     * the search engines show the site's name apart, cf. the home page's
+     * structured data); without one (the home page), the site's.
      */
     titleTemplate: (title) => {
-      return title ? `${title} — Bailly.app` : "Bailly.app — Dictionnaire grec-français en ligne";
+      return title ? title : "Bailly.app — Dictionnaire grec-français en ligne";
     },
     meta: [
       {

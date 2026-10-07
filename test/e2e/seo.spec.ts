@@ -13,10 +13,10 @@ test.describe("search engines", () => {
     expect(data).toMatchObject({ "@type": "WebSite", "name": "Bailly.app" });
   });
 
-  // Every other page: its title, then the site's name.
-  test("the pages' titles end with the site's name", async ({ page, goto }) => {
+  // Every other page: its own title, bare.
+  test("the pages' own titles, bare", async ({ page, goto }) => {
     await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
-    await expect(page).toHaveTitle("À propos — Bailly.app");
+    await expect(page).toHaveTitle("À propos");
   });
 
   // The site map: the fixed pages (the news while offered), and its address
