@@ -1,9 +1,10 @@
 /**
  * A line of the Worker's logs per request kept, to tell the robots' traffic
  * apart (which ones, on which pages, from which networks): without the
- * visitor's address nor place, nor the page's address but for an error (cf.
- * `confidentialité.vue`, « Adresses IP »). The invocation logs of Cloudflare
- * stay off (`wrangler.jsonc`): they keep all that.
+ * visitor's address nor place (cf. `confidentialité.vue`, « Adresses IP »).
+ * The invocation logs of Cloudflare stay off (`wrangler.jsonc`): they keep
+ * all that. Cloudflare adds to each line the request's address, its query
+ * redacted (`redact_query_string`, the searches of `/forme`).
  *
  * Kept: every error, every agent that is not a browser (declared robots,
  * scripts), and a sample of the apparent browsers (visitors, and robots

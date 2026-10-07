@@ -234,8 +234,10 @@
           Pour limiter les abus, notre serveur compte chaque jour les envois de synchronisation de
           chaque adresse IP. Il ne garde pas l'adresse elle-même, mais un pseudonyme (une
           empreinte renouvelée chaque jour), effacé après deux jours. Les journaux techniques de
-          l'application ne contiennent pas votre adresse IP, ni l'adresse des pages consultées,
-          sauf en cas d'erreur.
+          l'application ne contiennent pas votre adresse IP. Pour distinguer les visites des
+          robots, ils notent, pour une partie des pages vues, la page demandée (sans vos
+          recherches), le navigateur et le réseau d'origine&nbsp;; ils sont effacés au bout de
+          sept jours.
         </p>
       </section>
 
