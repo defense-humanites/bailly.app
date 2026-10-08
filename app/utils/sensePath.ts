@@ -19,26 +19,26 @@ const firstClause = (text: string): string =>
   text.replace(/\s+/g, " ").replace(/^[\s,;:.]+/, "").split(/[,;:(|]/)[0]!.trim();
 
 /**
- * A sense's label: its first gloss, the bare text (the French) after its
- * number, the remarks, citations and references before it skipped (« I.
- * *propr.* porter : » → « porter »); cut at its first punctuation. Without a
- * gloss before its first sub-sense, its first remark (« *p. suite* »).
+ * What ends a sense's head: a citation, a reference, a sub-sense.
+ */
+const HEAD_END = `.grec, .aut, .oeuv, .oeuva, .refch, .refpa, .refpb, .sect, .fleche, ${SENSE_SELECTOR}`;
+
+/**
+ * A sense's label: the head of its text, right after its number, remarks
+ * included (« 6 *avec des mots invariables : adverbes :* » → « avec des
+ * mots invariables », « I. *propr.* porter : » → « propr. porter »), cut at
+ * its first punctuation, before any citation or reference; none if the
+ * sense opens on one. Never a line further in its body.
  */
 export function senseLabel(sense: Element): string {
   const number = sense.querySelector(":scope > :is(.Ruba, .ruba, .ppa)");
   let text = "";
-  let remark = "";
   for (let node = number?.nextSibling ?? null; node; node = node.nextSibling) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      text += node.textContent ?? "";
-      continue;
-    }
-    if (!(node instanceof Element) || node.matches(SENSE_SELECTOR)) break;
-    // An element after the gloss's start ends it.
-    if (/\p{L}/u.test(text)) break;
-    if (!remark && node.matches(".ital")) remark = node.textContent;
+    if (node instanceof Element && node.matches(HEAD_END)) break;
+    text += node.textContent ?? "";
+    if (/[,;:(|]/.test(text)) break;
   }
-  return firstClause(text) || firstClause(remark);
+  return /\p{L}/u.test(text) ? firstClause(text) : "";
 }
 
 /**

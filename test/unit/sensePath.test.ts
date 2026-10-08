@@ -21,21 +21,29 @@ const definition = (): HTMLElement => {
 };
 
 describe("senseLabel", () => {
-  test("the first gloss, after the remarks, cut at its punctuation", () => {
+  test("the head of the text after the number, remarks included, cut at its punctuation", () => {
     const [first, second] = definition().querySelectorAll(".rub");
-    expect(senseLabel(first!)).toBe("loin");
-    expect(senseLabel(second!)).toBe("loin de");
+    expect(senseLabel(first!)).toBe("adv. loin");
+    expect(senseLabel(second!)).toBe("prép. loin de");
+    const [third, fourth] = definition().querySelectorAll(".pp");
+    expect(senseLabel(third!)).toBe("avec idée de lieu");
+    expect(senseLabel(fourth!)).toBe("p. suite");
   });
 
-  test("the gloss after a citation and a reference (« loin des vaisseaux »)", () => {
-    expect(senseLabel(definition().querySelector(".pp")!)).toBe("loin des vaisseaux");
-  });
-
-  test("a sense whose first gloss comes after a citation: its gloss, else its remark", () => {
+  test("never a line further in the body: none if the sense opens on a citation", () => {
     const sense = definition().querySelectorAll(".pp")[1]!;
-    expect(senseLabel(sense)).toBe("sans tarder");
-    sense.lastChild!.textContent = " ||";
-    expect(senseLabel(sense)).toBe("p. suite");
+    sense.querySelector(".ital")!.remove();
+    expect(senseLabel(sense)).toBe("");
+  });
+
+  test("not the signs between the citations (καί, C. III. 6.)", () => {
+    const sense = document.createElement("div");
+    sense.className = "pp";
+    sense.innerHTML = `<span class="ppa">6</span> <span class="ital">avec
+des mots invariables : adverbes :</span> <span class="grec">κἀθέως</span> = <span class="grec">καὶ ἀθέως,</span>
+<span class="aut">Soph.</span> <span class="refch">354 ;</span> <span class="grec">κἄτι</span> =
+<span class="grec">καὶ ἔτι,</span> <span class="aut">Soph.</span> <span class="refch">272</span>).`;
+    expect(senseLabel(sense)).toBe("avec des mots invariables");
   });
 });
 
@@ -43,7 +51,7 @@ describe("sensePath", () => {
   test("the outer senses' numbers, the inner one's label", () => {
     expect(sensePath(definition().querySelectorAll(".pp")[0]!)).toEqual([
       { number: "II.", label: "" },
-      { number: "1.", label: "loin des vaisseaux" },
+      { number: "1.", label: "avec idée de lieu" },
     ]);
   });
 
