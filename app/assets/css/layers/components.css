@@ -179,6 +179,22 @@
     @apply mt-3;
   }
 
+  /*
+   * The notes after the senses: the comparatives and superlatives (`.sect`,
+   * « Cp. », « Sup. »), the other forms, the dialects and the prosody
+   * (`.fleche`, after an arrow). They complete the senses without being
+   * part of them: a step back, in the muted text color, as the references;
+   * their labels keep their color (`.secta`, the arrow).
+   */
+  .sect,
+  .fleche {
+    @apply text-muted;
+  }
+
+  .flechea {
+    color: var(--ui-text);
+  }
+
   /* The etymologies, in blue: set apart from the text (7.7:1 on the marble). */
   .etymor,
   .etymrev {
