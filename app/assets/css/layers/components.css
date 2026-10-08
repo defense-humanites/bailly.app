@@ -214,24 +214,35 @@
 
   /*
    * Links of the definitions (to an entry, or to the reader for an ambiguous
-   * form): a thin, discreet dotted underline, so as not to disrupt the
-   * reading (an entry can hold hundreds of links), which turns solid on hover
-   * and keyboard focus. They keep the color of the surrounding text, the
-   * underline being derived from it; the offset keeps it clear of the Greek
-   * descenders and iota subscripts.
+   * form): the usual links' (cf. `link`, `utilities.css`), but a thin solid
+   * underline in the muted text color, faint at rest, so as not to disrupt
+   * the reading (an entry can hold hundreds of links, most of its Greek
+   * words); a solid one rather than a dotted one, which a 1 px line draws
+   * unevenly at some screen scales. Hovered, the usual links' 2 px in the
+   * primary color. They keep the color of the surrounding text; the offset
+   * keeps the underline clear of the Greek descenders and iota subscripts.
    */
   .definition a {
     text-decoration-line: underline;
-    text-decoration-style: dotted;
+    text-decoration-style: solid;
     text-decoration-thickness: 1px;
-    text-underline-offset: 0.2em;
-    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    text-underline-offset: 0.25em;
+    text-decoration-color: color-mix(in srgb, var(--ui-text-muted) 35%, transparent);
     text-decoration-skip-ink: auto;
+    transition-property: text-decoration-color, text-decoration-thickness;
+    transition-duration: 150ms;
 
-    &:hover,
+    @media (hover: hover) {
+      &:hover {
+        text-decoration-thickness: 2px;
+        text-decoration-color: var(--ui-primary);
+      }
+    }
+
     &:focus-visible {
-      text-decoration-style: solid;
-      text-decoration-color: currentColor;
+      outline: 2px solid var(--ui-border-inverted);
+      outline-offset: 2px;
+      border-radius: 2px;
     }
   }
 }
