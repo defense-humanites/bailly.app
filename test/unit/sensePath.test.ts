@@ -36,6 +36,14 @@ describe("senseLabel", () => {
     expect(senseLabel(sense)).toBe("");
   });
 
+  test("past a linking word, to the gloss that follows it (ἔχω, B. III. 2.)", () => {
+    const sense = document.createElement("div");
+    sense.className = "pp";
+    sense.innerHTML = `<span class="ppa">2</span> <span class="ital">p.
+suite,</span> avoir à sa disposition, être en état de, <span class="ital">avec l’inf.</span> <span class="grec">ἔχω λέγειν</span>`;
+    expect(senseLabel(sense)).toBe("p. suite, avoir à sa disposition");
+  });
+
   test("not the signs between the citations (καί, C. III. 6.)", () => {
     const sense = document.createElement("div");
     sense.className = "pp";

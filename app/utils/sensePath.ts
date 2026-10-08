@@ -5,23 +5,21 @@
  */
 export const SENSE_SELECTOR = ".Rub, .rub, .pp";
 
-/** A step of the path to a sense: its number (with its period) and its first gloss. */
+/** A step of the path to a sense: its number (with its period) and its label (cf. `senseLabel`). */
 export type SenseStep = {
   number: string;
   label: string;
 };
 
 /**
- * Cuts a text at its first punctuation (the end of a gloss), its spaces
- * normalized.
- */
-const firstClause = (text: string): string =>
-  text.replace(/\s+/g, " ").replace(/^[\s,;:.]+/, "").split(/[,;:(|]/)[0]!.trim();
-
-/**
  * What ends a sense's head: a citation, a reference, a sub-sense.
  */
 const HEAD_END = `.grec, .aut, .oeuv, .oeuva, .refch, .refpa, .refpb, .sect, .fleche, ${SENSE_SELECTOR}`;
+
+/** What ends a clause of a sense's head. */
+const CLAUSE_END = /[,;:(|]/g;
+
+const LETTER = /\p{L}/u;
 
 /**
  * A sense's label: the head of its text, right after its number, remarks
@@ -29,16 +27,47 @@ const HEAD_END = `.grec, .aut, .oeuv, .oeuva, .refch, .refpa, .refpb, .sect, .fl
  * mots invariables », « I. *propr.* porter : » → « propr. porter »), cut at
  * its first punctuation, before any citation or reference; none if the
  * sense opens on one. Never a line further in its body.
+ *
+ * A first clause that is only a remark, a linking word (*p. suite*,
+ * *par ext.*), is followed by the next one when it holds a gloss (« 2
+ * *p. suite,* avoir à sa disposition, » → « p. suite, avoir à sa
+ * disposition »); not by a further remark (« adverbes »).
  */
 export function senseLabel(sense: Element): string {
   const number = sense.querySelector(":scope > :is(.Ruba, .ruba, .ppa)");
+  // The head's text, and for each of its characters whether it belongs to a
+  // remark.
   let text = "";
+  const remark: boolean[] = [];
   for (let node = number?.nextSibling ?? null; node; node = node.nextSibling) {
     if (node instanceof Element && node.matches(HEAD_END)) break;
-    text += node.textContent ?? "";
-    if (/[,;:(|]/.test(text)) break;
+    const part = node.textContent ?? "";
+    const isRemark = node instanceof Element && node.matches(".ital");
+    text += part;
+    remark.push(...Array.from({ length: part.length }, () => isRemark));
   }
-  return /\p{L}/u.test(text) ? firstClause(text) : "";
+
+  // Its clauses, as [start, end) ranges, the punctuation ending each.
+  const clauses: [number, number][] = [];
+  let start = 0;
+  for (const match of text.matchAll(CLAUSE_END)) {
+    clauses.push([start, match.index]);
+    start = match.index + 1;
+  }
+  clauses.push([start, text.length]);
+
+  const has = ([from, to]: [number, number], gloss: boolean): boolean => {
+    for (let index = from; index < to; index++) {
+      if (LETTER.test(text[index]!) && (!gloss || !remark[index])) return true;
+    }
+    return false;
+  };
+  const clean = (from: number, to: number): string => text.slice(from, to).replace(/\s+/g, " ").trim();
+
+  const [first, second] = clauses;
+  if (!first || !has(first, false)) return "";
+  if (!has(first, true) && second && has(second, true)) return clean(first[0], second[1]);
+  return clean(first[0], first[1]);
 }
 
 /**
