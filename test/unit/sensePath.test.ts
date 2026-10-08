@@ -20,38 +20,63 @@ const definition = (): HTMLElement => {
   return element;
 };
 
+/** A sense of the given markup (after its number). */
+const sense = (html: string): HTMLElement => {
+  const element = document.createElement("div");
+  element.className = "pp";
+  element.innerHTML = `<span class="ppa">1</span> ${html}`;
+  return element;
+};
+
 describe("senseLabel", () => {
-  test("the head of the text after the number, remarks included, cut at its punctuation", () => {
+  test("the head after the number, remarks and glosses, up to a strong punctuation or a reference", () => {
     const [first, second] = definition().querySelectorAll(".rub");
-    expect(senseLabel(first!)).toBe("adv. loin");
+    expect(senseLabel(first!)).toBe("adv. loin, au loin");
     expect(senseLabel(second!)).toBe("prép. loin de");
-    const [third, fourth] = definition().querySelectorAll(".pp");
-    expect(senseLabel(third!)).toBe("avec idée de lieu");
-    expect(senseLabel(fourth!)).toBe("p. suite");
+    // καί, B.
+    expect(senseLabel(sense(`<span class="ital">adv.</span> aussi, même\u00a0:
+<div class="rub"><span class="ruba">I</span> aussi, de même\u00a0:</div>`))).toBe("adv. aussi, même");
   });
 
-  test("never a line further in the body: none if the sense opens on a citation", () => {
-    const sense = definition().querySelectorAll(".pp")[1]!;
-    sense.querySelector(".ital")!.remove();
-    expect(senseLabel(sense)).toBe("");
+  test("a Greek expression closes it, with an « etc. » after it", () => {
+    // καί, C. I. 7.
+    expect(senseLabel(sense(`<span class="grec">καὶ
+<a href="/men">μέν</a>,</span> et en outre, <span class="ital">d’ord. avec une ou
+plusieurs particules\u00a0:</span> <span class="grec">καὶ μὲν δή,</span> <span class="aut">Plat.</span>`))).toBe("καὶ μέν");
+    // καί, B. I. 3.
+    expect(senseLabel(sense(`<span class="ital">dans
+les locut.</span> <span class="grec">εἴ τις καὶ ἄλλος,</span>
+<span class="ital">etc.\u202f;</span> <span class="grec">ὥς τις καὶ ἄλλος,</span>`))).toBe("dans les locut. εἴ τις καὶ ἄλλος, etc.");
+    // καί, A. II. 2.: the commas within the Greek.
+    expect(senseLabel(sense(`<span class="ital">dans
+les locut.</span> <span class="grec">καὶ τοῦτο, καὶ ταῦτα,</span>
+<span class="ital">au sens du franç.</span> « et cela »`))).toBe("dans les locut. καὶ τοῦτο, καὶ ταῦτα");
+    const [, , fourth] = [...definition().querySelectorAll(".rub, .pp")];
+    expect(senseLabel(fourth!)).toBe("avec idée de lieu, d’ord. après son rég. νηῶν ἑκάς");
   });
 
-  test("past a linking word, to the gloss that follows it (ἔχω, B. III. 2.)", () => {
-    const sense = document.createElement("div");
-    sense.className = "pp";
-    sense.innerHTML = `<span class="ppa">2</span> <span class="ital">p.
-suite,</span> avoir à sa disposition, être en état de, <span class="ital">avec l’inf.</span> <span class="grec">ἔχω λέγειν</span>`;
-    expect(senseLabel(sense)).toBe("p. suite, avoir à sa disposition");
-  });
-
-  test("not the signs between the citations (καί, C. III. 6.)", () => {
-    const sense = document.createElement("div");
-    sense.className = "pp";
-    sense.innerHTML = `<span class="ppa">6</span> <span class="ital">avec
+  test("past a linking word, to the gloss after it; not to a further remark", () => {
+    expect(senseLabel(sense(`<span class="ital">en b. part\u00a0:</span> bonne opinion, <span class="aut">Plat.</span>`))).toBe("en b. part\u00a0: bonne opinion");
+    // καί, C. III. 6.
+    expect(senseLabel(sense(`<span class="ital">avec
 des mots invariables : adverbes :</span> <span class="grec">κἀθέως</span> = <span class="grec">καὶ ἀθέως,</span>
-<span class="aut">Soph.</span> <span class="refch">354 ;</span> <span class="grec">κἄτι</span> =
-<span class="grec">καὶ ἔτι,</span> <span class="aut">Soph.</span> <span class="refch">272</span>).`;
-    expect(senseLabel(sense)).toBe("avec des mots invariables");
+<span class="aut">Soph.</span> <span class="refch">354 ;</span>`))).toBe("avec des mots invariables");
+  });
+
+  test("not past a linking word to a citation; but the headword alone", () => {
+    // καί, A. I. 2.
+    expect(senseLabel(sense(`<span class="ital">pour unir deux propos.\u00a0:</span> <span class="grec">ὁ ἵππος πίπτει εἰς γόνατα,</span> <span class="aut">Xén.</span>`))).toBe("pour unir deux propos.");
+    // καί, C. III.
+    expect(senseLabel(sense(`<span class="grec"><span data-linked-self>καί</span></span> se contracte par crase\u00a0:`))).toBe("καί se contracte par crase");
+  });
+
+  test("without the remarks ending it, after a comma", () => {
+    expect(senseLabel(sense(`s’attacher à, <span class="ital">d’où\u00a0:</span>`))).toBe("s’attacher à");
+    expect(senseLabel(sense(`compte qu’on fait de qqe ch., valeur qu’on leur attribue, <span class="ital">avec un gén. déterminatif</span> <span class="aut">Hdt.</span>`))).toBe("compte qu’on fait de qqe ch., valeur qu’on leur attribue");
+  });
+
+  test("none if the sense opens on a reference", () => {
+    expect(senseLabel(sense(`<span class="aut">Hdt.</span> <span class="refch">8, 144,</span> sans tarder`))).toBe("");
   });
 });
 
@@ -59,7 +84,7 @@ describe("sensePath", () => {
   test("the outer senses' numbers, the inner one's label", () => {
     expect(sensePath(definition().querySelectorAll(".pp")[0]!)).toEqual([
       { number: "II.", label: "" },
-      { number: "1.", label: "avec idée de lieu" },
+      { number: "1.", label: "avec idée de lieu, d’ord. après son rég. νηῶν ἑκάς" },
     ]);
   });
 

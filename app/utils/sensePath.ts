@@ -12,62 +12,103 @@ export type SenseStep = {
 };
 
 /**
- * What ends a sense's head: a citation, a reference, a sub-sense.
+ * What ends a sense's head: a reference, a sub-sense, a section.
  */
-const HEAD_END = `.grec, .aut, .oeuv, .oeuva, .refch, .refpa, .refpb, .sect, .fleche, ${SENSE_SELECTOR}`;
+const HEAD_END = `.aut, .oeuv, .oeuva, .refch, .refpa, .refpb, .sect, .fleche, ${SENSE_SELECTOR}`;
 
-/** What ends a clause of a sense's head. */
-const CLAUSE_END = /[,;:(|]/g;
+/** The strong punctuation, which ends a clause of a sense's head (not the commas, between its glosses). */
+const CLAUSE_END = /[;:(|]/g;
 
 const LETTER = /\p{L}/u;
 
 /**
+ * The kind of a character of a sense's head: a remark (`.ital`), Greek
+ * (`.grec`), or text (the French, and the headword alone in Greek).
+ */
+type Kind = "remark" | "greek" | "text";
+
+/**
+ * Whether a Greek span is the headword alone (« καί se contracte… »): read
+ * as the text around it, not as an expression closing the head.
+ */
+const isHeadwordAlone = (element: Element): boolean =>
+  element.children.length > 0
+  && [...element.children].every(child => child.matches("[data-linked-self]"))
+  && [...element.childNodes].every(node => node.nodeType !== Node.TEXT_NODE || !LETTER.test(node.textContent ?? ""));
+
+/**
  * A sense's label: the head of its text, right after its number, remarks
- * included (« 6 *avec des mots invariables : adverbes :* » → « avec des
- * mots invariables », « I. *propr.* porter : » → « propr. porter »), cut at
- * its first punctuation, before any citation or reference; none if the
- * sense opens on one. Never a line further in its body.
+ * included, up to its first strong punctuation (« B *adv.* aussi, même : »
+ * → « adv. aussi, même »), before any reference; none if the sense opens on
+ * one. Never a line further in its body.
  *
- * A first clause that is only a remark, a linking word (*p. suite*,
- * *par ext.*), is followed by the next one when it holds a gloss (« 2
- * *p. suite,* avoir à sa disposition, » → « p. suite, avoir à sa
- * disposition »); not by a further remark (« adverbes »).
+ * - A Greek expression closes it, with an « etc. » after it: the words the
+ *   sense is about (« 7 καὶ μέν, et en outre… » → « καὶ μέν », « 3 *dans les
+ *   locut.* εἴ τις καὶ ἄλλος, *etc. ;* » → « dans les locut. εἴ τις καὶ
+ *   ἄλλος, etc. »); but the headword alone.
+ * - A first clause that is only a remark, a linking word (*p. suite*, *en
+ *   b. part*), is followed by the next one when it holds a gloss in French
+ *   (« *en b. part :* bonne opinion »); not by a further remark (« *avec des
+ *   mots invariables : adverbes :* » → « avec des mots invariables »), nor
+ *   by a citation (« *pour unir deux propos. :* ὁ ἵππος… »).
+ * - The remarks ending it, after a comma, are left out (« s’attacher à,
+ *   *d’où* », « retenir, *c. à d.* »).
  */
 export function senseLabel(sense: Element): string {
   const number = sense.querySelector(":scope > :is(.Ruba, .ruba, .ppa)");
-  // The head's text, and for each of its characters whether it belongs to a
-  // remark.
+  // The head's text, the kind of each of its characters, and the end of its
+  // first Greek expression (with an « etc. » after it).
   let text = "";
-  const remark: boolean[] = [];
-  for (let node = number?.nextSibling ?? null; node; node = node.nextSibling) {
+  const kinds: Kind[] = [];
+  const push = (part: string, kind: Kind): void => {
+    text += part;
+    kinds.push(...Array.from({ length: part.length }, () => kind));
+  };
+  let greekEnd = Number.POSITIVE_INFINITY;
+  for (let node = number?.nextSibling ?? null; node && text.length < greekEnd; node = node.nextSibling) {
     if (node instanceof Element && node.matches(HEAD_END)) break;
     const part = node.textContent ?? "";
-    const isRemark = node instanceof Element && node.matches(".ital");
-    text += part;
-    remark.push(...Array.from({ length: part.length }, () => isRemark));
+    if (!(node instanceof Element)) {
+      push(part, "text");
+    } else if (node.matches(".ital")) {
+      push(part, "remark");
+    } else if (node.matches(".grec") && !isHeadwordAlone(node) && LETTER.test(part)) {
+      push(part, "greek");
+      greekEnd = text.length;
+      let next = node.nextSibling;
+      while (next?.nodeType === Node.TEXT_NODE && !next.textContent?.trim()) next = next.nextSibling;
+      if (next instanceof Element && next.matches(".ital") && next.textContent.trim().startsWith("etc.")) {
+        push(" etc.", "remark");
+        greekEnd = text.length;
+      }
+    } else {
+      push(part, "text");
+    }
   }
 
-  // Its clauses, as [start, end) ranges, the punctuation ending each.
-  const clauses: [number, number][] = [];
-  let start = 0;
-  for (const match of text.matchAll(CLAUSE_END)) {
-    clauses.push([start, match.index]);
-    start = match.index + 1;
-  }
-  clauses.push([start, text.length]);
-
-  const has = ([from, to]: [number, number], gloss: boolean): boolean => {
+  const holds = (from: number, to: number, accepted: Kind[]): boolean => {
     for (let index = from; index < to; index++) {
-      if (LETTER.test(text[index]!) && (!gloss || !remark[index])) return true;
+      if (accepted.includes(kinds[index]!) && LETTER.test(text[index]!)) return true;
     }
     return false;
   };
-  const clean = (from: number, to: number): string => text.slice(from, to).replace(/\s+/g, " ").trim();
+  const outsideGreek = (pattern: RegExp, to: number): number[] =>
+    [...text.slice(0, to).matchAll(pattern)].map(match => match.index).filter(index => kinds[index] !== "greek");
 
-  const [first, second] = clauses;
-  if (!first || !has(first, false)) return "";
-  if (!has(first, true) && second && has(second, true)) return clean(first[0], second[1]);
-  return clean(first[0], first[1]);
+  // Its first clause (up to a strong punctuation outside the Greek), or the
+  // first two past a linking word.
+  const ends = [...outsideGreek(CLAUSE_END, greekEnd), Math.min(text.length, greekEnd)];
+  const [first, second] = ends;
+  let end = first!;
+  if (second !== undefined && !holds(0, first!, ["text", "greek"]) && holds(first! + 1, second, ["text"])) end = second;
+
+  // Without the remarks ending it, after a comma.
+  const commas = outsideGreek(/,/g, end);
+  while (commas.length && !holds(commas.at(-1)! + 1, end, ["text", "greek"])) end = commas.pop()!;
+
+  // The line breaks of the source as spaces, its no-break spaces kept.
+  const label = text.slice(0, end).replace(/[ \t\r\n]+/g, " ").replace(/[\s,]+$/, "").trim();
+  return LETTER.test(label) ? label : "";
 }
 
 /**
