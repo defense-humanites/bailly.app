@@ -136,6 +136,22 @@
     font-style: normal;
   }
 
+  /*
+   * Latin, Sanskrit, German and the reconstructed Indo-European forms (in
+   * the etymologies): in italics, as foreign words in French; in roman
+   * within italics.
+   */
+  .lat,
+  .sscr,
+  .allemand,
+  .indoeurop {
+    @apply italic;
+
+    :is(.ital, .oeuv, .oeuva) & {
+      font-style: normal;
+    }
+  }
+
   .refpb {
     @apply ml-1.5;
   }
