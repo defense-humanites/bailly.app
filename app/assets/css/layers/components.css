@@ -165,16 +165,20 @@
   /*
    * Arrow (the same icon as `i-bailly-arrow`). As a mask, it takes the text
    * color (including in the dark theme). The font size is set to zero to hide
-   * any text content, as the former `content: url(…)` rule did. As its (empty)
-   * text line is at its top, a baseline alignment would hang it below the
-   * text: it is centered on the text's middle instead. Its size follows the
-   * reading size (about 2.3 times the text size: 36 px for 15.5 px).
+   * any text content, as the former `content: url(…)` rule did. Its size
+   * follows the reading size (about 2.3 times the text size: 36 px for
+   * 15.5 px). Its bottom edge is its baseline (`overflow: hidden`), set
+   * 0.154 of the text size below the line's: its middle at the lowercase
+   * letters' (0.27 above the baseline), whatever the browser: not
+   * `vertical-align: middle`, which put it a few pixels higher in some
+   * (reported in καίω).
    */
   .flechea {
     display: inline-block;
     width: calc(var(--reading-font-size) * 2.32);
     aspect-ratio: 66 / 24;
-    vertical-align: middle;
+    overflow: hidden;
+    vertical-align: calc(var(--reading-font-size) * -0.154);
     font-size: 0;
     background-color: currentColor;
     mask: url("~/assets/icons/arrow.svg") center / contain no-repeat;
