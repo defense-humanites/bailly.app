@@ -2,7 +2,7 @@
   import type { Siblings } from "#shared/types/api";
   import type { SenseStep } from "~/utils/sensePath";
 
-  const props = defineProps<{
+  defineProps<{
     /** The entry's headword (as displayed). */
     word: string;
     /** The previous and next entries. */
@@ -17,9 +17,6 @@
 
   // Greek may be transliterated (a preference).
   const greek = useGreek();
-
-  /** The path as a key: a new one is rendered anew (and fades in). */
-  const pathKey = computed(() => props.path?.map(step => step.number).join(" ") ?? "");
 </script>
 
 <!--
@@ -57,9 +54,8 @@
       <!--
         The path: the numbers in the primary color, as in the definition, the
         sense's label in muted italics; truncated at its end if too long. A
-        new path replaces the former one at once and fades in (an animation:
-        a transition would keep the former one beside it meanwhile), but with
-        reduced motion.
+        new path replaces the former one at once, without a fade (more
+        disturbing than helpful).
       -->
       <span class="min-w-0 grow truncate text-center font-serif text-xs/6 font-bold"><span :lang="greek.lang.value"><!-- Homonyms: a fan of cards, as in the page's title. --><UIcon
         v-if="homonyms"
@@ -67,9 +63,7 @@
         class="me-1 inline-block size-4 align-[-0.2em] text-muted"
       />{{ word }}</span><span
         v-if="path?.length"
-        :key="pathKey"
         lang="fr"
-        class="animate-[fade-in_150ms_ease-out] motion-reduce:animate-none"
       ><span
         class="font-normal text-dimmed"
         aria-hidden="true"
