@@ -83,13 +83,14 @@
       <!--
         Below `xl` (where the outline has a column of its own), for a long
         entry, the line opens the entry's outline (cf. `EntryOutline`): the
-        senses to go to, the one being read marked.
+        senses to go to, the one being read marked. Narrower than the card it
+        opens over, on a phone too (1 rem within its edges): 24 rem at most.
       -->
       <UPopover
         v-if="outline?.length && !wide"
         v-model:open="outlineOpen"
         :content="{ side: 'bottom', align: 'center', sideOffset: 6, onCloseAutoFocus: restoreFocus }"
-        :ui="{ content: 'w-[min(24rem,calc(100vw-2rem))] max-h-[min(32rem,var(--reka-popover-content-available-height))] overflow-y-auto p-1.5' }"
+        :ui="{ content: 'w-[min(24rem,calc(100vw-4rem))] max-h-[min(32rem,var(--reka-popover-content-available-height))] overflow-y-auto p-1.5' }"
       >
         <button
           ref="outlineTrigger"
