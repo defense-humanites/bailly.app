@@ -230,20 +230,22 @@
       `--header-height`), its side and bottom margins (4rem) matching the top
       one, header included. Its height
       uses `svh`, so that it does not change when the mobile browser bars
-      collapse; its content scales with the window height, and the frame grows
-      rather than letting it overflow (e.g. a phone in landscape).
+      collapse; its content scales with the window height (the logo, larger on
+      a tall phone; from `md`, the title and subtitle a notch smaller on a
+      short window, as the figures are left out), and the frame grows rather
+      than letting it overflow (e.g. a phone in landscape).
     -->
     <div class="p-4 md:px-16 md:pt-0 md:pb-16">
       <section class="flex min-h-[calc(100svh-(6.5rem+1px)-2rem)] flex-col items-center rounded-xl border-2 border-terracotta-700 px-3 pt-[clamp(1rem,3svh,3rem)] pb-[clamp(0.25rem,1svh,1rem)] text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[calc(100svh-var(--header-height)-4rem)] md:px-8 dark:border-terracotta-700 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)]">
         <div class="my-auto flex w-full flex-col items-center">
           <UIcon
             name="i-bailly-bailly"
-            class="mb-[clamp(0.5rem,2svh,1.25rem)] size-[clamp(3rem,7svh,5rem)] shrink-0 md:size-[clamp(4rem,13svh,8rem)]"
+            class="mb-[clamp(0.5rem,2svh,1.25rem)] size-[clamp(3rem,10svh,6rem)] shrink-0 md:size-[clamp(4rem,13svh,8rem)]"
           />
-          <h1 class="max-w-3xl font-serif text-2xl/[1.3] font-bold text-balance max-[25rem]:text-[1.375rem]/[1.3] md:text-4xl/[1.3]">
+          <h1 class="max-w-3xl font-serif text-2xl/[1.3] font-bold text-balance max-[25rem]:text-[1.375rem]/[1.3] md:text-4xl/[1.3] md:[@media(max-height:45rem)]:text-3xl/[1.3]">
             Le dictionnaire grec-français d'Anatole&nbsp;Bailly, à portée de recherche
           </h1>
-          <p class="mt-[clamp(0.5rem,2svh,1.25rem)] max-w-2xl text-base text-pretty text-muted md:text-xl">
+          <p class="mt-[clamp(0.5rem,2svh,1.25rem)] max-w-2xl text-base text-pretty text-muted md:text-xl md:[@media(max-height:45rem)]:text-lg">
             Le texte révisé par Gérard Gréco et son équipe, dans une application libre et
             gratuite, pensée pour la lecture et la recherche, sans compte ni publicité.
           </p>
@@ -471,8 +473,11 @@
           </p>
 
           <article class="flex flex-col gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-8 lg:flex lg:col-start-1 lg:row-start-2">
-            <div class="mx-auto aspect-[4/3] w-full max-w-sm bg-[#fbfbfb] overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
-              <!-- Whole (contained, on the scan's paper): its first and last lines not cut. -->
+            <div class="mx-auto aspect-[4/3] w-full max-w-sm overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
+              <!--
+                Whole (contained, on the scan's paper, its own background:
+                dimmed with it in the dark theme): its first and last lines not cut.
+              -->
               <img
                 src="/images/bailly-1935-rhinokeros.webp"
                 width="644"
@@ -480,7 +485,7 @@
                 alt="L'entrée ῥινόκερως dans l'édition de 1935 (fac-similé)."
                 loading="lazy"
                 decoding="async"
-                class="size-full object-contain"
+                class="size-full bg-[#fbfbfb] object-contain"
               >
             </div>
             <div class="min-w-0 max-md:text-center">
@@ -501,7 +506,7 @@
           </article>
 
           <article class="flex flex-col gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-8 lg:flex lg:col-start-2 lg:row-start-2">
-            <div class="mx-auto aspect-[4/3] w-full max-w-sm bg-white overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
+            <div class="mx-auto aspect-[4/3] w-full max-w-sm overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none">
               <img
                 src="/images/bailly-2020-rhinokeros.webp"
                 width="720"
@@ -509,7 +514,7 @@
                 alt="L'entrée ῥινόκερως dans l'édition PDF de 2020."
                 loading="lazy"
                 decoding="async"
-                class="size-full object-cover"
+                class="size-full bg-white object-cover"
               >
             </div>
             <div class="min-w-0 max-md:text-center">
@@ -802,14 +807,20 @@
               >{{ link.label }}</a>
             </p>
           </div>
-          <p class="text-muted">
-            Concernant l'usage de vos données :
-            <NuxtLink
-              :to="encodeURI('/confidentialité')"
-              class="link"
-            >confidentialité</NuxtLink>.
-          </p>
         </div>
+        <!--
+          Not a credit: apart, in the interface's font, under a short double
+          rule (a thick and a thin one, as the hero's frame) in the color of
+          the asterisms and of the colophon's lozenges: a single rule read as
+          a link's underline.
+        -->
+        <p class="mx-auto mt-8 max-w-3xl text-center text-sm text-muted before:mx-auto before:mb-6 before:block before:h-[6px] before:w-10 before:border-t-2 before:border-b before:border-(--rule-color)">
+          Ce que l'application garde de vos données, où et pour combien de temps :
+          <NuxtLink
+            :to="encodeURI('/confidentialité')"
+            class="link"
+          >Confidentialité</NuxtLink>.
+        </p>
       </section>
     </div>
 

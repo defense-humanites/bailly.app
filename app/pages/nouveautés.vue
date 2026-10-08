@@ -149,11 +149,11 @@
           <aside class="rounded-lg bg-primary/5 p-4 ring-1 ring-primary/15 md:p-6 xl:p-5">
             <p>
               Si vous souhaitez nous faire part de votre avis ou nous contacter pour
-              toute autre raison, vous pouvez
+              toute autre raison, écrivez-nous à
               <a
                 href="mailto:contact@bailly.app"
                 class="link"
-              >nous joindre</a> par courriel. Et si l'application vous est utile,
+              >contact@bailly.app</a>. Et si l'application vous est utile,
               <!--
                 PayPal's page directly, not the donation flow (`/soutenir`, not
                 offered yet). Never broken: rather the next line, whole.

@@ -115,6 +115,10 @@ export default defineNuxtConfig({
   devServer: { port: 4321 },
   compatibilityDate: "2025-07-15",
   nitro: {
+    /** The site map, a static file (cf. `server/routes/sitemap.xml.ts`). */
+    prerender: {
+      routes: ["/sitemap.xml"],
+    },
     /**
      * Cloudflare builds: `.output/server/wrangler.json` is generated from
      * `wrangler.jsonc` (Worker's name, D1 binding), with the entry point, the

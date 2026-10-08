@@ -1,7 +1,43 @@
 <script setup lang="ts">
   import { FEATURES } from "#shared/utils/features";
+  import { SITE_URL } from "#shared/utils/site";
 
   const searchFocus = useSearchFocus();
+
+  // Its title is bold, as the headwords of the entry drawn at random.
+  usePreloadBoldFace();
+
+  /**
+   * The home page: the site's title (the template's, without a page title)
+   * and a description of its own, after the page's text (the search engines
+   * rewrite a description farther from it).
+   */
+  const DESCRIPTION = "Le dictionnaire grec-français d'Anatole Bailly, dans le texte révisé par Gérard Gréco et son équipe : une application libre et gratuite, sans compte ni publicité.";
+  useSeoMeta({
+    description: DESCRIPTION,
+    ogTitle: "Bailly.app — Dictionnaire grec-français en ligne",
+    ogDescription: DESCRIPTION,
+    ogType: "website",
+    ogUrl: `${SITE_URL}/`,
+  });
+
+  /**
+   * The site's name, as the search engines should show it (Google's
+   * « WebSite » structured data, read on the home page): « Bailly.app », as
+   * the header's logo, rather than one it makes up (« app Bailly »).
+   */
+  useHead({
+    script: [{
+      type: "application/ld+json",
+      innerHTML: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Bailly.app",
+        "alternateName": ["Bailly", "Bailly en ligne"],
+        "url": `${SITE_URL}/`,
+      }),
+    }],
+  });
 
   /**
    * The search is the page's main action: its field gets the focus on

@@ -91,6 +91,9 @@
   useResizeObserver(list, measure);
   onMounted(measure);
 
+  // The headwords are bold: their face is fetched with the page.
+  usePreloadBoldFace();
+
   useSeoMeta({
     title: () => (form.value ? `${form.value} (graphie ambiguë)` : "Plusieurs entrées"),
     robots: "noindex",

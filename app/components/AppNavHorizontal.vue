@@ -1,22 +1,19 @@
 <script setup lang="ts">
   import { FEATURES } from "#shared/utils/features";
-  import type { NavigationMenuItem } from "@nuxt/ui";
+  import type { HeaderLink } from "~/components/AppHeader.vue";
 
-  const props = defineProps<{
-    items: NavigationMenuItem[];
+  defineProps<{
+    items: HeaderLink[];
   }>();
 
   /**
    * Below `xl`, the menu only shows its icons: their labels are then shown in
    * tooltips (and remain the links' accessible names).
    * @remarks The tooltips are disabled rather than removed from `xl` (cf.
-   * `useButtonLabels`).
+   * `useButtonLabels`), and set once the page is hydrated only (cf. the
+   * template): useless before, they cost much to render on the server.
    */
   const showLabels = useButtonLabels();
-
-  const menuItems = computed((): NavigationMenuItem[] =>
-    props.items.map(item => ({ ...item, tooltip: { disabled: showLabels.value } })),
-  );
 
   const { y } = usePageScroll();
 
@@ -41,11 +38,27 @@
    */
   const COVER_REVEAL = 128;
   const route = useRoute();
+
+  /**
+   * The menus' markup and classes are those of Nuxt UI's navigation menus
+   * (horizontal), written out: their components (Reka UI's navigation menu,
+   * collections, tooltips) were the most expensive part of the pages'
+   * server render (cf. `audit-rendu-serveur.md`). Without them, no arrow
+   * keys between the links: the tab key, as for any links.
+   */
+  const NAV = "relative flex items-center justify-between gap-1.5 [&>div]:min-w-0";
+  const LIST = "isolate flex min-w-0 items-center";
+  const ITEM = "min-w-0 py-2 md:py-0";
+  /** The current page's link (exactly: as Nuxt UI's menu did). */
+  const isCurrent = (to: string): boolean => route.path === to;
   const coverOpacity = computed((): number | null => {
     if (route.meta.headerCover !== true) return null;
     const opacity = Math.min(1, Math.max(0, y.value) / COVER_REVEAL);
     return opacity < 1 ? opacity : null;
   });
+
+  /** The search bar's place: the second row below `md`, the middle track from `md`. */
+  const SEARCH_BAR = "col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:max-w-(--search-width) md:justify-self-center lg:justify-self-start";
 
   /**
    * A bar stuck under the header draws the border under both.
@@ -95,25 +108,60 @@
         From `md`, the menus' items lose their vertical padding (`py-2`), which
         would make the row higher than the header and push it down.
       -->
-      <UNavigationMenu
+      <nav
         aria-label="Accueil"
-        :items="[{ label: 'Bailly.app', to: '/', active: false }]"
-        :ui="{ item: 'md:py-0', link: 'cursor-pointer select-none py-1.5 md:py-0.5 hover:before:bg-transparent', linkLabel: 'overflow-visible' }"
+        :class="NAV"
       >
-        <template #item-label>
-          <img
-            src="../assets/images/bailly-app-light.svg"
-            alt="Bailly.app"
-            class="h-7 w-auto max-w-none dark:hidden"
-          >
-          <img
-            src="../assets/images/bailly-app-dark.svg"
-            alt="Bailly.app"
-            class="h-7 w-auto max-w-none hidden dark:block"
-          >
+        <div class="relative">
+          <ul :class="LIST">
+            <li :class="ITEM">
+              <!--
+                Never shown as the current page (no `aria-current`): a
+                custom link, its attributes set here.
+              -->
+              <NuxtLink
+                v-slot="{ href, navigate }"
+                to="/"
+                custom
+              >
+                <a
+                  :href="href ?? '/'"
+                  data-slot="link"
+                  class="group relative flex w-full cursor-pointer items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-muted transition-colors select-none before:absolute before:inset-x-px before:inset-y-0 before:z-[-1] before:rounded-md before:outline-primary/25 before:transition-colors hover:text-highlighted focus:outline-none focus-visible:outline-none focus-visible:before:outline-3 md:py-0.5"
+                  @click="navigate"
+                >
+                  <span
+                    data-slot="linkLabel"
+                    class="truncate overflow-visible"
+                  >
+                    <img
+                      src="../assets/images/bailly-app-light.svg"
+                      alt="Bailly.app"
+                      class="h-7 w-auto max-w-none dark:hidden"
+                    >
+                    <img
+                      src="../assets/images/bailly-app-dark.svg"
+                      alt="Bailly.app"
+                      class="h-7 w-auto max-w-none hidden dark:block"
+                    >
+                  </span>
+                </a>
+              </NuxtLink>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <!--
+        The search bar is interactive once the page is hydrated; before, and
+        on the server, its markup alone, much lighter to render (cf.
+        `SearchBarStatic`).
+      -->
+      <ClientOnly>
+        <SearchBar :class="SEARCH_BAR" />
+        <template #fallback>
+          <SearchBarStatic :class="SEARCH_BAR" />
         </template>
-      </UNavigationMenu>
-      <SearchBar class="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-2 md:row-start-1 md:max-w-(--search-width) md:justify-self-center lg:justify-self-start" />
+      </ClientOnly>
       <!--
         The menu; on mobile, on the home page only, cotillons and a heart
         first lead to the news and the donation (the page's own buttons are
@@ -140,15 +188,35 @@
           class="p-2.5 md:hidden"
           :ui="{ leadingIcon: 'size-5' }"
         />
-        <UNavigationMenu
-          class="header-menu"
-          :items="menuItems"
-          :ui="{
-            item: 'md:py-0',
-            link: 'max-md:p-2.5 hover:before:bg-(--app-page-hover)/50 aria-[current=page]:before:bg-transparent',
-            linkLabel: 'max-xl:sr-only',
-          }"
-        />
+        <nav :class="[NAV, 'header-menu']">
+          <div class="relative">
+            <ul :class="LIST">
+              <li
+                v-for="item in items"
+                :key="item.to"
+                :class="ITEM"
+              >
+                <ClientOnly>
+                  <UTooltip
+                    :text="item.label"
+                    :disabled="showLabels"
+                  >
+                    <AppHeaderLink
+                      :item="item"
+                      :current="isCurrent(item.to)"
+                    />
+                  </UTooltip>
+                  <template #fallback>
+                    <AppHeaderLink
+                      :item="item"
+                      :current="isCurrent(item.to)"
+                    />
+                  </template>
+                </ClientOnly>
+              </li>
+            </ul>
+          </div>
+        </nav>
       </div>
     </nav>
   </header>

@@ -11,28 +11,86 @@
 
   const { $api } = useNuxtApp();
   const greek = useGreek();
+  const { preference } = usePreferences();
+  const readingWeight = preference("readingWeight");
+  const { apiHost } = useRuntimeConfig().public;
+
+  /**
+   * The query of a random entry with its neighbors.
+   */
+  const RANDOM_QUERY = toApiQuery({
+    fields: ["word", "uri", "excerpt", "htmlDefinition"],
+    lengthRange: [400, 700],
+    siblings: true,
+    siblingsFields: ["word", "uri", "excerpt"],
+  } satisfies RandomEntryParams<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">);
+
+  /**
+   * The preloaded request, as an absolute URL: the very same for the preload
+   * link and the first fetch, which takes the preloaded response only if
+   * their URLs are identical. The next draws must not take it: a browser
+   * may keep serving a preloaded response to the requests of its URL (seen
+   * in Safari: the same entry again, the button seeming to do nothing).
+   */
+  const url = new URL("entry/random", apiHost.endsWith("/") ? apiHost : `${apiHost}/`);
+  url.search = new URLSearchParams(RANDOM_QUERY).toString();
+  const RANDOM_ENTRY = url.href;
+
+  /*
+   * The page served preloads it: the browser fetches the entry while it
+   * loads the scripts, rather than once the page is interactive. Not on a
+   * navigation within the application, where the fetch starts at once (the
+   * link would only add a request).
+   */
+  if (import.meta.server) {
+    useHead({ link: [{ rel: "preload", as: "fetch", href: RANDOM_ENTRY, crossorigin: "anonymous" }] });
+  }
 
   const shown = ref<Shown | null>(null);
   const loading = ref(false);
   const failed = ref(false);
 
+  /*
+   * Its links (the entry, its neighbors) are `nofollow`: drawn at random,
+   * they shouldn't weigh as the home page's links do for the search engines
+   * (which run the page's script, and would see them), nor show under the
+   * site in their results.
+   */
+
+  /**
+   * Loads the faces of the reading font an entry uses (its text, its bold
+   * headwords, its italics), for at most 3 s (the time `fonts.css` lets a
+   * face keep its text invisible): the entry is shown once they have come,
+   * rather than its lines moving as each face arrives (a layout shift, on
+   * slow networks).
+   */
+  function loadFaces(): Promise<unknown> {
+    const family = readingFamily();
+    if (!family) return Promise.resolve();
+    const text = readingWeight.value === "bold" ? "bold" : "normal";
+    const faces = [text, "bold", `italic ${text}`].map(face => document.fonts.load(`${face} 1em ${family}`, "α").catch(() => {}));
+    return Promise.race([Promise.all(faces), new Promise(resolve => setTimeout(resolve, 3000))]);
+  }
+
   /**
    * Opens the dictionary at random: a random entry with its neighbors, in a
    * single request. Fetched once the page is mounted, so that each visit
-   * draws a new entry; the frame keeps its place meanwhile.
+   * draws a new entry; the frame keeps its place meanwhile, until the entry
+   * and its faces have come.
+   * @param preloaded Whether to take the preloaded response (the first draw):
+   *   the next ones are requested at another URL (the same query, its commas
+   *   not encoded), bypassing the browser's caches.
    */
-  async function draw(): Promise<void> {
+  async function draw(preloaded = false): Promise<void> {
     loading.value = true;
     failed.value = false;
     try {
-      const { data } = await $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>("entry/random", {
-        query: toApiQuery({
-          fields: ["word", "uri", "excerpt", "htmlDefinition"],
-          lengthRange: [400, 700],
-          siblings: true,
-          siblingsFields: ["word", "uri", "excerpt"],
-        } satisfies RandomEntryParams<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">),
-      });
+      const [{ data }] = await Promise.all([
+        preloaded
+          ? $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>(RANDOM_ENTRY)
+          : $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>("entry/random", { query: RANDOM_QUERY, cache: "no-store" }),
+        loadFaces(),
+      ]);
       // A group of homonyms: its first entry.
       shown.value = { entry: data.entry.children?.[0] ?? data.entry, siblings: data.siblings ?? {}, version: data.version };
     } catch {
@@ -42,7 +100,7 @@
     }
   }
 
-  onMounted(draw);
+  onMounted(() => draw(true));
 
   /**
    * A neighbor's excerpt without its word, which it starts with, possibly with
@@ -90,6 +148,7 @@
             :entry="shown.entry"
             toolbar
             link
+            link-rel="nofollow"
             :ui="{
               root: 'h-full flex overflow-hidden bg-transparent shadow-none ring-0 rounded-none [--ui-bg-elevated:var(--ui-bg)]',
               body: 'h-full mask-b-from-80%',
@@ -131,6 +190,7 @@
           <NuxtLink
             v-if="shown?.siblings[position]"
             :to="entryRoute(shown.siblings[position].uri)"
+            rel="nofollow"
             :aria-label="`${position === 'previous' ? 'Entrée précédente' : 'Entrée suivante'} : ${greek.text(shown.siblings[position].word)}`"
             class="block rounded-md px-4 py-1 opacity-60 transition-opacity hover:opacity-100 focus-visible:opacity-100"
           >
@@ -148,7 +208,7 @@
         icon="i-lucide-dices"
         label="Ouvrir à une autre page"
         :loading="loading"
-        @click="draw"
+        @click="draw()"
       />
     </div>
     <p

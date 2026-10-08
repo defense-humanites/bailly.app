@@ -31,6 +31,11 @@ export function useAppShell(): void {
     script: analytics
       ? [{ src: "https://scripts.simpleanalyticscdn.com/latest.js", async: true, tagPosition: "bodyClose" }]
       : [],
+    /*
+     * A page's own title, bare (more readable, in a tab as in the results;
+     * the search engines show the site's name apart, cf. the home page's
+     * structured data); without one (the home page), the site's.
+     */
     titleTemplate: (title) => {
       return title ? title : "Bailly.app — Dictionnaire grec-français en ligne";
     },
@@ -40,6 +45,7 @@ export function useAppShell(): void {
         content:
           "Consultez le dictionnaire grec-français d'Anatole Bailly, dans une application libre et gratuite.",
       },
+      { property: "og:site_name", content: "Bailly.app" },
     ],
     htmlAttrs: {
       "lang": "fr",
@@ -60,7 +66,7 @@ export function useAppShell(): void {
       {
         rel: "apple-touch-icon",
         sizes: "180x180",
-        href: "/favicon/apple-touch-icon.png",
+        href: "/apple-touch-icon.png",
       },
     ],
   });

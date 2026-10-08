@@ -1,5 +1,5 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
-import type { Locator } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import { resultsExtent, searchInput, searchResults, xExtent } from "./helpers";
 
 /**
@@ -136,6 +136,18 @@ test.describe("search bar", () => {
       await expect(searchResults(page)).toBeHidden();
     });
 
+    // The search bar is mounted again by the entry's layout (once hydrated).
+    test("the results remain after opening the entry", async ({ page }) => {
+      const input = searchInput(page);
+      await input.click();
+      await input.pressSequentially("lo/gos");
+      await expect(searchResults(page).getByRole("option").first()).toBeVisible();
+      await input.press("Enter");
+      await expect(page).toHaveURL(/\/logos$/);
+      await searchInput(page).focus();
+      await expect(searchResults(page).getByRole("option").filter({ hasText: "λόγος" }).first()).toBeVisible();
+    });
+
     test("highlights the first result without an exact match, then opens it", async ({ page }) => {
       await searchInput(page).fill("log");
       const first = searchResults(page).getByRole("option").first();
@@ -212,4 +224,90 @@ test("no results panel while there is nothing to look up", async ({ page, goto }
   await expect(searchResults(page)).toBeHidden();
   await searchInput(page).pressSequentially("l");
   await expect(searchResults(page)).toBeVisible();
+});
+
+/**
+ * Until the page is interactive, the server's search bar (cf.
+ * `SearchBarStatic`): the page's scripts are held back to reach it.
+ */
+test.describe("before the page is interactive", () => {
+  const staticInput = (page: Page) => page.locator("header input[name=q]");
+
+  /**
+   * Opens a page with its scripts held back, until `release` is called.
+   */
+  async function openHeld(page: Page, path: string): Promise<() => void> {
+    let release!: () => void;
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route(/\/_nuxt\/.+\.js$/, async (route) => {
+      await released;
+      await route.continue();
+    });
+    await page.goto(path, { waitUntil: "commit" });
+    await expect(staticInput(page)).toBeVisible();
+    return release;
+  }
+
+  test("the same bar, to the pixel", async ({ page }) => {
+    const release = await openHeld(page, "/logos");
+    const boxes = () => page.locator("header [role=search]").evaluate(bar => [bar, ...bar.querySelectorAll("input:not([type=hidden]), button:not([tabindex='-1'])")].map((element) => {
+      const { x, y, width, height } = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return { x, y, width, height, background: style.backgroundColor, radius: style.borderRadius, shadow: style.boxShadow };
+    }));
+    const before = await boxes();
+    release();
+    await expect(searchInput(page)).toBeVisible();
+    expect(await boxes()).toEqual(before);
+  });
+
+  test("Enter looks the form up on the server", async ({ page }) => {
+    await openHeld(page, "/");
+    await staticInput(page).fill("lo/gos");
+    await staticInput(page).press("Enter");
+    await expect(page).toHaveURL(/\/logos$/);
+  });
+
+  test("what was typed goes on in the search bar", async ({ page }) => {
+    const release = await openHeld(page, "/");
+    await staticInput(page).click();
+    await staticInput(page).pressSequentially("lo/go");
+    release();
+    const input = searchInput(page);
+    await expect(input).toHaveValue("λόγο");
+    await expect(input).toBeFocused();
+    await input.pressSequentially("s");
+    await expect(input).toHaveValue("λόγος");
+    await expect(searchResults(page).getByRole("option").filter({ hasText: "λόγος" }).first()).toBeVisible();
+  });
+});
+
+test.describe("without JavaScript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("the search bar looks a form up on the server", async ({ page }) => {
+    await page.goto("/");
+    const input = page.locator("header input[name=q]");
+    await input.fill("po/leis");
+    await input.press("Enter");
+    await expect(page).toHaveURL(/\/forme\/[^?]+\?q=/);
+  });
+
+  test("an empty search goes back home; not a Greek word: not found", async ({ page }) => {
+    await page.goto("/recherche?q=");
+    await expect(page).toHaveURL(/\/$/);
+    expect((await page.goto("/recherche?q=l%3Fgos"))?.status()).toBe(404);
+  });
+});
+
+// The results' headwords are bold: their face is fetched once the page is
+// interactive, before any search (cf. `readingFaces.client.ts`).
+// (On a page without any bold serif text.)
+test("the reading font's bold face is fetched before any search", async ({ page, goto }) => {
+  await goto(encodeURI("/confidentialité"), { waitUntil: "hydration" });
+  await expect.poll(() => page.evaluate(() => [...document.fonts].some(face =>
+    face.family.replace(/"/g, "") === "Bailly Book" && ["bold", "700"].includes(face.weight) && face.style === "normal" && face.status === "loaded",
+  ))).toBe(true);
 });

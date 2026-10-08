@@ -268,8 +268,28 @@
     keyRevealed.value = false;
   });
 
+  /**
+   * Whether the key of the view was drawn here just now (`enable`), rather
+   * than reached otherwise (from the state, or another key): « J'avais déjà
+   * une clé » may only revoke such a key, whose locker holds this device's
+   * data alone (cf. `hadKey`).
+   */
+  const keyJustCreated = ref(false);
+
+  /**
+   * Whether the key has left the window since (another device may have it):
+   * shown on the screen to add a device (its tab, the key revealed), copied,
+   * shared, or written in a recovery kit.
+   */
+  const keyShown = ref(false);
+  watch([keyTab, keyRevealed, view], () => {
+    if (view.value === "key" && keyTab.value === "device" && keyRevealed.value) keyShown.value = true;
+  });
+
   const showKey = async (fromStatus = false, tab: KeyTab = "save"): Promise<void> => {
     words.value = await syncStore.words();
+    if (fromStatus) keyJustCreated.value = false;
+    else keyShown.value = false;
     keyFromStatus.value = fromStatus;
     keyTab.value = tab;
     await nextTick();
@@ -354,6 +374,7 @@
       showFailure(result);
       return;
     }
+    keyJustCreated.value = true;
     await showKey();
   });
 
@@ -507,6 +528,7 @@
       "",
     ].join("\n");
 
+    keyShown.value = true;
     const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -526,6 +548,7 @@
   const copyWords = async (): Promise<void> => {
     try {
       await navigator.clipboard.writeText(words.value.join(" "));
+      keyShown.value = true;
       copied.value = true;
       clearTimeout(copiedTimer);
       copiedTimer = setTimeout(() => {
@@ -541,6 +564,7 @@
   const shareWords = async (): Promise<void> => {
     try {
       await navigator.share({ title: "Clé de synchronisation de Bailly.app", text: numberedWords() });
+      keyShown.value = true;
     } catch {
       // Cancelled.
     }
@@ -627,6 +651,7 @@
     actionError.value = null;
     actionWarning.value = false;
     actionRetry.value = false;
+    keyJustCreated.value = false;
     linkKey.value = props.linkSecret ?? null;
     customizing.value = false;
     chosenPreferences.value = syncedPreferences.value.length ? [...syncedPreferences.value] : [...DEFAULT_SYNCED_PREFERENCES];
@@ -652,6 +677,35 @@
     applyPreferences();
   });
   onBeforeUnmount(applyPreferences);
+
+  /**
+   * « J'avais déjà une clé »: the synchronization was just enabled by
+   * mistake (a new key created, while another device already has one). The
+   * new key is revoked (the locker just created deleted, the key forgotten:
+   * it only held this device's data, which stay here), and the words of the
+   * other key asked for. Offered right after the creation only
+   * (`keyJustCreated`), until the key leaves the window (`keyShown`:
+   * another device may have joined it). The new key is revoked first: if
+   * the other key's words are not given (the window closed, a wrong word),
+   * the device stays without a key, as before enabling. The reverse order
+   * (joining first, then deleting the old locker) would need to keep the
+   * abandoned key's credentials.
+   */
+  const hadKey = () => run(async () => {
+    const result = await syncStore.deleteRemote();
+    if (result.state === "error") {
+      // The new key stays (nothing half done): to be tried again.
+      actionError.value = explain(result.message);
+      actionWarning.value = true;
+      actionRetry.value = result.message !== SYNC_BUSY_MESSAGE;
+      return;
+    }
+    keyJustCreated.value = false;
+    joinText.value = "";
+    joinError.value = null;
+    linkKey.value = null;
+    view.value = "join";
+  });
 
   const deleteRemote = async (): Promise<void> => {
     busy.value = true;
@@ -927,6 +981,15 @@
 
         <!-- The key: to add a device, or to keep it -->
         <template v-else-if="view === 'key'">
+          <!-- « J'avais déjà une clé » failed (cf. `hadKey`). -->
+          <UAlert
+            v-if="actionError"
+            :color="actionWarning ? 'warning' : 'error'"
+            variant="subtle"
+            :icon="actionWarning ? 'i-lucide-cloud-off' : 'i-lucide-circle-alert'"
+            :title="actionError"
+            :description="actionRetry ? 'Réessayez dans quelques instants.' : undefined"
+          />
           <UTabs
             v-model="keyTab"
             color="secondary"
@@ -939,17 +1002,7 @@
           <template v-if="keyTab === 'device'">
             <p>
               Sur votre autre appareil, scannez ce QR code avec l'appareil photo, ou saisissez les douze mots
-              (« Synchronisation » > « J'ai déjà une clé »).
-            </p>
-            <!--
-              The QR code opens in Safari: an application installed on an
-              iPhone or iPad's home screen keeps its own storage (cf.
-              `useInstalledOnIos`), where the words are to be typed.
-            -->
-            <p class="text-muted">
-              Sur iPhone et iPad, l'application ajoutée à l'écran d'accueil garde ses données à part
-              de Safari, où l'appareil photo ouvre le QR code : dans l'application, saisissez plutôt
-              les douze mots.
+              (« Synchroniser » > « J'ai déjà une clé »).
             </p>
             <!-- Hidden until asked: whoever sees the words can read and change the bookmarks. -->
             <div
@@ -960,9 +1013,9 @@
                 name="i-lucide-eye-off"
                 class="size-8 text-muted"
               />
-              <p>
-                Qui voit ces mots peut lire et modifier vos signets et vos préférences.<br>
-                Ne les affichez pas si quelqu'un peut voir votre écran.
+              <p class="font-medium">
+                Qui voit ces mots peut lire et modifier vos signets et vos préférences.
+                Ne les affichez pas si quelqu'un peut voir votre&nbsp;écran.
               </p>
               <UButton
                 color="secondary"
@@ -1255,7 +1308,11 @@
       </template>
 
       <template v-else-if="view === 'key'">
-        <!-- Revoking the key: when it was opened to be managed (not right after its creation). -->
+        <!--
+          Revoking the key: when it was opened to be managed. Right after its
+          creation, undoing it instead, for whoever already had a key (cf.
+          `hadKey`), until it is shown to add a device.
+        -->
         <UButton
           v-if="keyFromStatus"
           label="Révoquer cette clé…"
@@ -1264,10 +1321,24 @@
           class="me-auto"
           @click="view = 'delete'"
         />
+        <UTooltip
+          v-else-if="keyJustCreated && !keyShown"
+          :text="`La clé créée à l'instant sera révoquée. ${texts.Data} restent sur cet appareil.`"
+        >
+          <UButton
+            label="J'avais déjà une clé"
+            color="neutral"
+            variant="ghost"
+            class="me-auto"
+            :loading="busy"
+            @click="hadKey"
+          />
+        </UTooltip>
         <UButton
           :label="keyFromStatus ? (openedOn === 'key' ? 'Fermer' : 'Retour') : 'J\'ai conservé ma clé'"
           :color="keyFromStatus ? 'neutral' : 'secondary'"
           :variant="keyFromStatus ? 'outline' : 'solid'"
+          :disabled="busy"
           @click="keyFromStatus ? back() : keyKept()"
         />
       </template>

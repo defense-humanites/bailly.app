@@ -11,7 +11,10 @@ export type SearchField = "word" | "uri" | "excerpt";
  * @remarks Client-side only; a newer query cancels the pending request. The
  * state is shared (`useState`, keyed `useAsyncData`), since the search bar is
  * remounted when the layout changes: `useAsyncData` then keeps the handler of
- * its first call, which must therefore only read shared state.
+ * its first call, which must therefore only read shared state. The result
+ * is kept in a state of its own: the search bar being mounted once the
+ * page is hydrated (cf. `AppNavHorizontal`), the old one is gone before the
+ * new one calls `useAsyncData`, which then purges its data (Nuxt 4).
  */
 export function useEntrySearch() {
   const { searchDebounceTime } = useRuntimeConfig().public;
@@ -38,7 +41,12 @@ export function useEntrySearch() {
    */
   const resultQuery = useState("entry-search-result-query", () => "");
 
-  const { data: result, status } = useAsyncData(
+  /**
+   * The last result (cf. `resultQuery`).
+   */
+  const result = useState<LookupResult<SearchField> | null>("entry-search-result", () => null);
+
+  const { status } = useAsyncData(
     "entry-search",
     async (): Promise<LookupResult<SearchField>> => {
       const input = debouncedQuery.value;
@@ -49,6 +57,7 @@ export function useEntrySearch() {
         diacriticSensitive: diacriticSensitive.value,
         skipMorpheus: !(inflectedForms.value && isLemmatizable(position.value, hasWildcards(greek))),
       });
+      result.value = found;
       resultQuery.value = input;
       return found;
     },

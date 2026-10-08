@@ -114,9 +114,16 @@ test.describe("settings", () => {
   });
 
   test("reading: the font, preloaded, and only its faces downloaded", async ({ page, goto }) => {
-    // Bailly Book by default.
+    // Bailly Book by default: the text's face, and on an entry's page, the
+    // headwords' (bold).
     await goto("/logos", { waitUntil: "hydration" });
-    await expect(page.locator("link[rel=preload][as=font]")).toHaveAttribute("href", /^\/_nuxt\/BaillyBook-Roman\.subset\.[\w-]+\.woff2$/);
+    const preloaded = () => page.locator("link[rel=preload][as=font]").evaluateAll(links => links.map(link => link.getAttribute("href")).sort());
+    expect(await preloaded()).toEqual([
+      expect.stringMatching(/^\/_nuxt\/BaillyBook-Bold\.subset\.[\w-]+\.woff2$/),
+      expect.stringMatching(/^\/_nuxt\/BaillyBook-Roman\.subset\.[\w-]+\.woff2$/),
+    ]);
+    await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
+    expect(await preloaded()).toEqual([expect.stringMatching(/^\/_nuxt\/BaillyBook-Roman\.subset\.[\w-]+\.woff2$/)]);
 
     await goto("/préférences", { waitUntil: "hydration" });
     await page.getByRole("combobox", { name: "Police" }).click();

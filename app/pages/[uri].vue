@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import type { NavigationMenuItem } from "@nuxt/ui";
   import { convert } from "@humanities/greek-conversion";
   import type { CitedEntry } from "~/utils/citation";
 
@@ -61,44 +60,29 @@
   });
 
   /**
-   * Keeps the title centered when there is no previous/next entry.
+   * The title row (previous entry, title, next entry): the markup and classes
+   * of Nuxt UI's navigation menu (horizontal), written out, as the header's
+   * (cf. `AppNavHorizontal`): its components (Reka UI's navigation menu,
+   * collections, tooltips) cost much to render on the server. Without them,
+   * no arrow keys between the links (the tab key, as for any links; the
+   * arrows of the page itself lead to the neighbouring entries, cf. below).
+   * The items without Nuxt UI's top padding (8 px above the title, under the
+   * layout's own margin); a missing neighbour's item stays, empty, to keep
+   * the title centered.
    */
-  const placeholder: NavigationMenuItem = { disabled: true, class: "invisible" };
+  const NAV = "relative flex items-center justify-between gap-1.5 [&>div]:w-full [&>div]:min-w-0";
+  const LIST = "isolate flex min-w-0 items-center";
+  const ITEM = "min-w-0 flex-1 pb-2";
 
-  const items: NavigationMenuItem[] = [
-    siblings.previous
-      ? {
-        "label": greek.text(siblings.previous.word),
-        "icon": "i-lucide-arrow-left",
-        "to": `/${siblings.previous.uri}`,
-        "aria-label": `Entrée précédente : ${greek.text(siblings.previous.word)}`,
-        "ui": { linkLabel: "max-sm:sr-only" },
-        "tooltip": { text: "Entrée précédente", kbds: ["arrowleft"] },
-      }
-      : placeholder,
-    // The title: active (no hover effect), without the active background;
-    // homonyms (several entries under one word) told by a fan of cards.
-    {
-      as: "h1",
-      label: greek.text(entry.word),
-      ...(entry.children?.length ? { icon: "i-lucide-playing-cards-fan" } : {}),
-      active: true,
-      // Centered with its icon, if any (the label not growing).
-      class: "justify-center text-2xl text-center before:bg-transparent hover:before:bg-transparent",
-      ui: { linkLabel: "grow-0", linkLeadingIcon: "size-6 text-muted" },
+  /** The neighbours' links, by direction (absent: none). */
+  const neighbours = (["previous", "next"] as const).map(direction => ({
+    direction,
+    sibling: siblings[direction],
+    tooltip: {
+      text: direction === "previous" ? "Entrée précédente" : "Entrée suivante",
+      kbds: [direction === "previous" ? "arrowleft" : "arrowright"],
     },
-    siblings.next
-      ? {
-        "label": greek.text(siblings.next.word),
-        "trailingIcon": "i-lucide-arrow-right",
-        "to": `/${siblings.next.uri}`,
-        "aria-label": `Entrée suivante : ${greek.text(siblings.next.word)}`,
-        "class": "justify-end text-right",
-        "ui": { linkLabel: "max-sm:sr-only" },
-        "tooltip": { text: "Entrée suivante", kbds: ["arrowright"] },
-      }
-      : placeholder,
-  ];
+  }));
 
   /**
    * The compact bar is shown once the title has scrolled under it (its
@@ -137,6 +121,9 @@
     void navigateTo(`/${sibling.uri}`);
   });
 
+  // The headwords are bold: their face is fetched with the page.
+  usePreloadBoldFace();
+
   useSeoMeta({
     title: `${entry.word.replace(/\u03D0/g, "β")} (${convert(entry.word, "greek", "transliteration", { preset: "ala-lc-ancient" })})`,
     description: entry.excerpt,
@@ -155,19 +142,58 @@
     <header ref="title">
       <!--
         The links' hover is the header menu's (`bg-elevated`, Nuxt UI's, is
-        the page's own color in the light theme). The items without Nuxt UI's
-        top padding (8 px above the title, under the layout's own margin).
+        the page's own color in the light theme). The title: homonyms
+        (several entries under one word) told by a fan of cards.
       -->
-      <UNavigationMenu
-        :ui="{
-          root: '[&>div]:w-full',
-          item: 'pt-0 [&:not(:has(h1))]:flex-1 [&:has(h1)]:grow',
-          link: 'font-serif font-bold text-base/7 hover:before:bg-(--app-page-hover)/50',
-          linkLabel: 'grow',
-        }"
-        :items="items"
-        color="neutral"
-      />
+      <nav :class="NAV">
+        <div class="relative">
+          <ul :class="LIST">
+            <template
+              v-for="(neighbour, index) in neighbours"
+              :key="neighbour.direction"
+            >
+              <li
+                v-if="index === 1"
+                class="min-w-0 grow pb-2"
+              >
+                <h1
+                  data-slot="link"
+                  class="relative flex w-full items-center justify-center gap-1.5 px-2.5 py-1.5 text-center font-serif text-2xl font-bold text-highlighted"
+                >
+                  <UIcon
+                    v-if="entry.children?.length"
+                    name="i-lucide-playing-cards-fan"
+                    data-slot="linkLeadingIcon"
+                    class="size-6 shrink-0 text-muted"
+                  />
+                  <span
+                    data-slot="linkLabel"
+                    class="truncate"
+                  >{{ greek.text(entry.word) }}</span>
+                </h1>
+              </li>
+              <li :class="ITEM">
+                <ClientOnly v-if="neighbour.sibling">
+                  <UTooltip v-bind="neighbour.tooltip">
+                    <EntryHeaderLink
+                      :to="`/${neighbour.sibling.uri}`"
+                      :word="greek.text(neighbour.sibling.word)"
+                      :direction="neighbour.direction"
+                    />
+                  </UTooltip>
+                  <template #fallback>
+                    <EntryHeaderLink
+                      :to="`/${neighbour.sibling.uri}`"
+                      :word="greek.text(neighbour.sibling.word)"
+                      :direction="neighbour.direction"
+                    />
+                  </template>
+                </ClientOnly>
+              </li>
+            </template>
+          </ul>
+        </div>
+      </nav>
     </header>
     <!--
       The entry, and from `xl` its tools on the column's right, from its

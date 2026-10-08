@@ -604,3 +604,83 @@ test("enabling a key again brings back the online bookmarks deleted meanwhile", 
   await waitForHydration(page);
   await expect.poll(async () => (await bookmarksState(page)).starred).toBe(2);
 });
+
+test("« J'avais déjà une clé », right after enabling: the new key revoked, the other one asked for", async ({ page, goto, browser, baseURL }) => {
+  await goto("/signets", { waitUntil: "hydration" });
+  await seedBookmarks(page, { starred: [logos], tags: [{ name: "Homère", color: "Blue", entries: [logos] }] });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await expect(page.getByRole("button", { name: "Télécharger le kit de récupération" })).toBeVisible();
+  const words = await page.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { words: () => Promise<string[]> };
+    return (await store.words()).join(" ");
+  });
+
+  const deletion = page.waitForRequest(request => request.method() === "DELETE" && request.url().includes("/api/sync/"));
+  await page.getByRole("button", { name: "J'avais déjà une clé" }).click();
+  await deletion;
+  // The words of the other key asked for; this device's bookmarks kept.
+  await expect(page.getByRole("dialog", { name: "Rejoindre la synchronisation" })).toBeVisible();
+  await expect(page.getByRole("textbox")).toHaveValue("");
+  expect(await bookmarksState(page)).toMatchObject({ tags: ["Homère"], starred: 1 });
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: /^Synchronisation/ }).getByText("Synchroniser", { exact: true })).toBeVisible();
+
+  // The new key is revoked (the server keeps its deletion mark).
+  const phone = await newDevice(browser, baseURL);
+  await openSync(phone);
+  await phone.getByRole("button", { name: "J'ai déjà une clé" }).click();
+  await phone.getByRole("textbox").fill(words);
+  await phone.getByRole("button", { name: "Rejoindre" }).click();
+  await expect(phone.getByText("Cette clé a été désactivée", { exact: false })).toBeVisible();
+});
+
+test("« J'avais déjà une clé » is no longer offered once the key was shown to add a device", async ({ page, goto }) => {
+  await goto("/signets", { waitUntil: "hydration" });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await expect(page.getByRole("button", { name: "J'avais déjà une clé" })).toBeVisible();
+  // The tab alone (the key hidden): still offered.
+  await page.getByRole("tab", { name: "Ajouter un appareil" }).click();
+  await expect(page.getByRole("button", { name: "J'avais déjà une clé" })).toBeVisible();
+  await page.getByRole("button", { name: "Afficher la clé" }).click();
+  await expect(page.getByRole("button", { name: "J'avais déjà une clé" })).toHaveCount(0);
+  await page.getByRole("tab", { name: "Sauvegarder" }).click();
+  await expect(page.getByRole("button", { name: "J'avais déjà une clé" })).toHaveCount(0);
+});
+
+test("« J'avais déjà une clé » is no longer offered once the key was copied, or its kit downloaded", async ({ page, goto }) => {
+  await goto("/signets", { waitUntil: "hydration" });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.getByRole("button", { name: "Copier la clé" }).click();
+  await expect(page.getByRole("button", { name: "J'avais déjà une clé" })).toHaveCount(0);
+
+  await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
+  await openSync(page);
+  await page.getByRole("button", { name: "Arrêter la synchronisation…" }).click();
+  await page.getByRole("button", { name: "Désactiver sur cet appareil" }).click();
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await expect(page.getByRole("button", { name: "J'avais déjà une clé" })).toBeVisible();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Télécharger le kit de récupération" }).click();
+  await download;
+  await expect(page.getByRole("button", { name: "J'avais déjà une clé" })).toHaveCount(0);
+});
+
+test("« J'avais déjà une clé » failing (the server unreachable): the new key stays, to try again", async ({ page, goto }) => {
+  await goto("/signets", { waitUntil: "hydration" });
+  await openSync(page);
+  await page.getByRole("button", { name: "Activer la synchronisation" }).click();
+  await expect(page.getByRole("button", { name: "Télécharger le kit de récupération" })).toBeVisible();
+  await page.route("**/api/sync/**", route => (route.request().method() === "DELETE" ? route.abort() : route.continue()));
+  await page.getByRole("button", { name: "J'avais déjà une clé" }).click();
+  await expect(page.getByText("Réessayez dans quelques instants.")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Votre clé de synchronisation" })).toBeVisible();
+  await page.unroute("**/api/sync/**");
+  await page.getByRole("button", { name: "J'avais déjà une clé" }).click();
+  await expect(page.getByRole("dialog", { name: "Rejoindre la synchronisation" })).toBeVisible();
+});

@@ -5,6 +5,7 @@
   import { splitExcerpt } from "~/helpers";
   import type { SearchField } from "~/composables/useEntrySearch";
   import { entryRoute } from "~/utils/entryUri";
+  import { takeSearchHandoff } from "~/utils/searchHandoff";
   import { convertSearchInput, hasWildcards, toLookupQuery, toSearchGreek, toSearchQuery } from "~/utils/searchInput";
 
   // (The input text is 16px on every screen (`text-base/6`, and `fixed`: no
@@ -200,12 +201,38 @@
     (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
   };
 
-  // Another component may ask for the focus (e.g. the about page's "Search a
-  // word" button).
-  watch(useSearchFocus().request, ({ ifEmpty }) => {
-    if (ifEmpty && hasQuery.value) return;
-    (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
+  // What was typed in the server's search bar, before the page was
+  // interactive (cf. `SearchBarStatic`): converted as typing does, the caret
+  // and the focus where they were (the results then show).
+  onMounted(() => {
+    const handoff = takeSearchHandoff();
+    if (!handoff) return;
+    const input = menu.value?.inputRef as HTMLInputElement | undefined;
+
+    if (handoff.focused) {
+      input?.focus({ preventScroll: true });
+      open.value = true;
+    }
+    handoff.keeper?.remove();
+
+    if (handoff.text) {
+      const convert = (text: string): string => transliterating.value ? text : toSearchGreek(text);
+      query.value = convert(handoff.text);
+      syncInputText(query.value, convert(handoff.text.slice(0, handoff.caret)).length);
+    }
   });
+
+  // Another component may ask for the focus (e.g. the about page's "Search a
+  // word" button, the home page as it opens), possibly before the search bar
+  // is mounted.
+  const searchFocus = useSearchFocus();
+  const onFocusRequest = (): void => {
+    const request = searchFocus.take();
+    if (!request || (request.ifEmpty && hasQuery.value)) return;
+    (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
+  };
+  watch(searchFocus.request, onFocusRequest);
+  onMounted(onFocusRequest);
 
   // The results' Greek may be transliterated (a preference).
   const greek = useGreek();
@@ -395,6 +422,7 @@
   -->
   <UFieldGroup
     ref="group"
+    role="search"
     class="search-bar group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
     @keydown.capture="onKeydown"
     @input.capture="onComposedInput"
