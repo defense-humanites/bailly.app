@@ -57,20 +57,19 @@
       <!--
         The path: the numbers in the primary color, as in the definition, the
         sense's label in muted italics; truncated at its end if too long. A
-        new path fades in (the former one leaves at once), but with reduced
-        motion.
+        new path replaces the former one at once and fades in (an animation:
+        a transition would keep the former one beside it meanwhile), but with
+        reduced motion.
       -->
       <span class="min-w-0 grow truncate text-center font-serif text-xs/6 font-bold"><span :lang="greek.lang.value"><!-- Homonyms: a fan of cards, as in the page's title. --><UIcon
         v-if="homonyms"
         name="i-lucide-playing-cards-fan"
         class="me-1 inline-block size-4 align-[-0.2em] text-muted"
-      />{{ word }}</span><Transition
-        enter-active-class="transition-opacity duration-150 ease-out motion-reduce:transition-none"
-        enter-from-class="opacity-0"
-      ><span
+      />{{ word }}</span><span
         v-if="path?.length"
         :key="pathKey"
         lang="fr"
+        class="animate-[fade-in_150ms_ease-out] motion-reduce:animate-none"
       ><span
         class="font-normal text-dimmed"
         aria-hidden="true"
@@ -84,7 +83,7 @@
       >{{ " › " }}</span><span class="text-primary">{{ step.number }}</span><span
         v-if="step.label"
         class="font-normal text-muted italic"
-      >{{ ` ${step.label}` }}</span></template></span></Transition></span>
+      >{{ ` ${step.label}` }}</span></template></span></span>
       <UButton
         v-if="siblings.next"
         :to="`/${siblings.next.uri}`"
