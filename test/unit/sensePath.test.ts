@@ -158,3 +158,21 @@ test("the sections opened by a label (« Moy. »): a step of the path, their sen
     ["I.", "porter sur soi", 2],
   ]);
 });
+
+test("an arrow's note holding senses (the other forms of ὁ): a step of the path, its senses under it", () => {
+  const root = document.createElement("div");
+  root.className = "definition";
+  root.innerHTML = `<div class="rub"><span class="ruba">I</span> article</div>
+<div class="fleche"><span class="flechea">E</span> Att. ἕκας, Dysc.</div>
+<div class="fleche"><span class="flechea">E</span> <span class="ital">Formes poét. et dialect.\u00a0:</span>
+<div class="pp"><span class="ppa">1</span> <span class="ital">formes épq.</span></div></div>`;
+  expect(entryOutline(root).map(({ number, arrow, label, depth }) => [number, !!arrow, label, depth])).toEqual([
+    ["I.", false, "article", 0],
+    ["", true, "Formes poét. et dialect.", 0],
+    ["1.", false, "formes épq.", 1],
+  ]);
+  expect(sensePath(root.querySelector(".fleche .pp"))).toEqual([
+    { number: "", arrow: true, label: "" },
+    { number: "1.", label: "formes épq." },
+  ]);
+});

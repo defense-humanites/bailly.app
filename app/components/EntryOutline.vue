@@ -119,8 +119,13 @@
           ]"
           @click="emit('select', item)"
         >
+          <UIcon
+            v-if="item.arrow"
+            name="i-bailly-arrow"
+            class="h-[0.6em] w-[1.65em] shrink-0"
+          />
           <span
-            v-if="item.number"
+            v-else-if="item.number"
             class="shrink-0 font-bold"
           >{{ item.number }}</span>
           <span

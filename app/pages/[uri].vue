@@ -113,7 +113,7 @@
 
   const updateSensePath = (): void => {
     const line = readingLine();
-    const senses = article.value?.querySelectorAll(`.definition :is(${SENSE_SELECTOR})`) ?? [];
+    const senses = article.value ? [...article.value.querySelectorAll(".definition")].flatMap(sensesIn) : [];
     currentSense.value = followed ?? (line === undefined ? null : senseAt(senses, line));
     const path = compactBarShown.value ? sensePath(currentSense.value) : [];
     // Only when it changes (the bar re-rendered otherwise).

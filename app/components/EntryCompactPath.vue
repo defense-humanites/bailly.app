@@ -47,5 +47,12 @@
     v-if="index"
     class="text-dimmed not-italic"
     aria-hidden="true"
-  >{{ " › " }}</span><span class="font-bold text-primary not-italic">{{ step.number }}</span><template v-if="step.label">{{ ` ${step.label}` }}</template></template></span></span>
+  >{{ " › " }}</span><UIcon
+    v-if="step.arrow"
+    name="i-bailly-arrow"
+    class="inline-block h-[0.6em] w-[1.65em] align-[0.05em] text-primary"
+  /><span
+    v-else
+    class="font-bold text-primary not-italic"
+  >{{ step.number }}</span><template v-if="step.label">{{ ` ${step.label}` }}</template></template></span></span>
 </template>

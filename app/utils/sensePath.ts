@@ -1,24 +1,41 @@
 /**
  * The senses of a definition (cf. `components.css`): up to three levels, a
  * part (`Rub`, « A. »), a section (`rub`, « I. ») and a sense (`pp`, « 1. »),
- * each opened by its number (`Ruba`, `ruba`, `ppa`); and the sections opened
- * by a label (`sect`, `secta`): the middle and passive voices (« Moy. »,
- * « Pass. »), which hold senses of their own, the comparatives (« Cp. »).
+ * each opened by its number (`Ruba`, `ruba`, `ppa`); the sections opened by
+ * a label (`sect`, `secta`): the middle and passive voices (« Moy. »,
+ * « Pass. »), which hold senses of their own, the comparatives (« Cp. »);
+ * and the notes opened by an arrow (`fleche`, `flechea`) when they hold
+ * senses (the other forms of ὁ, numbered), cf. `isSense`.
  */
-export const SENSE_SELECTOR = ".Rub, .rub, .pp, .sect";
+export const SENSE_SELECTOR = ".Rub, .rub, .pp, .sect, .fleche";
 
-/** A sense's number (or label), its first child. */
-const NUMBER_SELECTOR = ":scope > :is(.Ruba, .ruba, .ppa, .secta)";
+/** A sense's number (or label, or arrow), its first child. */
+const NUMBER_SELECTOR = ":scope > :is(.Ruba, .ruba, .ppa, .secta, .flechea)";
 
-/** A sense's number, with its period (« I » → « I. », « Moy. » as is). */
+/** Whether an element of `SENSE_SELECTOR` is a sense: an arrow's note only if it holds senses. */
+const isSense = (element: Element): boolean => !element.matches(".fleche") || element.querySelector(".Rub, .rub, .pp") !== null;
+
+/** The senses of the definitions within an element (or of it), in their order. */
+export const sensesIn = (root: Element): Element[] => [...root.querySelectorAll(SENSE_SELECTOR)].filter(isSense);
+
+/** A sense's number, with its period (« I » → « I. », « Moy. » as is); none for an arrow. */
 const numberOf = (sense: Element): string => {
-  const number = sense.querySelector(NUMBER_SELECTOR)?.textContent.trim() ?? "";
-  return number.endsWith(".") ? number : `${number}.`;
+  const number = sense.querySelector(NUMBER_SELECTOR);
+  if (!number || number.matches(".flechea")) return "";
+  const text = number.textContent.trim();
+  return text.endsWith(".") ? text : `${text}.`;
 };
 
-/** A step of the path to a sense: its number (with its period) and its label (cf. `senseLabel`). */
+/** Whether a sense opens with an arrow (rather than a number). */
+const arrowOf = (sense: Element): boolean => sense.querySelector(NUMBER_SELECTOR)?.matches(".flechea") ?? false;
+
+/**
+ * A step of the path to a sense: its number (with its period), or an arrow,
+ * and its label (cf. `senseLabel`).
+ */
 export type SenseStep = {
   number: string;
+  arrow?: boolean;
   label: string;
 };
 
@@ -133,6 +150,7 @@ export function sensePath(sense: Element | null): SenseStep[] {
   }
   return senses.map((current, index) => ({
     number: numberOf(current),
+    ...(arrowOf(current) ? { arrow: true } : {}),
     label: index === senses.length - 1 ? senseLabel(current) : "",
   }));
 }
@@ -163,6 +181,8 @@ export type OutlineItem = {
   label: string;
   /** Its level (0 at the top). */
   depth: number;
+  /** Whether it opens with an arrow (rather than a number). */
+  arrow?: boolean;
   /** The index of the item it belongs to, or -1. */
   parent: number;
   /** Whether it is a sense (not a homonym). */
@@ -178,7 +198,7 @@ export type OutlineItem = {
  */
 export function entryOutline(root: Element): OutlineItem[] {
   const definitions = [...(root.matches(".definition") ? [root] : []), ...root.querySelectorAll(".definition")]
-    .filter(definition => definition.querySelector(SENSE_SELECTOR));
+    .filter(definition => sensesIn(definition).length > 0);
   const homonyms = definitions.length > 1;
   const items: OutlineItem[] = [];
   for (const definition of definitions) {
@@ -189,13 +209,14 @@ export function entryOutline(root: Element): OutlineItem[] {
       items.push({ element: definition, number: "", label: headword, depth: 0, parent: -1, sense: false });
     }
     const indexes = new Map<Element, number>();
-    for (const sense of definition.querySelectorAll(SENSE_SELECTOR)) {
+    for (const sense of sensesIn(definition)) {
       const outer = sense.parentElement?.closest(SENSE_SELECTOR);
       const parent = outer && definition.contains(outer) ? indexes.get(outer) ?? top : top;
       indexes.set(sense, items.length);
       items.push({
         element: sense,
         number: numberOf(sense),
+        ...(arrowOf(sense) ? { arrow: true } : {}),
         label: senseLabel(sense),
         depth: parent < 0 ? 0 : items[parent]!.depth + 1,
         parent,

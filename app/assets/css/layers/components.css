@@ -217,11 +217,12 @@
    * « Cp. », « Sup. »), the other forms, the dialects and the prosody
    * (`.fleche`, after an arrow). They complete the senses without being
    * part of them: a step back, in the muted text color, as the references;
-   * their labels keep their color (`.secta`, the arrow). Not the sections
-   * holding senses (the middle and passive voices, « Moy. », « Pass. »).
+   * their labels keep their color (`.secta`, the arrow). Not those holding
+   * senses (the middle and passive voices, « Moy. », « Pass. »; the other
+   * forms of ὁ, numbered, after an arrow).
    */
   .sect:not(:has(.Rub, .rub, .pp)),
-  .fleche {
+  .fleche:not(:has(.Rub, .rub, .pp)) {
     @apply text-muted;
   }
 
