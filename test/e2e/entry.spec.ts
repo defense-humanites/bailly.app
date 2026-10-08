@@ -106,7 +106,7 @@ test.describe("entry page", () => {
       main.scrollBy({ top: sense.getBoundingClientRect().top - Math.max(barBottom, innerHeight / 4) + 2, behavior: "instant" });
     });
     await expect(bar).toBeVisible();
-    await expect(bar).toContainText(new RegExp(`λόγος\\s· ${expected.replace(/\./g, "\\.")} \\p{L}`, "u"));
+    await expect(bar).toContainText(new RegExp(`λόγος · ${expected.replace(/\./g, "\\.")} \\p{L}`, "u"));
 
     // In the definition's head, before its first sense: the word alone.
     await page.evaluate(() => {

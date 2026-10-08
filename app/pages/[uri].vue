@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { convert } from "@humanities/greek-conversion";
-  import type { SenseStep } from "~/utils/sensePath";
+  import type { OutlineItem, SenseStep } from "~/utils/sensePath";
 
   definePageMeta({
     layout: "single-column",
@@ -86,19 +86,53 @@
    * the sense whose top has passed a reading line, a quarter down the window
    * (as `useCurrentSection`'s), not higher than the bar's bottom edge: the
    * sense in view rather than the one passing under the bar. None while the
-   * bar is hidden, nor in a definition's head.
+   * bar is hidden, nor in a definition's head. The sense being read is also
+   * the one the outline marks.
    */
   const article = useTemplateRef<HTMLElement>("article");
+  const currentSense = shallowRef<Element | null>(null);
   const sensePathShown = ref<SenseStep[]>([]);
 
-  const updateSensePath = (): void => {
+  /** The reading line, from the viewport's top. */
+  const readingLine = (): number | undefined => {
     const barBottom = (compactBar.value?.$el as HTMLElement | undefined)?.firstElementChild?.getBoundingClientRect().bottom;
+    return barBottom === undefined ? undefined : Math.max(barBottom, window.innerHeight / 4);
+  };
+
+  const updateSensePath = (): void => {
+    const line = readingLine();
     const senses = article.value?.querySelectorAll(`.definition :is(${SENSE_SELECTOR})`) ?? [];
-    const path = compactBarShown.value && barBottom !== undefined
-      ? sensePath(senseAt(senses, Math.max(barBottom, window.innerHeight / 4)))
-      : [];
+    currentSense.value = line === undefined ? null : senseAt(senses, line);
+    const path = compactBarShown.value ? sensePath(currentSense.value) : [];
     // Only when it changes (the bar re-rendered otherwise).
     if (JSON.stringify(path) !== JSON.stringify(sensePathShown.value)) sensePathShown.value = path;
+  };
+
+  /**
+   * A long entry's outline (cf. `entryOutline`, `outlineWorthy`), read from
+   * its definitions once rendered (again when their Greek is transliterated
+   * or not): in a column beside the card from `xl`, from the compact bar
+   * below. None for a short entry.
+   */
+  const outline = shallowRef<OutlineItem[]>([]);
+  const readOutline = (): void => {
+    const items = article.value ? entryOutline(article.value) : [];
+    outline.value = outlineWorthy(items) ? items : [];
+    updateSensePath();
+  };
+  onMounted(readOutline);
+  watch(greek.transliterated, () => nextTick(readOutline));
+
+  /**
+   * Brings an item of the outline into view: its top just above the reading
+   * line, where it is the sense being read.
+   */
+  const goToSense = (item: OutlineItem): void => {
+    const line = readingLine();
+    const scroller = usePageScroller().value;
+    if (line === undefined || !scroller) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    scroller.scrollBy({ top: item.element.getBoundingClientRect().top - line + 4, behavior: reduced ? "instant" : "smooth" });
   };
 
   /**
@@ -110,9 +144,7 @@
    */
   const SCROLL_END = import.meta.client && "onscrollend" in window;
   const updateSensePathLater = useDebounceFn(updateSensePath, 150);
-  useEventListener(usePageScroller(), "scrollend", () => {
-    if (compactBarShown.value) updateSensePath();
-  });
+  useEventListener(usePageScroller(), "scrollend", updateSensePath);
 
   const updateCompactBar = (): void => {
     const barTop = (compactBar.value?.$el as HTMLElement | undefined)?.getBoundingClientRect().top;
@@ -122,7 +154,7 @@
     compactBarShown.value = titleBottom <= barTop;
     // The bar shown or hidden: its path at once.
     if (compactBarShown.value !== wasShown) updateSensePath();
-    else if (compactBarShown.value && !SCROLL_END) void updateSensePathLater();
+    else if (!SCROLL_END) void updateSensePathLater();
   };
 
   onMounted(updateCompactBar);
@@ -164,6 +196,9 @@
       :shown="compactBarShown"
       :homonyms="!!entry.children?.length"
       :path="sensePathShown"
+      :outline="outline"
+      :current="currentSense"
+      @select="goToSense"
     />
     <header ref="title">
       <!--
@@ -221,11 +256,29 @@
         </div>
       </nav>
     </header>
-    <section>
+    <!--
+      From `xl`, a long entry's outline in a column beside the card (as the
+      headwords of an ambiguous form's page), sticking under the header, its
+      own scroller if taller than the window.
+    -->
+    <section class="relative">
       <EntryCard
         :entry="entry"
         toolbar
       />
+      <aside
+        v-if="outline.length"
+        class="absolute start-full top-0 ms-12 hidden h-full w-56 xl:block"
+      >
+        <div class="sticky top-[calc(var(--header-bottom)+1.5rem)] max-h-[calc(100dvh-var(--header-bottom)-3rem)] overflow-y-auto">
+          <EntryOutline
+            :items="outline"
+            :current="currentSense"
+            collapse
+            @select="goToSense"
+          />
+        </div>
+      </aside>
     </section>
     <!--
       The links to the neighbouring entries, again after the entry, on every

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import type { Siblings } from "#shared/types/api";
-  import type { SenseStep } from "~/utils/sensePath";
+  import type { OutlineItem, SenseStep } from "~/utils/sensePath";
 
   defineProps<{
     /** The entry's headword (as displayed). */
@@ -13,10 +13,39 @@
     homonyms?: boolean;
     /** The path to the sense being read (cf. `sensePath`), after the word. */
     path?: SenseStep[];
+    /** A long entry's outline (cf. `entryOutline`), or none. */
+    outline?: OutlineItem[];
+    /** The sense being read, for the outline. */
+    current?: Element | null;
+  }>();
+
+  const emit = defineEmits<{
+    /** An item of the outline chosen. */
+    select: [item: OutlineItem];
   }>();
 
   // Greek may be transliterated (a preference).
   const greek = useGreek();
+
+  /** From `xl`, the outline is in a column beside the card. */
+  const wide = useMediaQuery("(min-width: 80rem)");
+
+  const outlineOpen = ref(false);
+  const select = (item: OutlineItem): void => {
+    outlineOpen.value = false;
+    emit("select", item);
+  };
+
+  /*
+   * The focus back on the line once the outline closed, without scrolling:
+   * a focus that scrolls (the popover's) would stop the page's smooth scroll
+   * to the sense chosen.
+   */
+  const outlineTrigger = useTemplateRef<HTMLButtonElement>("outlineTrigger");
+  const restoreFocus = (event: Event): void => {
+    event.preventDefault();
+    outlineTrigger.value?.focus({ preventScroll: true });
+  };
 </script>
 
 <!--
@@ -52,36 +81,47 @@
         class="size-8 shrink-0"
       />
       <!--
-        The path: the numbers in the primary color, as in the definition, the
-        sense's label in muted italics. Too long, it is truncated, the word
-        kept (but longer than the whole bar): the path is the line that
-        truncates, its ellipsis in the label's style (that of the line). A
-        new path replaces the former one at once, without a fade (more
-        disturbing than helpful). Its first space a no-break one: a flex
-        item's leading space is dropped.
+        Below `xl` (where the outline has a column of its own), for a long
+        entry, the line opens the entry's outline (cf. `EntryOutline`): the
+        senses to go to, the one being read marked.
       -->
-      <span class="flex min-w-0 grow items-baseline justify-center font-serif text-xs/6 font-bold"><span
-        class="max-w-full shrink-0 truncate"
-        :lang="greek.lang.value"
-      ><!-- Homonyms: a fan of cards, as in the page's title. --><UIcon
-        v-if="homonyms"
-        name="i-lucide-playing-cards-fan"
-        class="me-1 inline-block size-4 align-[-0.2em] text-muted"
-      />{{ word }}</span><span
-        v-if="path?.length"
-        lang="fr"
-        class="min-w-0 truncate font-normal text-muted italic"
-      ><span
-        class="text-dimmed not-italic"
-        aria-hidden="true"
-      >{{ "\u00A0· " }}</span><template
-        v-for="(step, index) in path"
-        :key="index"
-      ><span
-        v-if="index"
-        class="text-dimmed not-italic"
-        aria-hidden="true"
-      >{{ " › " }}</span><span class="font-bold text-primary not-italic">{{ step.number }}</span><template v-if="step.label">{{ ` ${step.label}` }}</template></template></span></span>
+      <UPopover
+        v-if="outline?.length && !wide"
+        v-model:open="outlineOpen"
+        :content="{ side: 'bottom', align: 'center', sideOffset: 6, onCloseAutoFocus: restoreFocus }"
+        :ui="{ content: 'w-[min(24rem,calc(100vw-2rem))] max-h-[min(32rem,var(--reka-popover-content-available-height))] overflow-y-auto p-1.5' }"
+      >
+        <button
+          ref="outlineTrigger"
+          type="button"
+          aria-label="Sommaire de l'entrée"
+          class="flex h-8 min-w-0 grow items-center justify-center gap-1 rounded-md px-1.5 transition-colors hover:bg-(--app-page-hover)/50 focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted) aria-expanded:bg-(--app-page-hover)/50"
+        >
+          <EntryCompactPath
+            :word="word"
+            :homonyms="homonyms"
+            :path="path"
+          />
+          <UIcon
+            name="i-lucide-chevron-down"
+            class="size-3.5 shrink-0 text-dimmed"
+          />
+        </button>
+        <template #content>
+          <EntryOutline
+            :items="outline"
+            :current="current ?? null"
+            @select="select"
+          />
+        </template>
+      </UPopover>
+      <EntryCompactPath
+        v-else
+        class="grow"
+        :word="word"
+        :homonyms="homonyms"
+        :path="path"
+      />
       <UButton
         v-if="siblings.next"
         :to="`/${siblings.next.uri}`"

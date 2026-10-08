@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { senseAt, senseLabel, sensePath } from "~/utils/sensePath";
+import { entryOutline, outlineWorthy, senseAt, senseLabel, sensePath } from "~/utils/sensePath";
 
 /** ἑκάς, its markup as the API gives it (shortened). */
 const HEKAS = `<span class="entreea"><span class="grec">ἑκάς,</span></span> <span class="ital">att.</span>
@@ -107,4 +107,54 @@ describe("senseAt", () => {
   test("none above the first one", () => {
     expect(at([100, 300], 40)).toBe(-1);
   });
+});
+
+describe("entryOutline", () => {
+  test("the senses with their numbers, labels and levels", () => {
+    const items = entryOutline(definition());
+    expect(items.map(({ number, label, depth, parent }) => [number, label, depth, parent])).toEqual([
+      ["I.", "adv. loin, au loin", 0, -1],
+      ["II.", "prép. loin de", 0, -1],
+      ["1.", "avec idée de lieu, d’ord. après son rég. νηῶν ἑκάς", 1, 1],
+      ["2.", "p. suite, οὐχ ἑκὰς χρόνου", 1, 1],
+    ]);
+    expect(outlineWorthy(items)).toBe(true);
+  });
+
+  test("a group of homonyms: each with its senses under it", () => {
+    const root = document.createElement("div");
+    root.innerHTML = `<div class="definition"><span class="entreea"><span class="grec">ἡ,</span></span>
+<div class="pp"><span class="ppa">1</span> article</div></div>
+<div class="definition"><span class="entreea"><span class="grec">ἤ,</span></span> ou</div>
+<div class="definition"><span class="entreea"><span class="grec">ἧ,</span></span>
+<div class="pp"><span class="ppa">1</span> où</div><div class="pp"><span class="ppa">2</span> comme</div></div>`;
+    const items = entryOutline(root);
+    expect(items.map(({ number, label, depth, sense }) => [number, label, depth, sense])).toEqual([
+      ["", "ἡ", 0, false],
+      ["1.", "article", 1, true],
+      ["", "ἧ", 0, false],
+      ["1.", "où", 1, true],
+      ["2.", "comme", 1, true],
+    ]);
+    expect(outlineWorthy(items)).toBe(false);
+  });
+});
+
+test("the sections opened by a label (« Moy. »): a step of the path, their senses under them", () => {
+  const root = document.createElement("div");
+  root.className = "definition";
+  root.innerHTML = `<div class="Rub"><span class="Ruba">A</span> porter</div>
+<div class="sect"><span class="secta">Moy.</span> <span class="grec"><span data-linked-self>ἔχομαι</span></span> (<span class="ital">f.</span> ἕξομαι) :
+<div class="Rub"><span class="Ruba">A</span> porter <div class="rub"><span class="ruba">I</span> porter sur soi</div></div></div>`;
+  expect(sensePath(root.querySelector(".sect .rub"))).toEqual([
+    { number: "Moy.", label: "" },
+    { number: "A.", label: "" },
+    { number: "I.", label: "porter sur soi" },
+  ]);
+  expect(entryOutline(root).map(({ number, label, depth }) => [number, label, depth])).toEqual([
+    ["A.", "porter", 0],
+    ["Moy.", "ἔχομαι", 0],
+    ["A.", "porter", 1],
+    ["I.", "porter sur soi", 2],
+  ]);
 });

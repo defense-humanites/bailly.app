@@ -1,9 +1,20 @@
 /**
  * The senses of a definition (cf. `components.css`): up to three levels, a
  * part (`Rub`, « A. »), a section (`rub`, « I. ») and a sense (`pp`, « 1. »),
- * each opened by its number (`Ruba`, `ruba`, `ppa`).
+ * each opened by its number (`Ruba`, `ruba`, `ppa`); and the sections opened
+ * by a label (`sect`, `secta`): the middle and passive voices (« Moy. »,
+ * « Pass. »), which hold senses of their own, the comparatives (« Cp. »).
  */
-export const SENSE_SELECTOR = ".Rub, .rub, .pp";
+export const SENSE_SELECTOR = ".Rub, .rub, .pp, .sect";
+
+/** A sense's number (or label), its first child. */
+const NUMBER_SELECTOR = ":scope > :is(.Ruba, .ruba, .ppa, .secta)";
+
+/** A sense's number, with its period (« I » → « I. », « Moy. » as is). */
+const numberOf = (sense: Element): string => {
+  const number = sense.querySelector(NUMBER_SELECTOR)?.textContent.trim() ?? "";
+  return number.endsWith(".") ? number : `${number}.`;
+};
 
 /** A step of the path to a sense: its number (with its period) and its label (cf. `senseLabel`). */
 export type SenseStep = {
@@ -55,7 +66,7 @@ const isHeadwordAlone = (element: Element): boolean =>
  *   *d’où* », « retenir, *c. à d.* »).
  */
 export function senseLabel(sense: Element): string {
-  const number = sense.querySelector(":scope > :is(.Ruba, .ruba, .ppa)");
+  const number = sense.querySelector(NUMBER_SELECTOR);
   // The head's text, the kind of each of its characters, and the end of its
   // first Greek expression (with an « etc. » after it).
   let text = "";
@@ -121,7 +132,7 @@ export function sensePath(sense: Element | null): SenseStep[] {
     senses.unshift(current);
   }
   return senses.map((current, index) => ({
-    number: `${current.querySelector(":scope > :is(.Ruba, .ruba, .ppa)")?.textContent.trim() ?? ""}.`,
+    number: numberOf(current),
     label: index === senses.length - 1 ? senseLabel(current) : "",
   }));
 }
@@ -139,4 +150,67 @@ export function senseAt(senses: Iterable<Element>, line: number): Element | null
     current = sense;
   }
   return current;
+}
+
+/**
+ * An item of an entry's outline (cf. `entryOutline`): a sense (its number
+ * and label), or, for a group of homonyms, one of them (its headword).
+ */
+export type OutlineItem = {
+  /** The sense's element, or the homonym's definition. */
+  element: Element;
+  number: string;
+  label: string;
+  /** Its level (0 at the top). */
+  depth: number;
+  /** The index of the item it belongs to, or -1. */
+  parent: number;
+  /** Whether it is a sense (not a homonym). */
+  sense: boolean;
+};
+
+/**
+ * The outline of an entry: its senses, in their order, with their numbers
+ * and labels (cf. `senseLabel`); for a group of homonyms, each homonym with
+ * a sense, its senses under it (their numbers start again).
+ * @param root The element holding the entry's definitions (`.definition`),
+ *   or one of them.
+ */
+export function entryOutline(root: Element): OutlineItem[] {
+  const definitions = [...(root.matches(".definition") ? [root] : []), ...root.querySelectorAll(".definition")]
+    .filter(definition => definition.querySelector(SENSE_SELECTOR));
+  const homonyms = definitions.length > 1;
+  const items: OutlineItem[] = [];
+  for (const definition of definitions) {
+    let top = -1;
+    if (homonyms) {
+      top = items.length;
+      const headword = definition.querySelector(".entreea")?.textContent.replace(/[\s,]+$/, "").trim() ?? "";
+      items.push({ element: definition, number: "", label: headword, depth: 0, parent: -1, sense: false });
+    }
+    const indexes = new Map<Element, number>();
+    for (const sense of definition.querySelectorAll(SENSE_SELECTOR)) {
+      const outer = sense.parentElement?.closest(SENSE_SELECTOR);
+      const parent = outer && definition.contains(outer) ? indexes.get(outer) ?? top : top;
+      indexes.set(sense, items.length);
+      items.push({
+        element: sense,
+        number: numberOf(sense),
+        label: senseLabel(sense),
+        depth: parent < 0 ? 0 : items[parent]!.depth + 1,
+        parent,
+        sense: true,
+      });
+    }
+  }
+  return items;
+}
+
+/**
+ * Whether an entry is long enough for an outline: at least two parts or
+ * sections (« A. », « I. »), or six senses.
+ */
+export function outlineWorthy(items: OutlineItem[]): boolean {
+  const senses = items.filter(item => item.sense);
+  return senses.filter(item => !item.element.matches(".pp")).length >= 2 || senses.length >= 6;
 }
