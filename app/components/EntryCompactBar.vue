@@ -53,31 +53,35 @@
       />
       <!--
         The path: the numbers in the primary color, as in the definition, the
-        sense's label in muted italics; truncated at its end if too long. A
+        sense's label in muted italics. Too long, it is truncated, the word
+        kept (but longer than the whole bar): the path is the line that
+        truncates, its ellipsis in the label's style (that of the line). A
         new path replaces the former one at once, without a fade (more
-        disturbing than helpful).
+        disturbing than helpful). Its first space a no-break one: a flex
+        item's leading space is dropped.
       -->
-      <span class="min-w-0 grow truncate text-center font-serif text-xs/6 font-bold"><span :lang="greek.lang.value"><!-- Homonyms: a fan of cards, as in the page's title. --><UIcon
+      <span class="flex min-w-0 grow items-baseline justify-center font-serif text-xs/6 font-bold"><span
+        class="max-w-full shrink-0 truncate"
+        :lang="greek.lang.value"
+      ><!-- Homonyms: a fan of cards, as in the page's title. --><UIcon
         v-if="homonyms"
         name="i-lucide-playing-cards-fan"
         class="me-1 inline-block size-4 align-[-0.2em] text-muted"
       />{{ word }}</span><span
         v-if="path?.length"
         lang="fr"
+        class="min-w-0 truncate font-normal text-muted italic"
       ><span
-        class="font-normal text-dimmed"
+        class="text-dimmed not-italic"
         aria-hidden="true"
-      >{{ " · " }}</span><template
+      >{{ "\u00A0· " }}</span><template
         v-for="(step, index) in path"
         :key="index"
       ><span
         v-if="index"
-        class="font-normal text-dimmed"
+        class="text-dimmed not-italic"
         aria-hidden="true"
-      >{{ " › " }}</span><span class="text-primary">{{ step.number }}</span><span
-        v-if="step.label"
-        class="font-normal text-muted italic"
-      >{{ ` ${step.label}` }}</span></template></span></span>
+      >{{ " › " }}</span><span class="font-bold text-primary not-italic">{{ step.number }}</span><template v-if="step.label">{{ ` ${step.label}` }}</template></template></span></span>
       <UButton
         v-if="siblings.next"
         :to="`/${siblings.next.uri}`"
