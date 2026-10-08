@@ -168,8 +168,9 @@
    * any text content, as the former `content: url(…)` rule did. Its size
    * follows the reading size (about 2.3 times the text size: 36 px for
    * 15.5 px). Its bottom edge is its baseline (`overflow: hidden`), set
-   * 0.154 of the text size below the line's: its middle at the lowercase
-   * letters' (0.27 above the baseline), whatever the browser: not
+   * 0.08 of the text size below the line's: its middle at the capitals'
+   * (0.34 above the baseline; at the lowercase letters', 0.27, it looked
+   * low beside the text), whatever the browser: not
    * `vertical-align: middle`, which put it a few pixels higher in some
    * (reported in καίω).
    */
@@ -178,7 +179,7 @@
     width: calc(var(--reading-font-size) * 2.32);
     aspect-ratio: 66 / 24;
     overflow: hidden;
-    vertical-align: calc(var(--reading-font-size) * -0.154);
+    vertical-align: calc(var(--reading-font-size) * -0.08);
     font-size: 0;
     background-color: currentColor;
     mask: url("~/assets/icons/arrow.svg") center / contain no-repeat;
@@ -217,17 +218,14 @@
    * « Cp. », « Sup. »), the other forms, the dialects and the prosody
    * (`.fleche`, after an arrow). They complete the senses without being
    * part of them: a step back, in the muted text color, as the references;
-   * their labels keep their color (`.secta`, the arrow). Not those holding
+   * the labels « Cp. » keep theirs (`.secta`), the arrow takes its note's.
+   * Not those holding
    * senses (the middle and passive voices, « Moy. », « Pass. »; the other
    * forms of ὁ, numbered, after an arrow).
    */
   .sect:not(:has(.Rub, .rub, .pp)),
   .fleche:not(:has(.Rub, .rub, .pp)) {
     @apply text-muted;
-  }
-
-  .flechea {
-    color: var(--ui-text);
   }
 
   /* The etymologies, in blue: set apart from the text (7.7:1 on the marble). */
