@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { convert } from "@humanities/greek-conversion";
+  import type { SenseStep } from "~/utils/sensePath";
 
   definePageMeta({
     layout: "single-column",
@@ -80,11 +81,26 @@
   const compactBarShown = ref(false);
   const { y } = usePageScroll();
 
+  /**
+   * The path to the sense being read, in the compact bar: the sense whose
+   * top has passed the bar's bottom edge (cf. `sensePath`). None while the
+   * bar is hidden, nor in a definition's head.
+   */
+  const article = useTemplateRef<HTMLElement>("article");
+  const sensePathShown = ref<SenseStep[]>([]);
+
   const updateCompactBar = (): void => {
-    const barTop = (compactBar.value?.$el as HTMLElement | undefined)?.getBoundingClientRect().top;
+    const bar = compactBar.value?.$el as HTMLElement | undefined;
+    const barTop = bar?.getBoundingClientRect().top;
     const titleBottom = title.value?.getBoundingClientRect().bottom;
     if (barTop === undefined || titleBottom === undefined) return;
     compactBarShown.value = titleBottom <= barTop;
+
+    const barBottom = bar?.firstElementChild?.getBoundingClientRect().bottom;
+    const senses = article.value?.querySelectorAll(`.definition :is(${SENSE_SELECTOR})`) ?? [];
+    const path = compactBarShown.value && barBottom !== undefined ? sensePath(senseAt(senses, barBottom)) : [];
+    // Only when it changes (the bar re-rendered at each frame otherwise).
+    if (JSON.stringify(path) !== JSON.stringify(sensePathShown.value)) sensePathShown.value = path;
   };
 
   onMounted(updateCompactBar);
@@ -118,13 +134,14 @@
 </script>
 
 <template>
-  <article>
+  <article ref="article">
     <EntryCompactBar
       ref="compactBar"
       :word="greek.text(entry.word)"
       :siblings="siblings"
       :shown="compactBarShown"
       :homonyms="!!entry.children?.length"
+      :path="sensePathShown"
     />
     <header ref="title">
       <!--

@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import type { Siblings } from "#shared/types/api";
+  import type { SenseStep } from "~/utils/sensePath";
 
   defineProps<{
     /** The entry's headword (as displayed). */
@@ -10,6 +11,8 @@
     shown: boolean;
     /** Whether the entry groups homonyms (an icon before the word). */
     homonyms?: boolean;
+    /** The path to the sense being read (cf. `sensePath`), after the word. */
+    path?: SenseStep[];
   }>();
 
   // Greek may be transliterated (a preference).
@@ -17,7 +20,8 @@
 </script>
 
 <!--
-  A compact bar (the headword, and arrows to the neighbouring entries) that
+  A compact bar (the headword and the path to the sense being read, and
+  arrows to the neighbouring entries) that
   appears under the header once the entry's title has scrolled out of sight
   (as the large titles of iOS), exactly as wide as the definition's card.
   It sticks in a zero-height wrapper, so that
@@ -47,14 +51,31 @@
         v-else
         class="size-8 shrink-0"
       />
-      <span
-        class="min-w-0 grow truncate text-center font-serif text-xs/6 font-bold"
-        :lang="greek.lang.value"
-      ><!-- Homonyms: a fan of cards, as in the page's title. --><UIcon
+      <!--
+        The path: the numbers in the primary color, as in the definition, the
+        sense's label in muted italics; truncated at its end if too long.
+      -->
+      <span class="min-w-0 grow truncate text-center font-serif text-xs/6 font-bold"><span :lang="greek.lang.value"><!-- Homonyms: a fan of cards, as in the page's title. --><UIcon
         v-if="homonyms"
         name="i-lucide-playing-cards-fan"
         class="me-1 inline-block size-4 align-[-0.2em] text-muted"
-      />{{ word }}</span>
+      />{{ word }}</span><span
+        v-if="path?.length"
+        lang="fr"
+      ><span
+        class="font-normal text-dimmed"
+        aria-hidden="true"
+      >{{ " · " }}</span><template
+        v-for="(step, index) in path"
+        :key="index"
+      ><span
+        v-if="index"
+        class="font-normal text-dimmed"
+        aria-hidden="true"
+      >{{ " › " }}</span><span class="text-primary">{{ step.number }}</span><span
+        v-if="step.label"
+        class="font-normal text-muted italic"
+      >{{ ` ${step.label}` }}</span></template></span></span>
       <UButton
         v-if="siblings.next"
         :to="`/${siblings.next.uri}`"

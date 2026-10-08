@@ -85,6 +85,38 @@ test.describe("entry page", () => {
     }
   });
 
+  test("the compact bar shows the path to the sense being read", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    const bar = page.getByRole("navigation", { name: "Navigation de l'entrée" });
+    // A sense within a section within a part (scrolled to first, for the bar
+    // to appear), then brought right under the bar.
+    const expected = await page.evaluate(() => {
+      const sense = document.querySelector(".definition .Rub .rub .pp")!;
+      const numbers = [sense.closest(".Rub")!, sense.closest(".rub")!, sense].map(element => element.querySelector(":scope > :is(.Ruba, .ruba, .ppa)")!.textContent.trim());
+      const main = document.querySelector("main")!;
+      main.scrollBy({ top: sense.getBoundingClientRect().top - 150, behavior: "instant" });
+      return numbers.map(number => `${number}.`).join(" › ");
+    });
+    await page.evaluate(() => {
+      const main = document.querySelector("main")!;
+      const sense = document.querySelector(".definition .Rub .rub .pp")!;
+      const barBottom = document.querySelector("nav[aria-label='Navigation de l\\'entrée']")!.getBoundingClientRect().bottom;
+      main.scrollBy({ top: sense.getBoundingClientRect().top - barBottom + 2, behavior: "instant" });
+    });
+    await expect(bar).toBeVisible();
+    await expect(bar).toContainText(new RegExp(`λόγος · ${expected.replace(/\./g, "\\.")} \\p{L}`, "u"));
+
+    // In the definition's head, before its first sense: the word alone.
+    await page.evaluate(() => {
+      const main = document.querySelector("main")!;
+      const head = document.querySelector(".definition .entreea")!;
+      const barBottom = document.querySelector("nav[aria-label='Navigation de l\\'entrée']")!.getBoundingClientRect().bottom;
+      main.scrollBy({ top: head.getBoundingClientRect().top - barBottom + 2, behavior: "instant" });
+    });
+    await expect(bar).toBeVisible();
+    await expect(bar).not.toContainText("·");
+  });
+
   test("keyboard: the arrows lead to the neighbouring entries", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     const nextWord = (await page.locator("article > header").getByRole("link", { name: /^Entrée suivante : / }).getAttribute("aria-label"))!.replace("Entrée suivante : ", "");
