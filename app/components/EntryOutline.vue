@@ -43,9 +43,10 @@
    * The item being read kept in sight in the outline's own scroller (the
    * column, the popover; never by scrolling the page), as the group being
    * read in the bookmarks' row (`BookmarksToc`): when it changes, the
-   * outline scrolls as little as needed, eased, a margin of 40 px around it
-   * (not with reduced motion: the outline then never moves by itself); when
-   * the outline appears, at once, the item centered.
+   * outline scrolls as little as needed, eased, a margin of 40 px around it,
+   * and back to its start when no sense is being read (the page's top); not
+   * with reduced motion, the outline then never moving by itself. When the
+   * outline appears, at once, the item centered.
    */
   const list = useTemplateRef<HTMLElement>("list");
   const scroller = shallowRef<HTMLElement | null>(null);
@@ -57,8 +58,14 @@
     let box = list.value?.parentElement ?? null;
     while (box && box.tagName !== "MAIN" && !/(auto|scroll)/.test(getComputedStyle(box).overflowY)) box = box.parentElement;
     scroller.value = box && box.tagName !== "MAIN" ? box : null;
-    if (!button || !scroller.value) return;
+    if (!scroller.value) return;
     const element = scroller.value;
+    // No sense being read (the page's top, a definition's head): the
+    // outline back at its start.
+    if (!button) {
+      if (!appearing && !reducedMotion.value) scrollTo(0);
+      return;
+    }
     const top = button.getBoundingClientRect().top - element.getBoundingClientRect().top + element.scrollTop;
     if (appearing) {
       element.scrollTop = top - (element.clientHeight - button.offsetHeight) / 2;
