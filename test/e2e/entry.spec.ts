@@ -106,7 +106,7 @@ test.describe("entry page", () => {
       main.scrollBy({ top: sense.getBoundingClientRect().top - Math.max(barBottom, innerHeight / 4) + 2, behavior: "instant" });
     });
     await expect(bar).toBeVisible();
-    await expect(bar).toContainText(new RegExp(`λόγος · ${expected.replace(/\./g, "\\.")} \\p{L}`, "u"));
+    await expect(bar).toContainText(new RegExp(`λόγος\\s· ${expected.replace(/\./g, "\\.")} \\p{L}`, "u"));
 
     // In the definition's head, before its first sense: the word alone.
     await page.evaluate(() => {
@@ -117,6 +117,32 @@ test.describe("entry page", () => {
     });
     await expect(bar).toBeVisible();
     await expect(bar).not.toContainText("·");
+  });
+
+  test("a long entry's outline: beside the card from xl, from the compact bar below", async ({ page, goto }) => {
+    const bar = page.getByRole("navigation", { name: "Navigation de l'entrée" });
+    const outline = page.getByRole("navigation", { name: "Sommaire de l'entrée" });
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await goto("/logos", { waitUntil: "hydration" });
+    await expect(outline).toBeVisible();
+    const part = outline.getByRole("button", { name: /^B\./ }).first();
+    await part.click();
+    // The part brought into view, then marked as the one being read.
+    await expect(part).toHaveAttribute("aria-current", "location");
+    await expect(bar).toContainText(/λόγος\s· B\./);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await goto("/logos", { waitUntil: "hydration" });
+    await expect(outline).toBeHidden();
+    await page.evaluate(() => {
+      document.querySelector("main")!.scrollBy({ top: 1500, behavior: "instant" });
+    });
+    await bar.getByRole("button", { name: "Sommaire de l'entrée" }).click();
+    await expect(outline).toBeVisible();
+    await outline.getByRole("button", { name: /^B\./ }).first().click();
+    await expect(outline).toBeHidden();
+    await expect(bar).toContainText(/λόγος\s· B\./);
   });
 
   test("keyboard: the arrows lead to the neighbouring entries", async ({ page, goto }) => {
