@@ -104,9 +104,15 @@
   /**
    * While the page scrolls, the path stays as it is: it changes once the
    * scroll has stopped (a fast scroll through ten senses changes it once,
-   * when the reader looks at it), rather than at each sense passing by.
+   * when the reader looks at it), rather than at each sense passing by. The
+   * scroll's end as the browser tells it (`scrollend`, after an inertial
+   * scroll too); else, 150 ms without a scroll.
    */
-  const updateSensePathLater = useDebounceFn(updateSensePath, 200);
+  const SCROLL_END = import.meta.client && "onscrollend" in window;
+  const updateSensePathLater = useDebounceFn(updateSensePath, 150);
+  useEventListener(usePageScroller(), "scrollend", () => {
+    if (compactBarShown.value) updateSensePath();
+  });
 
   const updateCompactBar = (): void => {
     const barTop = (compactBar.value?.$el as HTMLElement | undefined)?.getBoundingClientRect().top;
@@ -116,7 +122,7 @@
     compactBarShown.value = titleBottom <= barTop;
     // The bar shown or hidden: its path at once.
     if (compactBarShown.value !== wasShown) updateSensePath();
-    else if (compactBarShown.value) void updateSensePathLater();
+    else if (compactBarShown.value && !SCROLL_END) void updateSensePathLater();
   };
 
   onMounted(updateCompactBar);
