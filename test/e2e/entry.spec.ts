@@ -89,7 +89,9 @@ test.describe("entry page", () => {
     await goto("/logos", { waitUntil: "hydration" });
     const bar = page.getByRole("navigation", { name: "Navigation de l'entrée" });
     // A sense within a section within a part (scrolled to first, for the bar
-    // to appear), then brought right under the bar.
+    // to appear), then brought right above the reading line (a quarter down
+    // the window, not higher than the bar's bottom edge); the path follows
+    // once the scroll has stopped.
     const expected = await page.evaluate(() => {
       const sense = document.querySelector(".definition .Rub .rub .pp")!;
       const numbers = [sense.closest(".Rub")!, sense.closest(".rub")!, sense].map(element => element.querySelector(":scope > :is(.Ruba, .ruba, .ppa)")!.textContent.trim());
@@ -101,7 +103,7 @@ test.describe("entry page", () => {
       const main = document.querySelector("main")!;
       const sense = document.querySelector(".definition .Rub .rub .pp")!;
       const barBottom = document.querySelector("nav[aria-label='Navigation de l\\'entrée']")!.getBoundingClientRect().bottom;
-      main.scrollBy({ top: sense.getBoundingClientRect().top - barBottom + 2, behavior: "instant" });
+      main.scrollBy({ top: sense.getBoundingClientRect().top - Math.max(barBottom, innerHeight / 4) + 2, behavior: "instant" });
     });
     await expect(bar).toBeVisible();
     await expect(bar).toContainText(new RegExp(`λόγος · ${expected.replace(/\./g, "\\.")} \\p{L}`, "u"));
@@ -111,7 +113,7 @@ test.describe("entry page", () => {
       const main = document.querySelector("main")!;
       const head = document.querySelector(".definition .entreea")!;
       const barBottom = document.querySelector("nav[aria-label='Navigation de l\\'entrée']")!.getBoundingClientRect().bottom;
-      main.scrollBy({ top: head.getBoundingClientRect().top - barBottom + 2, behavior: "instant" });
+      main.scrollBy({ top: head.getBoundingClientRect().top - Math.max(barBottom, innerHeight / 4) + 2, behavior: "instant" });
     });
     await expect(bar).toBeVisible();
     await expect(bar).not.toContainText("·");

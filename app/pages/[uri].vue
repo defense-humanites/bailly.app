@@ -82,25 +82,41 @@
   const { y } = usePageScroll();
 
   /**
-   * The path to the sense being read, in the compact bar: the sense whose
-   * top has passed the bar's bottom edge (cf. `sensePath`). None while the
+   * The path to the sense being read, in the compact bar (cf. `sensePath`):
+   * the sense whose top has passed a reading line, a quarter down the window
+   * (as `useCurrentSection`'s), not higher than the bar's bottom edge: the
+   * sense in view rather than the one passing under the bar. None while the
    * bar is hidden, nor in a definition's head.
    */
   const article = useTemplateRef<HTMLElement>("article");
   const sensePathShown = ref<SenseStep[]>([]);
 
+  const updateSensePath = (): void => {
+    const barBottom = (compactBar.value?.$el as HTMLElement | undefined)?.firstElementChild?.getBoundingClientRect().bottom;
+    const senses = article.value?.querySelectorAll(`.definition :is(${SENSE_SELECTOR})`) ?? [];
+    const path = compactBarShown.value && barBottom !== undefined
+      ? sensePath(senseAt(senses, Math.max(barBottom, window.innerHeight / 4)))
+      : [];
+    // Only when it changes (the bar re-rendered otherwise).
+    if (JSON.stringify(path) !== JSON.stringify(sensePathShown.value)) sensePathShown.value = path;
+  };
+
+  /**
+   * While the page scrolls, the path stays as it is: it changes once the
+   * scroll has stopped (a fast scroll through ten senses changes it once,
+   * when the reader looks at it), rather than at each sense passing by.
+   */
+  const updateSensePathLater = useDebounceFn(updateSensePath, 200);
+
   const updateCompactBar = (): void => {
-    const bar = compactBar.value?.$el as HTMLElement | undefined;
-    const barTop = bar?.getBoundingClientRect().top;
+    const barTop = (compactBar.value?.$el as HTMLElement | undefined)?.getBoundingClientRect().top;
     const titleBottom = title.value?.getBoundingClientRect().bottom;
     if (barTop === undefined || titleBottom === undefined) return;
+    const wasShown = compactBarShown.value;
     compactBarShown.value = titleBottom <= barTop;
-
-    const barBottom = bar?.firstElementChild?.getBoundingClientRect().bottom;
-    const senses = article.value?.querySelectorAll(`.definition :is(${SENSE_SELECTOR})`) ?? [];
-    const path = compactBarShown.value && barBottom !== undefined ? sensePath(senseAt(senses, barBottom)) : [];
-    // Only when it changes (the bar re-rendered at each frame otherwise).
-    if (JSON.stringify(path) !== JSON.stringify(sensePathShown.value)) sensePathShown.value = path;
+    // The bar shown or hidden: its path at once.
+    if (compactBarShown.value !== wasShown) updateSensePath();
+    else if (compactBarShown.value) void updateSensePathLater();
   };
 
   onMounted(updateCompactBar);
