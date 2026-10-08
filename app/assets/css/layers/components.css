@@ -217,9 +217,10 @@
    * « Cp. », « Sup. »), the other forms, the dialects and the prosody
    * (`.fleche`, after an arrow). They complete the senses without being
    * part of them: a step back, in the muted text color, as the references;
-   * their labels keep their color (`.secta`, the arrow).
+   * their labels keep their color (`.secta`, the arrow). Not the sections
+   * holding senses (the middle and passive voices, « Moy. », « Pass. »).
    */
-  .sect,
+  .sect:not(:has(.Rub, .rub, .pp)),
   .fleche {
     @apply text-muted;
   }
