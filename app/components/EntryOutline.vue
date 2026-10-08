@@ -40,22 +40,44 @@
   const INDENTS = ["ps-2.5", "ps-5", "ps-7.5", "ps-10"];
 
   /*
-   * The item being read kept in view in the outline's own scroller (the
-   * column, the popover), never by scrolling the page.
+   * The item being read kept in sight in the outline's own scroller (the
+   * column, the popover; never by scrolling the page), as the group being
+   * read in the bookmarks' row (`BookmarksToc`): when it changes, the
+   * outline scrolls as little as needed, eased, a margin of 40 px around it
+   * (not with reduced motion: the outline then never moves by itself); when
+   * the outline appears, at once, the item centered.
    */
   const list = useTemplateRef<HTMLElement>("list");
-  const reveal = (): void => {
+  const scroller = shallowRef<HTMLElement | null>(null);
+  const { scrollTo, reducedMotion } = useEasedScroll(scroller, "top");
+  const MARGIN = 40;
+
+  const reveal = (appearing: boolean): void => {
     const button = list.value?.querySelector<HTMLElement>("[aria-current]");
-    let box = button?.parentElement ?? null;
+    let box = list.value?.parentElement ?? null;
     while (box && box.tagName !== "MAIN" && !/(auto|scroll)/.test(getComputedStyle(box).overflowY)) box = box.parentElement;
-    if (!button || !box || box.tagName === "MAIN") return;
-    const { top, bottom } = button.getBoundingClientRect();
-    const frame = box.getBoundingClientRect();
-    if (top < frame.top) box.scrollTop -= frame.top - top + 8;
-    else if (bottom > frame.bottom) box.scrollTop += bottom - frame.bottom + 8;
+    scroller.value = box && box.tagName !== "MAIN" ? box : null;
+    if (!button || !scroller.value) return;
+    const element = scroller.value;
+    const top = button.getBoundingClientRect().top - element.getBoundingClientRect().top + element.scrollTop;
+    if (appearing) {
+      element.scrollTop = top - (element.clientHeight - button.offsetHeight) / 2;
+      return;
+    }
+    if (reducedMotion.value) return;
+    const start = top - MARGIN;
+    const end = top + button.offsetHeight + MARGIN - element.clientHeight;
+    if (element.scrollTop > start) scrollTo(start);
+    else if (element.scrollTop < end) scrollTo(end);
   };
-  onMounted(() => nextTick(reveal));
-  watch(currentIndex, () => nextTick(reveal));
+  onMounted(async () => {
+    await nextTick();
+    reveal(true);
+  });
+  watch(currentIndex, async () => {
+    await nextTick();
+    reveal(false);
+  });
 </script>
 
 <!--
