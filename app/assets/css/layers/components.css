@@ -82,10 +82,25 @@
 
   .oeuv,
   .oeuva,
-  .refch,
-  .ital,
-  .refpa {
+  .ital {
     @apply italic;
+  }
+
+  /*
+   * The references (author, work, place) a step back, in the muted text
+   * color (6:1 on the marble, 8.9:1 in the dark theme): the meanings and the
+   * Greek come first, and the grammatical remarks (`.ital`, in italics as the
+   * works) are no longer mistaken for them. The places in roman, as printed.
+   * Not in the etymologies, whose blue sets the whole apart.
+   */
+  :is(.aut, .oeuv, .oeuva, .refch, .refpa, .refpb):not(:is(.etymor, .etymrev) *) {
+    @apply text-muted;
+  }
+
+  .refch,
+  .refpa,
+  .refpb {
+    font-style: normal;
   }
 
   .Rub,
@@ -96,10 +111,13 @@
     @apply list-none;
   }
 
+  /* The senses' numbers in the primary color, as the sections' labels
+     (`.secta`): the structure of a long entry at a glance. */
   .Ruba,
   .ruba,
   .ppa {
     @apply font-semibold;
+    @apply text-primary;
   }
 
   .Ruba::after,
