@@ -60,9 +60,12 @@
 
 <!--
   The outline of a long entry: its parts, sections and senses, by their
-  numbers and labels (as the compact bar's path), indented by level; the one
-  being read marked, as the headwords of an ambiguous form's page
-  (`forme/[[forme]].vue`), and the ones holding it in the text's color.
+  numbers (in bold) and labels (as the compact bar's path), indented by
+  level; the one being read marked, as the headwords of an ambiguous form's
+  page (`forme/[[forme]].vue`), and the ones holding it in the text's color.
+  In neutral colors, as that page's column: the numbers in their line's,
+  not in the primary color of the text's (a column of them would draw the
+  eye from the text).
 -->
 <template>
   <nav aria-label="Sommaire de l'entrée">
@@ -86,7 +89,7 @@
         >
           <span
             v-if="item.number"
-            class="shrink-0 font-bold text-primary"
+            class="shrink-0 font-bold"
           >{{ item.number }}</span>
           <span
             class="truncate"
