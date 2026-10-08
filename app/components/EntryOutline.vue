@@ -97,7 +97,10 @@
   eye from the text).
 -->
 <template>
-  <nav aria-label="Sommaire de l'entrée">
+  <nav
+    aria-label="Sommaire de l'entrée"
+    data-outline
+  >
     <ul
       ref="list"
       class="space-y-0.5"

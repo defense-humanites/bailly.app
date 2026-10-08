@@ -99,10 +99,22 @@
     return barBottom === undefined ? undefined : Math.max(barBottom, window.innerHeight / 4);
   };
 
+  /**
+   * A sense chosen in the outline is the one being read, though it may not
+   * reach the reading line (the last ones, near the page's bottom), until
+   * the user scrolls the page by themselves (not the outline's column).
+   */
+  let followed: Element | null = null;
+  useUserScroll((event) => {
+    if (!followed || (event.target instanceof Element && event.target.closest("[data-outline]"))) return;
+    followed = null;
+    updateSensePath();
+  });
+
   const updateSensePath = (): void => {
     const line = readingLine();
     const senses = article.value?.querySelectorAll(`.definition :is(${SENSE_SELECTOR})`) ?? [];
-    currentSense.value = line === undefined ? null : senseAt(senses, line);
+    currentSense.value = followed ?? (line === undefined ? null : senseAt(senses, line));
     const path = compactBarShown.value ? sensePath(currentSense.value) : [];
     // Only when it changes (the bar re-rendered otherwise).
     if (JSON.stringify(path) !== JSON.stringify(sensePathShown.value)) sensePathShown.value = path;
@@ -125,13 +137,16 @@
 
   /**
    * Brings an item of the outline into view: its top just above the reading
-   * line, where it is the sense being read.
+   * line, where it is the sense being read (marked as such at once, and
+   * followed: cf. above).
    */
   const goToSense = (item: OutlineItem): void => {
     const line = readingLine();
     const scroller = usePageScroller().value;
     if (line === undefined || !scroller) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    followed = item.element;
+    updateSensePath();
     scroller.scrollBy({ top: item.element.getBoundingClientRect().top - line + 4, behavior: reduced ? "instant" : "smooth" });
   };
 

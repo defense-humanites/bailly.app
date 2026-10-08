@@ -1,7 +1,5 @@
 import type { MaybeRefOrGetter, Ref } from "vue";
 
-const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
-
 /**
  * The section in view, for a column of links to a page's sections (the
  * ambiguous forms' headwords, the privacy page's subjects): the last one
@@ -58,10 +56,8 @@ export function useCurrentSection(ids: MaybeRefOrGetter<string[]>): {
     followed = undefined;
     update();
   };
-  useEventListener("wheel", release, { passive: true });
-  useEventListener("touchmove", release, { passive: true });
-  useEventListener("keydown", (event: KeyboardEvent) => {
-    if (SCROLL_KEYS.has(event.key)) release();
+  useUserScroll(() => {
+    release();
   });
 
   /**
