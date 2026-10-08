@@ -111,6 +111,12 @@
     @apply list-none;
   }
 
+  /* The parts (A., B., C.) of the long entries: their divisions marked by a
+     wider space before them, without a line nor a color. */
+  .Rub {
+    @apply mt-8;
+  }
+
   /* The senses' numbers in the primary color, as the sections' labels
      (`.secta`): the structure of a long entry at a glance. */
   .Ruba,
@@ -174,12 +180,19 @@
     mask: url("~/assets/icons/arrow.svg") center / contain no-repeat;
   }
 
+  /*
+   * The levels' indents, from 30 rem (480 px) only: on a phone, the text
+   * keeps the screen's whole width, the numbers telling the levels apart
+   * (and the compact bar, the path to the sense being read). From 30 rem,
+   * two levels still leave about 23 rem of text, a readable measure; the
+   * card reaches its width (`--reading-width`, 37 rem) a little below `sm`.
+   */
   .Rub > .rub,
   .rub > .pp,
   .rub > .sect,
   .rub > .moyen,
   .rub > .fleche {
-    @apply ml-6;
+    @apply min-[30rem]:ml-6;
   }
 
   .secta {
