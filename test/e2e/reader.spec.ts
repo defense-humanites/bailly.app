@@ -10,7 +10,8 @@ test.describe("links of the definitions", () => {
     const ambiguous = page.locator(`${definition} a[data-linked-entries]`).first();
     await expect(ambiguous).toHaveText("αἱ");
     await expect(ambiguous).toHaveAttribute("href", formUrl);
-    await expect(ambiguous).toHaveCSS("text-decoration-style", "dotted");
+    await expect(ambiguous).toHaveCSS("text-decoration-style", "solid");
+    await expect(ambiguous).toHaveCSS("text-decoration-thickness", "1px");
     // The forms of the current entry aren't links.
     await expect(page.locator(`${definition} a[data-linked-self]`)).toHaveCount(0);
 
