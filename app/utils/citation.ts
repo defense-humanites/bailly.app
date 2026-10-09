@@ -59,6 +59,18 @@ const render = (segments: Segment[]): Citation => ({
   html: segments.map(segment => (typeof segment === "string" ? escapeHtml(segment) : `<i>${escapeHtml(segment.italic)}</i>`)).join(""),
 });
 
+/**
+ * A reference's HTML as put on the clipboard: as is (the pasted text takes
+ * the document's font), but for WebKit (Safari, and every browser on iOS),
+ * which rewrites it with its computed styles, the roman text then in a font
+ * the other applications don't know (« -webkit-standard »): there, in a
+ * common serif font, all the reference alike.
+ * @param webkit Whether the browser is WebKit's (cf. `navigator.vendor`).
+ */
+export function clipboardHtml(html: string, webkit: boolean): string {
+  return webkit ? `<span style="font-family: 'Times New Roman', serif">${html}</span>` : html;
+}
+
 const MONTHS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
 /**

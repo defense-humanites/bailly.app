@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {
-    CITATION_STYLE_LABELS, CITATION_STYLES, ENTRY_CITATION_FORM_LABELS, ENTRY_CITATION_FORMS, entryCitation, isCitationStyle,
+    CITATION_STYLE_LABELS, CITATION_STYLES, clipboardHtml, ENTRY_CITATION_FORM_LABELS, ENTRY_CITATION_FORMS, entryCitation, isCitationStyle,
     isEntryCitationForm, workCitation, type Citation, type CitationStyle, type CitedEntry, type EntryCitationForm,
   } from "~/utils/citation";
   import { StorageKey } from "~/enums";
@@ -95,7 +95,7 @@
       if (typeof ClipboardItem !== "undefined") {
         await navigator.clipboard.write([new ClipboardItem({
           "text/plain": new Blob([text], { type: "text/plain" }),
-          "text/html": new Blob([html], { type: "text/html" }),
+          "text/html": new Blob([clipboardHtml(html, navigator.vendor === "Apple Computer, Inc.")], { type: "text/html" }),
         })]);
       } else {
         await navigator.clipboard.writeText(text);

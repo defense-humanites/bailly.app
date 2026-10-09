@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { accessDate, citedLemma, entryCitation, versionDate, workCitation } from "../../app/utils/citation";
+import { accessDate, citedLemma, clipboardHtml, entryCitation, versionDate, workCitation } from "../../app/utils/citation";
 
 const NBSP = " ";
 // Spaces made visible: the references put non-breaking ones where French
@@ -73,5 +73,13 @@ describe("workCitation", () => {
     expect(plain(workCitation("mla", { accessed }).text)).toContain("Consulté le 5 octobre 2026.");
     expect(workCitation("mla", { accessed }).html).toContain("<i>Bailly.app</i>, Association pour la défense des humanités, bailly.app.");
     expect(plain(workCitation("iso", { accessed }).text)).toContain("Disponible à l'adresse : https://bailly.app [consulté le 5 octobre 2026].");
+  });
+});
+
+describe("clipboardHtml", () => {
+  it("as is, but in a common serif font for WebKit", () => {
+    expect(clipboardHtml("A. Bailly, <i>Dictionnaire</i>", false)).toBe("A. Bailly, <i>Dictionnaire</i>");
+    expect(clipboardHtml("A. Bailly, <i>Dictionnaire</i>", true))
+      .toBe("<span style=\"font-family: 'Times New Roman', serif\">A. Bailly, <i>Dictionnaire</i></span>");
   });
 });
