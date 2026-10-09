@@ -44,7 +44,7 @@
     {
       icon: "i-lucide-list-tree",
       title: "Des entrées longues faciles à parcourir.",
-      text: "Une entrée qui ne tient pas à l'écran dispose désormais d'un sommaire de ses parties, sections et sens, qui mène d'un clic à chacun d'eux : à droite du texte sur les grands écrans, ailleurs depuis la barre qui accompagne votre lecture, en haut de l'écran, et indique le sens que vous lisez.",
+      text: "Une entrée qui ne tient pas à l'écran dispose désormais d'un sommaire de ses parties, sections et sens, qui mène d'un clic à chacun d'eux : à droite du texte sur les grands écrans, sinon depuis la barre qui accompagne votre lecture, en haut de l'écran, et indique le sens que vous lisez.",
     },
     {
       icon: "i-lucide-link",
