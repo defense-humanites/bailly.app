@@ -229,6 +229,36 @@
   }
 
   /*
+   * A sense previewed from the outline (an item hovered, cf. `EntryOutline`):
+   * tinted (`--sense-tint`), the tint overflowing its box a little (a
+   * shadow, not a padding: nothing moves). In gold, as a passage
+   * highlighted in a book: it stands out by its hue rather than by darkening
+   * the marble, keeps the senses' numbers (terracotta) and the etymologies
+   * (blue) apart, and holds in both themes (mostly gold 100 on marble 50; gold
+   * 900 half mixed with marble 800 on 900). The text keeps 5:1 at least (the
+   * references, muted), the senses' numbers 3.4:1 (bold) in the dark theme.
+   * (A highlighted search result's tint would not show on a card.)
+   */
+  .definition {
+    --sense-tint: color-mix(in oklab, var(--color-gold-50) 25%, var(--color-gold-100));
+  }
+
+  .dark .definition {
+    --sense-tint: color-mix(in oklab, var(--color-gold-900) 50%, var(--ui-color-neutral-800));
+  }
+
+  .definition :is(.Rub, .rub, .pp, .sect, .fleche) {
+    transition-property: background-color, box-shadow;
+    transition-duration: 150ms;
+  }
+
+  .definition [data-outline-preview] {
+    background-color: var(--sense-tint);
+    box-shadow: 0 0 0 0.375rem var(--sense-tint);
+    @apply rounded-sm;
+  }
+
+  /*
    * A sense chosen in the outline, pointed out for a moment (cf.
    * `[data-card-highlight]` below), in a neutral color, as the cards of an
    * ambiguous form's page.

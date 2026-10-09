@@ -29,6 +29,48 @@
     return indexes;
   });
 
+  /*
+   * Hovered with a mouse, or focused from the keyboard, an item tints its
+   * sense in the text (`[data-outline-preview]`, cf. `components.css`):
+   * where it leads, before it is chosen. Not from a touch (it would stay
+   * tinted), nor once chosen (pointed out then, cf. `goToSense`).
+   */
+  let previewed: Element | null = null;
+  const preview = (item: OutlineItem | null): void => {
+    previewed?.removeAttribute("data-outline-preview");
+    previewed = item?.element ?? null;
+    previewed?.setAttribute("data-outline-preview", "");
+  };
+  // On a move of the mouse, not on its entering an item: the outline
+  // scrolls by itself (cf. `reveal`), and an item slid under a still cursor
+  // would be previewed.
+  // (Some browsers send a move then, the cursor in place: compared with the
+  // last one, anywhere, recorded once the items have seen it.)
+  const pointer = { x: Number.NaN, y: Number.NaN };
+  useEventListener(
+    window,
+    "pointermove",
+    (event: PointerEvent) => {
+      pointer.x = event.clientX;
+      pointer.y = event.clientY;
+    },
+    { passive: true },
+  );
+  const onPointerMove = (event: PointerEvent, item: OutlineItem): void => {
+    if (event.pointerType !== "mouse" || (event.clientX === pointer.x && event.clientY === pointer.y)) return;
+    if (previewed !== item.element) preview(item);
+  };
+  const onFocus = (event: FocusEvent, item: OutlineItem): void => {
+    if (event.target instanceof Element && event.target.matches(":focus-visible")) preview(item);
+  };
+  const choose = (item: OutlineItem): void => {
+    preview(null);
+    emit("select", item);
+  };
+  onBeforeUnmount(() => {
+    preview(null);
+  });
+
   /** The level of an item among the senses (a homonym's above them). */
   const senseDepth = (item: OutlineItem): number => (item.sense && props.items[0]?.sense === false ? item.depth - 1 : item.depth);
 
@@ -117,7 +159,11 @@
             INDENTS[item.depth] ?? INDENTS.at(-1),
             index === currentIndex ? 'bg-accented/50 text-highlighted' : chain.has(index) ? 'text-highlighted hover:bg-accented/50' : 'text-muted hover:bg-accented/50 hover:text-highlighted',
           ]"
-          @click="emit('select', item)"
+          @click="choose(item)"
+          @pointermove="onPointerMove($event, item)"
+          @pointerleave="preview(null)"
+          @focus="onFocus($event, item)"
+          @blur="preview(null)"
         >
           <UIcon
             v-if="item.arrow"

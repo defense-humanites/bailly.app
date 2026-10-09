@@ -127,6 +127,12 @@ test.describe("entry page", () => {
     await goto("/logos", { waitUntil: "hydration" });
     await expect(outline).toBeVisible();
     const part = outline.getByRole("button", { name: /^B\./ }).first();
+    // Hovered, the item tints its sense in the text; no longer once left.
+    const sense = page.locator(".definition .Rub").nth(1);
+    await part.hover();
+    await expect(sense).toHaveAttribute("data-outline-preview");
+    await page.mouse.move(10, 10);
+    await expect(sense).not.toHaveAttribute("data-outline-preview");
     await part.click();
     // The part brought into view, then marked as the one being read.
     await expect(part).toHaveAttribute("aria-current", "location");
