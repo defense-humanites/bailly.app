@@ -306,7 +306,7 @@
                     v-if="entry.children?.length"
                     name="i-lucide-playing-cards-fan"
                     data-slot="linkLeadingIcon"
-                    class="size-6 shrink-0 text-muted"
+                    class="size-6 shrink-0"
                   />
                   <span
                     data-slot="linkLabel"

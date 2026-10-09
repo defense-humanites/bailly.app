@@ -35,7 +35,7 @@
   ><!-- Homonyms: a fan of cards, as in the page's title. --><UIcon
     v-if="homonyms"
     name="i-lucide-playing-cards-fan"
-    class="me-1 inline-block size-4 align-[-0.2em] text-muted"
+    class="me-1 inline-block size-4 align-[-0.2em]"
   />{{ word }}<sup
     v-if="homonym"
     class="ms-px"
