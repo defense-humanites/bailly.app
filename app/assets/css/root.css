@@ -53,10 +53,11 @@
    * (9 October 2026): one shade darker than what they lie on when hovered,
    * two when active (the active one told from a hover), from 1.14:1 to
    * 1.24:1 against it (they were 1.02 to 1.14). On the page (marble 100):
-   * 200, then between 200 and 300. On the cards (marble 50): between 100
-   * and 200, then 200 (the outline's items, Nuxt UI's ghost buttons, the
-   * menus' items, the bookmarks' bar). The navigation's links (header,
-   * entry's neighbours, compact bar) as on the page. The muted text keeps
+   * 200, then between 200 and 300 (also the tables of contents' items,
+   * in a column on the page). On the cards (marble 50): between 100 and
+   * 200, then 200 (Nuxt UI's neutral ghost and outline buttons, the menus'
+   * items; not the bookmarks' bar, raised instead). The navigation's links
+   * (header, entry's neighbours, compact bar) as on the page. The muted text keeps
    * 4.8:1 on the darkest. The dark theme keeps its hovers, its active
    * states half a shade further (cf. `.dark`).
    */
@@ -79,12 +80,13 @@
    * 10 », lighter than the cards without the glare of a pure white.
    */
   --app-surface-raised: color-mix(in oklab, var(--ui-color-neutral-50) 50%, #fff);
-  /* The bookmarks' bar's buttons: as the cards' (it lies on one); raised
-     in the dark theme. */
-  --app-button-hover: var(--app-card-hover);
-  --app-button-active: var(--app-card-active);
-  /* The fields of the bookmarks' bar (cf. `FIELD_BACKGROUND`): hovered as
-     its buttons; focused, raised (lighter), as the search bar in use. */
+  /* The bookmarks' bar's buttons: raised (lighter) when hovered, as the
+     search bar in use; a notch lighter still when pressed or open (only
+     the accented buttons darken). */
+  --app-button-hover: var(--app-surface-raised);
+  --app-button-active: color-mix(in oklab, var(--ui-color-neutral-50) 20%, #fff);
+  /* The fields of the bookmarks' bar (cf. `FIELD_BACKGROUND`): raised as
+     its buttons, hovered or focused. */
   --app-field-bg: var(--ui-bg);
   --app-field-hover: var(--app-button-hover);
   --app-field-focus: var(--app-surface-raised);

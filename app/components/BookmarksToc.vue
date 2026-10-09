@@ -295,7 +295,11 @@
       :style="{ width: `${EDGE}px` }"
     />
 
-    <!-- Arrows: a pointer's affordance (the keyboard goes from link to link). -->
+    <!--
+      Arrows: a pointer's affordance (the keyboard goes from link to link).
+      Hovered, Nuxt UI's `bg-elevated`, as the bookmarks page's other
+      controls, rather than the cards' shades (cf. `--app-card-hover`).
+    -->
     <UButton
       icon="i-lucide-chevron-left"
       size="sm"
@@ -303,7 +307,7 @@
       variant="outline"
       tabindex="-1"
       aria-hidden="true"
-      class="absolute start-0 top-1/2 hidden -translate-y-1/2 bg-default transition-[opacity,visibility] duration-200 ease-out pointer-fine:flex max-md:-start-2"
+      class="absolute start-0 top-1/2 hidden -translate-y-1/2 bg-default hover:bg-elevated active:bg-elevated transition-[opacity,visibility] duration-200 ease-out pointer-fine:flex max-md:-start-2"
       :class="canScrollStart ? 'visible opacity-100' : 'invisible opacity-0'"
       @click="scrollRowBy(-1)"
     />
@@ -314,7 +318,7 @@
       variant="outline"
       tabindex="-1"
       aria-hidden="true"
-      class="absolute end-0 top-1/2 hidden -translate-y-1/2 bg-default transition-[opacity,visibility] duration-200 ease-out pointer-fine:flex max-md:-end-2"
+      class="absolute end-0 top-1/2 hidden -translate-y-1/2 bg-default hover:bg-elevated active:bg-elevated transition-[opacity,visibility] duration-200 ease-out pointer-fine:flex max-md:-end-2"
       :class="canScrollEnd ? 'visible opacity-100' : 'invisible opacity-0'"
       @click="scrollRowBy(1)"
     />
