@@ -72,6 +72,11 @@
     font-size: smaller;
   }
 
+  /* A homonym's number after its headword (cf. `numberHeadword`). */
+  .entreea .homonym {
+    @apply ms-px;
+  }
+
   .aut {
     font-variant: small-caps;
   }

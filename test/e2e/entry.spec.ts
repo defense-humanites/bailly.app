@@ -50,10 +50,11 @@ test.describe("entry page", () => {
     await expect(surround).toBeVisible();
   });
 
-  test("homonyms: each has its anchor", async ({ page, goto }) => {
+  test("homonyms: each has its anchor, and its number after its headword", async ({ page, goto }) => {
     await goto("/logades#2", { waitUntil: "hydration" });
     await expect(page.locator("[id='1']")).toHaveCount(1);
     await expect(page.locator("[id='2']")).toHaveCount(1);
+    await expect(page.locator(".definition .entreea")).toHaveText(["λογάδες1,", "λογάδες2,"]);
   });
 
   test("a compact bar appears once the title is out of sight", async ({ page, goto }) => {

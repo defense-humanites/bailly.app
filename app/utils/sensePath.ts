@@ -205,7 +205,10 @@ export function entryOutline(root: Element): OutlineItem[] {
     let top = -1;
     if (homonyms) {
       top = items.length;
-      const headword = definition.querySelector(".entreea")?.textContent.replace(/[\s,]+$/, "").trim() ?? "";
+      // Its headword, without its number (cf. `numberHeadword`).
+      const head = definition.querySelector(".entreea")?.cloneNode(true) as Element | undefined;
+      for (const number of head?.querySelectorAll(".homonym") ?? []) number.remove();
+      const headword = head?.textContent.replace(/[\s,]+$/, "").trim() ?? "";
       items.push({ element: definition, number: "", label: headword, depth: 0, parent: -1, sense: false });
     }
     const indexes = new Map<Element, number>();

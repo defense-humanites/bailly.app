@@ -3,7 +3,7 @@
   import type { NuxtLinkProps } from "#app";
   import type { CardProps } from "@nuxt/ui";
   import type { Entry, EntryData } from "#shared/types/api";
-  import { entryRoute, homonymAnchor } from "~/utils/entryUri";
+  import { entryRoute, homonymAnchor, numberHeadword } from "~/utils/entryUri";
   import { linkDefinition } from "~/utils/linkedEntries";
 
   type DisplayedEntry = Entry<"word" | "uri" | "excerpt"> & Partial<Pick<EntryData, "htmlDefinition">>;
@@ -65,8 +65,15 @@
    */
   const excerptParts = (shown: DisplayedEntry) => splitExcerpt(shown.word, shown.excerpt || shown.word);
 
-  const definitionHtml = (htmlDefinition: string): string =>
-    greek.html(linkDefinition(htmlDefinition, { links: !props.link && !props.noLinks }));
+  /**
+   * A homonym's headword followed by its number (cf. `numberHeadword`), in
+   * its entry's page as alone (e.g. a bookmark of `oudos#2`).
+   */
+  const definitionHtml = (shown: DisplayedEntry, htmlDefinition: string): string => {
+    const number = homonymAnchor(shown.uri);
+    const html = linkDefinition(htmlDefinition, { links: !props.link && !props.noLinks });
+    return greek.html(number ? numberHeadword(html, number) : html);
+  };
 
   /**
    * Follows the definition's internal links within the application, rather
@@ -109,7 +116,7 @@
       class="definition font-serif"
       :class="ui?.entry"
       @click="onDefinitionClick"
-      v-html="definitionHtml(shown.htmlDefinition)"
+      v-html="definitionHtml(shown, shown.htmlDefinition)"
     />
     <!-- eslint-enable vue/no-v-html -->
     <div
