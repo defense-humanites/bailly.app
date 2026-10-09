@@ -11,6 +11,8 @@
     shown: boolean;
     /** Whether the entry groups homonyms (an icon before the word). */
     homonyms?: boolean;
+    /** The number of the homonym being read, after the word, or none. */
+    homonym?: string;
     /** The path to the sense being read (cf. `sensePath`), after the word. */
     path?: SenseStep[];
     /** A long entry's outline (cf. `entryOutline`), or none. */
@@ -104,6 +106,7 @@
           <EntryCompactPath
             :word="word"
             :homonyms="homonyms"
+            :homonym="homonym"
             :path="path"
           />
           <UIcon
@@ -124,6 +127,7 @@
         class="grow"
         :word="word"
         :homonyms="homonyms"
+        :homonym="homonym"
         :path="path"
       />
       <UButton

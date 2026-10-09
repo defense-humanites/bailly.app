@@ -6,6 +6,9 @@
     word: string;
     /** Whether the entry groups homonyms (an icon before the word). */
     homonyms?: boolean;
+    /** The number of the homonym being read (in superscript, as after its
+        headword in the text), or none. */
+    homonym?: string;
     /** The path to the sense being read (cf. `sensePath`), after the word. */
     path?: SenseStep[];
   }>();
@@ -33,7 +36,10 @@
     v-if="homonyms"
     name="i-lucide-playing-cards-fan"
     class="me-1 inline-block size-4 align-[-0.2em] text-muted"
-  />{{ word }}</span><span
+  />{{ word }}<sup
+    v-if="homonym"
+    class="ms-px"
+  >{{ homonym }}</sup></span><span
     v-if="path?.length"
     lang="fr"
     class="min-w-0 truncate font-normal text-muted italic"

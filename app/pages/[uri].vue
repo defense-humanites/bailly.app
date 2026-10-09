@@ -111,13 +111,28 @@
     updateSensePath();
   });
 
+  /**
+   * For a group of homonyms, the number of the one being read (cf.
+   * `numberHeadword`), after the word in the compact bar: the one holding
+   * the sense being read, or whose top has passed the reading line (its
+   * head, before its senses; a short one, without any). None above the
+   * first one.
+   */
+  const homonymShown = ref("");
+
   const updateSensePath = (): void => {
     const line = readingLine();
-    const senses = article.value ? [...article.value.querySelectorAll(".definition")].flatMap(sensesIn) : [];
-    currentSense.value = followed ?? (line === undefined ? null : senseAt(senses, line));
-    const path = compactBarShown.value ? sensePath(currentSense.value) : [];
+    const definitions = article.value ? [...article.value.querySelectorAll(".definition")] : [];
+    const senses = definitions.flatMap(sensesIn);
+    const definition = followed?.closest(".definition") ?? (line === undefined ? null : senseAt(definitions, line));
+    let sense = followed ?? (line === undefined ? null : senseAt(senses, line));
+    // In the head of a homonym, not in the previous one's last sense.
+    if (sense && definition && !definition.contains(sense)) sense = null;
+    currentSense.value = sense;
+    const path = compactBarShown.value && sense && !sense.matches(".definition") ? sensePath(sense) : [];
     // Only when it changes (the bar re-rendered otherwise).
     if (JSON.stringify(path) !== JSON.stringify(sensePathShown.value)) sensePathShown.value = path;
+    homonymShown.value = compactBarShown.value && definitions.length > 1 ? definition?.querySelector(".entreea .homonym")?.textContent ?? "" : "";
   };
 
   /**
@@ -249,6 +264,7 @@
       :siblings="siblings"
       :shown="compactBarShown"
       :homonyms="!!entry.children?.length"
+      :homonym="homonymShown"
       :path="sensePathShown"
       :outline="outline"
       :current="currentSense"
