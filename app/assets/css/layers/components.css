@@ -260,12 +260,18 @@
 
   /*
    * A sense chosen in the outline, pointed out for a moment (cf.
-   * `[data-card-highlight]` below), in a neutral color, as the cards of an
-   * ambiguous form's page.
+   * `[data-card-highlight]` below), as the cards of an ambiguous form's
+   * page: outlined, in gold as when previewed, discreetly (a shade above
+   * the tint: between gold 200 and 300; 700 in the dark theme). A frame, not
+   * the tint: the one chosen told apart from one previewed next.
    */
   .definition :is(.Rub, .rub, .pp, .sect, .fleche)[data-card-highlight] {
-    --card-highlight: var(--ui-color-neutral-400);
+    --card-highlight: color-mix(in oklab, var(--color-gold-200) 50%, var(--color-gold-300));
     @apply rounded-sm;
+  }
+
+  .dark .definition :is(.Rub, .rub, .pp, .sect, .fleche)[data-card-highlight] {
+    --card-highlight: var(--color-gold-700);
   }
 
   /* The etymologies, in blue: set apart from the text (7.7:1 on the marble). */

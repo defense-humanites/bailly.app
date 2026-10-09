@@ -138,7 +138,7 @@
   /**
    * Brings an item of the outline into view: its top just above the reading
    * line, where it is the sense being read (marked as such at once, and
-   * followed: cf. above), then points it out (`highlightCard`).
+   * followed: cf. above), then points it out (`pointOut`).
    */
   const goToSense = (item: OutlineItem): void => {
     const line = readingLine();
@@ -148,9 +148,17 @@
     followed = item.element;
     updateSensePath();
     scroller.scrollBy({ top: item.element.getBoundingClientRect().top - line + 4, behavior: reduced ? "instant" : "smooth" });
-    // Pointed out once reached, as the cards of an ambiguous form's page:
-    // where it is, if the page can't bring it to the reading line.
-    if (item.element instanceof HTMLElement) highlightCard(item.element);
+    // Pointed out once reached, as the cards of an ambiguous form's page
+    // (in gold, cf. `components.css`): where it is, if the page can't bring
+    // it to the reading line. Not if another sense is previewed meanwhile
+    // (one pointed out at a time, cf. `EntryOutline`).
+    const element = item.element;
+    if (element instanceof HTMLElement) {
+      afterScroll(() => {
+        const previewed = document.querySelector(".definition [data-outline-preview]");
+        if (!previewed || previewed === element) pointOut(element);
+      });
+    }
   };
 
   /**

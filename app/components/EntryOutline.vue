@@ -33,17 +33,23 @@
    * Hovered with a mouse, or focused from the keyboard, an item tints its
    * sense in the text (`[data-outline-preview]`, cf. `components.css`):
    * where it leads, before it is chosen. Not from a touch (it would stay
-   * tinted), nor once chosen (pointed out then, cf. `goToSense`).
+   * tinted), nor once chosen (pointed out then, cf. `goToSense`). One sense
+   * singled out at a time: another one chosen just before (outlined) fades
+   * at once.
    */
   let previewed: Element | null = null;
   const preview = (item: OutlineItem | null): void => {
     previewed?.removeAttribute("data-outline-preview");
     previewed = item?.element ?? null;
-    previewed?.setAttribute("data-outline-preview", "");
+    if (!previewed) return;
+    for (const chosen of document.querySelectorAll(".definition [data-card-highlight]")) {
+      if (chosen !== previewed) hastenPointOut(chosen);
+    }
+    previewed.setAttribute("data-outline-preview", "");
   };
   // On a move of the mouse, not on its entering an item: the outline
   // scrolls by itself (cf. `reveal`), and an item slid under a still cursor
-  // would be previewed.
+  // would be previewed (the sense just chosen then not pointed out).
   // (Some browsers send a move then, the cursor in place: compared with the
   // last one, anywhere, recorded once the items have seen it.)
   const pointer = { x: Number.NaN, y: Number.NaN };

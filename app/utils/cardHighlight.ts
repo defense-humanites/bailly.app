@@ -79,3 +79,17 @@ export function revealThen(element: HTMLElement, callback: () => void): void {
   element.scrollIntoView({ block: "nearest", behavior: reduced ? "instant" : "smooth" });
   afterScroll(callback);
 }
+
+/**
+ * Hastens the end of an element's pointing out (cf. `pointOut`), if it runs:
+ * what remains of its animation played in `duration` ms (e.g. a sense chosen
+ * in the outline, when another one is previewed: one pointed out at a time).
+ */
+export function hastenPointOut(element: Element, duration = 250): void {
+  for (const animation of element.getAnimations()) {
+    const end = animation.effect?.getComputedTiming().endTime;
+    const time = animation.currentTime;
+    if (typeof end !== "number" || typeof time !== "number" || end <= time) continue;
+    animation.updatePlaybackRate((end - time) / duration);
+  }
+}

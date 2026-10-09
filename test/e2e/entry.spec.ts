@@ -134,9 +134,19 @@ test.describe("entry page", () => {
     await page.mouse.move(10, 10);
     await expect(sense).not.toHaveAttribute("data-outline-preview");
     await part.click();
-    // The part brought into view, then marked as the one being read.
+    // The part brought into view, then marked as the one being read, and
+    // outlined for a moment.
     await expect(part).toHaveAttribute("aria-current", "location");
     await expect(bar).toContainText(/λόγος\s· B\./);
+    await expect(sense).toHaveAttribute("data-card-highlight");
+    await expect(sense).not.toHaveAttribute("data-card-highlight");
+    // Chosen again, then another item hovered: one sense singled out at a
+    // time, the chosen one fading at once.
+    await part.click();
+    await expect(sense).toHaveAttribute("data-card-highlight");
+    await outline.getByRole("button", { name: /^A\./ }).first().hover();
+    await expect(page.locator(".definition .Rub").first()).toHaveAttribute("data-outline-preview");
+    await expect(sense).not.toHaveAttribute("data-card-highlight", { timeout: 600 });
 
     await page.setViewportSize({ width: 390, height: 844 });
     await goto("/logos", { waitUntil: "hydration" });
