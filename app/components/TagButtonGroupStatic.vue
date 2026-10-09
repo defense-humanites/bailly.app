@@ -8,7 +8,7 @@
    * (cf. `audit-rendu-serveur.md`). Keep them in step with `TagButtonGroup`
    * (checked by `test/e2e/entry.spec.ts`). Its buttons do nothing meanwhile.
    */
-  const BUTTON = "font-medium inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors rounded-full text-sm gap-1.5 not-only:first:rounded-e-none not-only:last:rounded-s-none not-last:not-first:rounded-none focus-visible:z-[1] text-default hover:bg-(--app-card-hover) active:bg-(--app-card-active) outline-inverted/25 focus-visible:outline-3 p-1.5";
+  const BUTTON = "font-medium inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors rounded-full text-sm gap-1.5 not-only:first:rounded-e-none not-only:last:rounded-s-none not-last:not-first:rounded-none focus-visible:z-[1] text-default hover:bg-elevated active:bg-elevated outline-inverted/25 focus-visible:outline-3 p-1.5";
 </script>
 
 <template>
