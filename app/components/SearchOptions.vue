@@ -86,7 +86,7 @@
       color="neutral"
       variant="outline"
       size="lg"
-      class="relative w-12 shrink-0 [--card-highlight:var(--ui-primary)] justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border) hover:bg-(--search-hover) active:bg-(--search-hover) data-[state=open]:bg-(--search-hover) group-has-[input:focus-visible]/search:ring-primary"
+      class="relative w-12 shrink-0 [--card-highlight:var(--ui-primary)] justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border) hover:bg-(--search-hover) active:bg-(--search-active) data-[state=open]:bg-(--search-active) group-has-[input:focus-visible]/search:ring-primary"
       aria-label="Options de recherche"
     >
       <UChip

@@ -1,12 +1,13 @@
 /**
  * The background of the fields of the bookmarks page's menu bar (cf.
- * `signets.vue`, `CreateTag`): the cards', as the bar's buttons, lighter
- * when hovered or focused (as the search bar), in both themes (cf.
- * `--app-field-bg` and `--app-field-hover`, `root.css`); disabled too (the
+ * `signets.vue`, `CreateTag`): the cards', as the bar's buttons, darker
+ * when hovered (as them), lighter when focused (raised, as the search bar
+ * in use; in the dark theme, lighter in both cases; cf. `--app-field-bg`,
+ * `--app-field-hover` and `--app-field-focus`, `root.css`); disabled too (the
  * active tag's field, before the bookmarks are loaded or without tags),
  * rather than Nuxt UI's `soft` variant's, lighter in the dark theme.
  */
-export const FIELD_BACKGROUND = "bg-(--app-field-bg) hover:bg-(--app-field-hover) focus:bg-(--app-field-hover) disabled:bg-(--app-field-bg)";
+export const FIELD_BACKGROUND = "bg-(--app-field-bg) hover:bg-(--app-field-hover) focus:bg-(--app-field-focus) disabled:bg-(--app-field-bg)";
 
 /**
  * Their focus halo (an outline) and ring, as the search bar's, in other

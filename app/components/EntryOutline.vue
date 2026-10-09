@@ -149,7 +149,9 @@
   page (`forme/[[forme]].vue`), and the ones holding it in the text's color.
   In neutral colors, as that page's column: the numbers in their line's,
   not in the primary color of the text's (a column of them would draw the
-  eye from the text).
+  eye from the text). Hovered and current as what lies on the page
+  (`--app-page-hover`, `--app-page-active`); in the compact bar's popover,
+  on a card's background, it sets the cards' instead.
 -->
 <template>
   <nav
@@ -170,7 +172,7 @@
           class="flex w-full min-w-0 items-baseline gap-1.5 rounded-md py-1 pe-2.5 text-start font-serif text-sm transition-colors focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)"
           :class="[
             INDENTS[item.depth] ?? INDENTS.at(-1),
-            index === currentIndex ? 'bg-accented/50 text-highlighted' : chain.has(index) ? 'text-highlighted hover:bg-accented/50' : 'text-muted hover:bg-accented/50 hover:text-highlighted',
+            index === currentIndex ? 'bg-(--app-page-active) text-highlighted' : chain.has(index) ? 'text-highlighted hover:bg-(--app-page-hover)' : 'text-muted hover:bg-(--app-page-hover) hover:text-highlighted',
           ]"
           @click="choose(item)"
           @pointermove="onPointerMove($event, item)"

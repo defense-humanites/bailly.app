@@ -58,7 +58,8 @@
   the accessibility tree (`invisible`). The arrows' hover is the header
   menu's (`bg-elevated`, Nuxt UI's, is the bar's own color in the light
   theme), with the moderately rounded corners of the line's (and of the
-  outline's items), not round.
+  outline's items), not round. The outline's popover has the cards'
+  background: its items take the cards' hover and active colors.
 -->
 <template>
   <div class="pointer-events-none sticky top-(--header-bottom) z-20 h-0 transition-[top] duration-300 ease-out motion-reduce:transition-none">
@@ -75,7 +76,7 @@
         variant="ghost"
         size="sm"
         :aria-label="`Entrée précédente : ${greek.text(siblings.previous.word)}`"
-        class="rounded-md hover:bg-(--app-page-hover)/50 active:bg-(--app-page-hover)/50"
+        class="rounded-md hover:bg-(--app-nav-hover) active:bg-(--app-nav-active)"
       />
       <span
         v-else
@@ -91,13 +92,13 @@
         v-if="outline?.length && !wide"
         v-model:open="outlineOpen"
         :content="{ side: 'bottom', align: 'center', sideOffset: 6, onCloseAutoFocus: restoreFocus }"
-        :ui="{ content: 'w-[min(24rem,calc(100vw-4rem))] max-h-[min(32rem,var(--reka-popover-content-available-height))] overflow-y-auto p-1.5' }"
+        :ui="{ content: '[--app-page-hover:var(--app-card-hover)] [--app-page-active:var(--app-card-active)] w-[min(24rem,calc(100vw-4rem))] max-h-[min(32rem,var(--reka-popover-content-available-height))] overflow-y-auto p-1.5' }"
       >
         <button
           ref="outlineTrigger"
           type="button"
           aria-label="Sommaire de l'entrée"
-          class="flex h-8 min-w-0 grow items-center justify-center gap-1 rounded-md px-1.5 transition-colors hover:bg-(--app-page-hover)/50 focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted) aria-expanded:bg-(--app-page-hover)/50"
+          class="flex h-8 min-w-0 grow items-center justify-center gap-1 rounded-md px-1.5 transition-colors hover:bg-(--app-nav-hover) focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted) aria-expanded:bg-(--app-nav-active)"
         >
           <EntryCompactPath
             :word="word"
@@ -132,7 +133,7 @@
         variant="ghost"
         size="sm"
         :aria-label="`Entrée suivante : ${greek.text(siblings.next.word)}`"
-        class="rounded-md hover:bg-(--app-page-hover)/50 active:bg-(--app-page-hover)/50"
+        class="rounded-md hover:bg-(--app-nav-hover) active:bg-(--app-nav-active)"
       />
       <span
         v-else

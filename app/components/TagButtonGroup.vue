@@ -154,7 +154,7 @@
         icon="i-lucide-tags"
         color="neutral"
         variant="ghost"
-        class="data-[state=open]:bg-elevated"
+        class="data-[state=open]:bg-(--app-card-active)"
         aria-label="Toutes les étiquettes"
       />
 
@@ -190,7 +190,7 @@
             :ui="{
               input: '[&_input]:text-sm',
               viewport: 'max-h-72 p-0',
-              item: 'rounded-md px-2 py-1.5 before:rounded-md data-highlighted:not-data-disabled:before:bg-elevated/50',
+              item: 'rounded-md px-2 py-1.5 before:rounded-md data-highlighted:not-data-disabled:before:bg-(--app-menu-highlight)',
               itemTrailingIcon: 'hidden',
               empty: 'px-2 py-1.5 text-start text-sm',
             }"
