@@ -44,7 +44,7 @@
     ...(FEATURES.news || FEATURES.donations ? [{ id: "dons", title: "Dons" }] : []),
     { id: "contact", title: "Contact" },
   ];
-  const { currentId, follow } = useCurrentSection(sections.map(({ id }) => id));
+  const { currentId, follow } = useCurrentSection(sections.map(({ id }) => id), { anchors: true });
 </script>
 
 <template>
