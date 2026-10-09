@@ -53,6 +53,25 @@ test.describe("citing an entry", () => {
     }
   });
 
+  test("a part of a reference selected, not the whole copied", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+    await goto("/logos", { waitUntil: "hydration" });
+    const citation = await openCitation(page);
+    const reference = citation.locator("section p").first();
+    // Selected with the mouse: the click ending the selection copies nothing.
+    const box = (await reference.boundingBox())!;
+    await page.mouse.move(box.x + 4, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 });
+    await page.mouse.up();
+    expect(await page.evaluate(() => getSelection()!.toString().length)).toBeGreaterThan(0);
+    await expect(citation.getByRole("button", { name: "Référence copiée" })).toHaveCount(0);
+    // A click elsewhere (the selection given up) copies it all.
+    await page.mouse.click(box.x + box.width * 0.9, box.y + box.height / 2);
+    await expect(citation.getByRole("button", { name: "Référence copiée" })).toBeVisible();
+  });
+
   test("on the home page's random entry", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
     const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });
