@@ -22,9 +22,9 @@ export const ENTRY_CITATION_FORMS = ["note", "short", "authorDate"] as const;
 export type EntryCitationForm = typeof ENTRY_CITATION_FORMS[number];
 
 export const ENTRY_CITATION_FORM_LABELS: Record<EntryCitationForm, string> = {
-  // Short: tabs, in the narrow column on the entry's right.
-  note: "Complète",
-  short: "Abrégée",
+  // In a select, as the bibliography's styles (cf. `EntryCitation`).
+  note: "Note complète",
+  short: "Note abrégée",
   authorDate: "Auteur-date",
 };
 

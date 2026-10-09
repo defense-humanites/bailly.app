@@ -51,14 +51,50 @@
   const workReference = computed((): Citation =>
     workCitation(style.value, { version: props.version, accessed: accessed.value }));
 
+  /** The two references, presented alike (cf. the template). */
+  const parts = computed(() => [
+    {
+      key: "entry" as const,
+      title: "Dans le texte ou en note",
+      headingId: entryHeadingId,
+      selectLabel: "Forme de la référence",
+      items: formItems,
+      value: form.value,
+      choose: (value: unknown): void => {
+        if (isEntryCitationForm(value)) form.value = value;
+      },
+      reference: entryReference.value,
+    },
+    {
+      key: "work" as const,
+      title: "En bibliographie",
+      headingId: workHeadingId,
+      selectLabel: "Norme de la bibliographie",
+      items: styleItems,
+      value: style.value,
+      choose: (value: unknown): void => {
+        if (isCitationStyle(value)) style.value = value;
+      },
+      reference: workReference.value,
+    },
+  ]);
+
   const toast = useToast();
+
+  /**
+   * The reference just copied (its button's icon a check for a moment), as
+   * the synchronization's key (cf. `SyncDialog`).
+   */
+  const copied = ref<"entry" | "work">();
+  let copiedTimer: ReturnType<typeof setTimeout> | undefined;
 
   /**
    * Copies a reference as HTML (its italics kept by word processors) and as
    * plain text (for the other applications, or a paste without formatting);
    * as plain text only where the clipboard takes no HTML.
    */
-  const copy = async (reference: () => Citation): Promise<void> => {
+  const copy = async (which: "entry" | "work"): Promise<void> => {
+    const reference = (): Citation => (which === "entry" ? entryReference.value : workReference.value);
     accessed.value = new Date();
     const { text, html } = reference();
     try {
@@ -70,6 +106,11 @@
       } else {
         await navigator.clipboard.writeText(text);
       }
+      copied.value = which;
+      clearTimeout(copiedTimer);
+      copiedTimer = setTimeout(() => {
+        copied.value = undefined;
+      }, 2_000);
       toast.add({ title: "Référence copiée", icon: "i-lucide-circle-check", color: "success" });
     } catch {
       toast.add({ title: "La référence n'a pas pu être copiée.", icon: "i-lucide-circle-alert", color: "error" });
@@ -79,82 +120,58 @@
 
 <!--
   To cite the entry read: in the text or a note (three forms), and the work
-  in the bibliography (four styles), each with a button copying it. Rendered
-  in the browser only: the date of consultation is the reader's, and the
-  choices are kept on the device.
+  in the bibliography (four styles), alike: a title, the form or style
+  chosen in a select on its right, the reference in a box which a click
+  copies (its button, for the keyboard, a check for a moment), as the
+  synchronization's key (cf. `SyncDialog`). Rendered in the browser only:
+  the date of consultation is the reader's, and the choices are kept on
+  the device.
 -->
 <template>
-  <div class="space-y-4 text-sm">
+  <div class="space-y-5 text-sm">
     <ClientOnly>
       <section
-        :aria-labelledby="entryHeadingId"
-        class="space-y-2"
-      >
-        <h3
-          :id="entryHeadingId"
-          class="font-semibold text-highlighted"
-        >
-          Dans le texte ou en note
-        </h3>
-        <UTabs
-          v-model="form"
-          :items="formItems"
-          :content="false"
-          size="xs"
-          color="neutral"
-          variant="pill"
-          class="w-full"
-        />
-        <!-- Our own references (their lemma escaped, cf. `utils/citation.ts`). -->
-        <!-- eslint-disable vue/no-v-html -->
-        <p
-          class="font-serif text-default"
-          v-html="entryReference.html"
-        />
-        <!-- eslint-enable vue/no-v-html -->
-        <UButton
-          label="Copier"
-          icon="i-lucide-copy"
-          size="xs"
-          color="neutral"
-          variant="outline"
-          @click="copy(() => entryReference)"
-        />
-      </section>
-
-      <section
-        :aria-labelledby="workHeadingId"
+        v-for="part in parts"
+        :key="part.key"
+        :aria-labelledby="part.headingId"
         class="space-y-2"
       >
         <div class="flex items-center justify-between gap-2">
           <h3
-            :id="workHeadingId"
+            :id="part.headingId"
             class="font-semibold text-highlighted"
           >
-            En bibliographie
+            {{ part.title }}
           </h3>
           <USelect
-            v-model="style"
-            :items="styleItems"
+            :model-value="part.value"
+            :items="part.items"
             size="xs"
-            aria-label="Norme de la bibliographie"
-            class="w-28"
+            :aria-label="part.selectLabel"
+            class="w-36"
+            @update:model-value="part.choose"
           />
         </div>
-        <!-- eslint-disable vue/no-v-html -->
-        <p
-          class="font-serif text-muted"
-          v-html="workReference.html"
-        />
-        <!-- eslint-enable vue/no-v-html -->
-        <UButton
-          label="Copier"
-          icon="i-lucide-copy"
-          size="xs"
-          color="neutral"
-          variant="outline"
-          @click="copy(() => workReference)"
-        />
+        <div class="relative">
+          <!-- Our own references (their lemma escaped, cf. `utils/citation.ts`). -->
+          <!-- eslint-disable vue/no-v-html -->
+          <p
+            class="cursor-pointer rounded-md bg-elevated p-3 pe-12 font-serif text-default transition-colors hover:bg-accented/60"
+            title="Copier la référence"
+            @click="copy(part.key)"
+            v-html="part.reference.html"
+          />
+          <!-- eslint-enable vue/no-v-html -->
+          <UButton
+            :icon="copied === part.key ? 'i-lucide-check' : 'i-lucide-copy'"
+            :aria-label="copied === part.key ? 'Référence copiée' : 'Copier la référence'"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            class="absolute end-1.5 top-1.5"
+            @click="copy(part.key)"
+          />
+        </div>
       </section>
     </ClientOnly>
   </div>

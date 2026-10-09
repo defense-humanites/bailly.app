@@ -16,9 +16,12 @@ test.describe("citing an entry", () => {
     const entryReference = citation.locator("section p").first();
     await expect(entryReference).toContainText("s. v. « λόγος », https://bailly.app/logos (consulté le");
 
-    await citation.getByRole("tab", { name: "Auteur-date" }).click();
+    await citation.getByRole("combobox", { name: "Forme de la référence" }).click();
+    await page.getByRole("option", { name: "Auteur-date" }).click();
     await expect(entryReference).toHaveText("(Bailly, 2023, s. v. λόγος)");
-    await citation.getByRole("button", { name: "Copier" }).first().click();
+    // Copied by its button (or a click on it), as the synchronization's key.
+    await citation.getByRole("button", { name: "Copier la référence" }).first().click();
+    await expect(citation.getByRole("button", { name: "Référence copiée" })).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("(Bailly, 2023, s. v. λόγος)");
 
     // Author-date follows the bibliography's style; both choices kept.
@@ -28,7 +31,7 @@ test.describe("citing an entry", () => {
     await expect(citation.locator("section p").nth(1)).toContainText("BAILLY, Anatole.");
     await page.reload();
     citation = await openCitation(page);
-    await expect(citation.getByRole("tab", { name: "Auteur-date" })).toHaveAttribute("aria-selected", "true");
+    await expect(citation.getByRole("combobox", { name: "Forme de la référence" })).toContainText("Auteur-date");
     await expect(citation.locator("section p").nth(1)).toContainText("BAILLY, Anatole.");
   });
 
