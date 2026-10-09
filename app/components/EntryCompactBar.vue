@@ -58,7 +58,8 @@
   the accessibility tree (`invisible`). The arrows' hover is the header
   menu's (`bg-elevated`, Nuxt UI's, is the bar's own color in the light
   theme), with the moderately rounded corners of the line's (and of the
-  outline's items), not round. The outline's popover has the cards'
+  outline's items), not round, and of the line's height (28 px, as the
+  path opening the outline and the placeholders of a missing neighbour). The outline's popover has the cards'
   background: its items take the cards' hover and active colors.
 -->
 <template>
@@ -80,7 +81,7 @@
       />
       <span
         v-else
-        class="size-8 shrink-0"
+        class="size-7 shrink-0"
       />
       <!--
         Below `xl` (where the outline has a column of its own), for a long
@@ -98,7 +99,7 @@
           ref="outlineTrigger"
           type="button"
           aria-label="Sommaire de l'entrée"
-          class="flex h-8 min-w-0 grow items-center justify-center gap-1 rounded-md px-1.5 transition-colors hover:bg-(--app-nav-hover) focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted) aria-expanded:bg-(--app-nav-active)"
+          class="flex h-7 min-w-0 grow items-center justify-center gap-1 rounded-md px-1.5 transition-colors hover:bg-(--app-nav-hover) focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted) aria-expanded:bg-(--app-nav-active)"
         >
           <EntryCompactPath
             :word="word"
@@ -137,7 +138,7 @@
       />
       <span
         v-else
-        class="size-8 shrink-0"
+        class="size-7 shrink-0"
       />
     </nav>
   </div>
