@@ -247,15 +247,16 @@
     --sense-tint: color-mix(in oklab, var(--color-gold-900) 50%, var(--ui-color-neutral-800));
   }
 
+  /* Rounded at all times: the tint keeps its corners while it fades. */
   .definition :is(.Rub, .rub, .pp, .sect, .fleche) {
     transition-property: background-color, box-shadow;
     transition-duration: 150ms;
+    @apply rounded-sm;
   }
 
   .definition [data-outline-preview] {
     background-color: var(--sense-tint);
     box-shadow: 0 0 0 0.375rem var(--sense-tint);
-    @apply rounded-sm;
   }
 
   /*
@@ -267,7 +268,6 @@
    */
   .definition :is(.Rub, .rub, .pp, .sect, .fleche)[data-card-highlight] {
     --card-highlight: color-mix(in oklab, var(--color-gold-200) 50%, var(--color-gold-300));
-    @apply rounded-sm;
   }
 
   .dark .definition :is(.Rub, .rub, .pp, .sect, .fleche)[data-card-highlight] {
