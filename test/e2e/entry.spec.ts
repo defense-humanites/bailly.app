@@ -133,7 +133,12 @@ test.describe("entry page", () => {
     await expect(sense).toHaveAttribute("data-outline-preview");
     await page.mouse.move(10, 10);
     await expect(sense).not.toHaveAttribute("data-outline-preview");
+    const { x, y, width, height } = (await part.boundingBox())!;
     await part.click();
+    // Not tinted again while the cursor stays on the item chosen (checked
+    // at once: the outline then unfolds the part, moving the item).
+    await page.mouse.move(x + width / 2 + 4, y + height / 2);
+    expect(await sense.getAttribute("data-outline-preview")).toBeNull();
     // The part brought into view, then marked as the one being read, and
     // outlined for a moment.
     await expect(part).toHaveAttribute("aria-current", "location");

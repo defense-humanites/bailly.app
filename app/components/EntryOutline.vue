@@ -62,15 +62,22 @@
     },
     { passive: true },
   );
+  // Nor the item just chosen, until the cursor has left it.
+  let chosen: Element | null = null;
   const onPointerMove = (event: PointerEvent, item: OutlineItem): void => {
     if (event.pointerType !== "mouse" || (event.clientX === pointer.x && event.clientY === pointer.y)) return;
-    if (previewed !== item.element) preview(item);
+    if (previewed !== item.element && chosen !== item.element) preview(item);
+  };
+  const onPointerLeave = (item: OutlineItem): void => {
+    if (chosen === item.element) chosen = null;
+    preview(null);
   };
   const onFocus = (event: FocusEvent, item: OutlineItem): void => {
     if (event.target instanceof Element && event.target.matches(":focus-visible")) preview(item);
   };
   const choose = (item: OutlineItem): void => {
     preview(null);
+    chosen = item.element;
     emit("select", item);
   };
   onBeforeUnmount(() => {
@@ -167,7 +174,7 @@
           ]"
           @click="choose(item)"
           @pointermove="onPointerMove($event, item)"
-          @pointerleave="preview(null)"
+          @pointerleave="onPointerLeave(item)"
           @focus="onFocus($event, item)"
           @blur="preview(null)"
         >
