@@ -82,18 +82,12 @@
   const toast = useToast();
 
   /**
-   * The reference just copied (its button's icon a check for a moment), as
-   * the synchronization's key (cf. `SyncDialog`).
-   */
-  const copied = ref<"entry" | "work">();
-  let copiedTimer: ReturnType<typeof setTimeout> | undefined;
-
-  /**
    * Copies a reference as HTML (its italics kept by word processors) and as
    * plain text (for the other applications, or a paste without formatting);
-   * as plain text only where the clipboard takes no HTML.
+   * as plain text only where the clipboard takes no HTML. Whether it could
+   * (cf. `CopyBox`).
    */
-  const copy = async (which: "entry" | "work"): Promise<void> => {
+  const copy = async (which: "entry" | "work"): Promise<boolean> => {
     const reference = (): Citation => (which === "entry" ? entryReference.value : workReference.value);
     accessed.value = new Date();
     const { text, html } = reference();
@@ -106,14 +100,11 @@
       } else {
         await navigator.clipboard.writeText(text);
       }
-      copied.value = which;
-      clearTimeout(copiedTimer);
-      copiedTimer = setTimeout(() => {
-        copied.value = undefined;
-      }, 2_000);
       toast.add({ title: "Référence copiée", icon: "i-lucide-circle-check", color: "success" });
+      return true;
     } catch {
       toast.add({ title: "La référence n'a pas pu être copiée.", icon: "i-lucide-circle-alert", color: "error" });
+      return false;
     }
   };
 </script>
@@ -122,8 +113,7 @@
   To cite the entry read: in the text or a note (three forms), and the work
   in the bibliography (four styles), alike: a title, the form or style
   chosen in a select on its right, the reference in a box which a click
-  copies (its button, for the keyboard, a check for a moment), as the
-  synchronization's key (cf. `SyncDialog`). Rendered in the browser only:
+  copies (`CopyBox`, as the synchronization's key). Rendered in the browser only:
   the date of consultation is the reader's, and the choices are kept on
   the device.
 -->
@@ -152,26 +142,19 @@
             @update:model-value="part.choose"
           />
         </div>
-        <div class="relative">
+        <CopyBox
+          label="Copier la référence"
+          copied-label="Référence copiée"
+          :copy="() => copy(part.key)"
+        >
           <!-- Our own references (their lemma escaped, cf. `utils/citation.ts`). -->
           <!-- eslint-disable vue/no-v-html -->
           <p
-            class="cursor-pointer rounded-md bg-elevated p-3 pe-12 font-serif text-default transition-colors hover:bg-accented/60"
-            title="Copier la référence"
-            @click="copy(part.key)"
+            class="font-serif text-default"
             v-html="part.reference.html"
           />
           <!-- eslint-enable vue/no-v-html -->
-          <UButton
-            :icon="copied === part.key ? 'i-lucide-check' : 'i-lucide-copy'"
-            :aria-label="copied === part.key ? 'Référence copiée' : 'Copier la référence'"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            class="absolute end-1.5 top-1.5"
-            @click="copy(part.key)"
-          />
-        </div>
+        </CopyBox>
       </section>
     </ClientOnly>
   </div>
