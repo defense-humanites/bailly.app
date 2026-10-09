@@ -118,7 +118,10 @@ describe("entryOutline", () => {
       ["1.", "avec idée de lieu, d’ord. après son rég. νηῶν ἑκάς", 1, 1],
       ["2.", "p. suite, οὐχ ἑκὰς χρόνου", 1, 1],
     ]);
-    expect(outlineWorthy(items)).toBe(true);
+    // An outline if an item starts out of the first screen; none otherwise.
+    expect(outlineWorthy(items, element => element.textContent.includes("prép."))).toBe(true);
+    expect(outlineWorthy(items, () => false)).toBe(false);
+    expect(outlineWorthy(items.slice(0, 1), () => true)).toBe(false);
   });
 
   test("a group of homonyms: each with its senses under it", () => {
@@ -136,7 +139,7 @@ describe("entryOutline", () => {
       ["1.", "où", 1, true],
       ["2.", "comme", 1, true],
     ]);
-    expect(outlineWorthy(items)).toBe(false);
+    expect(outlineWorthy(items, element => element.textContent.includes("comme"))).toBe(true);
   });
 });
 

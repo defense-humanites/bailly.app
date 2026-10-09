@@ -228,10 +228,13 @@ export function entryOutline(root: Element): OutlineItem[] {
 }
 
 /**
- * Whether an entry is long enough for an outline: at least two parts or
- * sections (« A. », « I. »), or six senses.
+ * Whether an entry needs an outline: at least two items (senses, sections
+ * or homonyms), one of them starting out of the first screen (`beyondFold`,
+ * the page at its top): the outline leads to what can't be seen; none if
+ * every number is in view at once, however many (9 October 2026).
+ * @param items The entry's outline (cf. `entryOutline`).
+ * @param beyondFold Whether an item's element starts out of the first screen.
  */
-export function outlineWorthy(items: OutlineItem[]): boolean {
-  const senses = items.filter(item => item.sense);
-  return senses.filter(item => !item.element.matches(".pp")).length >= 2 || senses.length >= 6;
+export function outlineWorthy(items: OutlineItem[], beyondFold: (element: Element) => boolean): boolean {
+  return items.length >= 2 && items.some(item => beyondFold(item.element));
 }

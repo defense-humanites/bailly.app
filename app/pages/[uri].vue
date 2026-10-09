@@ -122,18 +122,46 @@
 
   /**
    * A long entry's outline (cf. `entryOutline`, `outlineWorthy`), read from
-   * its definitions once rendered (again when their Greek is transliterated
-   * or not): in a column beside the card from `xl`, from the compact bar
-   * below. None for a short entry.
+   * its definitions once rendered: in a column beside the card from `xl`,
+   * from the compact bar below. Only if an item starts out of the first
+   * screen (its top, the page at its top, in the page's last tenth,
+   * `FOLD_SHARE`, at least `FOLD_MARGIN` px, or below: a number barely
+   * in view, its text not): read again when that may change, as the
+   * entry's size (the width, the reading font's size, the Greek
+   * transliterated or not) or the window's height, by more than
+   * `HEIGHT_CHANGE` (not a phone's toolbars, folding as the page scrolls:
+   * no outline coming or going while reading).
    */
+  const FOLD_SHARE = 0.1;
+  const FOLD_MARGIN = 40;
+  const HEIGHT_CHANGE = 0.15;
+  const pageScroller = usePageScroller();
+  const beyondFold = (element: Element): boolean => {
+    const box = pageScroller.value;
+    const top = element.getBoundingClientRect().top - (box?.getBoundingClientRect().top ?? 0) + (box?.scrollTop ?? 0);
+    const height = box?.clientHeight ?? window.innerHeight;
+    return top > height - Math.max(FOLD_MARGIN, height * FOLD_SHARE);
+  };
   const outline = shallowRef<OutlineItem[]>([]);
+  let measuredHeight = 0;
   const readOutline = (): void => {
+    measuredHeight = window.innerHeight;
     const items = article.value ? entryOutline(article.value) : [];
-    outline.value = outlineWorthy(items) ? items : [];
+    const shown = outlineWorthy(items, beyondFold) ? items : [];
+    // Only when it changes (the outline re-rendered otherwise).
+    const same = shown.length === outline.value.length && shown.every((item, index) => item.element === outline.value[index]!.element && item.label === outline.value[index]!.label);
+    if (!same) outline.value = shown;
     updateSensePath();
   };
   onMounted(readOutline);
   watch(greek.transliterated, () => nextTick(readOutline));
+  const readOutlineSoon = useDebounceFn(readOutline, 150);
+  useResizeObserver(article, () => {
+    void readOutlineSoon();
+  });
+  useEventListener(window, "resize", () => {
+    if (Math.abs(window.innerHeight - measuredHeight) > measuredHeight * HEIGHT_CHANGE) void readOutlineSoon();
+  });
 
   /**
    * Brings an item of the outline into view: its top just above the reading

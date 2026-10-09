@@ -119,6 +119,22 @@ test.describe("entry page", () => {
     await expect(bar).not.toContainText("·");
   });
 
+  test("an outline only if a section starts out of the first screen", async ({ page, goto }) => {
+    const outline = page.getByRole("navigation", { name: "Sommaire de l'entrée" });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    // Three senses, the third one below the window: an outline.
+    await goto(encodeURI("/thnêskô"), { waitUntil: "hydration" });
+    await expect(outline).toBeVisible();
+    // Several sections, all in view at once: none.
+    await goto(encodeURI("/plektanê"), { waitUntil: "hydration" });
+    await expect(page.locator(".definition .rub").first()).toBeVisible();
+    await expect(outline).toHaveCount(0);
+    // The window made much shorter, its last sections now below it: one,
+    // without reloading the page.
+    await page.setViewportSize({ width: 1440, height: 420 });
+    await expect(outline).toBeVisible();
+  });
+
   test("a long entry's outline: beside the card from xl, from the compact bar below", async ({ page, goto }) => {
     const bar = page.getByRole("navigation", { name: "Navigation de l'entrée" });
     const outline = page.getByRole("navigation", { name: "Sommaire de l'entrée" });
