@@ -87,7 +87,8 @@
    * (as `useCurrentSection`'s), not higher than the bar's bottom edge: the
    * sense in view rather than the one passing under the bar. None while the
    * bar is hidden, nor in a definition's head. The sense being read is also
-   * the one the outline marks.
+   * the one the outline marks (in a group of homonyms, in one's head, or
+   * in a short one, the homonym itself).
    */
   const article = useTemplateRef<HTMLElement>("article");
   const currentSense = shallowRef<Element | null>(null);
@@ -125,11 +126,13 @@
     const definitions = article.value ? [...article.value.querySelectorAll(".definition")] : [];
     const senses = definitions.flatMap(sensesIn);
     const definition = followed?.closest(".definition") ?? (line === undefined ? null : senseAt(definitions, line));
-    let sense = followed ?? (line === undefined ? null : senseAt(senses, line));
+    let sense = followed ? (followed.matches(".definition") ? null : followed) : line === undefined ? null : senseAt(senses, line);
     // In the head of a homonym, not in the previous one's last sense.
     if (sense && definition && !definition.contains(sense)) sense = null;
-    currentSense.value = sense;
-    const path = compactBarShown.value && sense && !sense.matches(".definition") ? sensePath(sense) : [];
+    // For the outline, in a group of homonyms, the homonym itself in its
+    // head (or a short one, without senses).
+    currentSense.value = sense ?? (definitions.length > 1 ? definition : null);
+    const path = compactBarShown.value ? sensePath(sense) : [];
     // Only when it changes (the bar re-rendered otherwise).
     if (JSON.stringify(path) !== JSON.stringify(sensePathShown.value)) sensePathShown.value = path;
     homonymShown.value = compactBarShown.value && definitions.length > 1 ? definition?.querySelector(".entreea .homonym")?.textContent ?? "" : "";

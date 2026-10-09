@@ -193,7 +193,10 @@
             class="truncate"
             :class="{ 'font-bold': !item.sense }"
             :lang="item.sense ? undefined : greek.lang.value"
-          >{{ item.label }}</span>
+          >{{ item.label }}<sup
+            v-if="item.homonym"
+            class="ms-px"
+          >{{ item.homonym }}</sup></span>
         </button>
       </li>
     </ul>

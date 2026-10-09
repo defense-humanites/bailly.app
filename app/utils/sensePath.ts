@@ -187,21 +187,23 @@ export type OutlineItem = {
   parent: number;
   /** Whether it is a sense (not a homonym). */
   sense: boolean;
+  /** A homonym's number (cf. `numberHeadword`), after its headword. */
+  homonym?: string;
 };
 
 /**
  * The outline of an entry: its senses, in their order, with their numbers
- * and labels (cf. `senseLabel`); for a group of homonyms, each homonym with
- * a sense, its senses under it (their numbers start again).
+ * and labels (cf. `senseLabel`); for a group of homonyms, each homonym (its
+ * headword and number), with or without senses, its senses under it (their
+ * numbers start again).
  * @param root The element holding the entry's definitions (`.definition`),
  *   or one of them.
  */
 export function entryOutline(root: Element): OutlineItem[] {
-  const definitions = [...(root.matches(".definition") ? [root] : []), ...root.querySelectorAll(".definition")]
-    .filter(definition => sensesIn(definition).length > 0);
+  const definitions = [...(root.matches(".definition") ? [root] : []), ...root.querySelectorAll(".definition")];
   const homonyms = definitions.length > 1;
   const items: OutlineItem[] = [];
-  for (const definition of definitions) {
+  for (const [index, definition] of definitions.entries()) {
     let top = -1;
     if (homonyms) {
       top = items.length;
@@ -209,7 +211,8 @@ export function entryOutline(root: Element): OutlineItem[] {
       const head = definition.querySelector(".entreea")?.cloneNode(true) as Element | undefined;
       for (const number of head?.querySelectorAll(".homonym") ?? []) number.remove();
       const headword = head?.textContent.replace(/[\s,]+$/, "").trim() ?? "";
-      items.push({ element: definition, number: "", label: headword, depth: 0, parent: -1, sense: false });
+      const homonym = definition.querySelector(".entreea .homonym")?.textContent ?? String(index + 1);
+      items.push({ element: definition, number: "", label: headword, depth: 0, parent: -1, sense: false, homonym });
     }
     const indexes = new Map<Element, number>();
     for (const sense of sensesIn(definition)) {

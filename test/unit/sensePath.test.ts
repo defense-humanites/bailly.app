@@ -124,7 +124,7 @@ describe("entryOutline", () => {
     expect(outlineWorthy(items.slice(0, 1), () => true)).toBe(false);
   });
 
-  test("a group of homonyms: each with its senses under it", () => {
+  test("a group of homonyms: each, with or without senses, its senses under it", () => {
     const root = document.createElement("div");
     root.innerHTML = `<div class="definition"><span class="entreea"><span class="grec">ἡ,</span></span>
 <div class="pp"><span class="ppa">1</span> article</div></div>
@@ -132,12 +132,13 @@ describe("entryOutline", () => {
 <div class="definition"><span class="entreea"><span class="grec">ἧ,</span></span>
 <div class="pp"><span class="ppa">1</span> où</div><div class="pp"><span class="ppa">2</span> comme</div></div>`;
     const items = entryOutline(root);
-    expect(items.map(({ number, label, depth, sense }) => [number, label, depth, sense])).toEqual([
-      ["", "ἡ", 0, false],
-      ["1.", "article", 1, true],
-      ["", "ἧ", 0, false],
-      ["1.", "où", 1, true],
-      ["2.", "comme", 1, true],
+    expect(items.map(({ number, label, depth, sense, homonym }) => [number, label, depth, sense, homonym])).toEqual([
+      ["", "ἡ", 0, false, "1"],
+      ["1.", "article", 1, true, undefined],
+      ["", "ἤ", 0, false, "2"],
+      ["", "ἧ", 0, false, "3"],
+      ["1.", "où", 1, true, undefined],
+      ["2.", "comme", 1, true, undefined],
     ]);
     expect(outlineWorthy(items, element => element.textContent.includes("comme"))).toBe(true);
   });
