@@ -2,6 +2,14 @@
   import type { CommandPaletteGroup, CommandPaletteItem, PopoverProps } from "@nuxt/ui";
   import type { IdbEntry, IdbTag, TagKey } from "~/idb";
 
+  /*
+   * The toolbar's buttons, hovered or pressed: Nuxt UI's `bg-elevated`, a
+   * gentle shade, rather than the cards' darker ones (`--app-card-hover`,
+   * cf. `root.css`): an exception, the toolbar sitting on the entry's text.
+   * Kept in step with `TagButtonGroupStatic`.
+   */
+  const TOOLBAR_HOVER = "hover:bg-elevated active:bg-elevated";
+
   const bookmarksStore = useBookmarksStore();
   const { currentTag, tags } = storeToRefs(bookmarksStore);
 
@@ -129,7 +137,7 @@
         :aria-pressed="taggedAsCurrent"
         :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
         :data-tag-color="currentTag.color"
-        :class="taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text'"
+        :class="[TOOLBAR_HOVER, taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text']"
         :ui="{ label: 'max-w-12 truncate text-xs tracking-tight sm:max-w-24' }"
         color="neutral"
         variant="ghost"
@@ -154,7 +162,7 @@
         icon="i-lucide-tags"
         color="neutral"
         variant="ghost"
-        class="data-[state=open]:bg-elevated"
+        :class="[TOOLBAR_HOVER, 'data-[state=open]:bg-elevated']"
         aria-label="Toutes les étiquettes"
       />
 
@@ -190,7 +198,7 @@
             :ui="{
               input: '[&_input]:text-sm',
               viewport: 'max-h-72 p-0',
-              item: 'rounded-md px-2 py-1.5 before:rounded-md data-highlighted:not-data-disabled:before:bg-elevated/50',
+              item: 'rounded-md px-2 py-1.5 before:rounded-md data-highlighted:not-data-disabled:before:bg-(--app-menu-highlight)',
               itemTrailingIcon: 'hidden',
               empty: 'px-2 py-1.5 text-start text-sm',
             }"
@@ -252,7 +260,7 @@
         :aria-pressed="starred"
         color="neutral"
         variant="ghost"
-        :class="starred ? 'text-favorite' : 'hover:text-favorite'"
+        :class="[TOOLBAR_HOVER, starred ? 'text-favorite' : 'hover:text-favorite']"
         :ui="{ base: 'border-l border-default' }"
         @click="toggleStar"
       />

@@ -123,8 +123,9 @@
             Its corners follow the field's (not the pill buttons'); on the
             field's background, whatever its state and theme; pressed while
             its popover is open. Hovered or pressed, it darkens in both
-            themes (in the dark one, the page's background, darker than the
-            field's, rather than `bg-elevated`, lighter).
+            themes (`bg-elevated`, kept rather than the cards' shades, cf.
+            `--app-card-hover`; in the dark one, the page's background, darker
+            than the field's, rather than `bg-elevated`, lighter).
           -->
           <TagColorPicker
             v-model="newTagColor"
@@ -136,7 +137,7 @@
                 color="neutral"
                 variant="outline"
                 v-bind="attrs"
-                :ui="{ base: 'rounded-md shadow-none bg-transparent data-[state=open]:bg-elevated dark:hover:bg-page dark:active:bg-page dark:data-[state=open]:bg-page' }"
+                :ui="{ base: 'rounded-md shadow-none bg-transparent hover:bg-elevated active:bg-elevated data-[state=open]:bg-elevated dark:hover:bg-page dark:active:bg-page dark:data-[state=open]:bg-page' }"
               />
             </template>
           </TagColorPicker>

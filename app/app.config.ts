@@ -66,7 +66,38 @@ export default defineAppConfig({
         { color: "info", variant: "solid", class: "hover:bg-info active:bg-info aria-expanded:bg-info hover:brightness-90 active:brightness-90 aria-expanded:brightness-90" },
         { color: "warning", variant: "solid", class: "hover:bg-warning active:bg-warning aria-expanded:bg-warning hover:brightness-90 active:brightness-90 aria-expanded:brightness-90" },
         { color: "error", variant: "solid", class: "hover:bg-error active:bg-error aria-expanded:bg-error hover:brightness-90 active:brightness-90 aria-expanded:brightness-90" },
+        // The neutral ghost and outline buttons, hovered and pressed, as the
+        // other items on the cards (`--app-card-hover`, `--app-card-active`,
+        // cf. `root.css`): Nuxt UI's `bg-elevated` barely showed on them in
+        // the light theme.
+        { color: "neutral", variant: "ghost", class: "hover:bg-(--app-card-hover) active:bg-(--app-card-active)" },
+        { color: "neutral", variant: "outline", class: "hover:bg-(--app-card-hover) active:bg-(--app-card-active)" },
       ],
+    },
+    /*
+     * The menus' and lists' highlighted item (and the one whose submenu is
+     * open), as the items on the cards (`--app-menu-highlight`, cf.
+     * `root.css`): Nuxt UI's `bg-elevated/50` barely showed in the light
+     * theme.
+     */
+    dropdownMenu: {
+      variants: {
+        active: {
+          false: {
+            item: "data-highlighted:before:bg-(--app-menu-highlight) data-[state=open]:before:bg-(--app-menu-highlight)",
+          },
+        },
+      },
+    },
+    select: {
+      slots: {
+        item: "data-highlighted:not-data-disabled:before:bg-(--app-menu-highlight)",
+      },
+    },
+    selectMenu: {
+      slots: {
+        item: "data-highlighted:not-data-disabled:before:bg-(--app-menu-highlight)",
+      },
     },
     input: {
       slots: {

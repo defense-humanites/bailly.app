@@ -31,6 +31,43 @@ test.describe("about page", () => {
     await expect(page.getByRole("region", { name: "En bref" })).toBeVisible();
   });
 
+  test("the privacy page's table of contents follows the sections, and the address too", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await goto(encodeURI("/confidentialité"), { waitUntil: "hydration" });
+    const toc = page.getByRole("navigation", { name: "Sommaire" });
+    const current = toc.locator("[aria-current='location']");
+    // At the top, above the sections: none marked, no anchor.
+    await expect(toc).toBeVisible();
+    await expect(current).toHaveCount(0);
+    // A section reached by scrolling: marked, and the address's anchor.
+    await page.evaluate(() => {
+      const heading = document.getElementById("synchronisation")!;
+      document.querySelector("main")!.scrollBy({ top: heading.getBoundingClientRect().top - innerHeight / 4 + 20, behavior: "instant" });
+    });
+    await expect(current).toHaveText("Synchronisation");
+    await expect(page).toHaveURL(/#synchronisation$/);
+    // Back at the top: none again, the anchor gone.
+    await page.evaluate(() => {
+      document.querySelector("main")!.scrollTo({ top: 0, behavior: "instant" });
+    });
+    await expect(current).toHaveCount(0);
+    await expect(page).toHaveURL(new RegExp(`${encodeURI("/confidentialité")}$`));
+    // A link to a section, after its anchor was given then removed by
+    // scrolling, still leads to it.
+    const heading = page.locator("#synchronisation");
+    const top = () => heading.evaluate(element => element.getBoundingClientRect().top);
+    await toc.getByRole("link", { name: "Synchronisation" }).click();
+    await expect(page).toHaveURL(/#synchronisation$/);
+    await expect.poll(top).toBeLessThan(200);
+    // Scrolled back to the top by the user (a section reached by a link
+    // stays marked until then).
+    await page.mouse.move(400, 400);
+    await page.mouse.wheel(0, -20000);
+    await expect(page).toHaveURL(new RegExp(`${encodeURI("/confidentialité")}$`));
+    await toc.getByRole("link", { name: "Synchronisation" }).click();
+    await expect.poll(top).toBeLessThan(200);
+  });
+
   test("the contributors to the Bailly 2020, behind its « et al. »", async ({ page, goto }) => {
     await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
     await page.getByRole("button", { name: /^Et al\. : les 37 contributeurs/ }).click();

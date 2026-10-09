@@ -204,7 +204,7 @@
       <UButton
         color="neutral"
         variant="ghost"
-        class="hover:bg-(--app-page-hover) active:bg-(--app-page-hover)"
+        class="hover:bg-(--app-page-hover) active:bg-(--app-page-active)"
         icon="i-lucide-dices"
         label="Ouvrir à une autre page"
         :loading="loading"

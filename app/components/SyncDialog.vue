@@ -731,7 +731,7 @@
    */
   const TILE = "flex w-full items-start gap-3 rounded-lg p-4 text-start ring-1 transition-[background-color,box-shadow,translate] duration-150 ease-out hover:shadow-md motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 active:shadow-none focus-visible:outline-2 disabled:opacity-75";
   const TILE_ACCENT = `${TILE} bg-secondary/10 ring-secondary/30 hover:bg-secondary/15 hover:ring-secondary/50 focus-visible:outline-secondary disabled:cursor-wait`;
-  const TILE_NEUTRAL = `${TILE} bg-elevated/50 ring-accented hover:bg-elevated focus-visible:outline-inverted`;
+  const TILE_NEUTRAL = `${TILE} bg-elevated/50 ring-accented hover:bg-(--app-card-hover) focus-visible:outline-inverted`;
   const BADGE = "flex size-10 shrink-0 items-center justify-center rounded-full";
 </script>
 

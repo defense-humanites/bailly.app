@@ -90,7 +90,7 @@
     // In the light theme, as the bar's other items (their background, their
     // hover), its text and icon only in Aegean blue; in the dark one, a light
     // tint of it, over the others' hover when hovered (as light as theirs).
-    secondary: { solid: "", soft: "bg-transparent text-(--ui-color-secondary-700) hover:bg-(--app-button-hover) active:bg-(--app-button-hover) aria-expanded:bg-(--app-button-hover) dark:bg-secondary/10 dark:text-secondary dark:hover:bg-[color-mix(in_oklab,var(--ui-secondary)_12%,var(--app-button-hover))] dark:active:bg-[color-mix(in_oklab,var(--ui-secondary)_12%,var(--app-button-hover))] dark:aria-expanded:bg-[color-mix(in_oklab,var(--ui-secondary)_12%,var(--app-button-hover))]" },
+    secondary: { solid: "", soft: "bg-transparent text-(--ui-color-secondary-700) hover:bg-(--app-button-hover) active:bg-(--app-button-active) aria-expanded:bg-(--app-button-active) dark:bg-secondary/10 dark:text-secondary dark:hover:bg-[color-mix(in_oklab,var(--ui-secondary)_12%,var(--app-button-hover))] dark:active:bg-[color-mix(in_oklab,var(--ui-secondary)_12%,var(--app-button-hover))] dark:aria-expanded:bg-[color-mix(in_oklab,var(--ui-secondary)_12%,var(--app-button-hover))]" },
     warning: { solid: "", soft: "aria-expanded:bg-warning/15" },
   } as const;
 

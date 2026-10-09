@@ -83,6 +83,8 @@ test.describe("search bar", () => {
     await searchInput(page).fill("οι");
     await expect(searchResults(page).getByRole("option").first()).toBeVisible();
     expect((await indents()).filter(indent => indent !== "8px").length).toBeGreaterThan(0);
+    // Each homonym numbered after its headword, as in its definition.
+    await expect(searchResults(page).locator("[data-nested] sup").first()).toHaveText("1");
     // The next results (without homonyms at the top) don't inherit their
     // indent by their position.
     await searchInput(page).fill("λογο");

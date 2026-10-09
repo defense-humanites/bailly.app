@@ -146,43 +146,16 @@
   const canScrollStart = computed((): boolean => overflows.value && !arrivedState.left);
   const canScrollEnd = computed((): boolean => overflows.value && !arrivedState.right);
 
-  const reducedMotion = computed((): boolean => usePreferredReducedMotion().value === "reduce");
-
   /**
    * The width of a faded edge (and of an arrow), in px.
    */
   const EDGE = 40;
 
   /**
-   * Scrolls the row to a position, eased (`ROW_SCROLL_DURATION`, in ms; the
-   * browsers' own smooth scrolling of an element may be cut short, or
-   * skipped, while the page scrolls), at once with reduced motion. A new
-   * position, or the user scrolling the row, takes over.
+   * The row's scroll, eased (cf. `useEasedScroll`), at once with reduced
+   * motion; the user scrolling it takes over.
    */
-  const ROW_SCROLL_DURATION = 300;
-  let rowAnimation = 0;
-  const stopRowScroll = (): void => {
-    cancelAnimationFrame(rowAnimation);
-  };
-  function scrollRowTo(left: number): void {
-    const element = row.value;
-    if (!element) return;
-    stopRowScroll();
-    const to = Math.min(Math.max(left, 0), element.scrollWidth - element.clientWidth);
-    if (reducedMotion.value) {
-      element.scrollLeft = to;
-      return;
-    }
-    const from = element.scrollLeft;
-    const start = performance.now();
-    const step = (now: number): void => {
-      const progress = Math.min((now - start) / ROW_SCROLL_DURATION, 1);
-      element.scrollLeft = from + (to - from) * (1 - (1 - progress) ** 3);
-      if (progress < 1) rowAnimation = requestAnimationFrame(step);
-    };
-    rowAnimation = requestAnimationFrame(step);
-  }
-  onBeforeUnmount(stopRowScroll);
+  const { scrollTo: scrollRowTo, stop: stopRowScroll, reducedMotion } = useEasedScroll(row, "left");
 
   const scrollRowBy = (direction: 1 | -1): void => {
     if (row.value) scrollRowTo(row.value.scrollLeft + direction * row.value.clientWidth * 0.75);
@@ -322,7 +295,11 @@
       :style="{ width: `${EDGE}px` }"
     />
 
-    <!-- Arrows: a pointer's affordance (the keyboard goes from link to link). -->
+    <!--
+      Arrows: a pointer's affordance (the keyboard goes from link to link).
+      Hovered, Nuxt UI's `bg-elevated`, as the bookmarks page's other
+      controls, rather than the cards' shades (cf. `--app-card-hover`).
+    -->
     <UButton
       icon="i-lucide-chevron-left"
       size="sm"
@@ -330,7 +307,7 @@
       variant="outline"
       tabindex="-1"
       aria-hidden="true"
-      class="absolute start-0 top-1/2 hidden -translate-y-1/2 bg-default transition-[opacity,visibility] duration-200 ease-out pointer-fine:flex max-md:-start-2"
+      class="absolute start-0 top-1/2 hidden -translate-y-1/2 bg-default hover:bg-elevated active:bg-elevated transition-[opacity,visibility] duration-200 ease-out pointer-fine:flex max-md:-start-2"
       :class="canScrollStart ? 'visible opacity-100' : 'invisible opacity-0'"
       @click="scrollRowBy(-1)"
     />
@@ -341,7 +318,7 @@
       variant="outline"
       tabindex="-1"
       aria-hidden="true"
-      class="absolute end-0 top-1/2 hidden -translate-y-1/2 bg-default transition-[opacity,visibility] duration-200 ease-out pointer-fine:flex max-md:-end-2"
+      class="absolute end-0 top-1/2 hidden -translate-y-1/2 bg-default hover:bg-elevated active:bg-elevated transition-[opacity,visibility] duration-200 ease-out pointer-fine:flex max-md:-end-2"
       :class="canScrollEnd ? 'visible opacity-100' : 'invisible opacity-0'"
       @click="scrollRowBy(1)"
     />

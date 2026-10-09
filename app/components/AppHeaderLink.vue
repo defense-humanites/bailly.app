@@ -19,7 +19,7 @@
   <NuxtLink
     :to="item.to"
     data-slot="link"
-    class="group relative flex w-full items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium before:absolute before:inset-x-px before:inset-y-0 before:z-[-1] before:rounded-md before:outline-primary/25 hover:before:bg-(--app-page-hover)/50 focus:outline-none focus-visible:outline-none focus-visible:before:outline-3 max-md:p-2.5"
+    class="group relative flex w-full items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium before:absolute before:inset-x-px before:inset-y-0 before:z-[-1] before:rounded-md before:outline-primary/25 hover:before:bg-(--app-nav-hover) focus:outline-none focus-visible:outline-none focus-visible:before:outline-3 max-md:p-2.5"
     :class="current ? 'text-primary' : 'text-muted transition-colors before:transition-colors hover:text-highlighted'"
   >
     <UIcon

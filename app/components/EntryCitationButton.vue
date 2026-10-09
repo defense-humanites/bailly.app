@@ -12,8 +12,8 @@
 <!--
   The citation in a window, opened by an icon at an entry card's top, beside
   the bookmarks' toolbar (framed alike, but apart: it isn't about
-  bookmarks); on the entry page below `xl` (from `xl`, the citation lies on
-  the column's right), and on the home page's random entry.
+  bookmarks); on the entry page, at every width (the column on the right,
+  from `xl`, is the outline's), and on the home page's random entry.
 -->
 <template>
   <UModal

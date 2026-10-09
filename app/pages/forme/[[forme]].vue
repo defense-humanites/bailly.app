@@ -190,7 +190,7 @@
                 :to="{ query: route.query, hash: `#${id}` }"
                 :aria-current="currentId === id ? 'location' : undefined"
                 class="block truncate rounded-md px-2.5 py-1.5 font-serif text-sm transition-colors focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)"
-                :class="currentId === id ? 'bg-accented/50 font-semibold text-highlighted' : 'text-muted hover:bg-accented/50 hover:text-highlighted'"
+                :class="currentId === id ? 'bg-(--app-page-active) font-semibold text-highlighted' : 'text-muted hover:bg-(--app-page-hover) hover:text-highlighted'"
                 @click="pointOut(id)"
               >{{ greek.text(entry.word) }}</NuxtLink>
             </li>

@@ -72,6 +72,11 @@
     font-size: smaller;
   }
 
+  /* A homonym's number after its headword (cf. `numberHeadword`). */
+  .entreea .homonym {
+    @apply ms-px;
+  }
+
   .aut {
     font-variant: small-caps;
   }
@@ -82,10 +87,25 @@
 
   .oeuv,
   .oeuva,
-  .refch,
-  .ital,
-  .refpa {
+  .ital {
     @apply italic;
+  }
+
+  /*
+   * The references (author, work, place) a step back, in the muted text
+   * color (6:1 on the marble, 8.9:1 in the dark theme): the meanings and the
+   * Greek come first, and the grammatical remarks (`.ital`, in italics as the
+   * works) are no longer mistaken for them. The places in roman, as printed.
+   * Not in the etymologies, whose blue sets the whole apart.
+   */
+  :is(.aut, .oeuv, .oeuva, .refch, .refpa, .refpb):not(:is(.etymor, .etymrev) *) {
+    @apply text-muted;
+  }
+
+  .refch,
+  .refpa,
+  .refpb {
+    font-style: normal;
   }
 
   .Rub,
@@ -96,10 +116,19 @@
     @apply list-none;
   }
 
+  /* The parts (A., B., C.) of the long entries: their divisions marked by a
+     wider space before them, without a line nor a color. */
+  .Rub {
+    @apply mt-8;
+  }
+
+  /* The senses' numbers in the primary color, as the sections' labels
+     (`.secta`): the structure of a long entry at a glance. */
   .Ruba,
   .ruba,
   .ppa {
     @apply font-semibold;
+    @apply text-primary;
   }
 
   .Ruba::after,
@@ -118,6 +147,22 @@
     font-style: normal;
   }
 
+  /*
+   * Latin, Sanskrit, German and the reconstructed Indo-European forms (in
+   * the etymologies): in italics, as foreign words in French; in roman
+   * within italics.
+   */
+  .lat,
+  .sscr,
+  .allemand,
+  .indoeurop {
+    @apply italic;
+
+    :is(.ital, .oeuv, .oeuva) & {
+      font-style: normal;
+    }
+  }
+
   .refpb {
     @apply ml-1.5;
   }
@@ -125,27 +170,39 @@
   /*
    * Arrow (the same icon as `i-bailly-arrow`). As a mask, it takes the text
    * color (including in the dark theme). The font size is set to zero to hide
-   * any text content, as the former `content: url(…)` rule did. As its (empty)
-   * text line is at its top, a baseline alignment would hang it below the
-   * text: it is centered on the text's middle instead. Its size follows the
-   * reading size (about 2.3 times the text size: 36 px for 15.5 px).
+   * any text content, as the former `content: url(…)` rule did. Its size
+   * follows the reading size (about 2.3 times the text size: 36 px for
+   * 15.5 px). Its bottom edge is its baseline (`overflow: hidden`), set
+   * 0.08 of the text size below the line's: its middle at the capitals'
+   * (0.34 above the baseline; at the lowercase letters', 0.27, it looked
+   * low beside the text), whatever the browser: not
+   * `vertical-align: middle`, which put it a few pixels higher in some
+   * (reported in καίω).
    */
   .flechea {
     display: inline-block;
     width: calc(var(--reading-font-size) * 2.32);
     aspect-ratio: 66 / 24;
-    vertical-align: middle;
+    overflow: hidden;
+    vertical-align: calc(var(--reading-font-size) * -0.08);
     font-size: 0;
     background-color: currentColor;
     mask: url("~/assets/icons/arrow.svg") center / contain no-repeat;
   }
 
+  /*
+   * The levels' indents, from 30 rem (480 px) only: on a phone, the text
+   * keeps the screen's whole width, the numbers telling the levels apart
+   * (and the compact bar, the path to the sense being read). From 30 rem,
+   * two levels still leave about 23 rem of text, a readable measure; the
+   * card reaches its width (`--reading-width`, 37 rem) a little below `sm`.
+   */
   .Rub > .rub,
   .rub > .pp,
   .rub > .sect,
   .rub > .moyen,
   .rub > .fleche {
-    @apply ml-6;
+    @apply min-[30rem]:ml-6;
   }
 
   .secta {
@@ -159,6 +216,67 @@
   .etymor,
   .etymrev {
     @apply mt-3;
+  }
+
+  /*
+   * The notes after the senses: the comparatives and superlatives (`.sect`,
+   * « Cp. », « Sup. »), the other forms, the dialects and the prosody
+   * (`.fleche`, after an arrow). They complete the senses without being
+   * part of them: a step back, in the muted text color, as the references;
+   * the labels « Cp. » keep theirs (`.secta`), the arrow takes its note's.
+   * Not those holding
+   * senses (the middle and passive voices, « Moy. », « Pass. »; the other
+   * forms of ὁ, numbered, after an arrow).
+   */
+  .sect:not(:has(.Rub, .rub, .pp)),
+  .fleche:not(:has(.Rub, .rub, .pp)) {
+    @apply text-muted;
+  }
+
+  /*
+   * A sense previewed from the outline (an item hovered, cf. `EntryOutline`):
+   * tinted (`--sense-tint`), the tint overflowing its box a little (a
+   * shadow, not a padding: nothing moves). In gold, as a passage
+   * highlighted in a book: it stands out by its hue rather than by darkening
+   * the marble, keeps the senses' numbers (terracotta) and the etymologies
+   * (blue) apart, and holds in both themes (mostly gold 100 on marble 50; gold
+   * 900 half mixed with marble 800 on 900). The text keeps 5:1 at least (the
+   * references, muted), the senses' numbers 3.4:1 (bold) in the dark theme.
+   * (A highlighted search result's tint would not show on a card.)
+   */
+  .definition {
+    --sense-tint: color-mix(in oklab, var(--color-gold-50) 25%, var(--color-gold-100));
+  }
+
+  .dark .definition {
+    --sense-tint: color-mix(in oklab, var(--color-gold-900) 50%, var(--ui-color-neutral-800));
+  }
+
+  /* Rounded at all times: the tint keeps its corners while it fades. */
+  .definition :is(.Rub, .rub, .pp, .sect, .fleche) {
+    transition-property: background-color, box-shadow;
+    transition-duration: 150ms;
+    @apply rounded-sm;
+  }
+
+  .definition [data-outline-preview] {
+    background-color: var(--sense-tint);
+    box-shadow: 0 0 0 0.375rem var(--sense-tint);
+  }
+
+  /*
+   * A sense chosen in the outline, pointed out for a moment (cf.
+   * `[data-card-highlight]` below), as the cards of an ambiguous form's
+   * page: outlined, in gold as when previewed, discreetly (a shade above
+   * the tint: between gold 200 and 300; 700 in the dark theme). A frame, not
+   * the tint: the one chosen told apart from one previewed next.
+   */
+  .definition :is(.Rub, .rub, .pp, .sect, .fleche)[data-card-highlight] {
+    --card-highlight: color-mix(in oklab, var(--color-gold-200) 50%, var(--color-gold-300));
+  }
+
+  .dark .definition :is(.Rub, .rub, .pp, .sect, .fleche)[data-card-highlight] {
+    --card-highlight: var(--color-gold-700);
   }
 
   /* The etymologies, in blue: set apart from the text (7.7:1 on the marble). */
@@ -196,24 +314,35 @@
 
   /*
    * Links of the definitions (to an entry, or to the reader for an ambiguous
-   * form): a thin, discreet dotted underline, so as not to disrupt the
-   * reading (an entry can hold hundreds of links), which turns solid on hover
-   * and keyboard focus. They keep the color of the surrounding text, the
-   * underline being derived from it; the offset keeps it clear of the Greek
-   * descenders and iota subscripts.
+   * form): the usual links' (cf. `link`, `utilities.css`), but a thin solid
+   * underline in the muted text color, faint at rest, so as not to disrupt
+   * the reading (an entry can hold hundreds of links, most of its Greek
+   * words); a solid one rather than a dotted one, which a 1 px line draws
+   * unevenly at some screen scales. Hovered, the usual links' 2 px in the
+   * primary color. They keep the color of the surrounding text; the offset
+   * keeps the underline clear of the Greek descenders and iota subscripts.
    */
   .definition a {
     text-decoration-line: underline;
-    text-decoration-style: dotted;
+    text-decoration-style: solid;
     text-decoration-thickness: 1px;
-    text-underline-offset: 0.2em;
-    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    text-underline-offset: 0.25em;
+    text-decoration-color: color-mix(in srgb, var(--ui-text-muted) 35%, transparent);
     text-decoration-skip-ink: auto;
+    transition-property: text-decoration-color, text-decoration-thickness;
+    transition-duration: 150ms;
 
-    &:hover,
+    @media (hover: hover) {
+      &:hover {
+        text-decoration-thickness: 2px;
+        text-decoration-color: var(--ui-primary);
+      }
+    }
+
     &:focus-visible {
-      text-decoration-style: solid;
-      text-decoration-color: currentColor;
+      outline: 2px solid var(--ui-border-inverted);
+      outline-offset: 2px;
+      border-radius: 2px;
     }
   }
 }

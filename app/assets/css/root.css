@@ -48,6 +48,25 @@
    * `bg-elevated` is the page's own color in the light theme.
    */
   --app-page-hover: var(--ui-bg-accented);
+  /*
+   * The hover and active states (current, open, pressed) in the light theme
+   * (9 October 2026): one shade darker than what they lie on when hovered,
+   * two when active (the active one told from a hover), from 1.14:1 to
+   * 1.24:1 against it (they were 1.02 to 1.14). On the page (marble 100):
+   * 200, then between 200 and 300 (also the tables of contents' items,
+   * in a column on the page). On the cards (marble 50): between 100 and
+   * 200, then 200 (Nuxt UI's neutral ghost and outline buttons, the menus'
+   * items; not the bookmarks' bar, raised instead). The navigation's links
+   * (header, entry's neighbours, compact bar) as on the page. The muted text keeps
+   * 4.8:1 on the darkest. The dark theme keeps its hovers, its active
+   * states half a shade further (cf. `.dark`).
+   */
+  --app-page-active: color-mix(in oklab, var(--ui-color-neutral-200) 50%, var(--ui-color-neutral-300));
+  --app-nav-hover: var(--app-page-hover);
+  --app-nav-active: var(--app-page-active);
+  --app-card-hover: color-mix(in oklab, var(--ui-color-neutral-100) 50%, var(--ui-color-neutral-200));
+  --app-card-active: var(--ui-color-neutral-200);
+  --app-menu-highlight: var(--app-card-hover);
   /* The highlighted item of the search's results and of the history. */
   --app-highlight: var(--ui-bg-elevated);
   /*
@@ -61,11 +80,16 @@
    * 10 », lighter than the cards without the glare of a pure white.
    */
   --app-surface-raised: color-mix(in oklab, var(--ui-color-neutral-50) 50%, #fff);
+  /* The bookmarks' bar's buttons: raised (lighter) when hovered, as the
+     search bar in use; a notch lighter still when pressed or open (only
+     the accented buttons darken). */
   --app-button-hover: var(--app-surface-raised);
-  /* The fields of the bookmarks' bar (cf. `FIELD_BACKGROUND`): as its
-     buttons, in both themes. */
+  --app-button-active: color-mix(in oklab, var(--ui-color-neutral-50) 20%, #fff);
+  /* The fields of the bookmarks' bar (cf. `FIELD_BACKGROUND`): raised as
+     its buttons, hovered or focused. */
   --app-field-bg: var(--ui-bg);
   --app-field-hover: var(--app-button-hover);
+  --app-field-focus: var(--app-surface-raised);
   /* Their focus halo in the secondary accent (Aegean blue, 25 %), told
      from the search bar's (the main accent); their ring neutral, softened:
      the inverted color 40 % blended into the cards (the light theme being
@@ -113,6 +137,23 @@
   /* The bookmarks' bar's hover: the raised surface (between marble 800 and
      900), half a shade gentler than `bg-elevated` on the dark cards. */
   --app-button-hover: var(--app-surface-raised);
+  --app-button-active: var(--ui-bg-elevated);
+  --app-field-hover: var(--app-button-hover);
+  --app-field-focus: var(--app-button-hover);
+  /*
+   * The hover states as before 9 October 2026, a shade lighter than what
+   * they lie on; the active ones (cf. `:root`) half a shade further, told
+   * from them as in the light theme: on the page, between marble 800 and
+   * 700; the navigation's links, 800 (rather than half of it); on the
+   * cards, 700 at 65 % (rather than 50 %). The text keeps 4.4:1 at least
+   * (muted), the items' (highlighted) far more.
+   */
+  --app-page-active: color-mix(in oklab, var(--ui-color-neutral-800) 50%, var(--ui-color-neutral-700));
+  --app-nav-hover: color-mix(in oklab, var(--app-page-hover) 50%, transparent);
+  --app-nav-active: var(--app-page-hover);
+  --app-card-hover: color-mix(in oklab, var(--ui-bg-accented) 50%, transparent);
+  --app-card-active: color-mix(in oklab, var(--ui-bg-accented) 65%, transparent);
+  --app-menu-highlight: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
   --app-field-ring: color-mix(in oklab, var(--ui-color-neutral-500) 75%, var(--ui-bg));
   --link-mark-primary: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 16 16' fill='none' stroke='%23dc7643' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
   --link-mark-secondary: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 16 16' fill='none' stroke='%2386b6e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
@@ -276,8 +317,11 @@
 .search-bar:has([aria-expanded="true"]) {
   --ui-bg: var(--app-surface-raised);
   /* The hover and open state of the bar's buttons (history, options). */
-  --search-hover: color-mix(in oklab, var(--ui-color-neutral-100) 50%, var(--app-surface-raised));
-  --app-highlight: color-mix(in oklab, var(--ui-color-neutral-100) 60%, var(--app-surface-raised));
+  /* Hovered, marble 100 (1.09:1 on it); pressed or open, between 100 and
+     200 (1.16:1). */
+  --search-hover: var(--ui-color-neutral-100);
+  --search-active: color-mix(in oklab, var(--ui-color-neutral-100) 50%, var(--ui-color-neutral-200));
+  --app-highlight: var(--ui-color-neutral-100);
 }
 
 /* Its input and buttons change color with a light transition. */
@@ -293,6 +337,7 @@
   --ui-border: var(--ui-color-neutral-300);
   --ui-bg-elevated: var(--ui-color-neutral-200);
   --search-hover: color-mix(in oklab, var(--ui-color-neutral-100) 50%, var(--ui-bg));
+  --search-active: var(--search-hover);
 }
 
 /*
@@ -310,6 +355,7 @@
   --ui-text-dimmed: var(--ui-color-neutral-400); /* 6.2:1 */
   /* As the highlighted line of the results (opaque). */
   --search-hover: color-mix(in oklab, var(--ui-color-neutral-700) 50%, var(--app-surface-raised));
+  --search-active: color-mix(in oklab, var(--ui-color-neutral-700) 65%, var(--app-surface-raised));
 }
 
 .dark .search-surface,

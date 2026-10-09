@@ -1,13 +1,19 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
+import type { Page } from "@playwright/test";
 
-// The entry's citation: from `xl`, on its right; below, in a window.
+// The entry's citation: in a window, from a button at the card's top.
+const openCitation = async (page: Page) => {
+  await page.locator("main").getByRole("button", { name: "Citer cette entrée" }).first().click();
+  return page.getByRole("dialog", { name: "Citer cette entrée" });
+};
+
 test.describe("citing an entry", () => {
-  test("on the right from xl: the forms, the bibliography's style, a copy", async ({ page, goto }) => {
+  test("the forms, the bibliography's style, a copy", async ({ page, goto }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
     await goto("/logos", { waitUntil: "hydration" });
-    const citation = page.getByRole("complementary", { name: "Citer cette entrée" });
-    const entryReference = citation.locator("p").first();
+    let citation = await openCitation(page);
+    const entryReference = citation.locator("section p").first();
     await expect(entryReference).toContainText("s. v. « λόγος », https://bailly.app/logos (consulté le");
 
     await citation.getByRole("tab", { name: "Auteur-date" }).click();
@@ -19,26 +25,25 @@ test.describe("citing an entry", () => {
     await citation.getByRole("combobox", { name: "Norme de la bibliographie" }).click();
     await page.getByRole("option", { name: "ISO 690" }).click();
     await expect(entryReference).toHaveText("(Bailly, 2023 : s. v. λόγος)");
-    await expect(citation.locator("p").nth(1)).toContainText("BAILLY, Anatole.");
+    await expect(citation.locator("section p").nth(1)).toContainText("BAILLY, Anatole.");
     await page.reload();
+    citation = await openCitation(page);
     await expect(citation.getByRole("tab", { name: "Auteur-date" })).toHaveAttribute("aria-selected", "true");
-    await expect(citation.locator("p").nth(1)).toContainText("BAILLY, Anatole.");
+    await expect(citation.locator("section p").nth(1)).toContainText("BAILLY, Anatole.");
   });
 
   test("a homonym cited as in M. Gréco's edition", async ({ page, goto }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await goto("/logades#2", { waitUntil: "hydration" });
-    await expect(page.getByRole("complementary", { name: "Citer cette entrée" }).locator("p").first())
+    await expect((await openCitation(page)).locator("section p").first())
       .toContainText("« 2 λογάδες », https://bailly.app/logades#2");
   });
 
-  test("below xl, from the card's top, in a window", async ({ page, goto }) => {
-    for (const width of [390, 1150]) {
+  test("at every width, from the card's top", async ({ page, goto }) => {
+    for (const width of [390, 1150, 1440]) {
       await page.setViewportSize({ width, height: 844 });
       await goto("/logos", { waitUntil: "hydration" });
-      await expect(page.getByRole("complementary", { name: "Citer cette entrée" })).toBeHidden();
-      await page.getByRole("button", { name: "Citer cette entrée" }).click();
-      const dialog = page.getByRole("dialog", { name: "Citer cette entrée" });
+      const dialog = await openCitation(page);
       await expect(dialog.getByText("Bailly, A. (2023).", { exact: false })).toBeVisible();
       await page.keyboard.press("Escape");
       await expect(dialog).toBeHidden();

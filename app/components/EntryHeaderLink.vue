@@ -20,7 +20,7 @@
     :to="to"
     :aria-label="`${direction === 'previous' ? 'Entrée précédente' : 'Entrée suivante'} : ${word}`"
     data-slot="link"
-    class="group relative flex w-full items-center gap-1.5 px-2.5 py-1.5 font-serif text-base/7 font-bold text-muted transition-colors before:absolute before:inset-x-px before:inset-y-0 before:z-[-1] before:rounded-md before:outline-inverted/25 before:transition-colors hover:text-highlighted hover:before:bg-(--app-page-hover)/50 focus:outline-none focus-visible:outline-none focus-visible:before:outline-3"
+    class="group relative flex w-full items-center gap-1.5 px-2.5 py-1.5 font-serif text-base/7 font-bold text-muted transition-colors before:absolute before:inset-x-px before:inset-y-0 before:z-[-1] before:rounded-md before:outline-inverted/25 before:transition-colors hover:text-highlighted hover:before:bg-(--app-nav-hover) focus:outline-none focus-visible:outline-none focus-visible:before:outline-3"
     :class="direction === 'next' && 'justify-end text-right'"
   >
     <UIcon

@@ -1,7 +1,5 @@
 import type { MaybeRefOrGetter, Ref } from "vue";
 
-const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
-
 /**
  * The section in view, for a column of links to a page's sections (the
  * ambiguous forms' headwords, the privacy page's subjects): the last one
@@ -12,9 +10,15 @@ const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home
  * the reading line, e.g. near the page's bottom, or all of them in view),
  * until the user scrolls by themselves; so is the one a page is opened at
  * (`#id`).
+ *
+ * With `anchors`, the sections are the page's anchors (the privacy page's
+ * subjects): none is marked before the first reaches the reading line (at
+ * the page's top, above them, its summary), and the address follows the
+ * one marked (`#id`, none above them; cf. `useAddressAnchor`).
  * @param ids The sections' elements' ids, in their order.
+ * @param options.anchors Whether the sections are the page's anchors.
  */
-export function useCurrentSection(ids: MaybeRefOrGetter<string[]>): {
+export function useCurrentSection(ids: MaybeRefOrGetter<string[]>, { anchors = false }: { anchors?: boolean } = {}): {
   currentId: Ref<string | undefined>;
   follow: (id: string) => void;
 } {
@@ -40,14 +44,25 @@ export function useCurrentSection(ids: MaybeRefOrGetter<string[]>): {
     // scroll margin), on a short window too.
     const margin = Number.parseFloat(getComputedStyle(elements[0]!).scrollMarginTop) || 0;
     const readingLine = Math.max(window.innerHeight / 4, (box?.getBoundingClientRect().top ?? 0) + margin + 1);
-    let current = elements[0]!;
+    let current: HTMLElement | undefined = anchors ? undefined : elements[0];
     for (const element of elements) {
       if (element.getBoundingClientRect().top <= readingLine) current = element;
     }
-    // At the page's top, the first one (all the sections may be in view).
-    if (!box?.scrollTop) current = elements[0]!;
-    currentId.value = atBottom ? elements.at(-1)!.id : current.id;
+    // At the page's top, the first one (all the sections may be in view),
+    // or none (anchors).
+    if (!box?.scrollTop) current = anchors ? undefined : elements[0];
+    currentId.value = atBottom ? elements.at(-1)!.id : current?.id;
   };
+
+  // The address following the section marked (anchors; cf.
+  // `useAddressAnchor`); not one reached by a link, which gives it its
+  // anchor itself (as it would then not scroll to it).
+  if (anchors) {
+    const giveAnchor = useAddressAnchor();
+    watch(currentId, (id) => {
+      if (!followed) giveAnchor(id);
+    });
+  }
 
   watch(y, () => requestAnimationFrame(update));
   // The scroller is set once the layout is mounted, after the page.
@@ -58,10 +73,8 @@ export function useCurrentSection(ids: MaybeRefOrGetter<string[]>): {
     followed = undefined;
     update();
   };
-  useEventListener("wheel", release, { passive: true });
-  useEventListener("touchmove", release, { passive: true });
-  useEventListener("keydown", (event: KeyboardEvent) => {
-    if (SCROLL_KEYS.has(event.key)) release();
+  useUserScroll(() => {
+    release();
   });
 
   /**
