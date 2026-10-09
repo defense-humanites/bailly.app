@@ -4,7 +4,7 @@
   import { InputMode } from "~/enums";
   import { splitExcerpt } from "~/helpers";
   import type { SearchField } from "~/composables/useEntrySearch";
-  import { entryRoute } from "~/utils/entryUri";
+  import { entryRoute, homonymAnchor } from "~/utils/entryUri";
   import { takeSearchHandoff } from "~/utils/searchHandoff";
   import { convertSearchInput, hasWildcards, toLookupQuery, toSearchGreek, toSearchQuery } from "~/utils/searchInput";
 
@@ -30,6 +30,8 @@
     uri?: string;
     /** Whether the entry is a homonym, under its common headword. */
     nested?: boolean;
+    /** A homonym's number (e.g. `oudos#2` → `2`), after its headword. */
+    homonym?: string;
   };
 
   const { query, result, resultQuery, status, pending } = useEntrySearch();
@@ -242,6 +244,7 @@
     nested = false,
   ): ResultItem => ({
     nested,
+    homonym: nested ? homonymAnchor(entry.uri) : undefined,
     label: entry.excerpt,
     parts: splitExcerpt(entry.word, entry.excerpt),
     text: query.value,
@@ -553,7 +556,10 @@
           v-if="item.parts"
           class="font-serif text-sm/6"
           :data-nested="item.nested || undefined"
-        ><span class="font-semibold">{{ greek.text(item.parts.word) }}</span>{{ greek.text(item.parts.rest) }}</span>
+        ><!-- A homonym's number after its headword, as in its definition. --><span class="font-semibold">{{ greek.text(item.parts.word) }}<sup
+          v-if="item.homonym"
+          class="ms-px"
+        >{{ item.homonym }}</sup></span>{{ greek.text(item.parts.rest) }}</span>
         <template v-else>
           {{ greek.text(item.label) }}
         </template>
