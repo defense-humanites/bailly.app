@@ -126,6 +126,8 @@ test.describe("entry page", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await goto("/logos", { waitUntil: "hydration" });
     await expect(outline).toBeVisible();
+    // Titled, as the privacy page's column.
+    await expect(page.locator("aside").getByText("Sommaire", { exact: true })).toBeVisible();
     const part = outline.getByRole("button", { name: /^B\./ }).first();
     // Hovered, the item tints its sense in the text; no longer once left.
     const sense = page.locator(".definition .Rub").nth(1);

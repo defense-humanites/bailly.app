@@ -285,7 +285,9 @@
     <!--
       From `xl`, a long entry's outline in a column beside the card (as the
       headwords of an ambiguous form's page), sticking under the header, its
-      own scroller if taller than the window.
+      own scroller if taller than the window. Titled as the privacy page's
+      column (« Sommaire »), the title staying in place above the scroller;
+      hidden from screen readers, which hear the outline's own name.
     -->
     <section class="relative">
       <EntryCard
@@ -296,13 +298,21 @@
         v-if="outline.length"
         class="absolute start-full top-0 ms-12 hidden h-full w-56 xl:block"
       >
-        <div class="sticky top-[calc(var(--header-bottom)+1.5rem)] max-h-[calc(100dvh-var(--header-bottom)-3rem)] overflow-y-auto">
-          <EntryOutline
-            :items="outline"
-            :current="currentSense"
-            collapse
-            @select="goToSense"
-          />
+        <div class="sticky top-[calc(var(--header-bottom)+1.5rem)] flex max-h-[calc(100dvh-var(--header-bottom)-3rem)] flex-col">
+          <p
+            aria-hidden="true"
+            class="mb-2 px-2.5 text-xs font-semibold uppercase tracking-wide text-muted"
+          >
+            Sommaire
+          </p>
+          <div class="min-h-0 overflow-y-auto">
+            <EntryOutline
+              :items="outline"
+              :current="currentSense"
+              collapse
+              @select="goToSense"
+            />
+          </div>
         </div>
       </aside>
     </section>
