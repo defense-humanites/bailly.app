@@ -57,6 +57,29 @@ test.describe("entry page", () => {
     await expect(page.locator(".definition .entreea")).toHaveText(["λογάδες1,", "λογάδες2,"]);
   });
 
+  test("homonyms: the address follows the one being read", async ({ page, goto }) => {
+    // A short window, for this short entry to scroll.
+    await page.setViewportSize({ width: 1280, height: 300 });
+    await goto("/logades", { waitUntil: "hydration" });
+    // The top of a homonym, or of its last sense, brought just above the
+    // reading line.
+    const scrollTo = (index: number, sense = false) => page.evaluate(([index, sense]) => {
+      const definition = document.querySelectorAll(".definition")[index]!;
+      const element = sense ? [...definition.querySelectorAll(".pp")].at(-1)! : definition;
+      document.querySelector("main")!.scrollBy({ top: element.getBoundingClientRect().top - innerHeight / 4 + 10, behavior: "instant" });
+    }, [index, sense] as const);
+    // The second one, short, at the page's bottom.
+    await scrollTo(1);
+    await expect(page).toHaveURL(/\/logades#2$/);
+    await scrollTo(0, true);
+    await expect(page).toHaveURL(/\/logades#1$/);
+    // Back at the top: none.
+    await page.evaluate(() => {
+      document.querySelector("main")!.scrollTo({ top: 0, behavior: "instant" });
+    });
+    await expect(page).toHaveURL(/\/logades$/);
+  });
+
   test("a compact bar appears once the title is out of sight", async ({ page, goto }) => {
     const bar = page.getByRole("navigation", { name: "Navigation de l'entrée" });
     for (const width of [390, 1280]) {

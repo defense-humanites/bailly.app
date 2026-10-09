@@ -91,6 +91,7 @@
    * in a short one, the homonym itself).
    */
   const article = useTemplateRef<HTMLElement>("article");
+  const pageScroller = usePageScroller();
   const currentSense = shallowRef<Element | null>(null);
   const sensePathShown = ref<SenseStep[]>([]);
 
@@ -120,12 +121,20 @@
    * first one.
    */
   const homonymShown = ref("");
+  // The address following it (`#2`, none above the first one, or while the
+  // title is in view), as the privacy page's sections (cf.
+  // `useAddressAnchor`): a link to it, or the way back, lands on it.
+  watch(homonymShown, useAddressAnchor());
 
   const updateSensePath = (): void => {
     const line = readingLine();
     const definitions = article.value ? [...article.value.querySelectorAll(".definition")] : [];
     const senses = definitions.flatMap(sensesIn);
-    const definition = followed?.closest(".definition") ?? (line === undefined ? null : senseAt(definitions, line));
+    // At the bottom of the page, the last homonym (a short one may never
+    // reach the reading line).
+    const box = pageScroller.value;
+    const atBottom = !!box && box.scrollTop > 0 && box.clientHeight + box.scrollTop >= box.scrollHeight - 2;
+    const definition = followed?.closest(".definition") ?? (atBottom && definitions.length > 1 ? definitions.at(-1)! : line === undefined ? null : senseAt(definitions, line));
     let sense = followed ? (followed.matches(".definition") ? null : followed) : line === undefined ? null : senseAt(senses, line);
     // In the head of a homonym, not in the previous one's last sense.
     if (sense && definition && !definition.contains(sense)) sense = null;
@@ -153,7 +162,6 @@
   const FOLD_SHARE = 0.1;
   const FOLD_MARGIN = 40;
   const HEIGHT_CHANGE = 0.15;
-  const pageScroller = usePageScroller();
   const beyondFold = (element: Element): boolean => {
     const box = pageScroller.value;
     const top = element.getBoundingClientRect().top - (box?.getBoundingClientRect().top ?? 0) + (box?.scrollTop ?? 0);

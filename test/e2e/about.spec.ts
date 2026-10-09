@@ -52,6 +52,20 @@ test.describe("about page", () => {
     });
     await expect(current).toHaveCount(0);
     await expect(page).toHaveURL(new RegExp(`${encodeURI("/confidentialité")}$`));
+    // A link to a section, after its anchor was given then removed by
+    // scrolling, still leads to it.
+    const heading = page.locator("#synchronisation");
+    const top = () => heading.evaluate(element => element.getBoundingClientRect().top);
+    await toc.getByRole("link", { name: "Synchronisation" }).click();
+    await expect(page).toHaveURL(/#synchronisation$/);
+    await expect.poll(top).toBeLessThan(200);
+    // Scrolled back to the top by the user (a section reached by a link
+    // stays marked until then).
+    await page.mouse.move(400, 400);
+    await page.mouse.wheel(0, -20000);
+    await expect(page).toHaveURL(new RegExp(`${encodeURI("/confidentialité")}$`));
+    await toc.getByRole("link", { name: "Synchronisation" }).click();
+    await expect.poll(top).toBeLessThan(200);
   });
 
   test("the contributors to the Bailly 2020, behind its « et al. »", async ({ page, goto }) => {

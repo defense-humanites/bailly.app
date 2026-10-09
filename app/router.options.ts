@@ -1,6 +1,7 @@
 import type { RouterConfig } from "@nuxt/schema";
 import type { RouteLocationNormalized } from "vue-router";
 import { START_LOCATION } from "vue-router";
+import { takeQuietAnchor } from "~/utils/quietAnchor";
 
 const samePath = (to: RouteLocationNormalized, from: RouteLocationNormalized): boolean =>
   to.path.replace(/\/$/, "") === from.path.replace(/\/$/, "");
@@ -49,6 +50,9 @@ function scrollPage(target: { hash: string } | { top: number }, behavior: Scroll
 export default {
   scrollBehavior(to, from, savedPosition) {
     if (samePath(to, from)) {
+      // The anchor of what is being read, given as the page scrolls (cf.
+      // `useAddressAnchor`): the page stays where it is.
+      if (takeQuietAnchor(to.hash)) return false;
       if (from.hash && !to.hash) scrollPage({ top: (savedPosition && savedPageScroll()) || 0 });
       else if (to.hash) {
         const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

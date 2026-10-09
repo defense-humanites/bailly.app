@@ -14,8 +14,7 @@ import type { MaybeRefOrGetter, Ref } from "vue";
  * With `anchors`, the sections are the page's anchors (the privacy page's
  * subjects): none is marked before the first reaches the reading line (at
  * the page's top, above them, its summary), and the address follows the
- * one marked (`#id`, none above them), replaced rather than added to the
- * history, the page not scrolled.
+ * one marked (`#id`, none above them; cf. `useAddressAnchor`).
  * @param ids The sections' elements' ids, in their order.
  * @param options.anchors Whether the sections are the page's anchors.
  */
@@ -55,15 +54,13 @@ export function useCurrentSection(ids: MaybeRefOrGetter<string[]>, { anchors = f
     currentId.value = atBottom ? elements.at(-1)!.id : current?.id;
   };
 
-  // The address following the section marked (anchors): replaced, with the
-  // router's record of it (`current`, for the way back), the page not
-  // scrolled (`router.replace` would scroll to it).
+  // The address following the section marked (anchors; cf.
+  // `useAddressAnchor`); not one reached by a link, which gives it its
+  // anchor itself (as it would then not scroll to it).
   if (anchors) {
+    const giveAnchor = useAddressAnchor();
     watch(currentId, (id) => {
-      const hash = id ? `#${id}` : "";
-      if (location.hash === hash) return;
-      const url = `${location.pathname}${location.search}${hash}`;
-      history.replaceState({ ...(history.state as Record<string, unknown> | null), current: url }, "", url);
+      if (!followed) giveAnchor(id);
     });
   }
 
