@@ -30,7 +30,8 @@ try {
  * @param {URL} url
  */
 const keyOf = (url) => {
-  const params = [...url.searchParams].sort(([a], [b]) => a.localeCompare(b));
+  // Without a random draw's number (cf. `RandomOpening`), which the API ignores.
+  const params = [...url.searchParams].filter(([name]) => name !== "draw").sort(([a], [b]) => a.localeCompare(b));
   const query = new URLSearchParams(params).toString();
   return decodeURIComponent(url.pathname) + (query ? `?${decodeURIComponent(query)}` : "");
 };

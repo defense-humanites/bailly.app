@@ -28,13 +28,21 @@
   /**
    * The preloaded request, as an absolute URL: the very same for the preload
    * link and the first fetch, which takes the preloaded response only if
-   * their URLs are identical. The next draws must not take it: a browser
-   * may keep serving a preloaded response to the requests of its URL (seen
-   * in Safari: the same entry again, the button seeming to do nothing).
+   * their URLs are identical. A browser may keep serving a preloaded
+   * response to the requests of its URL, even after the page is reloaded
+   * (Safari, its memory cache: the same entry again on reloading the page,
+   * or on coming back to it within the application). So the URL is the
+   * page's own: a draw's number, given by the server with the page (in its
+   * payload, for the browser to fetch the same URL; the API ignores it); and
+   * only the first draw of the page served takes it, the next ones (another
+   * draw, a return to the page) are requested at another URL.
    */
+  const drawNumber = useState("random-opening-draw", () => Math.random().toString(36).slice(2, 10));
   const url = new URL("entry/random", apiHost.endsWith("/") ? apiHost : `${apiHost}/`);
-  url.search = new URLSearchParams(RANDOM_QUERY).toString();
+  url.search = new URLSearchParams({ ...RANDOM_QUERY, draw: drawNumber.value }).toString();
   const RANDOM_ENTRY = url.href;
+  // The page served (hydrated): its first draw takes the preloaded response.
+  const served = useNuxtApp().isHydrating;
 
   /*
    * The page served preloads it: the browser fetches the entry while it
@@ -100,7 +108,7 @@
     }
   }
 
-  onMounted(() => draw(true));
+  onMounted(() => draw(served));
 
   /**
    * A neighbor's excerpt without its word, which it starts with, possibly with

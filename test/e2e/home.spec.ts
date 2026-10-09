@@ -43,6 +43,20 @@ test.describe("home page", () => {
     await page.getByRole("button", { name: "Ouvrir à une autre page" }).click();
     await expect.poll(() => requests.length).toBe(2);
     expect(requests[1]).not.toBe(requests[0]);
+
+    // Back to the page within the application: neither (Safari served the
+    // first entry again).
+    await page.getByRole("link", { name: "Signets" }).first().click();
+    await expect(page).toHaveURL(/signets$/);
+    await page.goBack();
+    await expect.poll(() => requests.length).toBe(3);
+    expect(requests[2]).not.toBe(requests[0]);
+
+    // Reloaded, another preloaded URL (Safari served the same entry again).
+    await page.reload();
+    await expect.poll(() => requests.length).toBe(4);
+    expect(requests[3]).not.toBe(requests[0]);
+    await expect(page.locator("link[rel=preload][as=fetch]")).toHaveAttribute("href", requests[3]!);
   });
 
   test("gives the focus to the search field on opening, but not on a touch screen", async ({ page, goto, browser }) => {
