@@ -42,6 +42,11 @@
       text: "Activez la synchronisation sur un premier appareil, puis ajoutez les autres avec votre clé : un QR code à scanner, ou douze mots à saisir. Vos signets et vos réglages vous suivent alors de l'ordinateur au téléphone. Aucun compte à créer, et tout reste privé : vos données sont chiffrées avant même de quitter votre appareil.",
     },
     {
+      icon: "i-lucide-list-tree",
+      title: "Des entrées longues faciles à parcourir.",
+      text: "Une entrée qui ne tient pas à l'écran dispose désormais d'un sommaire de ses parties, sections et sens, qui mène d'un clic à chacun d'eux : à droite du texte sur les grands écrans, ailleurs depuis la barre qui accompagne votre lecture en haut de l'écran et indique le sens que vous lisez. Les homonymes, enfin, sont numérotés.",
+    },
+    {
       icon: "i-lucide-link",
       title: "Des définitions reliées entre elles.",
       text: "Les mots grecs cités dans les définitions mènent à leurs entrées ; une forme qui peut relever de plusieurs entrées ouvre une page qui les propose toutes.",
