@@ -35,9 +35,16 @@ export class SyncNetworkError extends Error {
 export const SYNC_BUSY_MESSAGE = "Le serveur de synchronisation est très sollicité : nouvel essai dans quelques secondes.";
 
 export class SyncBusyError extends SyncNetworkError {
-  constructor() {
+  /**
+   * The delay the server asks for before retrying (s; its `Retry-After`
+   * header), if it tells one.
+   */
+  readonly retryAfter: number | null;
+
+  constructor(retryAfter: number | null = null) {
     super(SYNC_BUSY_MESSAGE);
     this.name = "SyncBusyError";
+    this.retryAfter = retryAfter;
   }
 }
 
@@ -117,11 +124,12 @@ async function unexpected(response: Response): Promise<never> {
     // The daily budget of the address, or the rate limiting rule of Cloudflare.
     const body = (await response.json().catch(() => ({}))) as { data?: { reason?: unknown } };
     const reason = body.data?.reason;
+    const retryAfter = Number(response.headers.get("Retry-After"));
+    const told = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : null;
     if (reason === "daily-budget" || reason === "server-budget") {
-      const retryAfter = Number(response.headers.get("Retry-After"));
-      throw new SyncQuotaError(reason === "server-budget" ? "server" : "address", Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : 60 * 60);
+      throw new SyncQuotaError(reason === "server-budget" ? "server" : "address", told ?? 60 * 60);
     }
-    throw new SyncBusyError();
+    throw new SyncBusyError(told);
   }
   throw new SyncNetworkError(`Le serveur de synchronisation a répondu par une erreur (${response.status}).`);
 }

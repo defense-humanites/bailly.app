@@ -30,7 +30,6 @@ test("an active reader with several tabs makes few requests of synchronization",
   context.on("request", (request) => {
     if (new URL(request.url()).pathname.startsWith("/api/sync/")) requests.push({ time: Date.now(), method: request.method() });
   });
-  const started = Date.now();
 
   // Four tabs opened at once, then read in turn, each page loaded in full.
   const paths = ["/logos", "/logotechnês", "/logades", "/anêr", "/"];
@@ -47,17 +46,21 @@ test("an active reader with several tabs makes few requests of synchronization",
       await tab.waitForTimeout(1_000); // Reading.
     }
   }
-  // Reading sends nothing: no change to send.
+  // Reading sends nothing (no change to send), and receives at most once a
+  // minute (the synchronization was enabled just before).
   expect(requests.filter(request => request.method === "PUT")).toEqual([]);
+  expect(requests.length).toBeLessThanOrEqual(1);
 
   // A change, in one of the tabs: sent once.
   await seedBookmarks(tabs[2]!, { starred: [logos] });
   await expect.poll(() => requests.filter(request => request.method === "PUT").length, { timeout: 15_000 }).toBe(1);
 
-  const duration = Date.now() - started;
+  // At most one synchronization (a request, or two with a change) a minute
+  // for all the tabs while reading, instead of one per page loaded (28 here,
+  // in about 30 s); never two within 5 s (cf. `MIN_SYNC_INTERVAL`), each
+  // starting with a reading of the locker.
   const times = requests.map(request => request.time);
-  // About one synchronization (a request, or two with a change) per 10 s for
-  // all the tabs, instead of one per page loaded (28 here, in about 30 s).
-  expect(busiestWindow(times, 10_000)).toBeLessThanOrEqual(5);
-  expect(requests.length).toBeLessThanOrEqual(Math.ceil(duration / 10_000) * 2 + 2);
+  expect(busiestWindow(times, 10_000)).toBeLessThanOrEqual(3);
+  const reads = requests.filter(request => request.method === "GET").map(request => request.time);
+  for (const [i, time] of reads.entries()) if (i) expect(time - reads[i - 1]!).toBeGreaterThan(4_900);
 });

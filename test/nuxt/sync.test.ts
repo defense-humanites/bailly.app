@@ -13,13 +13,14 @@ function fakeServer() {
   const lockers = new Map<string, { version: number; blob: string }>();
   const requests: string[] = [];
   let busy = 0;
+  let retryAfter: string | null = null;
   const handler = (input: RequestInfo | URL, init: RequestInit = {}): Response => {
     const url = input instanceof Request ? input.url : input.toString();
     const method = init.method ?? "GET";
     requests.push(method);
     if (busy > 0) {
       busy--;
-      return new Response("", { status: 429 });
+      return new Response("", { status: 429, headers: retryAfter ? { "Retry-After": retryAfter } : {} });
     }
     const id = url.split("/").pop()!;
     const stored = lockers.get(id);
@@ -34,8 +35,9 @@ function fakeServer() {
     fetch: vi.fn((input: RequestInfo | URL, init?: RequestInit) => Promise.resolve(handler(input, init))),
     requests,
     /** Answers the next requests as too busy. */
-    busyFor(count: number) {
+    busyFor(count: number, seconds: number | null = null) {
       busy = count;
+      retryAfter = seconds === null ? null : String(seconds);
     },
   };
 }
@@ -115,7 +117,7 @@ test("a synchronization looking for changes is skipped when another tab synchron
   expect(second.lastSyncedAt).toBe(first.lastSyncedAt);
 
   // Without the condition (a change, or asked by the user): synchronized.
-  expect(await second.sync()).toBe(true);
+  expect(await second.sync({ asked: true })).toBe(true);
   expect(server.requests).toEqual(["GET"]);
 });
 
@@ -177,14 +179,19 @@ test("the server too busy: retried silently while it stays isolated, then told",
   // Repeated: told at the third refusal in a row.
   server.requests.length = 0;
   server.busyFor(3);
-  expect(await tab.sync()).toBe(false);
+  expect(await tab.sync({ asked: true })).toBe(false);
   expect(tab.error).toBeNull();
   await vi.advanceTimersByTimeAsync(15_000);
   expect(tab.error).toBeNull();
   await vi.advanceTimersByTimeAsync(15_000);
-  expect(tab.status).toBe("error");
+  await vi.waitFor(() => {
+    expect(tab.status).toBe("error");
+  });
   expect(tab.error).toMatch(/très sollicité/);
-  // It still retries, and the error goes once it succeeds.
+  // It still retries, less often (30 s), and the error goes once it succeeds.
+  expect(server.requests).toEqual(["GET", "GET", "GET"]);
+  await vi.advanceTimersByTimeAsync(15_000);
+  expect(server.requests).toHaveLength(3);
   await vi.advanceTimersByTimeAsync(15_000);
   await vi.waitFor(() => {
     expect(tab.status).toBe("idle");
@@ -204,4 +211,56 @@ test("the server too busy for more than a minute: told", async () => {
   server.busyFor(1);
   expect(await tab.sync()).toBe(false);
   expect(tab.status).toBe("error");
+});
+
+test("the server too busy, telling when to retry: retried then", async () => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
+  await enable();
+  const tab = await newTab();
+  server.busyFor(1, 60);
+  expect(await tab.sync()).toBe(false);
+  await vi.advanceTimersByTimeAsync(30_000);
+  expect(server.requests).toEqual(["GET"]);
+  await vi.advanceTimersByTimeAsync(30_000);
+  await vi.waitFor(() => {
+    expect(server.requests).toEqual(["GET", "GET", "PUT"]);
+  });
+});
+
+test("the server too busy: the retry is skipped if another tab synchronized meanwhile", async () => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
+  await enable();
+  const first = await newTab();
+  const second = await newTab();
+  server.busyFor(1);
+  expect(await first.sync()).toBe(false);
+  await vi.advanceTimersByTimeAsync(10_000);
+  expect(await second.sync({ asked: true })).toBe(true);
+  server.requests.length = 0;
+  expect(first.lastSyncedAt).toBeNull();
+  await vi.advanceTimersByTimeAsync(5_000); // The retry, 15 s after the refusal.
+  // (Run, and skipped: the date of the other tab's synchronization known.)
+  await vi.waitFor(() => {
+    expect(first.lastSyncedAt).toBe(second.lastSyncedAt);
+  });
+  expect(server.requests).toEqual([]);
+  expect(first.status).toBe("idle");
+});
+
+test("at most one synchronization every few seconds, but those asked by the user", async () => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
+  await enable();
+  const tab = await newTab();
+  expect(await tab.sync()).toBe(true);
+  expect(server.requests).toEqual(["GET", "PUT"]);
+  // A change right after: sent 5 s after the latest synchronization.
+  const later = tab.sync();
+  await vi.advanceTimersByTimeAsync(4_000);
+  expect(server.requests).toHaveLength(2);
+  await vi.advanceTimersByTimeAsync(1_000);
+  expect(await later).toBe(true);
+  expect(server.requests).toEqual(["GET", "PUT", "GET"]);
+  // Asked by the user: at once.
+  expect(await tab.sync({ asked: true })).toBe(true);
+  expect(server.requests).toHaveLength(4);
 });

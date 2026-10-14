@@ -44,14 +44,29 @@ const transliteration = (page: Page) => page.getByRole("switch", { name: "Grec t
 const inflectedForms = (page: Page) => page.getByRole("switch", { name: "Formes fléchies" });
 
 /**
- * Reloads a device until a check passes (it synchronizes when loaded).
+ * Synchronizes a device now, as asked by the user (once its settings are
+ * loaded).
+ */
+const syncNow = async (page: Page) => {
+  await expect.poll(() => page.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { sync: (options: { force: boolean; asked: boolean }) => Promise<boolean> };
+    return store.sync({ force: true, asked: true });
+  })).toBe(true);
+};
+
+/**
+ * Reloads a device and synchronizes it until a check passes (opening it
+ * only synchronizes once it has not for a while, cf. `REVISIT_DELAY`;
+ * the other device sends its changes after `CHANGE_DELAY`).
  */
 const untilReloaded = async (page: Page, check: () => Promise<void>) => {
   await expect(async () => {
     await page.reload();
     await waitForHydration(page);
+    await syncNow(page);
     await check();
-  }).toPass({ timeout: 20_000 });
+  }).toPass({ timeout: 30_000 });
 };
 
 test("synchronizing the preferences chosen between two devices", async ({ page, goto, browser, baseURL }) => {

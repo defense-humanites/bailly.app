@@ -15,9 +15,12 @@ const LOCAL_CHANGES = new Set([
 ]);
 
 /**
- * How long after a synchronization the return to the page triggers another.
+ * How long after a synchronization (of any tab) opening a page, or coming
+ * back to it, looks for the changes of the other devices again: as often as
+ * the bookmarks page does (cf. `POLL_INTERVAL`). A reader loading pages in
+ * full (e.g. links from other sites) would otherwise synchronize at each.
  */
-const REVISIT_DELAY = 10_000;
+const REVISIT_DELAY = 60_000;
 
 /**
  * How often the bookmarks are synchronized while the bookmarks page is shown,

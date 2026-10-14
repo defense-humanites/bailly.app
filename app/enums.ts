@@ -62,6 +62,11 @@ export enum StorageKey {
    * synchronization (cf. `useSyncStore().changed`).
    */
   SyncPending = "bailly:syncPending",
+  /**
+   * The date (ms) the latest synchronization of this device started, shared
+   * by the tabs (cf. `MIN_SYNC_INTERVAL`).
+   */
+  SyncAttempt = "bailly:syncAttemptAt",
 }
 
 /**
