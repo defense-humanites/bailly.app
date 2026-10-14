@@ -24,6 +24,19 @@ const openSync = async (page: Page) => {
   await page.getByRole("button", { name: /^Synchronisation/ }).click();
 };
 
+/**
+ * Synchronizes now, as asked by the user (« Synchroniser maintenant »).
+ */
+const syncNow = async (page: Page) => {
+  const synced = () => page.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { sync: (options: { force: boolean }) => Promise<boolean> };
+    return store.sync({ force: true });
+  });
+  // (Once the settings are loaded.)
+  await expect.poll(synced).toBe(true);
+};
+
 const syncLink = (page: Page) => page.evaluate(() => {
   const root = document.querySelector("#__nuxt") as AppRoot;
   const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { link: (origin: string) => string | null };
@@ -86,9 +99,11 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   // The excerpts are not synchronized: the phone fetches the one it lacks from the API.
   await expect(phone.getByText(/ἔργα λόγου μέζω/).first()).toBeVisible();
 
-  // The laptop gets the phone's favorite (e.g. at the next visit).
+  // The laptop gets the phone's favorite, at the next visit once it has not
+  // synchronized for a while (cf. \`REVISIT_DELAY\`), or when asked.
   await page.reload();
   await waitForHydration(page);
+  await syncNow(page);
   await expect.poll(() => bookmarksState(page)).toEqual({ tags: ["Homère"], tagged: 1, starred: 2 });
 
   // A tablet opens the link of the QR code.
@@ -551,8 +566,11 @@ test("a deletion undone is undone on the other devices too", async ({ page, goto
     const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { revive: (removed: unknown) => Promise<unknown> };
     await store.revive((window as unknown as { removed: unknown }).removed);
   });
-  await expect.poll(phoneTags, { timeout: 15_000 }).toEqual(["Homère"]);
-  expect((await bookmarksState(phone)).tagged).toBe(1);
+  // (Its entry too: the state is read once merged, not while it is.)
+  await expect.poll(async () => {
+    await phoneTags();
+    return bookmarksState(phone);
+  }, { timeout: 15_000 }).toMatchObject({ tags: ["Homère"], tagged: 1 });
 });
 
 test("enabling a key again brings back the online bookmarks deleted meanwhile", async ({ page, goto, browser, baseURL }) => {

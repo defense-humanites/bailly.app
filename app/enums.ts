@@ -57,6 +57,11 @@ export enum StorageKey {
    * The notices the user dismissed (a list of ids, e.g. `morpheusWarning`).
    */
   Dismissed = "bailly:dismissed",
+  /**
+   * The date (ms) of the latest change of this device not yet sent by the
+   * synchronization (cf. `useSyncStore().changed`).
+   */
+  SyncPending = "bailly:syncPending",
 }
 
 /**

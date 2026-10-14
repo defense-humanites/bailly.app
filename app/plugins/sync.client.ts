@@ -72,38 +72,42 @@ export default defineNuxtPlugin({
       // The preferences synchronized that the cookie lacks (e.g. expired),
       // even offline.
       await syncStore.reconcilePreferences();
-      if (syncStore.enabled) void syncStore.sync();
+      // Unless another tab just did (e.g. several opened at once).
+      if (syncStore.enabled) void syncStore.sync({ ifStale: REVISIT_DELAY });
     });
 
     bookmarksStore.$onAction(({ name, after }) => {
       if (!LOCAL_CHANGES.has(name)) return;
       after((result: unknown) => {
-        if ((result as { state?: string } | undefined)?.state === "success" && syncStore.syncedBookmarks) syncStore.schedule();
+        if ((result as { state?: string } | undefined)?.state === "success" && syncStore.syncedBookmarks) syncStore.changed();
       });
     });
 
+    // Looking for the changes of the other devices: unless a tab of this
+    // device synchronized lately (cf. `sync`'s `ifStale`; this tab's own
+    // state, which may not know the others', avoids reading IndexedDB).
+    const revisit = (delay: number = REVISIT_DELAY): void => {
+      if (isStale(delay)) syncStore.schedule(0, { ifStale: delay });
+    };
     useEventListener(document, "visibilitychange", () => {
-      if (document.visibilityState === "hidden") {
-        syncStore.flush();
-      } else if (Date.now() - (syncStore.lastSyncedAt ?? 0) > REVISIT_DELAY) {
-        syncStore.schedule(0);
-      }
+      if (document.visibilityState === "hidden") syncStore.flush();
+      else revisit();
     });
     useEventListener(window, "online", () => {
-      syncStore.schedule(0);
+      revisit();
     });
     // Back to the window (e.g. from another application, the page having
     // stayed visible).
     useEventListener(window, "focus", () => {
-      if (Date.now() - (syncStore.lastSyncedAt ?? 0) > REVISIT_DELAY) syncStore.schedule(0);
+      revisit();
     });
     // On the bookmarks page: when arriving there, then every minute.
     router.afterEach((to) => {
-      if (to.path === BOOKMARKS_PATH && isStale(REVISIT_DELAY)) syncStore.schedule(0);
+      if (to.path === BOOKMARKS_PATH) revisit();
     });
     useIntervalFn(() => {
       if (!onBookmarksPage() || document.visibilityState !== "visible" || !navigator.onLine) return;
-      if (isStale(POLL_INTERVAL - 1_000)) syncStore.schedule(0);
+      revisit(POLL_INTERVAL - 1_000);
     }, POLL_INTERVAL);
 
     // The tabs tell each other when the settings change (key enabled,
