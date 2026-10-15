@@ -58,13 +58,15 @@
   const greek = useGreek();
 
   /**
-   * The card's theme, its header (the toolbar) tinted, its framed groups of
-   * buttons at the same distance from its four edges, at every width (Nuxt
-   * UI's `sm:px-6` overridden).
+   * The card's theme, its header (the toolbar) tinted with the page's
+   * background, half as much (a step toward the page, in both themes: never
+   * lighter than the card, the search bar staying the lightest element), its
+   * framed groups of buttons at the same distance from its four edges, at
+   * every width (Nuxt UI's `sm:px-6` overridden).
    */
   const cardUi = computed((): CardProps["ui"] => ({
     ...props.ui,
-    header: ["p-2 sm:px-2 bg-elevated/50", props.ui?.header].filter(Boolean).join(" "),
+    header: ["p-2 sm:px-2 bg-(--app-page-bg)/50", props.ui?.header].filter(Boolean).join(" "),
   }));
 
   /**
