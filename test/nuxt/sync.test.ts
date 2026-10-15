@@ -305,3 +305,38 @@ test("the page hidden: a change waiting is sent at once, even right after anothe
     expect(server.requests).toEqual(["GET"]);
   });
 });
+
+test("the page hidden: nothing is sent but a change (not a retry, not a reception)", async () => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
+  await enable(Date.now() - 120_000);
+  const tab = await newTab();
+  tab.schedule(0, { ifStale: 60_000 }); // Back on the tab: a reception.
+  tab.flush();
+  expect(server.requests).toEqual([]);
+  await vi.advanceTimersByTimeAsync(0);
+  await vi.waitFor(() => {
+    expect(server.requests).toEqual(["GET", "PUT"]);
+  });
+});
+
+test("the server refusing again and again: a change, or the page hidden, does not hasten the next retry", async () => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
+  await enable();
+  const tab = await newTab();
+  server.busyFor(10);
+  expect(await tab.sync({ asked: true })).toBe(false); // 1st refusal: retried after 15 s.
+  await vi.advanceTimersByTimeAsync(15_000); // 2nd: after 15 s.
+  await vi.advanceTimersByTimeAsync(15_000); // 3rd: told, retried after 30 s.
+  await vi.waitFor(() => {
+    expect(tab.status).toBe("error");
+  });
+  expect(server.requests).toHaveLength(3);
+  tab.changed();
+  tab.flush();
+  await vi.advanceTimersByTimeAsync(29_000);
+  expect(server.requests).toHaveLength(3);
+  await vi.advanceTimersByTimeAsync(1_000);
+  await vi.waitFor(() => {
+    expect(server.requests).toHaveLength(4);
+  });
+});

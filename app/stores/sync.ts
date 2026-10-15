@@ -546,7 +546,11 @@ export const useSyncStore = defineStore("sync", () => {
       // (Sent all the same, unless the page is left first.)
     }
     firstChangeAt ??= now;
-    schedule(delay ?? Math.max(0, Math.min(CHANGE_DELAY, firstChangeAt + CHANGE_MAX_DELAY - now)));
+    let wait = delay ?? Math.max(0, Math.min(CHANGE_DELAY, firstChangeAt + CHANGE_MAX_DELAY - now));
+    // While the retries after the server's refusals space out, not sooner
+    // than the next one (the change is sent with it).
+    if (busyFailures > BUSY_SILENT_FAILURES && timer !== undefined) wait = Math.max(wait, timerDueAt - now);
+    schedule(wait);
   }
 
   /**
@@ -863,9 +867,11 @@ export const useSyncStore = defineStore("sync", () => {
 
   let timer: ReturnType<typeof setTimeout> | undefined;
   /**
-   * The condition of the synchronization scheduled (cf. `sync`'s `ifStale`).
+   * The condition of the synchronization scheduled (cf. `sync`'s `ifStale`),
+   * and when it is due.
    */
   let timerFreshFor: number | undefined;
+  let timerDueAt = 0;
 
   /**
    * Synchronizes after a delay (e.g. after a change).
@@ -875,6 +881,7 @@ export const useSyncStore = defineStore("sync", () => {
   function schedule(delay: number = CHANGE_DELAY, { ifStale }: { ifStale?: number } = {}): void {
     if (!enabled.value) return;
     timerFreshFor = timer === undefined ? ifStale : either(timerFreshFor, ifStale);
+    timerDueAt = Date.now() + delay;
     clearTimeout(timer);
     timer = setTimeout(() => {
       timer = undefined;
@@ -883,13 +890,18 @@ export const useSyncStore = defineStore("sync", () => {
   }
 
   /**
-   * Synchronizes now if a synchronization is scheduled (e.g. when the page is
-   * hidden, before the browser suspends it): at once, not paced (cf.
-   * `MIN_SYNC_INTERVAL`), the page possibly closing. (At most once each time
-   * the page is hidden, by the user.)
+   * Synchronizes now if a change waits for its synchronization (e.g. when
+   * the page is hidden, before the browser suspends it): at once, not paced
+   * (cf. `MIN_SYNC_INTERVAL`), the page possibly closing. (At most once each
+   * time the page is hidden, by the user.) Not the synchronizations that
+   * only receive, nor those that wait for the server (its daily budget, or
+   * the retries spaced out after its refusals): bound to be refused, they
+   * keep their time (a change waiting is sent at the next opening anyway,
+   * cf. `pendingSince`).
    */
   function flush(): void {
-    if (timer === undefined) return;
+    if (timer === undefined || timerFreshFor !== undefined) return;
+    if (Date.now() < quotaUntil || busyFailures > BUSY_SILENT_FAILURES) return;
     clearTimeout(timer);
     timer = undefined;
     void sync({ force: true, ifStale: timerFreshFor, asked: true });
