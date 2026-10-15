@@ -189,9 +189,14 @@
         <slot name="aside" />
       </div>
 
+      <!--
+        A card as a link: its padding on the definition (the link's child);
+        under a toolbar (the home page's random entry, whose header has no
+        rule), the text close to it.
+      -->
       <NuxtLink
         v-if="link"
-        :class="[shown.htmlDefinition ? '[&>*]:p-4 [&>*]:sm:p-6' : '']"
+        :class="[shown.htmlDefinition ? '[&>*]:p-4 [&>*]:sm:p-6' : '', { '[&>*]:pt-2 [&>*]:sm:pt-2': toolbar }]"
         :to="entryRoute(shown.uri)"
         :rel="linkRel"
         :prefetch-on="prefetchOn ?? 'interaction'"

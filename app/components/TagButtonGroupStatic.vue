@@ -8,7 +8,7 @@
    * (cf. `audit-rendu-serveur.md`). Keep them in step with `TagButtonGroup`
    * (checked by `test/e2e/entry.spec.ts`). Its buttons do nothing meanwhile.
    */
-  const BUTTON = "font-medium inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors rounded-full text-sm gap-1.5 text-default outline-inverted/25 focus-visible:outline-3 hover:disabled:bg-transparent dark:hover:disabled:bg-transparent hover:aria-disabled:bg-transparent dark:hover:aria-disabled:bg-transparent p-1.5 hover:bg-elevated active:bg-elevated";
+  const BUTTON = "font-medium inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors rounded-full text-sm gap-1.5 text-default outline-inverted/25 focus-visible:outline-3 hover:disabled:bg-transparent dark:hover:disabled:bg-transparent hover:aria-disabled:bg-transparent dark:hover:aria-disabled:bg-transparent p-1.5 hover:bg-(--app-button-hover) active:bg-(--app-button-active)";
 </script>
 
 <template>
@@ -20,7 +20,7 @@
       type="button"
       data-slot="base"
       aria-label="Toutes les étiquettes"
-      :class="[BUTTON, 'data-[state=open]:bg-elevated']"
+      :class="[BUTTON, 'data-[state=open]:bg-(--app-button-active)']"
     >
       <UIcon
         name="i-lucide-tags"

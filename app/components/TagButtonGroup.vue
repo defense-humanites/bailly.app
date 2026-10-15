@@ -3,13 +3,12 @@
   import type { IdbEntry, IdbTag, TagKey } from "~/idb";
 
   /*
-   * The toolbar's buttons, hovered or pressed: Nuxt UI's `bg-elevated`, a
-   * gentle shade, rather than the cards' darker ones (`--app-card-hover`,
-   * cf. `root.css`): an exception, the toolbar sitting at the card's top,
-   * by the entry's text.
-   * Kept in step with `TagButtonGroupStatic`.
+   * The toolbar's buttons, hovered or pressed: raised (lighter), a notch
+   * lighter still when pressed or open, as the bookmarks' bar's
+   * (`--app-button-hover`, `--app-button-active`, cf. `root.css`).
+   * Kept in step with `TagButtonGroupStatic` and `EntryCitationButton`.
    */
-  const TOOLBAR_HOVER = "hover:bg-elevated active:bg-elevated";
+  const TOOLBAR_HOVER = "hover:bg-(--app-button-hover) active:bg-(--app-button-active)";
 
   const bookmarksStore = useBookmarksStore();
   const { currentTag, tags } = storeToRefs(bookmarksStore);
@@ -168,7 +167,7 @@
         icon="i-lucide-tags"
         color="neutral"
         variant="ghost"
-        :class="[TOOLBAR_HOVER, 'data-[state=open]:bg-elevated']"
+        :class="[TOOLBAR_HOVER, 'data-[state=open]:bg-(--app-button-active)']"
         aria-label="Toutes les étiquettes"
       />
 

@@ -141,12 +141,10 @@
         :key="position"
       >
         <!--
-          The entry lies on the page's background, not on a card: the hovered
-          buttons of its toolbar take the cards' background (`bg-default`),
-          a shade lighter than the page in both themes (`bg-elevated` is as
-          dark as the page in the light theme, much lighter in the dark one).
-          Its toolbar neither ruled nor tinted (the frame's rules are close),
-          its groups of buttons on the page's background.
+          The entry lies on the page's background, not on a card. Its
+          toolbar neither ruled nor tinted (the frame's rules are close), its
+          groups of buttons on the page's background (raised when hovered,
+          as on the cards), the entry's text close under it.
         -->
         <div
           v-if="position === 'main'"
@@ -160,7 +158,7 @@
             link
             link-rel="nofollow"
             :ui="{
-              root: 'h-full flex flex-col overflow-hidden bg-transparent shadow-none ring-0 divide-y-0 rounded-none [--ui-bg-elevated:var(--ui-bg)] [&_[data-toolbar-group]]:bg-transparent',
+              root: 'h-full flex flex-col overflow-hidden bg-transparent shadow-none ring-0 divide-y-0 rounded-none [&_[data-toolbar-group]]:bg-transparent',
               header: 'bg-transparent',
               body: 'min-h-0 flex-1 mask-b-from-80%',
             }"
