@@ -119,13 +119,17 @@
 
 <template>
   <!--
-    In the card's header (cf. `EntryCard`): frameless buttons side by side,
-    as the entry's tools at the other end.
+    In the card's header (cf. `EntryCard`): a framed group of buttons, ruled
+    between them, on the cards' background (the header is tinted), as the
+    entry's tools at the other end (cf. `EntryCitationButton`).
   -->
-  <div class="flex min-w-0 items-center gap-0.5 [&>button]:rounded-lg">
+  <div
+    data-toolbar-group
+    class="flex min-w-0 items-center rounded-lg border border-default bg-default shadow-xs [&>*+*]:border-s [&>*+*]:border-default [&>button]:rounded-none [&>:first-child]:rounded-s-md [&>:last-child]:rounded-e-md"
+  >
     <!--
       The current tag, in one click (the most frequent action while reading):
-      the beginning of its name (more of it from `sm`; the line its own), in full in the
+      the beginning of its name (more of it from `sm`), in full in the
       tooltip, which says what a click does, and in the panel. Toggle buttons:
       a constant name, the state in `aria-pressed`.
     -->

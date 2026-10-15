@@ -58,13 +58,12 @@
   const greek = useGreek();
 
   /**
-   * The card's theme, its header (the toolbar) narrower than Nuxt UI's: the
-   * icons in line with the body's text (`p-4 sm:p-6`, less the buttons'
-   * padding), a line high.
+   * The card's theme, its header (the toolbar) tinted, its framed groups of
+   * buttons at the same distance from its four edges.
    */
   const cardUi = computed((): CardProps["ui"] => ({
     ...props.ui,
-    header: ["px-2.5 py-1 sm:px-4.5", props.ui?.header].filter(Boolean).join(" "),
+    header: ["p-2 bg-elevated/50", props.ui?.header].filter(Boolean).join(" "),
   }));
 
   /**
@@ -153,12 +152,11 @@
         The toolbar, in the card's header, on its own line above the
         definition (which keeps the card's whole width): the bookmarks' tools
         at the start (the current tag, all the tags, the star), the entry's
-        tools at the end (e.g. the citation); frameless buttons, the card's
-        rule under them (`UCard`'s header). Its edges such that the icons
-        line up with the text (the buttons' padding, 0.375rem, taken from the
-        body's). Interactive once the page is hydrated (its state, the
-        bookmarks, only exists in the browser); before, and on the server,
-        its markup alone, much lighter to render (cf. `TagButtonGroupStatic`).
+        tools at the end (e.g. the citation), each a framed group; the header
+        tinted, the card's rule under it (`UCard`'s header). Interactive once
+        the page is hydrated (its state, the bookmarks, only exists in the
+        browser); before, and on the server, its markup alone, much lighter
+        to render (cf. `TagButtonGroupStatic`).
       -->
       <template
         v-if="toolbar || $slots.tools"
@@ -173,7 +171,7 @@
           </ClientOnly>
           <div
             v-if="$slots.tools"
-            class="ms-auto flex items-center gap-0.5"
+            class="ms-auto flex items-center gap-2"
           >
             <slot
               name="tools"

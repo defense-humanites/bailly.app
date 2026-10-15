@@ -12,7 +12,10 @@
 </script>
 
 <template>
-  <div class="flex min-w-0 items-center gap-0.5 [&>button]:rounded-lg">
+  <div
+    data-toolbar-group
+    class="flex min-w-0 items-center rounded-lg border border-default bg-default shadow-xs [&>*+*]:border-s [&>*+*]:border-default [&>button]:rounded-none [&>:first-child]:rounded-s-md [&>:last-child]:rounded-e-md"
+  >
     <button
       type="button"
       data-slot="base"
