@@ -57,8 +57,15 @@
    */
   const greek = useGreek();
 
-  /** The toolbar's place in the card (cf. the template). */
-  const toolbarPlace = computed((): string => props.link ? "ms-2 me-3 mt-3" : "relative -top-1 -right-1 sm:-top-3 sm:-right-3");
+  /**
+   * The card's theme, its header (the toolbar) narrower than Nuxt UI's: the
+   * icons in line with the body's text (`p-4 sm:p-6`, less the buttons'
+   * padding), a line high.
+   */
+  const cardUi = computed((): CardProps["ui"] => ({
+    ...props.ui,
+    header: ["px-2.5 py-1 sm:px-4.5", props.ui?.header].filter(Boolean).join(" "),
+  }));
 
   /**
    * An excerpt split around its headword (or, not known yet, the word).
@@ -104,6 +111,11 @@
   defineSlots<{
     /** At the top right of the (first) card, the text wrapping around it (e.g. an icon). */
     aside?: () => unknown;
+    /**
+     * The entry's tools, at the end of each card's toolbar (e.g. the
+     * citation), for the entry of that card (a homonym: its own).
+     */
+    tools?: (props: { entry: DisplayedEntry }) => unknown;
   }>();
 </script>
 
@@ -134,27 +146,43 @@
 
   <DefineEntryCard v-slot="{ entry: shown }">
     <UCard
-      :class="{ '[&>*]:p-0': link }"
-      :ui="ui"
+      :class="{ '[&>[data-slot=body]]:p-0': link }"
+      :ui="cardUi"
     >
       <!--
-        The toolbar is interactive once the page is hydrated (its state, the
+        The toolbar, in the card's header, on its own line above the
+        definition (which keeps the card's whole width): the bookmarks' tools
+        at the start (the current tag, all the tags, the star), the entry's
+        tools at the end (e.g. the citation); frameless buttons, the card's
+        rule under them (`UCard`'s header). Its edges such that the icons
+        line up with the text (the buttons' padding, 0.375rem, taken from the
+        body's). Interactive once the page is hydrated (its state, the
         bookmarks, only exists in the browser); before, and on the server,
         its markup alone, much lighter to render (cf. `TagButtonGroupStatic`).
       -->
-      <ClientOnly v-if="toolbar">
-        <TagButtonGroup
-          :entry="shown"
-          class="float-right"
-          :class="toolbarPlace"
-        />
-        <template #fallback>
-          <TagButtonGroupStatic
-            class="float-right"
-            :class="toolbarPlace"
-          />
-        </template>
-      </ClientOnly>
+      <template
+        v-if="toolbar || $slots.tools"
+        #header
+      >
+        <div class="flex items-center justify-between gap-2">
+          <ClientOnly v-if="toolbar">
+            <TagButtonGroup :entry="shown" />
+            <template #fallback>
+              <TagButtonGroupStatic />
+            </template>
+          </ClientOnly>
+          <div
+            v-if="$slots.tools"
+            class="ms-auto flex items-center gap-0.5"
+          >
+            <slot
+              name="tools"
+              :entry="shown"
+            />
+          </div>
+        </div>
+      </template>
+
       <div
         v-if="$slots.aside && shown.uri === firstCard.uri"
         class="float-right ms-3"

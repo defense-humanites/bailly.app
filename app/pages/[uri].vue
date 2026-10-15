@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import { convert } from "@humanities/greek-conversion";
-  import type { CitedEntry } from "~/utils/citation";
   import type { OutlineItem, SenseStep } from "~/utils/sensePath";
 
   definePageMeta({
@@ -127,16 +126,7 @@
   // `useAddressAnchor`): a link to it, or the way back, lands on it.
   watch(homonymShown, useAddressAnchor());
 
-  /**
-   * The entry cited (cf. `EntryCitation`): of homonyms, the one being read
-   * (cf. `homonymShown`), or the one the address pointed to on arriving
-   * (e.g. `oudos#2`), the first one otherwise; with the data's version.
-   */
-  const citedEntry = computed((): CitedEntry => {
-    const children = entry.children ?? [];
-    const anchor = homonymShown.value || route.hash.slice(1);
-    return children.find(child => homonymAnchor(child.uri) === anchor) ?? children[0] ?? entry;
-  });
+  /** The data's version, cited (cf. `EntryCitation`). */
   const dataVersion = data.value?.version;
 
   const updateSensePath = (): void => {
@@ -363,16 +353,14 @@
         toolbar
       >
         <!--
-          The citation's button at the card's top, beside the toolbar, at
-          every width: reached at once, however long the entry.
+          The citation, at the end of each card's toolbar: a homonym's card
+          cites that homonym.
         -->
-        <template #aside>
-          <div class="relative -top-1 sm:-top-3">
-            <EntryCitationButton
-              :entry="citedEntry"
-              :version="dataVersion"
-            />
-          </div>
+        <template #tools="{ entry: cited }">
+          <EntryCitationButton
+            :entry="cited"
+            :version="dataVersion"
+          />
         </template>
       </EntryCard>
       <aside

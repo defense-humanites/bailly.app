@@ -10,11 +10,11 @@
 </script>
 
 <!--
-  The citation in a window, opened by an icon at an entry card's top, beside
-  the bookmarks' toolbar (framed alike, but apart: it isn't about
-  bookmarks), hovered as it (`bg-elevated`, cf. `TagButtonGroup`); on the
-  entry page, at every width (the column on the right,
-  from `xl`, is the outline's), and on the home page's random entry.
+  The citation in a window, opened by an icon at the end of an entry card's
+  toolbar (the entry's tools, apart from the bookmarks' at its start),
+  frameless and hovered as the bookmarks' buttons (`bg-elevated`, cf.
+  `TagButtonGroup`); on the entry page, a homonym's card citing that
+  homonym, and on the home page's random entry.
 -->
 <template>
   <UModal
@@ -26,7 +26,7 @@
       aria-label="Citer cette entrée"
       color="neutral"
       variant="ghost"
-      class="rounded-lg border border-default shadow-xs hover:bg-elevated active:bg-elevated data-[state=open]:bg-elevated"
+      class="rounded-lg hover:bg-elevated active:bg-elevated data-[state=open]:bg-elevated"
     />
     <template #body>
       <EntryCitation

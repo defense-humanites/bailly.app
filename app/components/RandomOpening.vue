@@ -145,6 +145,7 @@
           buttons of its toolbar take the cards' background (`bg-default`),
           a shade lighter than the page in both themes (`bg-elevated` is as
           dark as the page in the light theme, much lighter in the dark one).
+          Its toolbar without the card's rule: the frame's rules are close.
         -->
         <div
           v-if="position === 'main'"
@@ -158,18 +159,16 @@
             link
             link-rel="nofollow"
             :ui="{
-              root: 'h-full flex overflow-hidden bg-transparent shadow-none ring-0 rounded-none [--ui-bg-elevated:var(--ui-bg)]',
-              body: 'h-full mask-b-from-80%',
+              root: 'h-full flex flex-col overflow-hidden bg-transparent shadow-none ring-0 divide-y-0 rounded-none [--ui-bg-elevated:var(--ui-bg)]',
+              body: 'min-h-0 flex-1 mask-b-from-80%',
             }"
           >
             <!-- The citation, as on the entry's page (a demonstration of the application). -->
-            <template #aside>
-              <div class="mt-3">
-                <EntryCitationButton
-                  :entry="shown.entry"
-                  :version="shown.version"
-                />
-              </div>
+            <template #tools>
+              <EntryCitationButton
+                :entry="shown.entry"
+                :version="shown.version"
+              />
             </template>
           </EntryCard>
           <p

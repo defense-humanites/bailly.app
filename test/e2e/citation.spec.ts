@@ -1,9 +1,10 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
 import type { Page } from "@playwright/test";
 
-// The entry's citation: in a window, from a button at the card's top.
-const openCitation = async (page: Page) => {
-  await page.locator("main").getByRole("button", { name: "Citer cette entrée" }).first().click();
+// The entry's citation: in a window, from a button at the end of a card's
+// toolbar (of homonyms, the card's: `index`).
+const openCitation = async (page: Page, index = 0) => {
+  await page.locator("main").getByRole("button", { name: "Citer cette entrée" }).nth(index).click();
   return page.getByRole("dialog", { name: "Citer cette entrée" });
 };
 
@@ -35,11 +36,14 @@ test.describe("citing an entry", () => {
     await expect(citation.locator("section p").nth(1)).toContainText("BAILLY, Anatole.");
   });
 
-  test("a homonym cited as in M. Gréco's edition", async ({ page, goto }) => {
+  test("a homonym cited as in M. Gréco's edition, from its own card", async ({ page, goto }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await goto("/logades#2", { waitUntil: "hydration" });
-    await expect((await openCitation(page)).locator("section p").first())
+    await goto("/logades", { waitUntil: "hydration" });
+    await expect((await openCitation(page, 1)).locator("section p").first())
       .toContainText("« 2 λογάδες », https://bailly.app/logades#2");
+    await page.keyboard.press("Escape");
+    await expect((await openCitation(page, 0)).locator("section p").first())
+      .toContainText("« 1 λογάδες », https://bailly.app/logades#1");
   });
 
   test("at every width, from the card's top", async ({ page, goto }) => {

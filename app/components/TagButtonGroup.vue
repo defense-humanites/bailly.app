@@ -5,7 +5,8 @@
   /*
    * The toolbar's buttons, hovered or pressed: Nuxt UI's `bg-elevated`, a
    * gentle shade, rather than the cards' darker ones (`--app-card-hover`,
-   * cf. `root.css`): an exception, the toolbar sitting on the entry's text.
+   * cf. `root.css`): an exception, the toolbar sitting at the card's top,
+   * by the entry's text.
    * Kept in step with `TagButtonGroupStatic`.
    */
   const TOOLBAR_HOVER = "hover:bg-elevated active:bg-elevated";
@@ -117,13 +118,14 @@
 </script>
 
 <template>
-  <UFieldGroup
-    orientation="horizontal"
-    class="border border-default rounded-lg [&>button]:rounded-lg shadow-xs"
-  >
+  <!--
+    In the card's header (cf. `EntryCard`): frameless buttons side by side,
+    as the entry's tools at the other end.
+  -->
+  <div class="flex min-w-0 items-center gap-0.5 [&>button]:rounded-lg">
     <!--
       The current tag, in one click (the most frequent action while reading):
-      the beginning of its name (more of it from `sm`), in full in the
+      the beginning of its name (more of it from `sm`; the line its own), in full in the
       tooltip, which says what a click does, and in the panel. Toggle buttons:
       a constant name, the state in `aria-pressed`.
     -->
@@ -138,7 +140,7 @@
         :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
         :data-tag-color="currentTag.color"
         :class="[TOOLBAR_HOVER, taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text']"
-        :ui="{ label: 'max-w-12 truncate text-xs tracking-tight sm:max-w-24' }"
+        :ui="{ label: 'max-w-36 truncate text-xs tracking-tight sm:max-w-56' }"
         color="neutral"
         variant="ghost"
         @click="handleTagChange"
@@ -261,9 +263,8 @@
         color="neutral"
         variant="ghost"
         :class="[TOOLBAR_HOVER, starred ? 'text-favorite' : 'hover:text-favorite']"
-        :ui="{ base: 'border-l border-default' }"
         @click="toggleStar"
       />
     </UTooltip>
-  </UFieldGroup>
+  </div>
 </template>
