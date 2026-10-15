@@ -52,7 +52,7 @@ export const useSyncActivity = () => {
     clearTimeout(manualSyncTimer);
     manualSync.value = "running";
     const [ok] = await Promise.all([
-      syncStore.sync({ force: true }),
+      syncStore.sync({ force: true, asked: true }),
       new Promise((resolve) => {
         setTimeout(resolve, 600);
       }),

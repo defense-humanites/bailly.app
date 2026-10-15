@@ -65,6 +65,16 @@ export enum StorageKey {
    * The bibliography's style last chosen (cf. `EntryCitation`).
    */
   CitationStyle = "bailly:citationStyle",
+  /**
+   * The date (ms) of the latest change of this device not yet sent by the
+   * synchronization (cf. `useSyncStore().changed`).
+   */
+  SyncPending = "bailly:syncPending",
+  /**
+   * The date (ms) the latest synchronization of this device started, shared
+   * by the tabs (cf. `MIN_SYNC_INTERVAL`).
+   */
+  SyncAttempt = "bailly:syncAttemptAt",
 }
 
 /**

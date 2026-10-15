@@ -54,15 +54,43 @@ export const sectionsOf = (config: IdbSyncConfig): SyncSections => ({
 const isEmpty = (sections: SyncSections): boolean => !sections.bookmarks && !sections.preferences.length;
 
 /**
- * The delay before synchronizing a change (several changes in a row are
- * sent at once).
+ * The delay before synchronizing a change, once the user pauses: several
+ * changes in a row (e.g. tagging entries while reading) are sent at once,
+ * but no later than `CHANGE_MAX_DELAY` after the first one. Nothing is lost
+ * if the page is left meanwhile (cf. `flush`, `pendingSince`).
  */
 const CHANGE_DELAY = 3_000;
+const CHANGE_MAX_DELAY = 10_000;
 /**
  * The delay before retrying when the server refuses too many requests (the
  * rate limiting rule blocks for 10 seconds).
  */
 const BUSY_DELAY = 15_000;
+/**
+ * How many refusals in a row, and for how long, the server may be too busy
+ * before the user is told (cf. `SyncBusyError`): a refusal is usually
+ * isolated (e.g. several tabs opened at once), and retried after
+ * `BUSY_DELAY`.
+ */
+const BUSY_SILENT_FAILURES = 2;
+const BUSY_SILENT_DURATION = 60_000;
+/**
+ * Beyond them, the retries space out (doubling), up to this delay: a device
+ * does not keep a blocking going (e.g. an address shared with a robot).
+ */
+const BUSY_MAX_DELAY = 5 * 60_000;
+/**
+ * The shortest interval between two synchronizations of this device (all
+ * tabs together), but those asked by the user: whatever the use, the rate
+ * limiting rule of Cloudflare (30 requests in 10 s; a synchronization makes
+ * one or two) cannot be reached.
+ */
+const MIN_SYNC_INTERVAL = 5_000;
+/**
+ * Told by `attempt` when a synchronization of another tab made this one
+ * useless (cf. `freshFor`).
+ */
+const SKIPPED = Symbol("skipped");
 /**
  * The longest a synchronization may take before it is reported as failed.
  */
@@ -318,6 +346,7 @@ export const useSyncStore = defineStore("sync", () => {
    */
   async function forget(): Promise<void> {
     await Idb.writeMeta(IdbMetaKey.Sync, undefined);
+    clearPending();
     await IdbPreferences.forgetList();
     await setConfig(null);
     clearQuota();
@@ -355,15 +384,40 @@ export const useSyncStore = defineStore("sync", () => {
   /**
    * Runs the engine once with credentials, the tabs taking turns (Web Locks).
    * @param sections The types of data to synchronize.
-   * @returns The error, if it failed.
+   * @param control.freshFor If set, nothing is done when a synchronization of
+   * any tab succeeded within this delay (ms), as told by IndexedDB once the
+   * lock is held: a tab that waited for another one's synchronization does
+   * not repeat it.
+   * @param control.paced Whether to wait, if need be, until
+   * `MIN_SYNC_INTERVAL` has passed since the latest synchronization of this
+   * device (not for those asked by the user).
+   * @param control.whileLocked Run with the outcome, and the date the
+   * synchronization started, before the lock is released (e.g. to record the
+   * date of the synchronization, that the tabs waiting for the lock read).
+   * @returns The error, if it failed; `SKIPPED` if nothing was done.
    */
-  async function attempt(creds: SyncCredentials, sections: SyncSections, options: Omit<SyncOptions, "signal"> = {}): Promise<unknown> {
+  async function attempt(
+    creds: SyncCredentials,
+    sections: SyncSections,
+    options: Omit<SyncOptions, "signal"> = {},
+    { freshFor, paced = false, whileLocked }: {
+      freshFor?: number;
+      paced?: boolean;
+      whileLocked?: (failure: unknown, startedAt: number) => Promise<void>;
+    } = {},
+  ): Promise<unknown> {
     // A synchronization that takes too long is cancelled: its requests (and
     // its wait for the lock) are aborted, and nothing is merged or written
     // afterwards.
     const controller = new AbortController();
-    const run = async (): Promise<unknown> => {
+    let startedAt = 0;
+    const engine = async (): Promise<unknown> => {
       try {
+        if (freshFor !== undefined && await syncedWithin(freshFor)) return SKIPPED;
+        // (The lock held: no other synchronization meanwhile.)
+        if (paced) await pace(controller.signal);
+        startedAt = Date.now();
+        noteAttempt(startedAt);
         await synchronize(creds, dependencies(sections), {
           ...options,
           signal: controller.signal,
@@ -382,6 +436,15 @@ export const useSyncStore = defineStore("sync", () => {
       }
     };
 
+    const run = async (): Promise<unknown> => {
+      const failure = await engine();
+      if (failure !== SKIPPED && !controller.signal.aborted) {
+        await whileLocked?.(failure, startedAt).catch((e: unknown) => {
+          console.error(e);
+        });
+      }
+      return failure;
+    };
     const locked = (typeof navigator !== "undefined" && "locks" in navigator
       ? navigator.locks.request("bailly:sync", { signal: controller.signal }, run)
       : run()
@@ -441,9 +504,132 @@ export const useSyncStore = defineStore("sync", () => {
     return "La synchronisation a échoué. Vos données restent sur cet appareil.";
   }
 
-  async function runOnce(force = false): Promise<void> {
-    if (!config || !credentials) return;
+  /**
+   * The date of the latest change of this device not yet sent (cf.
+   * `changed`), in the local storage: shared by the tabs, and kept across
+   * reloads (a page left before its change was sent sends it at the next
+   * opening).
+   */
+  function pendingSince(): number | null {
+    try {
+      const value = Number(localStorage.getItem(StorageKey.SyncPending));
+      return value > 0 ? value : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Forgets the change waiting, if a synchronization that started after it
+   * succeeded.
+   */
+  function clearPending(startedAt = Infinity): void {
+    const since = pendingSince();
+    if (since === null || since > startedAt) return;
+    try {
+      localStorage.removeItem(StorageKey.SyncPending);
+    } catch {
+      // (Unavailable: nothing was kept.)
+    }
+  }
+
+  /**
+   * To be called when the data synchronized change on this device: noted
+   * (cf. `pendingSince`), then synchronized shortly.
+   */
+  function changed(delay?: number): void {
+    if (!enabled.value) return;
+    const now = Date.now();
+    try {
+      localStorage.setItem(StorageKey.SyncPending, String(now));
+    } catch {
+      // (Sent all the same, unless the page is left first.)
+    }
+    firstChangeAt ??= now;
+    let wait = delay ?? Math.max(0, Math.min(CHANGE_DELAY, firstChangeAt + CHANGE_MAX_DELAY - now));
+    // While the retries after the server's refusals space out, not sooner
+    // than the next one (the change is sent with it).
+    if (busyFailures > BUSY_SILENT_FAILURES && timer !== undefined) wait = Math.max(wait, timerDueAt - now);
+    schedule(wait);
+  }
+
+  /**
+   * The date of the first change of this tab waiting for its
+   * synchronization (cf. `CHANGE_MAX_DELAY`), until one starts.
+   */
+  let firstChangeAt: number | null = null;
+
+  /**
+   * The date the latest synchronization of this device started (all tabs
+   * together, in the local storage), for `MIN_SYNC_INTERVAL`.
+   */
+  function lastAttemptAt(): number {
+    try {
+      return Number(localStorage.getItem(StorageKey.SyncAttempt)) || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  function noteAttempt(time: number): void {
+    try {
+      localStorage.setItem(StorageKey.SyncAttempt, String(time));
+    } catch {
+      // (Unavailable: each tab paces itself only by its lock.)
+    }
+  }
+
+  /**
+   * Waits until `MIN_SYNC_INTERVAL` has passed since the latest
+   * synchronization of this device (unless cancelled).
+   */
+  async function pace(signal: AbortSignal): Promise<void> {
+    const wait = Math.min(MIN_SYNC_INTERVAL, lastAttemptAt() + MIN_SYNC_INTERVAL - Date.now());
+    if (wait <= 0) return;
+    await new Promise<void>((resolve) => {
+      const timeout = setTimeout(resolve, wait);
+      signal.addEventListener("abort", () => {
+        clearTimeout(timeout);
+        resolve();
+      }, { once: true });
+    });
+  }
+
+  /**
+   * Whether a synchronization of any tab succeeded within a delay (ms), as
+   * IndexedDB tells (the state of a tab only knows its own until it reloads
+   * the settings).
+   */
+  async function syncedWithin(delay: number): Promise<boolean> {
+    // A change of this device waits to be sent (e.g. the page reloaded
+    // before its synchronization).
+    if (pendingSince() !== null) return false;
+    const stored = await Idb.readMeta(IdbMetaKey.Sync);
+    const at = stored?.lastSyncedAt;
+    if (!stored || stored.secret !== config?.secret || at == null || Date.now() - at >= delay) return false;
+    if (lastSyncedAt.value === null || at > lastSyncedAt.value) lastSyncedAt.value = at;
+    return true;
+  }
+
+  /**
+   * The latest refusals of the server as too busy (Cloudflare's rate
+   * limiting), in a row: retried silently while they stay isolated (cf.
+   * `BUSY_SILENT_FAILURES`).
+   */
+  let busyFailures = 0;
+  let busySince = 0;
+
+  /**
+   * Runs one synchronization.
+   * @param freshFor Cf. `attempt`.
+   * @param asked Whether the user asked for it (not paced, cf. `attempt`).
+   * @returns Whether it succeeded (or had nothing to do).
+   */
+  async function runOnce(force = false, freshFor?: number, asked = false): Promise<boolean> {
+    if (!config || !credentials) return false;
     const current = config;
+    // (The changes made from now on wait for the next one.)
+    firstChangeAt = null;
     // While the daily budget is spent, the changes of the other devices are
     // still received; this device's wait (unless asked by the user).
     const readOnly = !force && Date.now() < quotaUntil;
@@ -452,59 +638,101 @@ export const useSyncStore = defineStore("sync", () => {
     errorSection.value = null;
 
     const merged: SyncSection[] = [];
+    /**
+     * Whether the device is in sync: every type, or every type but one (whose
+     * error is shown).
+     */
+    const inSync = (outcome: unknown): boolean => (outcome === null
+      ? !readOnly
+      : outcome instanceof SyncPartialError && merged.some(section => section !== outcome.section));
+    // The date recorded before the lock is released (cf. `freshFor`).
+    let recorded = null as IdbSyncConfig | null;
     const failure = await attempt(credentials, sectionsOf(current), {
       readOnly,
       first: Boolean(current.joining),
       onMerged: (sections) => {
         merged.push(...sections);
       },
-    });
+    }, { freshFor, paced: !asked, whileLocked: async (outcome, startedAt) => {
+      if (config !== current || !inSync(outcome)) return;
+      // The changes made before it started, sent.
+      if (outcome === null) clearPending(startedAt);
+      // The bookmarks joined, once merged (or written into a new locker).
+      const joined = current.joining && (merged.includes("bookmarks") || outcome === null);
+      const { joining: _joining, ...rest } = current;
+      const value: IdbSyncConfig = { ...(joined ? rest : current), lastSyncedAt: Date.now() };
+      await Idb.writeMeta(IdbMetaKey.Sync, value);
+      recorded = value;
+      config = value;
+    } });
     // Disabled (or changed) meanwhile: the outcome no longer concerns it; a
     // synchronization with the new settings follows.
     const now = config as IdbSyncConfig | null;
-    if (now !== current) {
+    if (now !== current && now !== recorded) {
       if ((status.value as SyncStatus) === "syncing") status.value = "idle";
       if (now) schedule(0);
-      return;
+      return false;
     }
+    // Another tab synchronized meanwhile (this device is in sync).
+    if (failure === SKIPPED) {
+      status.value = "idle";
+      errorNeedsAction.value = false;
+      busyFailures = 0;
+      return true;
+    }
+    if (!(failure instanceof SyncBusyError)) busyFailures = 0;
     errorNeedsAction.value = needsAction(failure);
     if (!failure && readOnly) {
       status.value = "error";
       error.value = quotaMessage;
       schedule(Math.max(0, quotaUntil - Date.now()));
-      return;
+      return false;
     }
     // In sync, or every type but one (whose error is shown).
-    if (!failure || (failure instanceof SyncPartialError && merged.some(section => section !== failure.section))) {
+    if (inSync(failure)) {
       clearQuota();
-      // The bookmarks joined, once merged (or written into a new locker).
-      const joined = current.joining && (merged.includes("bookmarks") || (!failure && !readOnly));
-      const { joining: _joining, ...rest } = config;
-      config = { ...(joined ? rest : config), lastSyncedAt: Date.now() };
-      await Idb.writeMeta(IdbMetaKey.Sync, config);
-      lastSyncedAt.value = config.lastSyncedAt;
+      lastSyncedAt.value = recorded?.lastSyncedAt ?? Date.now();
       settingsChanged();
       // The list of the other devices, adopted (its additions merged next).
       if (merged.includes("preferences") && await adoptSyncedList()) schedule(0);
       if (!failure) {
         status.value = "idle";
-        return;
+        return true;
       }
       status.value = "error";
       error.value = describe(failure);
       errorSection.value = failure instanceof SyncPartialError ? failure.section : null;
-      return;
+      return false;
     }
 
     if (failure instanceof LockerDeletedError) {
       await forget();
       error.value = describe(failure);
-      return;
+      return false;
     }
-    if (failure instanceof SyncBusyError) schedule(BUSY_DELAY);
+    if (failure instanceof SyncBusyError) {
+      if (!busyFailures) busySince = Date.now();
+      busyFailures++;
+      // Retried after the delay told by the server (at least BUSY_DELAY),
+      // spaced out beyond the isolated refusals; unless a tab synchronized
+      // meanwhile (a change waiting is sent all the same, cf.
+      // `syncedWithin`).
+      const delay = Math.min(
+        BUSY_MAX_DELAY,
+        Math.max(BUSY_DELAY, (failure.retryAfter ?? 0) * 1000) * 2 ** Math.max(0, busyFailures - BUSY_SILENT_FAILURES),
+      );
+      schedule(delay, { ifStale: delay });
+      // Isolated (e.g. several tabs at once): retried without a word; told
+      // once it lasts.
+      if (busyFailures <= BUSY_SILENT_FAILURES && Date.now() - busySince < BUSY_SILENT_DURATION) {
+        status.value = "idle";
+        return false;
+      }
+    }
     status.value = "error";
     error.value = describe(failure);
     if (failure instanceof SyncQuotaError) waitForQuota(failure);
+    return false;
   }
 
   /**
@@ -536,39 +764,69 @@ export const useSyncStore = defineStore("sync", () => {
   let running = null as Promise<void> | null;
   let again = false;
   let forceAgain = false;
+  let askedAgain = false;
 
   /**
    * Whether a synchronization waits for the end of an interaction (cf.
    * `bookmarksStore.hold`).
    */
   let deferred = false;
+  let deferredFreshFor: number | undefined;
 
   watch(() => bookmarksStore.held, (held) => {
     if (held || !deferred) return;
     deferred = false;
-    schedule(0);
+    schedule(0, { ifStale: deferredFreshFor });
   });
+
+  /**
+   * Of two requests of a synchronization, the one that runs in more cases
+   * (cf. `freshFor`): unconditional if either is.
+   */
+  const either = (a: number | undefined, b: number | undefined): number | undefined =>
+    (a === undefined || b === undefined ? undefined : Math.min(a, b));
+
+  /**
+   * The outcome of the latest synchronization (or of its absence, nothing
+   * to do), for those that waited for it.
+   */
+  let succeeded = true;
 
   /**
    * Synchronizes now (once the synchronization in progress, if any, is over).
    * @param options.force Whether to synchronize even during an interaction
    * that holds the bookmarks shown (e.g. asked by the user, or before the
    * page is suspended); otherwise, it waits for its end.
-   * @returns Whether it succeeded.
+   * @param options.ifStale If set, only if no tab synchronized successfully
+   * within this delay (ms): for the synchronizations that only look for the
+   * changes of the other devices (opening, coming back to the page), not
+   * for those that send a change, or asked by the user. A tab waiting for
+   * another one's synchronization then does not repeat it (cf. `attempt`).
+   * @param options.asked Whether the user asked for it (or the page is being
+   * hidden, cf. `flush`): right away, even if another one just took place
+   * (cf. `MIN_SYNC_INTERVAL`).
+   * @returns Whether it succeeded (or had nothing to do).
    */
-  async function sync({ force = false }: { force?: boolean } = {}): Promise<boolean> {
+  async function sync({ force = false, ifStale, asked = false }: { force?: boolean; ifStale?: number; asked?: boolean } = {}): Promise<boolean> {
     if (!enabled.value) return false;
     if (!force && bookmarksStore.held) {
+      deferredFreshFor = deferred ? either(deferredFreshFor, ifStale) : ifStale;
       deferred = true;
       return status.value === "idle";
     }
     if (running) {
+      // The synchronization in progress does what this one would.
+      if (ifStale !== undefined) {
+        await running;
+        return succeeded;
+      }
       again = true;
       // A forced request makes the next run forced (e.g. sending while the
       // current one only receives, cf. `quotaUntil`).
       forceAgain ||= force;
+      askedAgain ||= asked;
       await running;
-      return status.value === "idle";
+      return succeeded;
     }
 
     /**
@@ -576,19 +834,26 @@ export const useSyncStore = defineStore("sync", () => {
      * whether it is forced.
      */
     let forced = force;
+    let byUser = asked;
     const takeAgain = (): boolean => {
       const value = again;
       forced = forceAgain;
+      byUser = askedAgain;
       again = false;
       forceAgain = false;
+      askedAgain = false;
       return value;
     };
 
     again = false;
     forceAgain = false;
+    askedAgain = false;
     running = (async () => {
+      // (The next runs were asked meanwhile, unconditionally.)
+      let freshFor = ifStale;
       do {
-        await runOnce(forced);
+        succeeded = await runOnce(forced, freshFor, byUser);
+        freshFor = undefined;
       } while (takeAgain());
     })();
 
@@ -597,32 +862,49 @@ export const useSyncStore = defineStore("sync", () => {
     } finally {
       running = null;
     }
-    return status.value === "idle";
+    return succeeded;
   }
 
   let timer: ReturnType<typeof setTimeout> | undefined;
+  /**
+   * The condition of the synchronization scheduled (cf. `sync`'s `ifStale`),
+   * and when it is due.
+   */
+  let timerFreshFor: number | undefined;
+  let timerDueAt = 0;
 
   /**
    * Synchronizes after a delay (e.g. after a change).
+   * @param options.ifStale Cf. `sync`; a scheduled synchronization without
+   * it stays so.
    */
-  function schedule(delay: number = CHANGE_DELAY): void {
+  function schedule(delay: number = CHANGE_DELAY, { ifStale }: { ifStale?: number } = {}): void {
     if (!enabled.value) return;
+    timerFreshFor = timer === undefined ? ifStale : either(timerFreshFor, ifStale);
+    timerDueAt = Date.now() + delay;
     clearTimeout(timer);
     timer = setTimeout(() => {
       timer = undefined;
-      void sync();
+      void sync({ ifStale: timerFreshFor });
     }, delay);
   }
 
   /**
-   * Synchronizes now if a synchronization is scheduled (e.g. when the page is
-   * hidden, before the browser suspends it).
+   * Synchronizes now if a change waits for its synchronization (e.g. when
+   * the page is hidden, before the browser suspends it): at once, not paced
+   * (cf. `MIN_SYNC_INTERVAL`), the page possibly closing. (At most once each
+   * time the page is hidden, by the user.) Not the synchronizations that
+   * only receive, nor those that wait for the server (its daily budget, or
+   * the retries spaced out after its refusals): bound to be refused, they
+   * keep their time (a change waiting is sent at the next opening anyway,
+   * cf. `pendingSince`).
    */
   function flush(): void {
-    if (timer === undefined) return;
+    if (timer === undefined || timerFreshFor !== undefined) return;
+    if (Date.now() < quotaUntil || busyFailures > BUSY_SILENT_FAILURES) return;
     clearTimeout(timer);
     timer = undefined;
-    void sync({ force: true });
+    void sync({ force: true, ifStale: timerFreshFor, asked: true });
   }
 
   /**
@@ -791,7 +1073,7 @@ export const useSyncStore = defineStore("sync", () => {
   async function lastSync(): Promise<void> {
     clearTimeout(timer);
     timer = undefined;
-    await Promise.race([sync({ force: true }), new Promise((resolve) => {
+    await Promise.race([sync({ force: true, asked: true }), new Promise((resolve) => {
       setTimeout(resolve, DISABLE_DELAY);
     })]);
   }
@@ -819,7 +1101,7 @@ export const useSyncStore = defineStore("sync", () => {
       && sections.preferences.length === current.preferences.length
       && sections.preferences.every(key => current.preferences.includes(key));
     if (unchanged) {
-      if (await sync({ force: true })) return { state: "success", data: { emptied: false } };
+      if (await sync({ force: true, asked: true })) return { state: "success", data: { emptied: false } };
       return { state: "error", message: error.value ?? "La synchronisation a échoué." };
     }
 
@@ -850,10 +1132,10 @@ export const useSyncStore = defineStore("sync", () => {
     await setConfig(value);
     settingsChanged();
     // Preferences removed from the list: the other devices told soon.
-    if (!added.length && current.preferences.length && sections.preferences.length) schedule(0);
+    if (!added.length && current.preferences.length && sections.preferences.length) changed(0);
 
     // Preferences added: synchronized now.
-    if (added.length && !(await sync({ force: true }))) {
+    if (added.length && !(await sync({ force: true, asked: true }))) {
       return { state: "error", message: error.value ?? "La synchronisation a échoué." };
     }
     return { state: "success", data: { emptied: false } };
@@ -885,7 +1167,7 @@ export const useSyncStore = defineStore("sync", () => {
    * shortly, if this device synchronizes it.
    */
   function preferencesChanged(keys: string[]): void {
-    if (keys.some(key => (syncedPreferences.value as string[]).includes(key))) schedule();
+    if (keys.some(key => (syncedPreferences.value as string[]).includes(key))) changed();
   }
 
   /**
@@ -893,7 +1175,7 @@ export const useSyncStore = defineStore("sync", () => {
    * shortly, if this device synchronizes preferences (cf. `isDismissedRecord`).
    */
   function noticeDismissed(): void {
-    if (syncedPreferences.value.length) schedule();
+    if (syncedPreferences.value.length) changed();
   }
 
   /**
@@ -952,6 +1234,7 @@ export const useSyncStore = defineStore("sync", () => {
     sync,
     schedule,
     flush,
+    changed,
     enable,
     join,
     setSections,

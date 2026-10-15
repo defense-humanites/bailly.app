@@ -24,6 +24,20 @@ const openSync = async (page: Page) => {
   await page.getByRole("button", { name: /^Synchronisation/ }).click();
 };
 
+/**
+ * Synchronizes now, as asked by the user (« Synchroniser maintenant »).
+ */
+const syncNow = async (page: Page): Promise<boolean> => {
+  const synced = () => page.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { sync: (options: { force: boolean; asked: boolean }) => Promise<boolean> };
+    return store.sync({ force: true, asked: true });
+  });
+  // (Once the settings are loaded.)
+  await expect.poll(synced).toBe(true);
+  return true;
+};
+
 const syncLink = (page: Page) => page.evaluate(() => {
   const root = document.querySelector("#__nuxt") as AppRoot;
   const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { link: (origin: string) => string | null };
@@ -86,9 +100,11 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   // The excerpts are not synchronized: the phone fetches the one it lacks from the API.
   await expect(phone.getByText(/ἔργα λόγου μέζω/).first()).toBeVisible();
 
-  // The laptop gets the phone's favorite (e.g. at the next visit).
+  // The laptop gets the phone's favorite, at the next visit once it has not
+  // synchronized for a while (cf. \`REVISIT_DELAY\`), or when asked.
   await page.reload();
   await waitForHydration(page);
+  await syncNow(page);
   await expect.poll(() => bookmarksState(page)).toEqual({ tags: ["Homère"], tagged: 1, starred: 2 });
 
   // A tablet opens the link of the QR code.
@@ -113,8 +129,7 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await tablet.keyboard.press("Escape");
   await seedBookmarks(tablet, { tags: [{ name: "Platon", color: "Rose" }] });
   await expect.poll(async () => {
-    await page.reload();
-    await waitForHydration(page);
+    await syncNow(page);
     return (await bookmarksState(page)).tags;
   }, { timeout: 15_000 }).toEqual(["Homère", "Platon"]);
 
@@ -132,8 +147,16 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await page.getByRole("button", { name: "Supprimer définitivement" }).click();
   await expect(page.getByText("Données supprimées du serveur", { exact: true })).toBeVisible();
 
+  // The phone learns it at its next synchronization (here asked for: it
+  // synchronized less than a minute ago).
   await phone.reload();
   await waitForHydration(phone);
+  await phone.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { loaded: boolean; sync: (options: { force: boolean; asked: boolean }) => Promise<boolean> };
+    while (!store.loaded) await new Promise(resolve => setTimeout(resolve, 50));
+    await store.sync({ force: true, asked: true });
+  });
   await openSync(phone);
   await expect(phone.getByText("La synchronisation a été désactivée depuis un autre appareil.")).toBeVisible();
   expect((await bookmarksState(phone)).starred).toBe(2);
@@ -364,8 +387,7 @@ test("a device keeps the key once the online bookmarks are merged, even if sendi
   await phone.unroute("**/api/sync/**", failPut);
   await expect(phone.getByText(/^Vos signets en ligne ont été ajoutés à cet appareil/)).toHaveCount(0, { timeout: 25_000 });
   await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
-  await page.reload();
-  await waitForHydration(page);
+  await syncNow(page);
   await expect.poll(() => bookmarksState(page)).toEqual({ tags: [], tagged: 0, starred: 2 });
 });
 
@@ -411,10 +433,11 @@ test("a synchronization beyond the limits waits until the device makes room", as
     const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { starEntry: (entry: unknown) => Promise<unknown> };
     await store.starEntry(entry);
   }, entry);
+  // (Asked by the user: not paced, cf. `MIN_SYNC_INTERVAL`.)
   const syncNow = (target: Page) => target.evaluate(async () => {
     const root = document.querySelector("#__nuxt") as AppRoot;
-    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { sync: () => Promise<boolean> };
-    return store.sync();
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { sync: (options: { asked: boolean }) => Promise<boolean> };
+    return store.sync({ asked: true });
   });
 
   await goto("/signets", { waitUntil: "hydration" });
@@ -453,18 +476,18 @@ test("a synchronization beyond the limits waits until the device makes room", as
     await store.unstarEntry("logos");
   });
   await expect(phone.getByRole("button", { name: /demande votre attention/ })).toHaveCount(0, { timeout: 15_000 });
-  await expect.poll(async () => (await bookmarksState(phone)).starred).toBe(100);
-  await page.reload();
-  await waitForHydration(page);
+  await expect.poll(async () => (await bookmarksState(phone)).starred, { timeout: 15_000 }).toBe(100);
+  expect(await syncNow(page)).toBe(true);
   await expect.poll(async () => (await bookmarksState(page)).starred).toBe(100); // Unchanged: the phone's favorite was left out.
 });
 
 test("the synchronization waits while a tag is being edited", async ({ page, goto, browser, baseURL }) => {
   test.setTimeout(60_000);
+  // (Asked by the user: not paced, cf. `MIN_SYNC_INTERVAL`.)
   const syncNow = (target: Page) => target.evaluate(async () => {
     const root = document.querySelector("#__nuxt") as AppRoot;
-    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { sync: () => Promise<boolean> };
-    return store.sync();
+    const store = root.__vue_app__.config.globalProperties.$pinia._s.get("sync") as unknown as { sync: (options: { asked: boolean }) => Promise<boolean> };
+    return store.sync({ asked: true });
   });
 
   await goto("/signets", { waitUntil: "hydration" });
@@ -551,8 +574,11 @@ test("a deletion undone is undone on the other devices too", async ({ page, goto
     const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { revive: (removed: unknown) => Promise<unknown> };
     await store.revive((window as unknown as { removed: unknown }).removed);
   });
-  await expect.poll(phoneTags, { timeout: 15_000 }).toEqual(["Homère"]);
-  expect((await bookmarksState(phone)).tagged).toBe(1);
+  // (Its entry too: the state is read once merged, not while it is.)
+  await expect.poll(async () => {
+    await phoneTags();
+    return bookmarksState(phone);
+  }, { timeout: 15_000 }).toMatchObject({ tags: ["Homère"], tagged: 1 });
 });
 
 test("enabling a key again brings back the online bookmarks deleted meanwhile", async ({ page, goto, browser, baseURL }) => {
