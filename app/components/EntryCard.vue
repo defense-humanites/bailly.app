@@ -59,11 +59,12 @@
 
   /**
    * The card's theme, its header (the toolbar) tinted, its framed groups of
-   * buttons at the same distance from its four edges.
+   * buttons at the same distance from its four edges, at every width (Nuxt
+   * UI's `sm:px-6` overridden).
    */
   const cardUi = computed((): CardProps["ui"] => ({
     ...props.ui,
-    header: ["p-2 bg-elevated/50", props.ui?.header].filter(Boolean).join(" "),
+    header: ["p-2 sm:px-2 bg-elevated/50", props.ui?.header].filter(Boolean).join(" "),
   }));
 
   /**
