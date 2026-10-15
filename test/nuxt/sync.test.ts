@@ -264,3 +264,44 @@ test("at most one synchronization every few seconds, but those asked by the user
   expect(await tab.sync({ asked: true })).toBe(true);
   expect(server.requests).toHaveLength(4);
 });
+
+test("a change is sent 3 s after the user pauses, and no later than 10 s after the first one", async () => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
+  await enable(Date.now());
+  const tab = await newTab();
+
+  // A change alone: sent 3 s later.
+  tab.changed();
+  await vi.advanceTimersByTimeAsync(2_900);
+  expect(server.requests).toEqual([]);
+  await vi.advanceTimersByTimeAsync(100);
+  await vi.waitFor(() => {
+    expect(server.requests).toEqual(["GET", "PUT"]);
+  });
+
+  // Changes every 2 s: sent 10 s after the first one, not after the last.
+  server.requests.length = 0;
+  await vi.advanceTimersByTimeAsync(10_000);
+  for (let i = 0; i < 5; i++) {
+    tab.changed(); // At 0, 2, 4, 6 and 8 s.
+    await vi.advanceTimersByTimeAsync(i < 4 ? 2_000 : 1_900);
+  }
+  expect(server.requests).toEqual([]);
+  await vi.advanceTimersByTimeAsync(100); // 10 s.
+  await vi.waitFor(() => {
+    expect(server.requests).toEqual(["GET"]);
+  });
+});
+
+test("the page hidden: a change waiting is sent at once, even right after another synchronization", async () => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] });
+  await enable();
+  const tab = await newTab();
+  expect(await tab.sync()).toBe(true);
+  server.requests.length = 0;
+  tab.changed();
+  tab.flush(); // Not paced: the page may be closing.
+  await vi.waitFor(() => {
+    expect(server.requests).toEqual(["GET"]);
+  });
+});

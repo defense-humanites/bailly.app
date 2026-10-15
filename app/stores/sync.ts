@@ -54,11 +54,13 @@ export const sectionsOf = (config: IdbSyncConfig): SyncSections => ({
 const isEmpty = (sections: SyncSections): boolean => !sections.bookmarks && !sections.preferences.length;
 
 /**
- * The delay before synchronizing a change: several changes in a row (e.g.
- * tagging entries while reading) are sent at once. Nothing is lost if the
- * page is left meanwhile (cf. `flush`, `pendingSince`).
+ * The delay before synchronizing a change, once the user pauses: several
+ * changes in a row (e.g. tagging entries while reading) are sent at once,
+ * but no later than `CHANGE_MAX_DELAY` after the first one. Nothing is lost
+ * if the page is left meanwhile (cf. `flush`, `pendingSince`).
  */
-const CHANGE_DELAY = 10_000;
+const CHANGE_DELAY = 3_000;
+const CHANGE_MAX_DELAY = 10_000;
 /**
  * The delay before retrying when the server refuses too many requests (the
  * rate limiting rule blocks for 10 seconds).
@@ -535,15 +537,23 @@ export const useSyncStore = defineStore("sync", () => {
    * To be called when the data synchronized change on this device: noted
    * (cf. `pendingSince`), then synchronized shortly.
    */
-  function changed(delay: number = CHANGE_DELAY): void {
+  function changed(delay?: number): void {
     if (!enabled.value) return;
+    const now = Date.now();
     try {
-      localStorage.setItem(StorageKey.SyncPending, String(Date.now()));
+      localStorage.setItem(StorageKey.SyncPending, String(now));
     } catch {
       // (Sent all the same, unless the page is left first.)
     }
-    schedule(delay);
+    firstChangeAt ??= now;
+    schedule(delay ?? Math.max(0, Math.min(CHANGE_DELAY, firstChangeAt + CHANGE_MAX_DELAY - now)));
   }
+
+  /**
+   * The date of the first change of this tab waiting for its
+   * synchronization (cf. `CHANGE_MAX_DELAY`), until one starts.
+   */
+  let firstChangeAt: number | null = null;
 
   /**
    * The date the latest synchronization of this device started (all tabs
@@ -614,6 +624,8 @@ export const useSyncStore = defineStore("sync", () => {
   async function runOnce(force = false, freshFor?: number, asked = false): Promise<boolean> {
     if (!config || !credentials) return false;
     const current = config;
+    // (The changes made from now on wait for the next one.)
+    firstChangeAt = null;
     // While the daily budget is spent, the changes of the other devices are
     // still received; this device's wait (unless asked by the user).
     const readOnly = !force && Date.now() < quotaUntil;
@@ -786,8 +798,9 @@ export const useSyncStore = defineStore("sync", () => {
    * changes of the other devices (opening, coming back to the page), not
    * for those that send a change, or asked by the user. A tab waiting for
    * another one's synchronization then does not repeat it (cf. `attempt`).
-   * @param options.asked Whether the user asked for it: right away, even if
-   * another one just took place (cf. `MIN_SYNC_INTERVAL`).
+   * @param options.asked Whether the user asked for it (or the page is being
+   * hidden, cf. `flush`): right away, even if another one just took place
+   * (cf. `MIN_SYNC_INTERVAL`).
    * @returns Whether it succeeded (or had nothing to do).
    */
   async function sync({ force = false, ifStale, asked = false }: { force?: boolean; ifStale?: number; asked?: boolean } = {}): Promise<boolean> {
@@ -871,13 +884,15 @@ export const useSyncStore = defineStore("sync", () => {
 
   /**
    * Synchronizes now if a synchronization is scheduled (e.g. when the page is
-   * hidden, before the browser suspends it).
+   * hidden, before the browser suspends it): at once, not paced (cf.
+   * `MIN_SYNC_INTERVAL`), the page possibly closing. (At most once each time
+   * the page is hidden, by the user.)
    */
   function flush(): void {
     if (timer === undefined) return;
     clearTimeout(timer);
     timer = undefined;
-    void sync({ force: true, ifStale: timerFreshFor });
+    void sync({ force: true, ifStale: timerFreshFor, asked: true });
   }
 
   /**
