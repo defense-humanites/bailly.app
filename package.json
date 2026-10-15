@@ -16,7 +16,9 @@
     "test:watch": "vitest",
     "test:unit": "vitest run --project unit",
     "test:nuxt": "vitest run --project nuxt",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "sync:stats": "sh scripts/sync-stats.sh",
+    "sync:stats:preview": "sh scripts/sync-stats.sh preview"
   },
   "dependencies": {
     "@humanities/greek-conversion": "^1.0.0-beta.9",
