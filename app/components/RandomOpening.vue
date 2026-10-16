@@ -5,6 +5,8 @@
   type Shown = {
     entry: Entry<"word" | "uri" | "excerpt" | "htmlDefinition">;
     siblings: Siblings<"word" | "uri" | "excerpt">;
+    /** The data's version (for the citation). */
+    version: string;
   };
 
   const { $api } = useNuxtApp();
@@ -98,7 +100,7 @@
         loadFaces(),
       ]);
       // A group of homonyms: its first entry.
-      shown.value = { entry: data.entry.children?.[0] ?? data.entry, siblings: data.siblings ?? {} };
+      shown.value = { entry: data.entry.children?.[0] ?? data.entry, siblings: data.siblings ?? {}, version: data.version };
     } catch {
       failed.value = true;
     } finally {
@@ -139,10 +141,11 @@
         :key="position"
       >
         <!--
-          The entry lies on the page's background, not on a card: the hovered
-          buttons of its toolbar take the cards' background (`bg-default`),
-          a shade lighter than the page in both themes (`bg-elevated` is as
-          dark as the page in the light theme, much lighter in the dark one).
+          The entry lies on the page's background, not on a card. Its
+          toolbar neither ruled nor tinted (the frame's rules are close), its
+          groups of buttons on the page's background, raised when hovered
+          half as much as on a card (halfway to the cards' background), to
+          it when pressed; the entry's text close under it.
         -->
         <div
           v-if="position === 'main'"
@@ -156,10 +159,19 @@
             link
             link-rel="nofollow"
             :ui="{
-              root: 'h-full flex overflow-hidden bg-transparent shadow-none ring-0 rounded-none [--ui-bg-elevated:var(--ui-bg)]',
-              body: 'h-full mask-b-from-80%',
+              root: 'h-full flex flex-col overflow-hidden bg-transparent shadow-none ring-0 divide-y-0 rounded-none [&_[data-toolbar-group]]:bg-transparent [--app-button-hover:color-mix(in_oklab,var(--ui-bg)_50%,transparent)] [--app-button-active:var(--ui-bg)]',
+              header: 'bg-transparent',
+              body: 'min-h-0 flex-1 mask-b-from-80%',
             }"
-          />
+          >
+            <!-- The citation, as on the entry's page (a demonstration of the application). -->
+            <template #tools>
+              <EntryCitationButton
+                :entry="shown.entry"
+                :version="shown.version"
+              />
+            </template>
+          </EntryCard>
           <p
             v-else-if="failed"
             class="flex h-full items-center justify-center p-4 text-center text-muted"

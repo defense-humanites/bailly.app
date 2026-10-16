@@ -49,7 +49,7 @@ test("useApiEntry returns `null` for an unknown entry", async () => {
 
   const { data } = await useApiEntry("unknown", { fields: ["word"] });
 
-  expect(data.value).toEqual({ entry: null, siblings: {} });
+  expect(data.value).toEqual({ entry: null, siblings: {}, version: "test" });
 });
 
 test("useApiLookup sorts the entries and applies the default limit", async () => {

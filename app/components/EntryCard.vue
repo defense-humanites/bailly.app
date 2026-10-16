@@ -57,8 +57,17 @@
    */
   const greek = useGreek();
 
-  /** The toolbar's place in the card (cf. the template). */
-  const toolbarPlace = computed((): string => props.link ? "ms-2 me-3 mt-3" : "relative -top-1 -right-1 sm:-top-3 sm:-right-3");
+  /**
+   * The card's theme, its header (the toolbar) tinted with the page's
+   * background, half as much (a step toward the page, in both themes: never
+   * lighter than the card, the search bar staying the lightest element), its
+   * framed groups of buttons at the same distance from its four edges, at
+   * every width (Nuxt UI's `sm:px-6` overridden).
+   */
+  const cardUi = computed((): CardProps["ui"] => ({
+    ...props.ui,
+    header: ["p-2 sm:px-2 bg-(--app-page-bg)/50", props.ui?.header].filter(Boolean).join(" "),
+  }));
 
   /**
    * An excerpt split around its headword (or, not known yet, the word).
@@ -104,6 +113,11 @@
   defineSlots<{
     /** At the top right of the (first) card, the text wrapping around it (e.g. an icon). */
     aside?: () => unknown;
+    /**
+     * The entry's tools, at the end of each card's toolbar (e.g. the
+     * citation), for the entry of that card (a homonym: its own).
+     */
+    tools?: (props: { entry: DisplayedEntry }) => unknown;
   }>();
 </script>
 
@@ -134,27 +148,42 @@
 
   <DefineEntryCard v-slot="{ entry: shown }">
     <UCard
-      :class="{ '[&>*]:p-0': link }"
-      :ui="ui"
+      :class="{ '[&>[data-slot=body]]:p-0': link }"
+      :ui="cardUi"
     >
       <!--
-        The toolbar is interactive once the page is hydrated (its state, the
-        bookmarks, only exists in the browser); before, and on the server,
-        its markup alone, much lighter to render (cf. `TagButtonGroupStatic`).
+        The toolbar, in the card's header, on its own line above the
+        definition (which keeps the card's whole width): the bookmarks' tools
+        at the start (the current tag, all the tags, the star), the entry's
+        tools at the end (e.g. the citation), each a framed group; the header
+        tinted, the card's rule under it (`UCard`'s header). Interactive once
+        the page is hydrated (its state, the bookmarks, only exists in the
+        browser); before, and on the server, its markup alone, much lighter
+        to render (cf. `TagButtonGroupStatic`).
       -->
-      <ClientOnly v-if="toolbar">
-        <TagButtonGroup
-          :entry="shown"
-          class="float-right"
-          :class="toolbarPlace"
-        />
-        <template #fallback>
-          <TagButtonGroupStatic
-            class="float-right"
-            :class="toolbarPlace"
-          />
-        </template>
-      </ClientOnly>
+      <template
+        v-if="toolbar || $slots.tools"
+        #header
+      >
+        <div class="flex items-center justify-between gap-2">
+          <ClientOnly v-if="toolbar">
+            <TagButtonGroup :entry="shown" />
+            <template #fallback>
+              <TagButtonGroupStatic />
+            </template>
+          </ClientOnly>
+          <div
+            v-if="$slots.tools"
+            class="ms-auto flex items-center gap-2"
+          >
+            <slot
+              name="tools"
+              :entry="shown"
+            />
+          </div>
+        </div>
+      </template>
+
       <div
         v-if="$slots.aside && shown.uri === firstCard.uri"
         class="float-right ms-3"
@@ -162,9 +191,14 @@
         <slot name="aside" />
       </div>
 
+      <!--
+        A card as a link: its padding on the definition (the link's child);
+        under a toolbar (the home page's random entry, whose header has no
+        rule), the text close to it.
+      -->
       <NuxtLink
         v-if="link"
-        :class="[shown.htmlDefinition ? '[&>*]:p-4 [&>*]:sm:p-6' : '']"
+        :class="[shown.htmlDefinition ? '[&>*]:p-4 [&>*]:sm:p-6' : '', { '[&>*]:pt-2 [&>*]:sm:pt-2': toolbar }]"
         :to="entryRoute(shown.uri)"
         :rel="linkRel"
         :prefetch-on="prefetchOn ?? 'interaction'"

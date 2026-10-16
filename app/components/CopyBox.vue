@@ -1,0 +1,69 @@
+<script setup lang="ts">
+  const props = defineProps<{
+    /** What a click copies, said by its title and its button (e.g. « Copier la clé »). */
+    label: string;
+    /** Its button's name once copied, for a moment (e.g. « Clé copiée »). */
+    copiedLabel: string;
+    /** Copies; whether it could (its message, a toast, the caller's). */
+    copy: () => Promise<boolean>;
+  }>();
+
+  /** Just copied: the button's icon a check, for a moment. */
+  const copied = ref(false);
+  let copiedTimer: ReturnType<typeof setTimeout> | undefined;
+  onBeforeUnmount(() => {
+    clearTimeout(copiedTimer);
+  });
+
+  /**
+   * A click on the box copies the whole text, unless some of it has just
+   * been selected (a selection with the mouse ends with a click): that part
+   * then copied as any other (⌘C); the button copies it all, always.
+   */
+  const box = useTemplateRef<HTMLElement>("box");
+  const onBoxClick = (): void => {
+    const selection = window.getSelection();
+    if (selection && !selection.isCollapsed && box.value?.contains(selection.anchorNode)) return;
+    void onCopy();
+  };
+
+  const onCopy = async (): Promise<void> => {
+    if (!(await props.copy())) return;
+    copied.value = true;
+    clearTimeout(copiedTimer);
+    copiedTimer = setTimeout(() => {
+      copied.value = false;
+    }, 2_000);
+  };
+</script>
+
+<!--
+  A text to copy (the synchronization's key, a citation's reference): in a
+  box which a click copies (not a part of it just selected), its button (for
+  the keyboard) in its corner, its icon a check for a moment once copied;
+  both titled alike. Hovered, the box darkens, its button
+  too (on the box's color, without a shade of its own). In the dark theme,
+  half a shade gentler (marble 800 at half, then full when hovered).
+-->
+<template>
+  <div class="group relative">
+    <div
+      ref="box"
+      class="cursor-pointer rounded-md bg-elevated p-3 pe-12 transition-colors group-hover:bg-accented/60 dark:bg-elevated/50 dark:group-hover:bg-elevated"
+      :title="label"
+      @click="onBoxClick"
+    >
+      <slot />
+    </div>
+    <UButton
+      :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
+      :aria-label="copied ? copiedLabel : label"
+      :title="copied ? copiedLabel : label"
+      color="neutral"
+      variant="ghost"
+      size="sm"
+      class="absolute end-1.5 top-1.5 hover:bg-transparent active:bg-transparent"
+      @click="onCopy"
+    />
+  </div>
+</template>

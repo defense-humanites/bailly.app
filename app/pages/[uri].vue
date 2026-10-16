@@ -126,6 +126,9 @@
   // `useAddressAnchor`): a link to it, or the way back, lands on it.
   watch(homonymShown, useAddressAnchor());
 
+  /** The data's version, cited (cf. `EntryCitation`). */
+  const dataVersion = data.value?.version;
+
   const updateSensePath = (): void => {
     const line = readingLine();
     const definitions = article.value ? [...article.value.querySelectorAll(".definition")] : [];
@@ -348,7 +351,18 @@
       <EntryCard
         :entry="entry"
         toolbar
-      />
+      >
+        <!--
+          The citation, at the end of each card's toolbar: a homonym's card
+          cites that homonym.
+        -->
+        <template #tools="{ entry: cited }">
+          <EntryCitationButton
+            :entry="cited"
+            :version="dataVersion"
+          />
+        </template>
+      </EntryCard>
       <aside
         v-if="outline.length"
         class="absolute start-full top-0 ms-12 hidden h-full w-56 xl:block"

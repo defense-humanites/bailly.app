@@ -58,6 +58,14 @@ export enum StorageKey {
    */
   Dismissed = "bailly:dismissed",
   /**
+   * The form of an entry's reference last chosen (cf. `EntryCitation`).
+   */
+  CitationForm = "bailly:citationForm",
+  /**
+   * The bibliography's style last chosen (cf. `EntryCitation`).
+   */
+  CitationStyle = "bailly:citationStyle",
+  /**
    * The date (ms) of the latest change of this device not yet sent by the
    * synchronization (cf. `useSyncStore().changed`).
    */

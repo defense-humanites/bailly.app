@@ -3,12 +3,12 @@
   import type { IdbEntry, IdbTag, TagKey } from "~/idb";
 
   /*
-   * The toolbar's buttons, hovered or pressed: Nuxt UI's `bg-elevated`, a
-   * gentle shade, rather than the cards' darker ones (`--app-card-hover`,
-   * cf. `root.css`): an exception, the toolbar sitting on the entry's text.
-   * Kept in step with `TagButtonGroupStatic`.
+   * The toolbar's buttons, hovered or pressed: raised (lighter), a notch
+   * lighter still when pressed or open, as the bookmarks' bar's
+   * (`--app-button-hover`, `--app-button-active`, cf. `root.css`).
+   * Kept in step with `TagButtonGroupStatic` and `EntryCitationButton`.
    */
-  const TOOLBAR_HOVER = "hover:bg-elevated active:bg-elevated";
+  const TOOLBAR_HOVER = "hover:bg-(--app-button-hover) active:bg-(--app-button-active)";
 
   const bookmarksStore = useBookmarksStore();
   const { currentTag, tags } = storeToRefs(bookmarksStore);
@@ -117,9 +117,14 @@
 </script>
 
 <template>
-  <UFieldGroup
-    orientation="horizontal"
-    class="border border-default rounded-lg [&>button]:rounded-lg shadow-xs"
+  <!--
+    In the card's header (cf. `EntryCard`): a framed group of buttons, ruled
+    between them, on the cards' background (the header is tinted), as the
+    entry's tools at the other end (cf. `EntryCitationButton`).
+  -->
+  <div
+    data-toolbar-group
+    class="flex min-w-0 items-center rounded-lg border border-default bg-default shadow-xs [&>*+*]:border-s [&>*+*]:border-default [&>button]:rounded-none [&>:first-child]:rounded-s-md [&>:last-child]:rounded-e-md"
   >
     <!--
       The current tag, in one click (the most frequent action while reading):
@@ -138,7 +143,7 @@
         :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
         :data-tag-color="currentTag.color"
         :class="[TOOLBAR_HOVER, taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text']"
-        :ui="{ label: 'max-w-12 truncate text-xs tracking-tight sm:max-w-24' }"
+        :ui="{ label: 'max-w-36 truncate text-xs tracking-tight sm:max-w-56' }"
         color="neutral"
         variant="ghost"
         @click="handleTagChange"
@@ -162,7 +167,7 @@
         icon="i-lucide-tags"
         color="neutral"
         variant="ghost"
-        :class="[TOOLBAR_HOVER, 'data-[state=open]:bg-elevated']"
+        :class="[TOOLBAR_HOVER, 'data-[state=open]:bg-(--app-button-active)']"
         aria-label="Toutes les étiquettes"
       />
 
@@ -261,9 +266,8 @@
         color="neutral"
         variant="ghost"
         :class="[TOOLBAR_HOVER, starred ? 'text-favorite' : 'hover:text-favorite']"
-        :ui="{ base: 'border-l border-default' }"
         @click="toggleStar"
       />
     </UTooltip>
-  </UFieldGroup>
+  </div>
 </template>

@@ -16,6 +16,8 @@ export type EntryResult<F extends EntryField, S extends EntryField = F> = {
   /** The entry, or `null` if it doesn't exist. */
   entry: Entry<F> | null;
   siblings: Siblings<S>;
+  /** The version of the data (`YYYY-MM-DD`, e.g. for a citation). */
+  version?: string;
 };
 
 export type LookupResult<F extends EntryField> = {
@@ -42,6 +44,7 @@ export function useApiEntry<F extends EntryField, S extends EntryField = F>(
       // The API answers unknown entries with an empty object.
       entry: Object.keys(data.entry).length ? (data.entry as Entry<F>) : null,
       siblings: data.siblings ?? {},
+      version: data.version,
     }),
   });
 }

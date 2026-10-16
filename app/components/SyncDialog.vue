@@ -545,7 +545,8 @@
   const copied = ref(false);
   let copiedTimer: ReturnType<typeof setTimeout> | undefined;
 
-  const copyWords = async (): Promise<void> => {
+  /** Copies the words; whether it could (cf. `CopyBox`). */
+  const copyWords = async (): Promise<boolean> => {
     try {
       await navigator.clipboard.writeText(words.value.join(" "));
       keyShown.value = true;
@@ -555,8 +556,10 @@
         copied.value = false;
       }, 2_000);
       toast.add({ title: "Clé copiée", icon: "i-lucide-circle-check", color: "success" });
+      return true;
     } catch {
       toast.add({ title: "La clé n'a pas pu être copiée.", icon: "i-lucide-circle-alert", color: "error" });
+      return false;
     }
   };
 
@@ -1034,12 +1037,14 @@
               />
               <!-- eslint-enable vue/no-v-html -->
               <!-- A click on the words copies them (the button, for the keyboard). -->
-              <div class="relative">
+              <CopyBox
+                label="Copier les mots"
+                copied-label="Mots copiés"
+                :copy="copyWords"
+              >
                 <ol
-                  class="grid cursor-pointer grid-cols-2 gap-x-4 gap-y-1.5 rounded-md bg-elevated p-3 pe-12 font-medium transition-colors hover:bg-accented/60 sm:grid-cols-3"
+                  class="grid grid-cols-2 gap-x-4 gap-y-1.5 font-medium sm:grid-cols-3"
                   aria-label="Les douze mots de la clé"
-                  title="Copier les mots"
-                  @click="copyWords"
                 >
                   <li
                     v-for="(word, i) in words"
@@ -1050,16 +1055,7 @@
                     <span>{{ word }}</span>
                   </li>
                 </ol>
-                <UButton
-                  :icon="copied ? 'i-lucide-check' : 'i-lucide-copy'"
-                  :aria-label="copied ? 'Mots copiés' : 'Copier les mots'"
-                  color="neutral"
-                  variant="ghost"
-                  size="sm"
-                  class="absolute end-1.5 top-1.5"
-                  @click="copyWords"
-                />
-              </div>
+              </CopyBox>
             </template>
           </template>
 
