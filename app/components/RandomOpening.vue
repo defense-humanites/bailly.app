@@ -143,8 +143,9 @@
         <!--
           The entry lies on the page's background, not on a card. Its
           toolbar neither ruled nor tinted (the frame's rules are close), its
-          groups of buttons on the page's background (raised when hovered,
-          as on the cards), the entry's text close under it.
+          groups of buttons on the page's background, raised when hovered
+          half as much as on a card (halfway to the cards' background), to
+          it when pressed; the entry's text close under it.
         -->
         <div
           v-if="position === 'main'"
@@ -158,7 +159,7 @@
             link
             link-rel="nofollow"
             :ui="{
-              root: 'h-full flex flex-col overflow-hidden bg-transparent shadow-none ring-0 divide-y-0 rounded-none [&_[data-toolbar-group]]:bg-transparent',
+              root: 'h-full flex flex-col overflow-hidden bg-transparent shadow-none ring-0 divide-y-0 rounded-none [&_[data-toolbar-group]]:bg-transparent [--app-button-hover:color-mix(in_oklab,var(--ui-bg)_50%,transparent)] [--app-button-active:var(--ui-bg)]',
               header: 'bg-transparent',
               body: 'min-h-0 flex-1 mask-b-from-80%',
             }"
