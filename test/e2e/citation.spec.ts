@@ -36,14 +36,14 @@ test.describe("citing an entry", () => {
     await expect(citation.locator("section p").nth(1)).toContainText("BAILLY, Anatole.");
   });
 
-  test("a homonym cited as in M. Gréco's edition, from its own card", async ({ page, goto }) => {
+  test("a homonym cited with its number after the headword, from its own card", async ({ page, goto }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await goto("/logades", { waitUntil: "hydration" });
     await expect((await openCitation(page, 1)).locator("section p").first())
-      .toContainText("« 2 λογάδες », https://bailly.app/logades#2");
+      .toContainText("« λογάδες² », https://bailly.app/logades#2");
     await page.keyboard.press("Escape");
     await expect((await openCitation(page, 0)).locator("section p").first())
-      .toContainText("« 1 λογάδες », https://bailly.app/logades#1");
+      .toContainText("« λογάδες¹ », https://bailly.app/logades#1");
   });
 
   test("at every width, from the card's top", async ({ page, goto }) => {

@@ -23,9 +23,9 @@ describe("dates", () => {
 });
 
 describe("citedLemma", () => {
-  it("a homonym preceded by its number, as in M. Gréco's edition", () => {
+  it("a homonym followed by its number in superscript, as Bailly.app shows it", () => {
     expect(citedLemma(logos)).toBe("λόγος");
-    expect(plain(citedLemma(oudos2))).toBe("2 οὐδός");
+    expect(citedLemma(oudos2)).toBe("οὐδός²");
   });
 });
 
@@ -37,7 +37,7 @@ describe("entryCitation", () => {
   });
 
   it("a homonym's address with its anchor", () => {
-    expect(plain(entryCitation("note", oudos2, "apa", { accessed }).text)).toContain("s. v. « 2 οὐδός », https://bailly.app/oudos#2 ");
+    expect(plain(entryCitation("note", oudos2, "apa", { accessed }).text)).toContain("s. v. « οὐδός² », https://bailly.app/oudos#2 ");
   });
 
   it("a short note", () => {
@@ -46,7 +46,7 @@ describe("entryCitation", () => {
 
   it("author-date: the version's year, APA's comma, a colon otherwise", () => {
     expect(plain(entryCitation("authorDate", logos, "apa", { accessed }).text)).toBe("(Bailly, 2023, s. v. λόγος)");
-    expect(plain(entryCitation("authorDate", oudos2, "iso", { accessed }).text)).toBe("(Bailly, 2023 : s. v. 2 οὐδός)");
+    expect(plain(entryCitation("authorDate", oudos2, "iso", { accessed }).text)).toBe("(Bailly, 2023 : s. v. οὐδός²)");
   });
 
   it("another version of the data", () => {

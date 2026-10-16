@@ -97,14 +97,18 @@ const versionYear = (version: string): string => version.slice(0, 4);
 
 /**
  * The entry cited: its headword, as in the dictionary (in Greek, whatever
- * the transliteration preference), a homonym preceded by its number, as in
- * M. Gréco's edition (« 2 οὐδός »).
+ * the transliteration preference), a homonym followed by its number in
+ * superscript, as Bailly.app shows it (« οὐδός² »), rather than preceded by
+ * it as in M. Gréco's edition: Unicode's superscript digits, kept in the
+ * plain text as in the formatted one.
  */
 export type CitedEntry = { word: string; uri: string };
 
+const SUPERSCRIPT_DIGITS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+
 export function citedLemma({ word, uri }: CitedEntry): string {
   const homonym = /#(\d+)$/.exec(uri)?.[1];
-  return homonym ? `${homonym}${NBSP}${word}` : word;
+  return homonym ? `${word}${homonym.replace(/\d/g, digit => SUPERSCRIPT_DIGITS[Number(digit)] ?? digit)}` : word;
 }
 
 /** The entry's address on Bailly.app (a homonym's with its anchor). */
