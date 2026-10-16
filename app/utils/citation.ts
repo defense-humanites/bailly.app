@@ -169,7 +169,10 @@ export function workCitation(style: CitationStyle, { version = DATA_VERSION, acc
       return render([
         "BAILLY, Anatole. ",
         { italic: "Dictionnaire grec-français" },
-        ` [en ligne]. Sous la direction de Gérard GRÉCO, avec le concours d'André CHARBONNET, Mark DE WILDE et Bernard MARÉCHAL. ${edition.charAt(0).toUpperCase()}${edition.slice(1)}. Disponible à l'adresse${NBSP}: ${CITATION_ORIGIN} [consulté le ${accessDate(accessed)}].`,
+        ` [en ligne]. Sous la direction de Gérard GRÉCO, avec le concours d'André CHARBONNET, Mark DE WILDE et Bernard MARÉCHAL. ${edition.charAt(0).toUpperCase()}${edition.slice(1)}. `,
+        // The publisher of the version consulted, the application's (the
+        // association, in Bordeaux), and its year.
+        `Bordeaux${NBSP}: Association pour la défense des humanités, ${versionYear(version)}. Disponible à l'adresse${NBSP}: ${CITATION_ORIGIN} [consulté le ${accessDate(accessed)}].`,
       ]);
     case "chicago":
       return render([

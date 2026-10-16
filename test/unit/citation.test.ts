@@ -72,7 +72,7 @@ describe("workCitation", () => {
   it("MLA and ISO 690 with the date of consultation; MLA's container in italics", () => {
     expect(plain(workCitation("mla", { accessed }).text)).toContain("Consulté le 5 octobre 2026.");
     expect(plain(workCitation("mla", { accessed }).html)).toContain("<i>Bailly.app</i>, Association pour la défense des humanités, 28 février 2023, bailly.app.");
-    expect(plain(workCitation("iso", { accessed }).text)).toContain("Disponible à l'adresse : https://bailly.app [consulté le 5 octobre 2026].");
+    expect(plain(workCitation("iso", { accessed }).text)).toContain("Bordeaux : Association pour la défense des humanités, 2023. Disponible à l'adresse : https://bailly.app [consulté le 5 octobre 2026].");
   });
 });
 
