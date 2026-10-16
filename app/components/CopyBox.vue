@@ -42,13 +42,14 @@
   box which a click copies (not a part of it just selected), its button (for
   the keyboard) in its corner, its icon a check for a moment once copied;
   both titled alike. Hovered, the box darkens, its button
-  too (on the box's color, without a shade of its own).
+  too (on the box's color, without a shade of its own). In the dark theme,
+  half a shade gentler (marble 800 at half, then full when hovered).
 -->
 <template>
   <div class="group relative">
     <div
       ref="box"
-      class="cursor-pointer rounded-md bg-elevated p-3 pe-12 transition-colors group-hover:bg-accented/60"
+      class="cursor-pointer rounded-md bg-elevated p-3 pe-12 transition-colors group-hover:bg-accented/60 dark:bg-elevated/50 dark:group-hover:bg-elevated"
       :title="label"
       @click="onBoxClick"
     >
