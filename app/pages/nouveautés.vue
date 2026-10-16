@@ -52,6 +52,11 @@
       text: "Les mots grecs cités dans les définitions mènent à leurs entrées ; une forme qui peut relever de plusieurs entrées ouvre une page qui les propose toutes.",
     },
     {
+      icon: "i-lucide-quote",
+      title: "Des entrées faciles à citer.",
+      text: "Le bouton aux guillemets, en tête de chaque entrée, propose une référence prête à copier, à placer dans le texte ou en note (forme complète, abrégée ou auteur-date), et une notice pour la bibliographie, selon la norme de votre choix (APA, MLA, ISO 690 ou Chicago). La référence indique la version consultée du dictionnaire, et l'italique est conservé au collage dans votre traitement de texte.",
+    },
+    {
       icon: "i-lucide-search",
       title: "Une recherche plus souple.",
       text: [
