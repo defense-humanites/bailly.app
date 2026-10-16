@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {
-    CITATION_STYLE_LABELS, CITATION_STYLES, clipboardHtml, ENTRY_CITATION_FORMS, entryCitation, entryCitationFormLabel, isCitationStyle,
+    CITATION_STYLE_LABELS, CITATION_STYLES, citedLemma, clipboardHtml, ENTRY_CITATION_FORMS, entryCitation, entryCitationFormLabel, isCitationStyle,
     isEntryCitationForm, workCitation, type Citation, type CitationStyle, type CitedEntry, type EntryCitationForm,
   } from "~/utils/citation";
   import { StorageKey } from "~/enums";
@@ -86,6 +86,15 @@
     },
   ]);
 
+  /**
+   * Temporary (from October 2026, to be removed around December): the
+   * formats were checked on universities' guides, not on the official
+   * manuals; the readers who use them may tell us. The subject says the
+   * style and the entry, as the reports of the text's errors (`à-propos.vue`).
+   */
+  const reportUrl = computed(() =>
+    `mailto:contact@bailly.app?subject=${encodeURIComponent(`Citation ${CITATION_STYLE_LABELS[style.value]} : ${citedLemma(props.entry)}`)}`);
+
   const toast = useToast();
 
   /**
@@ -169,6 +178,14 @@
           <!-- eslint-enable vue/no-v-html -->
         </CopyBox>
       </section>
+      <!-- Temporary, cf. `reportUrl`. -->
+      <p class="text-xs text-muted">
+        Un format vous paraît inexact&nbsp;?
+        <a
+          :href="reportUrl"
+          class="link"
+        >Écrivez-nous</a>.
+      </p>
     </ClientOnly>
   </div>
 </template>
