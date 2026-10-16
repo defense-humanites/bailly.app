@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {
-    CITATION_STYLE_LABELS, CITATION_STYLES, clipboardHtml, ENTRY_CITATION_FORM_LABELS, ENTRY_CITATION_FORMS, entryCitation, isCitationStyle,
+    CITATION_STYLE_LABELS, CITATION_STYLES, clipboardHtml, ENTRY_CITATION_FORMS, entryCitation, entryCitationFormLabel, isCitationStyle,
     isEntryCitationForm, workCitation, type Citation, type CitationStyle, type CitedEntry, type EntryCitationForm,
   } from "~/utils/citation";
   import { StorageKey } from "~/enums";
@@ -31,10 +31,13 @@
     },
   });
 
+  const NBSP = " ";
+
   const entryHeadingId = useId();
   const workHeadingId = useId();
 
-  const formItems = ENTRY_CITATION_FORMS.map(value => ({ label: ENTRY_CITATION_FORM_LABELS[value], value }));
+  // The author-date form named after the style (« Dans le texte » in MLA).
+  const formItems = computed(() => ENTRY_CITATION_FORMS.map(value => ({ label: entryCitationFormLabel(value, style.value), value })));
   const styleItems = CITATION_STYLES.map(value => ({ label: CITATION_STYLE_LABELS[value], value }));
 
   /**
@@ -58,8 +61,11 @@
       title: "Dans le texte ou en note",
       headingId: entryHeadingId,
       selectLabel: "Forme de la référence",
-      items: formItems,
+      items: formItems.value,
       value: form.value,
+      // The author-date form follows the bibliography's style: said above
+      // the reference.
+      hint: form.value === "authorDate" ? `Suit la norme choisie pour la bibliographie, ci-dessous${NBSP}: ${CITATION_STYLE_LABELS[style.value]}.` : null,
       choose: (value: unknown): void => {
         if (isEntryCitationForm(value)) form.value = value;
       },
@@ -72,6 +78,7 @@
       selectLabel: "Norme de la bibliographie",
       items: styleItems,
       value: style.value,
+      hint: null,
       choose: (value: unknown): void => {
         if (isCitationStyle(value)) style.value = value;
       },
@@ -141,6 +148,12 @@
             class="w-36"
             @update:model-value="part.choose"
           />
+        </div>
+        <div
+          v-if="part.hint"
+          class="text-xs text-muted"
+        >
+          {{ part.hint }}
         </div>
         <CopyBox
           label="Copier la référence"

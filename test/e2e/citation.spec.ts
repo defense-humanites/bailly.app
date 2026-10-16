@@ -19,16 +19,17 @@ test.describe("citing an entry", () => {
 
     await citation.getByRole("combobox", { name: "Forme de la référence" }).click();
     await page.getByRole("option", { name: "Auteur-date" }).click();
-    await expect(entryReference).toHaveText("(Bailly, 2023, s. v. λόγος)");
+    await expect(entryReference).toHaveText("(Bailly, 1894/2023, s. v. « λόγος »)");
     // Copied by its button (or a click on it), as the synchronization's key.
     await citation.getByRole("button", { name: "Copier la référence" }).first().click();
     await expect(citation.getByRole("button", { name: "Référence copiée" })).toBeVisible();
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("(Bailly, 2023, s. v. λόγος)");
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("(Bailly, 1894/2023, s. v. « λόγος »)");
 
     // Author-date follows the bibliography's style; both choices kept.
     await citation.getByRole("combobox", { name: "Norme de la bibliographie" }).click();
     await page.getByRole("option", { name: "ISO 690" }).click();
-    await expect(entryReference).toHaveText("(Bailly, 2023 : s. v. λόγος)");
+    await expect(entryReference).toHaveText("(Bailly, 2023 : s. v. « λόγος »)");
+    await expect(citation.getByText("Suit la norme choisie pour la bibliographie, ci-dessous : ISO 690.")).toBeVisible();
     await expect(citation.locator("section p").nth(1)).toContainText("BAILLY, Anatole.");
     await page.reload();
     citation = await openCitation(page);

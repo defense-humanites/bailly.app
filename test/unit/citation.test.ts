@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { accessDate, citedLemma, clipboardHtml, entryCitation, versionDate, workCitation } from "../../app/utils/citation";
+import { accessDate, citedLemma, clipboardHtml, entryCitation, entryCitationFormLabel, versionDate, workCitation } from "../../app/utils/citation";
 
 const NBSP = " ";
 // Spaces made visible: the references put non-breaking ones where French
@@ -44,9 +44,13 @@ describe("entryCitation", () => {
     expect(plain(entryCitation("short", logos, "mla", { accessed }).text)).toBe("Bailly 2020, s. v. « λόγος ».");
   });
 
-  it("author-date: the version's year, APA's comma, a colon otherwise", () => {
-    expect(plain(entryCitation("authorDate", logos, "apa", { accessed }).text)).toBe("(Bailly, 2023, s. v. λόγος)");
-    expect(plain(entryCitation("authorDate", oudos2, "iso", { accessed }).text)).toBe("(Bailly, 2023 : s. v. οὐδός²)");
+  it("author-date: after the bibliography's style, the entry in quotation marks", () => {
+    expect(plain(entryCitation("authorDate", logos, "apa", { accessed }).text)).toBe("(Bailly, 1894/2023, s. v. « λόγος »)");
+    expect(plain(entryCitation("authorDate", logos, "chicago", { accessed }).text)).toBe("(Bailly [1894] 2023, s.v. « λόγος »)");
+    expect(plain(entryCitation("authorDate", oudos2, "iso", { accessed }).text)).toBe("(Bailly, 2023 : s. v. « οὐδός² »)");
+    expect(plain(entryCitation("authorDate", logos, "mla", { accessed }).text)).toBe("(Bailly, « λόγος »)");
+    expect(entryCitationFormLabel("authorDate", "mla")).toBe("Dans le texte");
+    expect(entryCitationFormLabel("authorDate", "apa")).toBe("Auteur-date");
   });
 
   it("another version of the data", () => {

@@ -39,6 +39,14 @@ export const CITATION_STYLE_LABELS: Record<CitationStyle, string> = {
   chicago: "Chicago",
 };
 
+/**
+ * A form's label, as the bibliography's style makes it: MLA has no
+ * author-date system (its citation in the text gives the author and the
+ * entry, without a date).
+ */
+export const entryCitationFormLabel = (form: EntryCitationForm, style: CitationStyle): string =>
+  form === "authorDate" && style === "mla" ? "Dans le texte" : ENTRY_CITATION_FORM_LABELS[form];
+
 export const isEntryCitationForm = (value: unknown): value is EntryCitationForm =>
   ENTRY_CITATION_FORMS.includes(value as EntryCitationForm);
 export const isCitationStyle = (value: unknown): value is CitationStyle =>
@@ -116,10 +124,17 @@ export const entryUrl = ({ uri }: CitedEntry): string => `${CITATION_ORIGIN}/${u
 
 type Context = { version?: string; accessed: Date };
 
+/** The year of the dictionary's first edition (Hachette, 1894). */
+const ORIGINAL_YEAR = "1894";
+
 /**
  * An entry's reference, in the text or in a note.
- * @param style The bibliography's style, for the author-date form (APA's
- * comma; a colon, in the French way, otherwise).
+ * @param style The bibliography's style, which the author-date form follows
+ * (cf. `verification-formats-citation.md`): APA, both years of a work
+ * republished, after a comma; Chicago, the original's in brackets, without a
+ * comma; ISO 690, a colon, in the French way; MLA, the author and the entry
+ * only (no author-date system). The entry in quotation marks, as in the
+ * notes.
  */
 export function entryCitation(form: EntryCitationForm, entry: CitedEntry, style: CitationStyle, { version = DATA_VERSION, accessed }: Context): Citation {
   const lemma = citedLemma(entry);
@@ -134,8 +149,20 @@ export function entryCitation(form: EntryCitationForm, entry: CitedEntry, style:
       ]);
     case "short":
       return render([`Bailly 2020, ${sv} «${NBSP}${lemma}${NBSP}».`]);
-    case "authorDate":
-      return render([`(Bailly, ${versionYear(version)}${style === "apa" ? "," : `${NBSP}:`} ${sv} ${lemma})`]);
+    case "authorDate": {
+      const quoted = `«${NBSP}${lemma}${NBSP}»`;
+      const year = versionYear(version);
+      switch (style) {
+        case "apa":
+          return render([`(Bailly, ${ORIGINAL_YEAR}/${year}, ${sv} ${quoted})`]);
+        case "chicago":
+          return render([`(Bailly [${ORIGINAL_YEAR}] ${year}, s.v. ${quoted})`]);
+        case "iso":
+          return render([`(Bailly, ${year}${NBSP}: ${sv} ${quoted})`]);
+        case "mla":
+          return render([`(Bailly, ${quoted})`]);
+      }
+    }
   }
 }
 
