@@ -46,10 +46,11 @@
         + "Mettez votre navigateur à jour, ou utilisez un navigateur récent (Firefox, Chrome, Edge, Safari).";
     }
 
-    // The theme's colors (cf. `theme.css`), the page's class already set.
+    // The theme's colors (cf. `theme.css`), the page's class already set:
+    // terracotta in both, so that it stands out (900 in the dark theme).
     var dark = /(^|\s)dark(\s|$)/.test(document.documentElement.className);
     var colors = dark
-      ? { bg: "#2b2823", text: "#f5f2ea", accent: "#dc7643", button: "#1a1613", shadow: "rgba(0,0,0,.4)" }
+      ? { bg: "#63291f", text: "#f5f2ea", accent: "#dc7643", button: "#36130e", shadow: "rgba(0,0,0,.4)" }
       : { bg: "#fbf1e6", text: "#2a2320", accent: "#b14522", button: "#fbfaf6", shadow: "rgba(42,35,32,.15)" };
 
     var notice = document.createElement("div");

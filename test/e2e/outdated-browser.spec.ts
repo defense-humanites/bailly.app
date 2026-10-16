@@ -43,7 +43,7 @@ test.describe("an outdated browser", () => {
     test("in its colors", async ({ page, goto }) => {
       await simulateOldBrowser(page);
       await goto("/logos", { waitUntil: "hydration" });
-      await expect(notice(page)).toHaveCSS("background-color", "rgb(43, 40, 35)");
+      await expect(notice(page)).toHaveCSS("background-color", "rgb(99, 41, 31)");
     });
   });
 });
