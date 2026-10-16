@@ -174,11 +174,11 @@
         </div>
         <div
           v-if="part.followsStyle"
-          class="flex gap-1.5 text-xs text-muted"
+          class="flex gap-2 text-muted"
         >
           <UIcon
             name="i-lucide-info"
-            class="mt-px size-3.5 shrink-0"
+            class="mt-0.5 size-4 shrink-0"
           />
           <span>
             Suit la norme choisie pour la bibliographie,
@@ -205,13 +205,22 @@
           <!-- eslint-enable vue/no-v-html -->
         </CopyBox>
       </section>
-      <!-- Temporary, cf. `reportUrl`. -->
-      <p class="text-xs text-muted">
-        Un format vous paraît inexact&nbsp;?
-        <a
-          :href="reportUrl"
-          class="link"
-        >Écrivez-nous</a>.
+      <!--
+        Temporary, cf. `reportUrl`. Set apart as the synchronization key's
+        warning (`SyncDialog`).
+      -->
+      <p class="flex gap-2 border-t border-default pt-4 text-muted">
+        <UIcon
+          name="i-lucide-message-circle"
+          class="mt-0.5 size-4 shrink-0"
+        />
+        <span>
+          Un format vous paraît inexact&nbsp;?
+          <a
+            :href="reportUrl"
+            class="link"
+          >Écrivez-nous</a>.
+        </span>
       </p>
     </ClientOnly>
   </div>
