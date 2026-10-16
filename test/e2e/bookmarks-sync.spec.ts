@@ -561,12 +561,15 @@ test("a deletion undone is undone on the other devices too", async ({ page, goto
     };
     (window as unknown as { removed: unknown }).removed = (await store.removeTag(store.tags[0]!.key)).data;
   });
-  const phoneTags = async () => {
-    await phone.reload();
-    await waitForHydration(phone);
-    return (await bookmarksState(phone)).tags;
+  // Each device synchronizes at once, as asked by the user: a reload would
+  // not (another synchronization is too recent, cf. `REVISIT_DELAY`), and
+  // would read the bookmarks before they are loaded.
+  const phoneState = async () => {
+    await syncNow(phone);
+    return bookmarksState(phone);
   };
-  await expect.poll(phoneTags, { timeout: 15_000 }).toEqual([]);
+  await syncNow(page);
+  await expect.poll(async () => (await phoneState()).tags).toEqual([]);
 
   // …then undoes it: the tag comes back on the phone, with its entry.
   await page.evaluate(async () => {
@@ -574,11 +577,8 @@ test("a deletion undone is undone on the other devices too", async ({ page, goto
     const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks") as unknown as { revive: (removed: unknown) => Promise<unknown> };
     await store.revive((window as unknown as { removed: unknown }).removed);
   });
-  // (Its entry too: the state is read once merged, not while it is.)
-  await expect.poll(async () => {
-    await phoneTags();
-    return bookmarksState(phone);
-  }, { timeout: 15_000 }).toMatchObject({ tags: ["Homère"], tagged: 1 });
+  await syncNow(page);
+  await expect.poll(phoneState).toMatchObject({ tags: ["Homère"], tagged: 1 });
 });
 
 test("enabling a key again brings back the online bookmarks deleted meanwhile", async ({ page, goto, browser, baseURL }) => {
