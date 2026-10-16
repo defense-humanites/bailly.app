@@ -36,6 +36,12 @@
   const entryHeadingId = useId();
   const workHeadingId = useId();
 
+  /**
+   * The style's select, opened from the author-date form's mention (a focus
+   * alone would show nothing after a click).
+   */
+  const styleOpen = ref(false);
+
   // The author-date form named after the style (« Dans le texte » in MLA).
   const formItems = computed(() => ENTRY_CITATION_FORMS.map(value => ({ label: entryCitationFormLabel(value, style.value), value })));
   const styleItems = CITATION_STYLES.map(value => ({ label: CITATION_STYLE_LABELS[value], value }));
@@ -63,9 +69,11 @@
       selectLabel: "Forme de la référence",
       items: formItems.value,
       value: form.value,
+      open: undefined,
+      setOpen: undefined,
       // The author-date form follows the bibliography's style: said above
-      // the reference.
-      hint: form.value === "authorDate" ? `Suit la norme choisie pour la bibliographie, ci-dessous${NBSP}: ${CITATION_STYLE_LABELS[style.value]}.` : null,
+      // the reference, the style's name leading to its select.
+      followsStyle: form.value === "authorDate",
       choose: (value: unknown): void => {
         if (isEntryCitationForm(value)) form.value = value;
       },
@@ -78,7 +86,11 @@
       selectLabel: "Norme de la bibliographie",
       items: styleItems,
       value: style.value,
-      hint: null,
+      open: styleOpen.value,
+      setOpen: (open: boolean): void => {
+        styleOpen.value = open;
+      },
+      followsStyle: false,
       choose: (value: unknown): void => {
         if (isCitationStyle(value)) style.value = value;
       },
@@ -151,18 +163,33 @@
           </h3>
           <USelect
             :model-value="part.value"
+            :open="part.open"
             :items="part.items"
             size="xs"
             :aria-label="part.selectLabel"
             class="w-36"
             @update:model-value="part.choose"
+            @update:open="part.setOpen"
           />
         </div>
         <div
-          v-if="part.hint"
-          class="text-xs text-muted"
+          v-if="part.followsStyle"
+          class="flex gap-1.5 text-xs text-muted"
         >
-          {{ part.hint }}
+          <UIcon
+            name="i-lucide-info"
+            class="mt-px size-3.5 shrink-0"
+          />
+          <span>
+            Suit la norme choisie pour la bibliographie,
+            <!-- Never the style's name alone on a line. -->
+            <span class="whitespace-nowrap">ci-dessous{{ NBSP }}:
+              <button
+                type="button"
+                class="link cursor-pointer text-default"
+                @click="styleOpen = true"
+              >{{ CITATION_STYLE_LABELS[style] }}</button>.</span>
+          </span>
         </div>
         <CopyBox
           label="Copier la référence"

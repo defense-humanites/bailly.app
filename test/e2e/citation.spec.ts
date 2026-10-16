@@ -30,6 +30,9 @@ test.describe("citing an entry", () => {
     await page.getByRole("option", { name: "ISO 690" }).click();
     await expect(entryReference).toHaveText("(Bailly, 2023 : s. v. « λόγος »)");
     await expect(citation.getByText("Suit la norme choisie pour la bibliographie, ci-dessous : ISO 690.")).toBeVisible();
+    // The style's name in the mention opens the style's list.
+    await citation.getByRole("button", { name: "ISO 690", exact: true }).click();
+    await page.getByRole("option", { name: "ISO 690" }).click();
     await expect(citation.locator("section p").nth(1)).toContainText("BAILLY, Anatole.");
     await page.reload();
     citation = await openCitation(page);
