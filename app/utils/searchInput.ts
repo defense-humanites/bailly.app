@@ -62,10 +62,20 @@ const WILDCARDS = /[?*]/;
 const PENDING_DIACRITICS = new RegExp(`[${[...DIACRITICS_BY_FORM.keys()].filter(form => !/\p{M}/u.test(form)).join("")}]`, "gu");
 
 /**
- * A capital mark waiting for its letter: a `*` at the start of a word (after
- * a letter or a wildcard, it's a wildcard).
+ * What makes a `*` a wildcard rather than a capital mark: a letter, a mark or
+ * a wildcard before it.
  */
-const PENDING_CAPITAL = /(?<![\p{L}\p{M}?])\*/gu;
+const LETTER_OR_WILDCARD = /[\p{L}\p{M}?]/u;
+
+/**
+ * Removes the capital marks waiting for their letter: a `*` at the start of a
+ * word (after a letter or a wildcard, it's a wildcard). The character before
+ * each `*` is tested here rather than by a lookbehind (`(?<!…)`), which
+ * Safari only parses from 16.4: before, the whole chunk of the search bar was
+ * refused (cf. `navigateurs-anciens.md`).
+ */
+const removePendingCapitals = (text: string): string =>
+  text.replace(/\*/g, (star: string, offset: number) => (LETTER_OR_WILDCARD.test(text.charAt(offset - 1)) ? star : ""));
 
 /**
  * Beta Code letters (the case doesn't matter).
@@ -198,7 +208,7 @@ export function toSearchGreek(input: string): string {
  * would read such a `*` as a wildcard).
  */
 export function toSearchQuery(greek: string): string {
-  return greek.replace(PENDING_DIACRITICS, "").replace(PENDING_CAPITAL, "").trim();
+  return removePendingCapitals(greek.replace(PENDING_DIACRITICS, "")).trim();
 }
 
 /**
