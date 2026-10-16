@@ -19,7 +19,7 @@ test.describe("an outdated browser", () => {
     await expect(notice(page)).toHaveCount(0);
   });
 
-  test("a notice before the application, closed for the session", async ({ page, goto }) => {
+  test("a notice before the application, closed for the session", async ({ page, context, goto }) => {
     await simulateOldBrowser(page);
     await goto("/logos", { waitUntil: "hydration" });
     // Named by its title.
@@ -30,6 +30,21 @@ test.describe("an outdated browser", () => {
     await expect(notice(page)).toHaveCount(0);
     await goto("/logades", { waitUntil: "hydration" });
     await expect(notice(page)).toHaveCount(0);
+    // Another tab, another session: it's back.
+    const other = await context.newPage();
+    await simulateOldBrowser(other);
+    await other.goto(page.url());
+    await expect(notice(other)).toHaveCount(1);
+  });
+
+  test.describe("in the dark theme", () => {
+    test.use({ colorScheme: "dark" });
+
+    test("in its colors", async ({ page, goto }) => {
+      await simulateOldBrowser(page);
+      await goto("/logos", { waitUntil: "hydration" });
+      await expect(notice(page)).toHaveCSS("background-color", "rgb(43, 40, 35)");
+    });
   });
 });
 
@@ -41,5 +56,18 @@ test.describe("an iPhone under iOS 15", () => {
     await goto("/logos", { waitUntil: "hydration" });
     await expect(page.getByRole("region", { name: "Version d’iOS trop ancienne" })).toContainText("iOS 15");
     await expect(notice(page)).toContainText("changer de navigateur n’y fera rien");
+  });
+
+  test("closed for a month: there, the reader can do nothing about it", async ({ page, context, goto }) => {
+    await simulateOldBrowser(page);
+    await goto("/logos", { waitUntil: "hydration" });
+    await notice(page).getByRole("button", { name: "Fermer" }).click();
+    const other = await context.newPage();
+    await simulateOldBrowser(other);
+    await other.goto(page.url());
+    await expect(other.locator("main")).toBeVisible();
+    await expect(notice(other)).toHaveCount(0);
+    const until = Number(await other.evaluate(() => localStorage.getItem("bailly:outdatedBrowser")));
+    expect(until - Date.now()).toBeGreaterThan(29 * 24 * 60 * 60 * 1000);
   });
 });
