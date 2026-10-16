@@ -142,23 +142,28 @@ export function entryCitation(form: EntryCitationForm, entry: CitedEntry, style:
 /** The work's reference, in a bibliography (as consulted on Bailly.app). */
 export function workCitation(style: CitationStyle, { version = DATA_VERSION, accessed }: Context): Citation {
   const date = versionDate(version);
-  const edition = `nouvelle édition revue et corrigée, dite Bailly 2020 – Hugo Chávez, version du ${date}`;
+  const editionName = "nouvelle édition revue et corrigée, dite Bailly 2020 – Hugo Chávez";
+  const edition = `${editionName}, version du ${date}`;
   switch (style) {
     case "apa":
       return render([
         `Bailly, A. (${versionYear(version)}). `,
         { italic: "Dictionnaire grec-français" },
-        ` (G. Gréco, Dir.; nouv. éd. rev. et corr., dite Bailly 2020 – Hugo Chávez, version du ${date}). ${CITATION_ORIGIN} (Ouvrage original publié en 1894)`,
+        // The director as French adaptations write it (« dir. »); the
+        // publisher before the address; the original's date as APA's
+        // « Original work published » (cf. `verification-formats-citation.md`).
+        ` (G. Gréco, dir.; nouv. éd. rev. et corr., dite Bailly 2020 – Hugo Chávez, version du ${date}). Association pour la défense des humanités. ${CITATION_ORIGIN} (Ouvrage original publié en 1894)`,
       ]);
     case "mla":
       return render([
         "Bailly, Anatole. ",
         { italic: "Dictionnaire grec-français" },
-        `. 1894. Sous la direction de Gérard Gréco, avec le concours d'André Charbonnet et al., ${edition}. `,
+        `. 1894. Sous la direction de Gérard Gréco, avec le concours d'André Charbonnet et al., ${editionName}. `,
         { italic: "Bailly.app" },
-        // The site as a second container: its title and address, its publisher
-        // (the association, not the persons: as in the other styles).
-        `, Association pour la défense des humanités, bailly.app. Consulté le ${accessDate(accessed)}.`,
+        // The site as a second container: its title, its publisher (the
+        // association, not the persons: as in the other styles), its date
+        // (the version's), its address.
+        `, Association pour la défense des humanités, ${date}, bailly.app. Consulté le ${accessDate(accessed)}.`,
       ]);
     case "iso":
       return render([

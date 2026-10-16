@@ -61,17 +61,17 @@ describe("workCitation", () => {
       const { text, html } = workCitation(style, { accessed });
       expect(text).toContain("Dictionnaire grec-français");
       expect(html).toContain("<i>Dictionnaire grec-français</i>");
-      expect(plain(text)).toContain("version du 28 février 2023");
+      expect(plain(text)).toContain("28 février 2023");
     }
   });
 
   it("APA", () => {
-    expect(plain(workCitation("apa", { accessed }).text)).toBe("Bailly, A. (2023). Dictionnaire grec-français (G. Gréco, Dir.; nouv. éd. rev. et corr., dite Bailly 2020 – Hugo Chávez, version du 28 février 2023). https://bailly.app (Ouvrage original publié en 1894)");
+    expect(plain(workCitation("apa", { accessed }).text)).toBe("Bailly, A. (2023). Dictionnaire grec-français (G. Gréco, dir.; nouv. éd. rev. et corr., dite Bailly 2020 – Hugo Chávez, version du 28 février 2023). Association pour la défense des humanités. https://bailly.app (Ouvrage original publié en 1894)");
   });
 
   it("MLA and ISO 690 with the date of consultation; MLA's container in italics", () => {
     expect(plain(workCitation("mla", { accessed }).text)).toContain("Consulté le 5 octobre 2026.");
-    expect(workCitation("mla", { accessed }).html).toContain("<i>Bailly.app</i>, Association pour la défense des humanités, bailly.app.");
+    expect(plain(workCitation("mla", { accessed }).html)).toContain("<i>Bailly.app</i>, Association pour la défense des humanités, 28 février 2023, bailly.app.");
     expect(plain(workCitation("iso", { accessed }).text)).toContain("Disponible à l'adresse : https://bailly.app [consulté le 5 octobre 2026].");
   });
 });
