@@ -21,6 +21,17 @@ const outdatedBrowserScript = readFileSync(new URL("./app/assets/outdated-browse
   .trim();
 
 /**
+ * The build's own folder for its files (`/_nuxt/<build>/`): each build names
+ * all of them anew, even those whose content didn't change. Served with a
+ * year's cache, a file kept its name from one version to the next, and a
+ * copy Safari could no longer run (in October 2026, under Safari 27, the
+ * application didn't start any more until the cache was emptied, the file
+ * itself intact) stayed in use indefinitely; now, until the next version
+ * at most. The readers download the scripts again at each version.
+ */
+const buildFolder = Date.now().toString(36);
+
+/**
  * The database of the bookmarks synchronization (encrypted lockers, cf.
  * `server/lib/lockers.ts`): D1 on Cloudflare (binding `SYNC_DB`), SQLite
  * elsewhere (`.data/sync.sqlite`, with `node:sqlite`).
@@ -46,6 +57,11 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@nuxt/test-utils/module",
   ],
+
+  $production: {
+    app: { buildAssetsDir: `/_nuxt/${buildFolder}/` },
+  },
+
   devtools: { enabled: true },
   app: {
     head: {
