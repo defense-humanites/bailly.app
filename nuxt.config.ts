@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { FEATURES } from "./shared/utils/features";
 
 /**
@@ -9,6 +10,15 @@ import { FEATURES } from "./shared/utils/features";
 const cloudflare = Boolean(
   process.env.NITRO_PRESET?.startsWith("cloudflare") || process.env.WORKERS_CI || process.env.CF_PAGES,
 );
+
+/**
+ * The notice of an outdated browser (cf. `app/assets/outdated-browser.js`),
+ * inlined without its comments.
+ */
+const outdatedBrowserScript = readFileSync(new URL("./app/assets/outdated-browser.js", import.meta.url), "utf8")
+  .replace(/^\s*\/\*[\s\S]*?\*\/\s*$/gm, "")
+  .replace(/\n\s*/g, "\n")
+  .trim();
 
 /**
  * The database of the bookmarks synchronization (encrypted lockers, cf.
@@ -46,6 +56,11 @@ export default defineNuxtConfig({
        * otherwise.
        */
       viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
+      /**
+       * At the end of the body: a notice before the application if the
+       * browser is too old for it (nothing otherwise).
+       */
+      script: [{ innerHTML: outdatedBrowserScript, tagPosition: "bodyClose" }],
     },
   },
   css: ["~/assets/css/main.css"],
