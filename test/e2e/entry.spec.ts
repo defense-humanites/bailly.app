@@ -259,6 +259,8 @@ test("the entry's toolbar, the same before the page is interactive", async ({ pa
   }));
   const before = await boxes();
   release();
-  await expect(page.locator("main article section button[aria-haspopup=dialog]")).toBeVisible();
+  // Hydrated: the tags' own popover button (not the citation's, rendered
+  // with its popup on the server too).
+  await expect(toolbar.locator("button[aria-haspopup=dialog]")).toBeVisible();
   expect(await boxes()).toEqual(before);
 });
