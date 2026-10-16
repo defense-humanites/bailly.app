@@ -11,24 +11,25 @@ const simulateOldBrowser = (page: Page) => page.addInitScript(() => {
   };
 });
 
-const notice = (page: Page) => page.getByRole("region", { name: "Navigateur trop ancien" });
+const notice = (page: Page) => page.locator("[data-outdated-browser]");
 
 test.describe("an outdated browser", () => {
   test("none in an up-to-date browser", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
-    await expect(page.locator("[data-outdated-browser]")).toHaveCount(0);
+    await expect(notice(page)).toHaveCount(0);
   });
 
   test("a notice before the application, closed for the session", async ({ page, goto }) => {
     await simulateOldBrowser(page);
     await goto("/logos", { waitUntil: "hydration" });
-    await expect(notice(page)).toContainText("Votre navigateur est trop ancien pour Bailly.app");
+    // Named by its title.
+    await expect(page.getByRole("region", { name: "Navigateur trop ancien" })).toContainText("certaines fonctions, comme la recherche, ne fonctionnent pas");
     // Out of the application: Nuxt's error screen wouldn't replace it.
     expect(await page.evaluate(() => document.body.firstElementChild?.hasAttribute("data-outdated-browser"))).toBe(true);
     await notice(page).getByRole("button", { name: "Fermer" }).click();
     await expect(notice(page)).toHaveCount(0);
     await goto("/logades", { waitUntil: "hydration" });
-    await expect(page.locator("[data-outdated-browser]")).toHaveCount(0);
+    await expect(notice(page)).toHaveCount(0);
   });
 });
 
@@ -38,7 +39,7 @@ test.describe("an iPhone under iOS 15", () => {
   test("told frankly that changing browsers won't help", async ({ page, goto }) => {
     await simulateOldBrowser(page);
     await goto("/logos", { waitUntil: "hydration" });
-    await expect(notice(page)).toContainText("iOS 15");
+    await expect(page.getByRole("region", { name: "Version d’iOS trop ancienne" })).toContainText("iOS 15");
     await expect(notice(page)).toContainText("changer de navigateur n’y fera rien");
   });
 });
