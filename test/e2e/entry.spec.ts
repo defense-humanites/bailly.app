@@ -33,6 +33,9 @@ test.describe("entry page", () => {
       const word = (await next(page).getAttribute("aria-label"))!.replace("Entrée suivante : ", "");
       await next(page).hover();
       await expect(page.getByRole("tooltip")).toHaveText(`Entrée suivante : ${word}`);
+      const shown = page.locator("[data-slot=content] > span:not([role=tooltip])");
+      await expect(shown).toHaveText(["Entrée suivante", word]);
+      expect(await shown.last().evaluate(element => getComputedStyle(element, "::before").content)).toBe("\"·\"");
       // The truncated word lets the pointer through: no tooltip of Safari's.
       const label = next(page).locator("[data-slot=linkLabel]");
       expect(await label.evaluate(element => getComputedStyle(element).pointerEvents)).toBe("none");

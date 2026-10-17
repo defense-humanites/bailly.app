@@ -62,6 +62,9 @@
   const LIST = "isolate flex min-w-0 items-center";
   const ITEM = "min-w-0 flex-1 pb-2";
 
+  /** In a tooltip, text set apart as Nuxt UI's keys are (a middle dot). */
+  const SEPARATED = "before:me-0.5 before:content-['·']";
+
   /** The neighbours' links, by direction (absent: none). */
   const neighbours = (["previous", "next"] as const).map(direction => ({
     direction,
@@ -317,10 +320,15 @@
               </li>
               <li :class="ITEM">
                 <ClientOnly v-if="neighbour.sibling">
-                  <UTooltip>
-                    <template #content>
-                      {{ neighbour.label }} : <span
-                        class="font-serif font-bold"
+                  <!--
+                    The word after the direction, set apart as a key would be
+                    (`SEPARATED`); named in full for screen readers.
+                  -->
+                  <UTooltip :content="{ ariaLabel: `${neighbour.label} : ${greek.text(neighbour.sibling.word)}` }">
+                    <template #content="{ ui }">
+                      <span class="shrink-0">{{ neighbour.label }}</span>
+                      <span
+                        :class="ui.text({ class: SEPARATED })"
                         :lang="greek.lang.value"
                       >{{ greek.text(neighbour.sibling.word) }}</span>
                     </template>
