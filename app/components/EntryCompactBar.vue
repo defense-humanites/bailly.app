@@ -61,8 +61,10 @@
   menu's (`bg-elevated`, Nuxt UI's, is the bar's own color in the light
   theme), with the moderately rounded corners of the line's (and of the
   outline's items), not round, and of the line's height (28 px, as the
-  path opening the outline and the placeholders of a missing neighbour). The outline's popover has the cards'
-  background: its items take the cards' hover and active colors.
+  path opening the outline and the placeholders of a missing neighbour). The outline's popover has the bar's
+  background, set apart from the card it opens over (its items take the
+  page's hover and active colors), and clears the bar's rule by 6 px (the
+  path is 6 px above it).
 -->
 <template>
   <div class="pointer-events-none sticky top-(--header-bottom) z-20 h-0 transition-[top] duration-300 ease-out motion-reduce:transition-none">
@@ -94,8 +96,8 @@
       <UPopover
         v-if="outline?.length && !wide"
         v-model:open="outlineOpen"
-        :content="{ side: 'bottom', align: 'center', sideOffset: 6, onCloseAutoFocus: restoreFocus }"
-        :ui="{ content: '[--app-page-hover:var(--app-card-hover)] [--app-page-active:var(--app-card-active)] w-[min(24rem,calc(100vw-4rem))] max-h-[min(32rem,var(--reka-popover-content-available-height))] overflow-y-auto p-1.5' }"
+        :content="{ side: 'bottom', align: 'center', sideOffset: 12, onCloseAutoFocus: restoreFocus }"
+        :ui="{ content: 'bg-bar w-[min(24rem,calc(100vw-4rem))] max-h-[min(32rem,var(--reka-popover-content-available-height))] overflow-y-auto p-1.5' }"
       >
         <button
           ref="outlineTrigger"
