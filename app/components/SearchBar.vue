@@ -6,7 +6,7 @@
   import type { SearchField } from "~/composables/useEntrySearch";
   import { entryRoute, homonymAnchor } from "~/utils/entryUri";
   import { takeSearchHandoff } from "~/utils/searchHandoff";
-  import { convertSearchInput, hasWildcards, toLookupQuery, toSearchGreek, toSearchQuery } from "~/utils/searchInput";
+  import { convertSearchInput, hasWildcards, toLookupQuery, toSearchGreek, toSearchQuery, toTransliteratedInput } from "~/utils/searchInput";
 
   // (The input text is 16px on every screen (`text-base/6`, and `fixed`: no
   // `md:text-sm`): large enough to check the Greek diacritics as they are
@@ -122,27 +122,30 @@
 
   /**
    * Converts the input (Beta Code, or Greek) into Greek, keeping the caret
-   * where it was.
+   * where it was; transliterated, only the circumflex of eta and omega into
+   * a macron (cf. `toTransliteratedInput`), the rest converted when looked
+   * up (cf. `toLookupQuery`), at once even while composing (an Android
+   * keyboard's word; a dead key's lone mark has nothing to convert).
    * @remarks In `autocomplete` mode, the model is the input text (selecting a
    * result navigates by itself, cf. `onSelect`).
    */
   const onInput = (value: unknown): void => {
     if (typeof value !== "string") return;
 
-    // Transliterated input is converted when looked up (cf. `toLookupQuery`).
-    if ((composing && !convertibleWhileComposing(value)) || transliterating.value) {
+    if (composing && !transliterating.value && !convertibleWhileComposing(value)) {
       query.value = value;
       return;
     }
 
+    const convert = transliterating.value ? toTransliteratedInput : toSearchGreek;
     const input = menu.value?.inputRef as HTMLInputElement | undefined;
     const caret = input?.selectionStart ?? value.length;
-    const converted = toSearchGreek(value);
+    const converted = convert(value);
 
     query.value = converted;
 
     if (converted !== value) {
-      syncInputText(converted, toSearchGreek(value.slice(0, caret)).length);
+      syncInputText(converted, convert(value.slice(0, caret)).length);
     }
   };
 
@@ -218,7 +221,7 @@
     handoff.keeper?.remove();
 
     if (handoff.text) {
-      const convert = (text: string): string => transliterating.value ? text : toSearchGreek(text);
+      const convert = (text: string): string => transliterating.value ? toTransliteratedInput(text) : toSearchGreek(text);
       query.value = convert(handoff.text);
       syncInputText(query.value, convert(handoff.text.slice(0, handoff.caret)).length);
     }

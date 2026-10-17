@@ -6,8 +6,8 @@
    * `utils/searchInput.ts`), computed by the library the search uses, so
    * that it can't drift from it: Beta Code (its capitals marked by an
    * asterisk, their diacritics before the letter), and the transliteration,
-   * the circumflex of the long vowels first (as typed, and as the search bar
-   * converts them, cf. `convertSearchInput`), then the macron, and y as a
+   * the circumflex of the long vowels first (as typed), then the macron (as
+   * the search bar shows them, cf. `toTransliteratedInput`), and y as a
    * variant of upsilon. The lowercase letters only (and the final sigma):
    * the capitals add nothing to the correspondence.
    */

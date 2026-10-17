@@ -280,6 +280,20 @@ export function toLookupQuery(input: string, inputMode: InputMode): string {
 }
 
 /**
+ * The transliterated input as typed, eta and omega written with a macron
+ * (`psuchê` → `psuchē`), as the displayed transliteration (ALA-LC, cf.
+ * `utils/greek.ts`): typed with a circumflex, far easier to reach on a
+ * keyboard (as the placeholder and the conversion table suggest). The
+ * circumflex only marks the length there (the circumflex accent is a
+ * tilde): `ê` and `ô` can only be eta and omega; `â`, `î`, `û` are left as
+ * they are. The same length, the caret stays in place.
+ * @example toTransliteratedInput("rhếtôr") // "rhḗtōr"
+ */
+export function toTransliteratedInput(input: string): string {
+  return input.normalize("NFD").replace(/([eo])\u0302/giu, "$1\u0304").normalize("NFC");
+}
+
+/**
  * Converts the search bar input when the input mode changes.
  * @example convertSearchInput("λόγος", InputMode.Transliteration) // "lógos"
  */

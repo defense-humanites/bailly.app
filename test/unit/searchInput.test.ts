@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { InputMode } from "../../app/enums";
 import { normalizeSearchGreek } from "../../shared/utils/searchGreek";
-import { convertSearchInput, hasWildcards, isLemmatizable, toLookupQuery, toPositionedQuery, toSearchGreek, toSearchQuery } from "../../app/utils/searchInput";
+import { convertSearchInput, hasWildcards, isLemmatizable, toLookupQuery, toPositionedQuery, toSearchGreek, toSearchQuery, toTransliteratedInput } from "../../app/utils/searchInput";
 
 /**
  * Types the input one character at a time, as in the search bar.
@@ -143,5 +143,11 @@ test("converts transliterated input when looked up", () => {
 test("converts the input when the input mode changes", () => {
   expect(convertSearchInput("λόγος", InputMode.Transliteration)).toBe("lógos");
   expect(convertSearchInput("ἡμέρα", InputMode.Transliteration)).toBe("hēméra");
+  // Typed with a circumflex, eta and omega take a macron (both looked up alike).
+  expect(toTransliteratedInput("psuchê")).toBe("psuchē");
+  expect(toTransliteratedInput("Hêra anthrôpos")).toBe("Hēra anthrōpos");
+  expect(toTransliteratedInput("rhếtôr")).toBe("rhḗtōr");
+  expect(toTransliteratedInput("pâs, phûsis")).toBe("pâs, phûsis");
+  expect(toLookupQuery("hêméra", InputMode.Transliteration)).toBe(toLookupQuery("hēméra", InputMode.Transliteration));
   expect(convertSearchInput("lógos", InputMode.BetaCode)).toBe("λόγος");
 });
