@@ -194,12 +194,13 @@ export default defineAppConfig({
     },
     /*
      * The tooltips in the bar's color (`bg-bar`, as the outline's popover of
-     * the compact bar), set apart from the cards they open over; a muted
-     * border with a shadow, and a slightly toned text (not the content's).
+     * the compact bar), set apart from the cards they open over; a faint
+     * border (half the muted one) with a shadow, and a slightly toned text
+     * (not the content's).
      */
     tooltip: {
       slots: {
-        content: "bg-bar ring-muted shadow-md text-toned",
+        content: "bg-bar ring-muted/50 shadow-md text-toned",
       },
     },
     toaster: {
