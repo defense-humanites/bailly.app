@@ -249,7 +249,7 @@
           >
             <!-- The correspondence of the letters, in a window (as the published version's). -->
             <template #description>
-              Le grec est toujours accepté.
+              Par défaut, elle suit l'affichage du grec. Le grec est toujours accepté.
               <UModal
                 title="Table de correspondance"
                 description="Les lettres grecques en beta code et en translittération."

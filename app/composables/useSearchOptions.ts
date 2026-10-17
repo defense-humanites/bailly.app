@@ -1,3 +1,4 @@
+import { InputMode } from "~/enums";
 import type { SearchPosition } from "~/utils/searchInput";
 
 /**
@@ -19,10 +20,23 @@ export function useSearchOptions() {
 
   /**
    * Preference: how Greek is typed in the search bar (Greek itself is always
-   * accepted).
+   * accepted). Until the user chooses, it follows the display of Greek: a
+   * reader who doesn't read Greek, who has it transliterated, types it in
+   * Latin characters (`psyche` in beta code would give ψσυξηε); a choice of
+   * the user prevails (e.g. a Hellenist's beta code, Greek transliterated).
    */
-  const { preference } = usePreferences();
-  const inputMode = preference("inputMode");
+  const { preference, isSet } = usePreferences();
+  const storedInputMode = preference("inputMode");
+  const transliterateGreek = preference("transliterateGreek");
+  const inputMode = computed<InputMode>({
+    get: () => {
+      if (isSet("inputMode")) return storedInputMode.value;
+      return transliterateGreek.value ? InputMode.Transliteration : InputMode.BetaCode;
+    },
+    set: (mode) => {
+      storedInputMode.value = mode;
+    },
+  });
 
   /**
    * Preference: whether inflected forms are looked up too, when possible (cf.

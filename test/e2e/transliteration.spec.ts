@@ -24,11 +24,26 @@ test.describe("transliterated Greek", () => {
 
   test("the results and the reader", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
+    // Typed in Latin characters too (the input mode following the display,
+    // as long as the user hasn't chosen one).
+    await expect(searchInput(page)).toHaveAttribute("placeholder", "anazētéō…");
     await searchInput(page).fill("logos");
     await expect(searchResults(page).getByRole("option", { name: /^logos, ou/ })).toBeVisible();
+    await expect(searchInput(page)).toHaveValue("logos");
 
     await goto(`/forme/${encodeURIComponent("αἱ")}?q=hai_(1),ho_(1)`, { waitUntil: "hydration" });
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("hai");
     await expect(page.getByRole("heading", { level: 2 })).toHaveText(["hai", "ho"]);
+  });
+
+  test("the input mode chosen prevails over the display", async ({ page, goto }) => {
+    // Following the display until then.
+    await expect(page.getByRole("radio", { name: "Translittération" })).toBeChecked();
+    await page.getByRole("radio", { name: "Beta code" }).click({ force: true });
+    await expect(page.getByRole("radio", { name: "Beta code" })).toBeChecked();
+    await goto("/", { waitUntil: "hydration" });
+    await expect(searchInput(page)).toHaveAttribute("placeholder", "ἀναζητέω…");
+    await searchInput(page).pressSequentially("logos");
+    await expect(searchInput(page)).toHaveValue("λογος");
   });
 });
