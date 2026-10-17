@@ -53,7 +53,7 @@
         spellcheck="false"
         enterkeyhint="search"
         :lang="transliterating ? 'grc-Latn' : 'grc'"
-        :placeholder="transliterating ? 'anazētéō…' : 'ἀναζητέω…'"
+        :placeholder="transliterating ? 'anazêtéô…' : 'ἀναζητέω…'"
       >
       <span
         data-slot="leading"

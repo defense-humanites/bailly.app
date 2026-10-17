@@ -202,9 +202,9 @@ test.describe("search options", () => {
     await options(page).click();
     await page.getByText("Translittération", { exact: true }).click();
     await page.keyboard.press("Escape");
-    await expect(searchInput(page)).toHaveAttribute("placeholder", "anazētéō…");
+    await expect(searchInput(page)).toHaveAttribute("placeholder", "anazêtéô…");
     await goto("/", { waitUntil: "hydration" });
-    await expect(searchInput(page)).toHaveAttribute("placeholder", "anazētéō…");
+    await expect(searchInput(page)).toHaveAttribute("placeholder", "anazêtéô…");
   });
 });
 

@@ -277,7 +277,7 @@ test.describe("settings", () => {
   test("search: shared with the search options", async ({ page, goto }) => {
     await goto("/préférences", { waitUntil: "hydration" });
     await page.getByText("Translittération", { exact: true }).click();
-    await expect(page.locator("header input[role=combobox]")).toHaveAttribute("placeholder", "anazētéō…");
+    await expect(page.locator("header input[role=combobox]")).toHaveAttribute("placeholder", "anazêtéô…");
     await page.getByRole("switch", { name: "Formes fléchies" }).click();
     await page.getByRole("button", { name: "Options de recherche" }).click();
     await expect(page.getByRole("dialog").getByRole("switch", { name: /Formes fléchies/ })).not.toBeChecked();

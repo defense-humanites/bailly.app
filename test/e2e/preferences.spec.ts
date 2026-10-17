@@ -32,7 +32,7 @@ test.describe("preferences", () => {
     // The server's HTML already has the transliteration placeholder.
     // (Fetched by the browser: the cookie is secure outside development.)
     const html = await page.evaluate(async () => (await fetch("/")).text());
-    expect(html).toContain("placeholder=\"anazētéō…\"");
+    expect(html).toContain("placeholder=\"anazêtéô…\"");
   });
 
   test("the previous application's storage is migrated once", async ({ page, goto, context }) => {
@@ -48,7 +48,7 @@ test.describe("preferences", () => {
     });
     await goto("/", { waitUntil: "hydration" });
 
-    await expect(searchInput(page)).toHaveAttribute("placeholder", "anazētéō…");
+    await expect(searchInput(page)).toHaveAttribute("placeholder", "anazêtéô…");
     const cookie = await preferencesCookie(context);
     // (The theme too, a preference now, cf. `useThemePreference`.)
     expect(JSON.parse(decodeURIComponent(cookie!.value))).toEqual({ inputMode: "transliteration", inflectedForms: false, theme: "dark" });

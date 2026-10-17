@@ -442,7 +442,7 @@
       :items="items"
       ignore-filter
       icon="i-lucide-search"
-      :placeholder="transliterating ? 'anazētéō…' : 'ἀναζητέω…'"
+      :placeholder="transliterating ? 'anazêtéô…' : 'ἀναζητέω…'"
       :aria-label="`Rechercher une entrée (${transliterating ? 'translittération' : 'beta code'} ou grec)`"
       size="lg"
       fixed

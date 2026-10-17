@@ -26,7 +26,7 @@ test.describe("transliterated Greek", () => {
     await goto("/", { waitUntil: "hydration" });
     // Typed in Latin characters too (the input mode following the display,
     // as long as the user hasn't chosen one).
-    await expect(searchInput(page)).toHaveAttribute("placeholder", "anazētéō…");
+    await expect(searchInput(page)).toHaveAttribute("placeholder", "anazêtéô…");
     await searchInput(page).fill("logos");
     await expect(searchResults(page).getByRole("option", { name: /^logos, ou/ })).toBeVisible();
     await expect(searchInput(page)).toHaveValue("logos");
