@@ -28,7 +28,7 @@
     "@vueuse/nuxt": "^15.0.0",
     "h3": "^1.15.11",
     "idb": "^8.0.4",
-    "nuxt": "^4.6.1",
+    "nuxt": "^4.6.2",
     "pinia": "^4.1.0",
     "tailwind-safe-insets": "^0.1.0",
     "tailwindcss": "^4.3.3",
@@ -37,20 +37,20 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
-    "@iconify-json/lucide": "^1.2.144",
+    "@iconify-json/lucide": "^1.2.145",
     "@nuxt/eslint": "^1.17.0",
-    "@nuxt/test-utils": "^4.3.3",
+    "@nuxt/test-utils": "^4.3.4",
     "@playwright/test": "^1.64.1",
     "@types/node": "^24.19.2",
     "@vue/test-utils": "^2.5.1",
-    "eslint": "^10.12.0",
-    "fake-indexeddb": "^6.2.5",
+    "eslint": "^10.13.0",
+    "fake-indexeddb": "^6.2.6",
     "fast-check": "^4.10.2",
     "happy-dom": "^20.14.6",
     "typescript": "~6.0.3",
     "vitest": "^5.0.5",
     "vue-tsc": "^3.3.13",
-    "wrangler": "^4.151.0"
+    "wrangler": "^4.151.1"
   },
   "allowScripts": {
     "vue-demi@0.14.10": true,
