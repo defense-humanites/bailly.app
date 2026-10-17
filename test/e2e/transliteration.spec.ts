@@ -40,6 +40,17 @@ test.describe("transliterated Greek", () => {
     await expect(page.getByRole("heading", { level: 2 })).toHaveText(["hai", "ho"]);
   });
 
+  test("the input mode back to Beta Code with the Greek display", async ({ page, context, goto }) => {
+    await page.getByRole("switch", { name: "Grec translittéré" }).click();
+    await goto("/", { waitUntil: "hydration" });
+    await expect(searchInput(page)).toHaveAttribute("placeholder", "ἀναζητέω…");
+    await searchInput(page).pressSequentially("logos");
+    await expect(searchInput(page)).toHaveValue("λογος");
+    // Still following the display: no input mode stored.
+    const stored = (await context.cookies()).find(cookie => cookie.name === "bailly-preferences");
+    expect(JSON.parse(decodeURIComponent(stored?.value ?? "{}"))).not.toHaveProperty("inputMode");
+  });
+
   test("the input mode chosen prevails over the display", async ({ page, goto }) => {
     // Following the display until then.
     await expect(page.getByRole("radio", { name: "Translittération" })).toBeChecked();
