@@ -893,9 +893,11 @@
             <NuxtLink
               :to="entryRoute(entry.uri)"
               :lang="greek.lang.value"
-              class="block min-w-0 grow truncate rounded-lg bg-default/75 px-3 py-1 font-serif text-[0.96875rem]/6 font-bold text-tag-text ring ring-tag-300/50 ring-inset transition-colors group-hover/item:ring-tag-400 focus-visible:outline-2 focus-visible:outline-tag-400"
+              class="block min-w-0 grow rounded-lg bg-default/75 px-3 py-1 font-serif text-[0.96875rem]/6 font-bold text-tag-text ring ring-tag-300/50 ring-inset transition-colors group-hover/item:ring-tag-400 focus-visible:outline-2 focus-visible:outline-tag-400"
               :class="{ 'pe-9': editMode }"
-            >{{ greek.text(entry.word) }}</NuxtLink>
+            ><!-- Letting the pointer through: no tooltip of Safari's for the
+              truncated word over the excerpt's (cf. `v-truncated-title`).
+            --><span class="pointer-events-none block truncate">{{ greek.text(entry.word) }}</span></NuxtLink>
           </UTooltip>
           <UTooltip
             v-if="editMode"

@@ -59,6 +59,7 @@
           :class="link.direction === 'next' ? 'group-active:translate-x-0.5' : 'group-active:-translate-x-0.5'"
         />
         <span
+          v-truncated-title
           class="block truncate font-serif text-sm/7 font-bold text-highlighted"
           :lang="greek.lang.value"
         >{{ greek.text(link.word) }}</span>

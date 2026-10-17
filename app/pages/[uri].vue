@@ -66,9 +66,7 @@
   const neighbours = (["previous", "next"] as const).map(direction => ({
     direction,
     sibling: siblings[direction],
-    tooltip: {
-      text: direction === "previous" ? "Entrée précédente" : "Entrée suivante",
-    },
+    label: direction === "previous" ? "Entrée précédente" : "Entrée suivante",
   }));
 
   /**
@@ -264,7 +262,7 @@
   usePreloadBoldFace();
 
   useSeoMeta({
-    title: `${entry.word.replace(/\u03D0/g, "β")} (${convert(entry.word, "greek", "transliteration", { preset: "ala-lc-ancient" })})`,
+    title: `${plainGreek(entry.word)} (${convert(entry.word, "greek", "transliteration", { preset: "ala-lc-ancient" })})`,
     description: entry.excerpt,
   });
 </script>
@@ -311,6 +309,7 @@
                     class="size-6 shrink-0"
                   />
                   <span
+                    v-truncated-title
                     data-slot="linkLabel"
                     class="truncate"
                   >{{ greek.text(entry.word) }}</span>
@@ -318,7 +317,13 @@
               </li>
               <li :class="ITEM">
                 <ClientOnly v-if="neighbour.sibling">
-                  <UTooltip v-bind="neighbour.tooltip">
+                  <UTooltip>
+                    <template #content>
+                      {{ neighbour.label }} : <span
+                        class="font-serif font-bold"
+                        :lang="greek.lang.value"
+                      >{{ greek.text(neighbour.sibling.word) }}</span>
+                    </template>
                     <EntryHeaderLink
                       :to="`/${neighbour.sibling.uri}`"
                       :word="greek.text(neighbour.sibling.word)"

@@ -13,7 +13,9 @@
   markup and classes of a Nuxt UI navigation menu's link (cf. `[uri].vue`),
   without its component (a plain link costs far less to render on the
   server). Its word is hidden below `sm` (the link's accessible name keeps
-  it); its tooltip is set by the page once hydrated.
+  it); its tooltip, with the whole word, is set by the page once hydrated.
+  The word lets the pointer through: Safari would show its own tooltip of
+  the truncated word too (cf. `v-truncated-title`).
 -->
 <template>
   <NuxtLink
@@ -31,7 +33,7 @@
     />
     <span
       data-slot="linkLabel"
-      class="truncate grow max-sm:sr-only"
+      class="pointer-events-none truncate grow max-sm:sr-only"
     >{{ word }}</span>
     <span
       v-if="direction === 'next'"

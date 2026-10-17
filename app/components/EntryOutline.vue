@@ -190,6 +190,7 @@
             class="shrink-0 font-bold"
           >{{ item.number }}</span>
           <span
+            v-truncated-title
             class="truncate"
             :class="{ 'font-bold': !item.sense }"
             :lang="item.sense ? undefined : greek.lang.value"

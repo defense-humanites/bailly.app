@@ -21,6 +21,16 @@ export function transliterateGreek(greek: string): string {
 }
 
 /**
+ * Greek for the browser's own text (the window's title, its native
+ * tooltips), in the system's font: the dictionary's medial beta (ϐ), odd
+ * there, as the usual β.
+ * @example plainGreek("καταϐορϐορόω") // "καταβορβορόω"
+ */
+export function plainGreek(text: string): string {
+  return text.replace(/ϐ/g, "β");
+}
+
+/**
  * Transliterates the Greek of a text, e.g. an excerpt, leaving the rest.
  * @example transliterateText("λόγος, ου (ὁ) parole") // "logos, ou (ho) parole"
  */

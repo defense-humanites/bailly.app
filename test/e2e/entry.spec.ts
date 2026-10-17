@@ -27,6 +27,17 @@ test.describe("entry page", () => {
       await expect(next(page).locator("[data-slot=linkLabel]")).toBeVisible();
     });
 
+    test("one tooltip, ours, with the whole word", async ({ page, goto }) => {
+      await page.setViewportSize({ width: 1024, height: 800 });
+      await goto("/logos", { waitUntil: "hydration" });
+      const word = (await next(page).getAttribute("aria-label"))!.replace("Entrée suivante : ", "");
+      await next(page).hover();
+      await expect(page.getByRole("tooltip")).toHaveText(`Entrée suivante : ${word}`);
+      // The truncated word lets the pointer through: no tooltip of Safari's.
+      const label = next(page).locator("[data-slot=linkLabel]");
+      expect(await label.evaluate(element => getComputedStyle(element).pointerEvents)).toBe("none");
+    });
+
     test("after the entry, with the whole words, leading to them", async ({ page, goto }) => {
       await goto("/logos", { waitUntil: "hydration" });
       const surround = page.getByRole("navigation", { name: "Entrées voisines" });
@@ -35,6 +46,19 @@ test.describe("entry page", () => {
       await surround.getByRole("link").last().click();
       await expect(page.locator("main h1")).toHaveText(nextWord);
     });
+  });
+
+  test("a truncated headword: its whole text as the native tooltip", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    const word = page.locator("main h1 [data-slot=linkLabel]");
+    await word.hover();
+    await expect(word).not.toHaveAttribute("title");
+    await page.mouse.move(0, 0);
+    await word.evaluate((element) => {
+      element.style.maxWidth = "1.5em";
+    });
+    await word.hover();
+    await expect(word).toHaveAttribute("title", "λόγος");
   });
 
   test("links after the entry, on every screen", async ({ page, goto }) => {

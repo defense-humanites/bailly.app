@@ -30,6 +30,7 @@
 -->
 <template>
   <span class="flex min-w-0 items-baseline justify-center font-serif text-xs/6 font-bold"><span
+    v-truncated-title
     class="max-w-full shrink-0 truncate"
     :lang="greek.lang.value"
   ><!-- Homonyms: a fan of cards, as in the page's title. --><UIcon

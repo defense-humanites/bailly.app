@@ -187,6 +187,7 @@
               :key="id"
             >
               <NuxtLink
+                v-truncated-title
                 :to="{ query: route.query, hash: `#${id}` }"
                 :aria-current="currentId === id ? 'location' : undefined"
                 class="block truncate rounded-md px-2.5 py-1.5 font-serif text-sm transition-colors focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)"
