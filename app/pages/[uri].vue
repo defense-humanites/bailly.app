@@ -68,7 +68,6 @@
     sibling: siblings[direction],
     tooltip: {
       text: direction === "previous" ? "Entrée précédente" : "Entrée suivante",
-      kbds: [direction === "previous" ? "arrowleft" : "arrowright"],
     },
   }));
 
