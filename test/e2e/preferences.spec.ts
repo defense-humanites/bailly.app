@@ -67,7 +67,9 @@ test.describe("preferences", () => {
     await goto(encodeURI("/préférences"), { waitUntil: "hydration" });
     await page.getByRole("button", { name: "Table de correspondance" }).click();
     const dialog = page.getByRole("dialog", { name: "Table de correspondance" });
-    await expect(dialog.getByRole("row", { name: /^êta/ })).toContainText("ē, ê");
+    // The circumflex first (as typed), the lowercase letters only.
+    await expect(dialog.getByRole("row", { name: /^êta/ })).toContainText("ê, ē");
+    await expect(dialog.getByRole("row", { name: /^êta/ }).getByRole("cell").first()).toHaveText("η");
     await expect(dialog.getByRole("row", { name: /^xi/ })).toContainText("c");
     await expect(dialog.getByRole("row", { name: /^Esprit rude/ })).toContainText("(");
     // A capital: the asterisk, then the diacritics, then the letter.

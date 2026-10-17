@@ -5,20 +5,24 @@
    * The correspondence of the Greek letters with the two input modes (cf.
    * `utils/searchInput.ts`), computed by the library the search uses, so
    * that it can't drift from it: Beta Code (its capitals marked by an
-   * asterisk, their diacritics before the letter), and the transliteration, with its usual variants
-   * (the circumflex for the long vowels, y for upsilon).
+   * asterisk, their diacritics before the letter), and the transliteration,
+   * the circumflex of the long vowels first (as typed, and as the search bar
+   * converts them, cf. `convertSearchInput`), then the macron, and y as a
+   * variant of upsilon. The lowercase letters only (and the final sigma):
+   * the capitals add nothing to the correspondence.
    */
   const NAMES = [
     "alpha", "bêta", "gamma", "delta", "epsilon", "zêta", "êta", "thêta", "iota", "kappa", "lambda", "mu",
     "nu", "xi", "omicron", "pi", "rhô", "sigma", "tau", "upsilon", "phi", "khi", "psi", "ôméga",
   ];
-  const VARIANTS: Record<string, string> = { η: "ê", ω: "ô", υ: "y" };
+  const CIRCUMFLEXED: Record<string, string> = { η: "ê", ω: "ô" };
+  const VARIANTS: Record<string, string> = { υ: "y" };
 
   const letters = Array.from("αβγδεζηθικλμνξοπρστυφχψω", greek => greek).map((greek, index) => ({
     name: NAMES[index]!,
-    greek: `${greek.toUpperCase()} ${greek}${greek === "σ" ? " ς" : ""}`,
+    greek: `${greek}${greek === "σ" ? " ς" : ""}`,
     betaCode: convert(greek, "greek", "beta-code"),
-    transliteration: [convert(greek, "greek", "transliteration"), VARIANTS[greek]].filter(Boolean).join(", "),
+    transliteration: [CIRCUMFLEXED[greek], convert(greek, "greek", "transliteration"), VARIANTS[greek]].filter(Boolean).join(", "),
   }));
 
   /**
