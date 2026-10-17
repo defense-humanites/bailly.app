@@ -115,15 +115,16 @@ test.describe("settings", () => {
 
   test("reading: the font, preloaded, and only its faces downloaded", async ({ page, goto }) => {
     // Bailly Book by default: the text's face, and on an entry's page, the
-    // headwords' (bold).
+    // headwords' (bold). (The build's files in a folder of their own, cf.
+    // `buildFolder` in `nuxt.config.ts`.)
     await goto("/logos", { waitUntil: "hydration" });
     const preloaded = () => page.locator("link[rel=preload][as=font]").evaluateAll(links => links.map(link => link.getAttribute("href")).sort());
     expect(await preloaded()).toEqual([
-      expect.stringMatching(/^\/_nuxt\/BaillyBook-Bold\.subset\.[\w-]+\.woff2$/),
-      expect.stringMatching(/^\/_nuxt\/BaillyBook-Roman\.subset\.[\w-]+\.woff2$/),
+      expect.stringMatching(/^\/_nuxt\/(?:\w+\/)?BaillyBook-Bold\.subset\.[\w-]+\.woff2$/),
+      expect.stringMatching(/^\/_nuxt\/(?:\w+\/)?BaillyBook-Roman\.subset\.[\w-]+\.woff2$/),
     ]);
     await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
-    expect(await preloaded()).toEqual([expect.stringMatching(/^\/_nuxt\/BaillyBook-Roman\.subset\.[\w-]+\.woff2$/)]);
+    expect(await preloaded()).toEqual([expect.stringMatching(/^\/_nuxt\/(?:\w+\/)?BaillyBook-Roman\.subset\.[\w-]+\.woff2$/)]);
 
     await goto("/préférences", { waitUntil: "hydration" });
     await page.getByRole("combobox", { name: "Police" }).click();
@@ -133,7 +134,7 @@ test.describe("settings", () => {
 
     const html = await page.evaluate(async () => (await fetch("/logos")).text());
     expect(html).toMatch(/<html[^>]*data-reading-font="neohellenic"/);
-    expect(html).toMatch(/href="\/_nuxt\/GFS_NeoHellenic-Roman\.[\w-]+\.woff2"/);
+    expect(html).toMatch(/href="\/_nuxt\/(?:\w+\/)?GFS_NeoHellenic-Roman\.[\w-]+\.woff2"/);
 
     // The faces requested by the page.
     await goto("/logos", { waitUntil: "hydration" });
