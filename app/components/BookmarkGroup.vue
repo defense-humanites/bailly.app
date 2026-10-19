@@ -596,7 +596,9 @@
               in the name's text: its height comes from the same padding and
               line height as the name (32 px), rather than from a fixed
               height, in which each browser centres the text its own way.
-              One background for the whole field, lighter when hovered or
+              A slightly rounded rectangle, as the description's field and
+              the entries (not a pill, the search bar's and the buttons'). One
+              background for the whole field, lighter when hovered or
               focused anywhere (as the new tag's, cf. `CreateTag`); the color
               button without one of its own, its icon in the tag's identity
               shade (500) when hovered, focused or open. Its ring goes round
@@ -613,7 +615,7 @@
             >
               <template #anchor>
                 <div
-                  class="flex min-w-0 grow rounded-full bg-default/60 transition-colors hover:bg-default/90 has-[:focus]:bg-default/90"
+                  class="flex min-w-0 grow rounded-lg bg-default/60 transition-colors hover:bg-default/90 has-[:focus]:bg-default/90"
                   :class="[nameError ? 'ring-2 ring-error' : 'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-tag-300', { 'bg-default/90': isTagColorPopoverOpen }]"
                 >
                   <TagColorPicker
@@ -630,7 +632,7 @@
                         variant="ghost"
                         color="neutral"
                         :ui="{
-                          base: 'h-8 w-10 justify-center rounded-l-full rounded-r-none bg-transparent hover:bg-transparent active:bg-transparent data-[state=open]:bg-transparent focus-visible:outline-none hover:text-(--tag-500) active:text-(--tag-500) focus-visible:text-(--tag-500) data-[state=open]:text-(--tag-500)',
+                          base: 'h-8 w-10 justify-center rounded-l-lg rounded-r-none bg-transparent hover:bg-transparent active:bg-transparent data-[state=open]:bg-transparent focus-visible:outline-none hover:text-(--tag-500) active:text-(--tag-500) focus-visible:text-(--tag-500) data-[state=open]:text-(--tag-500)',
                         }"
                       />
                     </template>
@@ -643,7 +645,7 @@
                     :aria-describedby="nameErrorId"
                     :aria-invalid="!!nameError"
                     :maxlength="IdbTags.nameMaxLength"
-                    class="min-w-0 grow rounded-r-full bg-transparent px-2 py-0.5 text-xl/7 font-bold text-tag-text focus:outline-none md:py-0 md:text-2xl/8"
+                    class="min-w-0 grow rounded-r-lg bg-transparent px-2 py-0.5 text-xl/7 font-bold text-tag-text focus:outline-none md:py-0 md:text-2xl/8"
                   >
                 </div>
               </template>
