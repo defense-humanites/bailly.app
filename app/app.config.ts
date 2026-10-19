@@ -92,16 +92,32 @@ export default defineAppConfig({
         },
       },
     },
+    /*
+     * The selects open a list, as the bars' buttons open a menu: their
+     * states (`--app-button-hover`, `--app-button-active`, cf. `root.css`),
+     * raised when hovered, sunk (light theme) when pressed or open, rather
+     * than Nuxt UI's `bg-elevated` (darker in the light theme) on hover.
+     */
     select: {
       slots: {
         content: "bg-(--app-panel-bg)",
         item: "data-highlighted:not-data-disabled:before:bg-(--app-panel-highlight)",
+      },
+      variants: {
+        variant: {
+          outline: "hover:bg-(--app-button-hover) active:bg-(--app-button-active) aria-expanded:bg-(--app-button-active)",
+        },
       },
     },
     selectMenu: {
       slots: {
         content: "bg-(--app-panel-bg)",
         item: "data-highlighted:not-data-disabled:before:bg-(--app-panel-highlight)",
+      },
+      variants: {
+        variant: {
+          outline: "hover:bg-(--app-button-hover) active:bg-(--app-button-active) aria-expanded:bg-(--app-button-active)",
+        },
       },
     },
     input: {
