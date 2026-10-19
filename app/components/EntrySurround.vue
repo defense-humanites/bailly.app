@@ -34,6 +34,9 @@
   Links to the previous and next entries at the end of the article, with
   their full headword (the header's arrows only show an icon on mobile), so
   that the reader can go on without scrolling back up.
+  In the dark theme, a step under the entry's card (whose shadow, which
+  sets it apart in the light one, doesn't show): their background and border
+  lighter, full again when hovered or focused.
 -->
 <template>
   <nav
@@ -46,7 +49,7 @@
       :key="link.direction"
       :to="link.to"
       raw
-      class="group block min-w-0 rounded-lg border border-default bg-default/75 px-4 py-3 outline-primary/25 transition-colors hover:border-accented hover:bg-default focus-visible:border-primary focus-visible:outline-3"
+      class="group block min-w-0 rounded-lg border border-default bg-default/75 px-4 py-3 outline-primary/25 transition-colors hover:border-accented hover:bg-default focus-visible:border-primary focus-visible:outline-3 dark:border-default/50 dark:bg-default/35 dark:hover:border-accented dark:hover:bg-default dark:focus-visible:border-primary"
       :class="link.direction === 'next' ? 'col-start-2 text-end' : ''"
     >
       <span
