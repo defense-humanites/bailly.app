@@ -587,26 +587,49 @@
               aria-hidden="true"
               class="mx-auto flex aspect-[4/3] w-full max-w-sm items-center justify-center bg-primary/10 overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none"
             >
-              <div class="w-[85%] max-w-72 space-y-2">
-                <div class="flex items-center gap-2 rounded-full bg-default px-3 py-1.5 text-sm shadow-xs ring-1 ring-default">
-                  <UIcon
-                    name="i-lucide-search"
-                    class="size-4 text-muted"
-                  />
-                  <span class="font-serif">ῥινοκ</span>
-                  <span class="ms-auto rounded-full bg-elevated px-1.5 text-xs text-muted">2</span>
+              <!--
+                The search bar in use and its results, in their current styles
+                (`search-surface`: the colors of the bar in use and of its
+                panels), a little smaller: the field focused, its count, the
+                history and options buttons; the « Entrées » label, the first
+                result highlighted, a favorite.
+              -->
+              <div class="search-surface w-[88%] max-w-76 space-y-1.5">
+                <div class="flex h-9 items-center rounded-full bg-default text-sm text-highlighted shadow-xs ring ring-primary ring-inset outline-3 outline-primary/25">
+                  <span class="flex min-w-0 flex-1 items-center gap-2 ps-3 pe-2">
+                    <UIcon
+                      name="i-lucide-x"
+                      class="size-4 shrink-0 text-dimmed"
+                    />
+                    <span class="truncate">ῥινοκ</span>
+                    <span class="ms-auto rounded-md bg-elevated px-1.5 text-xs/5 text-muted tabular-nums">2</span>
+                  </span>
+                  <span class="flex h-full w-9 shrink-0 items-center justify-center border-s border-default">
+                    <UIcon
+                      name="i-lucide-history"
+                      class="size-4"
+                    />
+                  </span>
+                  <span class="flex h-full w-9 shrink-0 items-center justify-center border-s border-default">
+                    <UIcon
+                      name="i-lucide-list-filter"
+                      class="size-4"
+                    />
+                  </span>
                 </div>
-                <div class="rounded-md bg-default p-2.5 ring-1 ring-default">
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-serif text-sm font-bold">ῥινόκερως</span>
+                <div class="search-panel rounded-md bg-default p-1 ring ring-default">
+                  <p class="px-2 pt-1.5 pb-1 text-[0.625rem]/4 tracking-wide text-muted uppercase">
+                    Entrées
+                  </p>
+                  <div class="flex items-start gap-2 rounded-md bg-(--app-highlight) p-2">
+                    <p class="line-clamp-2 font-serif text-xs/5 text-highlighted">
+                      <span class="font-semibold">ῥινόκερως</span>, ωτος (ὁ) [ῑ] rhinocéros, animal avec une corne sur le nez, Str. 774…
+                    </p>
                     <UIcon
                       name="i-bailly-star-filled"
-                      class="ms-auto size-4 text-favorite"
+                      class="mt-0.5 size-4 shrink-0 text-favorite"
                     />
                   </div>
-                  <p class="line-clamp-2 font-serif text-xs/5 text-muted">
-                    ωτος (ὁ) [ῑ] rhinocéros, animal avec une corne sur le nez, Str. 774…
-                  </p>
                 </div>
               </div>
             </div>
