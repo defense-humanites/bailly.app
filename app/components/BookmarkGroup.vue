@@ -3,6 +3,9 @@
   import { IdbTags, type IdbEntry, type IdbTagWithKey } from "~/idb";
   import { comparableTagName, type RemovedRecords, type TagKey } from "~/idb/merge";
 
+  /** An entry's headword, in the headwords' view (a link, or text in edit mode). */
+  const HEADWORD = "block min-w-0 grow rounded-lg bg-default/75 px-3 py-1 font-serif text-[0.96875rem]/6 font-bold text-tag-text ring ring-tag-300/50 ring-inset transition-colors";
+
   const bookmarksStore = useBookmarksStore();
 
   const props = defineProps<{
@@ -896,11 +899,20 @@
             :content="{ side: 'top' }"
             :ui="{ content: 'max-w-80 h-auto', text: 'line-clamp-4 whitespace-normal font-serif' }"
           >
+            <!--
+              In edit mode, not a link: the entries can only be removed (their
+              ring marks the one whose cross is hovered).
+            -->
+            <span
+              v-if="editMode"
+              :lang="greek.lang.value"
+              :class="[HEADWORD, 'pe-9 group-has-[button:hover]/item:ring-tag-400']"
+            ><span class="block truncate">{{ greek.text(entry.word) }}</span></span>
             <NuxtLink
+              v-else
               :to="entryRoute(entry.uri)"
               :lang="greek.lang.value"
-              class="block min-w-0 grow rounded-lg bg-default/75 px-3 py-1 font-serif text-[0.96875rem]/6 font-bold text-tag-text ring ring-tag-300/50 ring-inset transition-colors group-hover/item:ring-tag-400 focus-visible:outline-2 focus-visible:outline-tag-400"
-              :class="{ 'pe-9': editMode }"
+              :class="[HEADWORD, 'group-hover/item:ring-tag-400 focus-visible:outline-2 focus-visible:outline-tag-400']"
             ><!-- Letting the pointer through: no tooltip of Safari's for the
               truncated word over the excerpt's (cf. `v-truncated-title`).
             --><span class="pointer-events-none block truncate">{{ greek.text(entry.word) }}</span></NuxtLink>
@@ -961,13 +973,18 @@
             The excerpts follow the reading font, not its size nor its weight
             (as the search results and the history): the normal size and
             weight, set on the reading variables (the arrow follows them).
+            In edit mode, not a link (the entries can only be removed), its
+            padding kept (`body`), its ring marking the entry whose cross is
+            hovered.
           -->
           <EntryCard
             :entry="entry"
-            link
+            :link="!editMode"
+            :no-links="editMode"
             prefetch-on="visibility"
             :ui="{
-              root: 'bg-default/75 ring-tag-300/50 group-hover/item:ring-tag-400 text-tag-text shadow-none',
+              root: `bg-default/75 ring-tag-300/50 text-tag-text shadow-none ${editMode ? 'group-has-[button:hover]/item:ring-tag-400' : 'group-hover/item:ring-tag-400'}`,
+              body: 'p-0 sm:p-0',
               entry: 'mx-3 my-1.5 line-clamp-4 [--reading-font-size:0.96875rem] [--reading-font-weight:400]',
             }"
           />

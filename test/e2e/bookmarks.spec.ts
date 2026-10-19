@@ -364,6 +364,32 @@ test.describe("bookmarks page", () => {
     await expect(edit).toHaveAttribute("aria-pressed", "false");
   });
 
+  test("in the edit mode, the entries are no links, in place, only removable", async ({ page }) => {
+    const homer = card(page, "Vocabulaire homérique");
+    const edit = page.getByRole("button", { name: "Modifier l'étiquette « Vocabulaire homérique et tragique »" });
+    // Excerpts or headwords.
+    const entries = homer.locator(".group\\/item");
+    const boxes = () => entries.evaluateAll(items => items.map((item) => {
+      const { x, y, width, height } = item.getBoundingClientRect();
+      return { x, y, width, height };
+    }));
+
+    for (const view of ["Extraits", "Vedettes"]) {
+      if (view === "Vedettes") {
+        await page.getByRole("button", { name: "Affichage" }).click();
+        await page.getByRole("menuitemcheckbox", { name: /^Vedettes/ }).click();
+      }
+      await expect(entries.getByRole("link")).toHaveCount(2);
+      const before = await boxes();
+      await edit.click();
+      await expect(homer.getByRole("button", { name: /^Retirer « ἄναξ »/ })).toBeVisible();
+      await expect(entries.getByRole("link")).toHaveCount(0);
+      await expect(entries.filter({ hasText: "ἄναξ" })).toHaveCount(1);
+      expect(await boxes()).toEqual(before);
+      await edit.click();
+    }
+  });
+
   // The edit button toggles the mode from the same place, in the corner.
   test("the edit button stays in its corner in both modes", async ({ page }) => {
     const edit = page.getByRole("button", { name: "Modifier l'étiquette « Vide »" });
