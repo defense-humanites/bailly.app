@@ -214,9 +214,8 @@ export default defineAppConfig({
       },
     },
     /*
-     * The tooltips, as the bubbles that inform (cf. `bubble.ts`): in the
-     * light theme a shade darker than the cards and the page with a clear
-     * border, in the dark one the bar's color with a faint border
+     * The tooltips, as the bubbles that inform (cf. `bubble.ts`): a shade
+     * below the page with a clear border, in both themes
      * (`--app-bubble-bg`, `--app-bubble-ring`, cf. `root.css`); a shadow,
      * and a slightly toned text (not the content's).
      */
