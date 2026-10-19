@@ -585,14 +585,15 @@
           <article class="flex flex-col gap-6 md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-8 lg:flex lg:col-start-3 lg:row-start-2">
             <div
               aria-hidden="true"
-              class="mx-auto flex aspect-[4/3] w-full max-w-sm items-center justify-center bg-primary/10 overflow-hidden rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none"
+              class="mx-auto flex aspect-[4/3] w-full max-w-sm items-center justify-center bg-primary/10 py-5 rounded-lg border border-(--rule-color) shadow-[0_0_0_4px_var(--app-page-bg),0_0_0_6px_var(--rule-color)] md:max-w-none"
             >
               <!--
                 The search bar in use and its results, in their current styles
                 (`search-surface`: the colors of the bar in use and of its
                 panels), a little smaller: the field focused, its count, the
-                history and options buttons; the « Entrées » label, the first
-                result highlighted, a favorite.
+                history and options buttons (their separators inside the
+                field's ring, as in the bar); the « Entrées » label, the two
+                results of ῥινοκ, the first highlighted, a favorite.
               -->
               <div class="search-surface w-[88%] max-w-76 space-y-1.5">
                 <div class="flex h-9 items-center rounded-full bg-default text-sm text-highlighted shadow-xs ring ring-primary ring-inset outline-3 outline-primary/25">
@@ -604,13 +605,13 @@
                     <span class="truncate">ῥινοκ</span>
                     <span class="ms-auto rounded-md bg-elevated px-1.5 text-xs/5 text-muted tabular-nums">2</span>
                   </span>
-                  <span class="flex h-full w-9 shrink-0 items-center justify-center border-s border-default">
+                  <span class="relative flex h-full w-9 shrink-0 items-center justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border)">
                     <UIcon
                       name="i-lucide-history"
                       class="size-4"
                     />
                   </span>
-                  <span class="flex h-full w-9 shrink-0 items-center justify-center border-s border-default">
+                  <span class="relative flex h-full w-9 shrink-0 items-center justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border)">
                     <UIcon
                       name="i-lucide-list-filter"
                       class="size-4"
@@ -629,6 +630,11 @@
                       name="i-bailly-star-filled"
                       class="mt-0.5 size-4 shrink-0 text-favorite"
                     />
+                  </div>
+                  <div class="p-2">
+                    <p class="line-clamp-2 font-serif text-xs/5">
+                      <span class="font-semibold">ῥινοκολούστης</span>, ου (ὁ) [ῑ] qui mutile le nez, Paus. 9, 25, 4. Étym. ῥίς, κολούω.
+                    </p>
                   </div>
                 </div>
               </div>
