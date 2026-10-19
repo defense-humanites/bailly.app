@@ -45,7 +45,8 @@
         <span aria-hidden="true">{{ label }}</span>
         <!--
           Synchronized: a small cloud (for screen readers, the control's name
-          says it, cf. the preferences page).
+          says it, cf. the preferences page). As far from the name as the
+          icon of a button after it (`label-trailing`, its padding: `p-1`).
         -->
         <UTooltip
           v-if="synced"
@@ -54,7 +55,7 @@
           <span
             data-synced
             aria-hidden="true"
-            class="flex"
+            class="ms-1 flex"
           >
             <UIcon
               name="i-lucide-cloud"
