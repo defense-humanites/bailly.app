@@ -119,8 +119,8 @@
         <!-- Color picker -->
         <template #leading>
           <!--
-            Its corners follow the field's (not the pill buttons'); on the
-            field's background, whatever its state and theme; pressed while
+            Its corners follow the field's (not the pill buttons'); without an
+            outline, on the field's background, whatever its state and theme; pressed while
             its popover is open. Hovered or pressed, it darkens in both
             themes (`bg-elevated`, kept rather than the cards' shades, cf.
             `--app-card-hover`; in the dark one, the page's background, darker
@@ -134,7 +134,7 @@
               <UButton
                 :icon="icon"
                 color="neutral"
-                variant="outline"
+                variant="ghost"
                 v-bind="attrs"
                 :ui="{ base: 'rounded-md shadow-none bg-transparent hover:bg-elevated active:bg-elevated data-[state=open]:bg-elevated dark:hover:bg-page dark:active:bg-page dark:data-[state=open]:bg-page' }"
               />
