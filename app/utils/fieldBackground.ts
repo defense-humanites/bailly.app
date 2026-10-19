@@ -10,6 +10,14 @@
 export const FIELD_BACKGROUND = "bg-(--app-field-bg) hover:bg-(--app-field-hover) focus:bg-(--app-field-focus) disabled:bg-(--app-field-bg)";
 
 /**
+ * The same bar's select (the active tag): the fields' background, but a
+ * button's states, as the bar's other buttons (`--app-button-hover`,
+ * `--app-button-active`): raised when hovered, sunk (light theme) when
+ * pressed or open, rather than a field's lighter focus.
+ */
+export const SELECT_BACKGROUND = "bg-(--app-field-bg) hover:bg-(--app-button-hover) active:bg-(--app-button-active) aria-expanded:bg-(--app-button-active) disabled:bg-(--app-field-bg)";
+
+/**
  * Their focus halo (an outline) and ring, as the search bar's, in other
  * colors: the halo in the secondary accent, the ring neutral (cf.
  * `--app-field-ring` and `--app-field-halo`, `root.css`): outside the item that holds the
