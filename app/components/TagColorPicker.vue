@@ -101,14 +101,15 @@
   size of the search options' buttons (24 px, smaller than the trigger); the
   selected one has a ring and a check, so that it does not rely on the color
   only. The name of the color pointed at, focused or selected is written under
-  them (close hues, e.g. teal and sky, are hard to tell apart).
+  them (close hues, e.g. teal and sky, are hard to tell apart). The popover
+  takes the panels' raised surface (`--app-panel-bg`), its arrow too.
 -->
 <template>
   <UPopover
     v-model:open="open"
     :arrow="{ rounded: true, width: 16, height: 8 }"
     :content="{ onOpenAutoFocus }"
-    :ui="{ content: 'p-3', arrow: 'fill-(--ui-bg)' }"
+    :ui="{ content: 'bg-(--app-panel-bg) p-3', arrow: 'fill-(--app-panel-bg)' }"
   >
     <slot
       name="trigger"
