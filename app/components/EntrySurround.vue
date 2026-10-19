@@ -36,7 +36,8 @@
   that the reader can go on without scrolling back up.
   In the dark theme, a step under the entry's card (whose shadow, which
   sets it apart in the light one, doesn't show): their background and border
-  lighter, full again when hovered or focused.
+  lighter; hovered or focused, a step up (60 %, the full border), still under
+  the card.
 -->
 <template>
   <nav
@@ -49,7 +50,7 @@
       :key="link.direction"
       :to="link.to"
       raw
-      class="group block min-w-0 rounded-lg border border-default bg-default/75 px-4 py-3 outline-primary/25 transition-colors hover:border-accented hover:bg-default focus-visible:border-primary focus-visible:outline-3 dark:border-default/50 dark:bg-default/35 dark:hover:border-accented dark:hover:bg-default dark:focus-visible:border-primary"
+      class="group block min-w-0 rounded-lg border border-default bg-default/75 px-4 py-3 outline-primary/25 transition-colors hover:border-accented hover:bg-default focus-visible:border-primary focus-visible:outline-3 dark:border-default/50 dark:bg-default/35 dark:hover:border-default dark:hover:bg-default/60 dark:focus-visible:border-primary dark:focus-visible:bg-default/60"
       :class="link.direction === 'next' ? 'col-start-2 text-end' : ''"
     >
       <span
