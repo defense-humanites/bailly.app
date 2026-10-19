@@ -791,7 +791,8 @@
           :ui="{ content: `${BUBBLE} px-3 py-2 text-sm text-toned` }"
         >
           <template #anchor>
-            <div class="relative">
+            <!-- Hovered as a whole: its clear button keeps the field's hover. -->
+            <div class="group/description relative">
               <textarea
                 ref="description-input"
                 v-model="tagDescription"
@@ -801,7 +802,7 @@
                 :aria-describedby="`${descriptionErrorId} ${descriptionHintId}`"
                 :aria-invalid="!!descriptionFailure"
                 placeholder="Description"
-                class="block w-full resize-none overflow-hidden rounded-lg bg-default/60 py-1 ps-2 pe-8 text-base/6 text-tag-text placeholder:text-tag-text/60 hover:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2"
+                class="block w-full resize-none overflow-hidden rounded-lg bg-default/60 py-1 ps-2 pe-8 text-base/6 text-tag-text placeholder:text-tag-text/60 group-hover/description:bg-default/90 focus:bg-default/90 focus:outline-none focus-visible:ring-2"
                 :class="descriptionFailure ? 'ring-2 ring-error focus-visible:ring-error' : 'focus-visible:ring-tag-300'"
                 @focus="isDescriptionFocused = true"
                 @blur="onDescriptionBlur"
