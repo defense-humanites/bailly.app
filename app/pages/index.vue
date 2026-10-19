@@ -166,6 +166,7 @@
         <span id="titre-accueil">Consultez le dictionnaire <br class="max-lg:hidden">grec-français d'Anatole&nbsp;Bailly</span><span class="whitespace-nowrap">&nbsp;<UPopover
           v-model:open="editionOpen"
           :content="{ side: 'top', sideOffset: 6, onOpenAutoFocus }"
+          :ui="{ content: BUBBLE, arrow: BUBBLE_ARROW }"
           arrow
         >
           <UButton
@@ -180,7 +181,7 @@
           />
           <template #content>
             <p
-              class="max-w-72 p-3 font-sans text-sm font-normal text-pretty"
+              class="max-w-72 p-3 font-sans text-sm font-normal text-pretty text-toned"
               @pointerenter="hover($event, true)"
               @pointerleave="hover($event, false)"
             >

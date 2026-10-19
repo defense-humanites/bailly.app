@@ -606,7 +606,7 @@
               :open="!!nameError"
               :dismissible="false"
               :content="{ side: 'bottom', align: 'start', sideOffset: 6, onOpenAutoFocus: (event: Event) => event.preventDefault(), onCloseAutoFocus: (event: Event) => event.preventDefault() }"
-              :ui="{ content: 'px-3 py-2 text-sm text-error' }"
+              :ui="{ content: `${BUBBLE} px-3 py-2 text-sm text-error` }"
             >
               <template #anchor>
                 <div
@@ -783,7 +783,7 @@
           :open="!!descriptionFailure || isDescriptionFocused"
           :dismissible="false"
           :content="{ side: 'bottom', align: 'start', sideOffset: 6, onOpenAutoFocus: (event: Event) => event.preventDefault(), onCloseAutoFocus: (event: Event) => event.preventDefault() }"
-          :ui="{ content: 'px-3 py-2 text-sm' }"
+          :ui="{ content: `${BUBBLE} px-3 py-2 text-sm text-toned` }"
         >
           <template #anchor>
             <div class="relative">

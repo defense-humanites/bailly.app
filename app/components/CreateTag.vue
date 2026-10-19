@@ -96,7 +96,7 @@
     :open="!!error"
     :dismissible="false"
     :content="{ side: 'bottom', align: 'start', sideOffset: 6, onOpenAutoFocus: (event: Event) => event.preventDefault(), onCloseAutoFocus: (event: Event) => event.preventDefault() }"
-    :ui="{ content: 'px-3 py-2 text-sm text-error' }"
+    :ui="{ content: `${BUBBLE} px-3 py-2 text-sm text-error` }"
   >
     <template #anchor>
       <UInput
