@@ -161,7 +161,7 @@
             link
             link-rel="nofollow"
             :ui="{
-              root: 'h-full flex flex-col overflow-hidden bg-transparent shadow-none ring-0 divide-y-0 rounded-none [&_[data-toolbar-group]]:bg-transparent [--app-button-hover:var(--ui-bg)] [--app-button-active:var(--ui-color-neutral-200)] dark:[--app-button-active:color-mix(in_oklab,var(--app-page-bg)_60%,black)]',
+              root: 'h-full flex flex-col overflow-hidden bg-transparent shadow-none ring-0 divide-y-0 rounded-none [&_[data-toolbar-group]]:bg-transparent [--app-button-hover:var(--ui-bg)] [--app-button-active:var(--ui-color-neutral-200)] dark:[--app-button-active:color-mix(in_oklab,var(--app-page-bg)_80%,black)]',
               header: 'bg-transparent',
               body: 'min-h-0 flex-1 mask-b-from-80%',
             }"

@@ -174,9 +174,10 @@
   --app-panel-highlight: color-mix(in oklab, var(--ui-color-neutral-700) 50%, var(--app-surface-raised));
   /* The bubbles and tooltips: as in the light theme, a shade below the
      page (the vernis slightly darkened: darker, it made the page seem
-     light), a clear border (marble 800). */
+     light), a border between marble 800 and 900, softer than the bars'
+     and the cards' (marble 800), told apart from them. */
   --app-bubble-bg: color-mix(in oklab, var(--app-page-bg) 80%, black);
-  --app-bubble-ring: var(--ui-border);
+  --app-bubble-ring: color-mix(in oklab, var(--ui-color-neutral-800) 50%, var(--ui-color-neutral-900));
   --app-field-ring: color-mix(in oklab, var(--ui-color-neutral-500) 75%, var(--ui-bg));
   --link-mark-primary: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 16 16' fill='none' stroke='%23dc7643' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
   --link-mark-secondary: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 16 16' fill='none' stroke='%2386b6e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
