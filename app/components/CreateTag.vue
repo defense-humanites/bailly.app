@@ -179,10 +179,15 @@
             @mousedown.prevent
             @click="createTag"
           >
+            <!--
+              Subtle, a step lighter in the dark theme (background and ring):
+              its activation stands out on the field's focus background.
+            -->
             <UKbd
               value="enter"
               size="lg"
-              variant="solid"
+              variant="subtle"
+              class="dark:bg-accented dark:ring-(--ui-color-neutral-600)"
               aria-hidden="true"
             />
           </button>
