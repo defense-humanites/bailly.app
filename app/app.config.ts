@@ -75,28 +75,33 @@ export default defineAppConfig({
       ],
     },
     /*
-     * The menus' and lists' highlighted item (and the one whose submenu is
-     * open), as the items on the cards (`--app-menu-highlight`, cf.
-     * `root.css`): Nuxt UI's `bg-elevated/50` barely showed in the light
-     * theme.
+     * The menus and lists open over the interface, as the panels (an entry's
+     * tags, the search's): their raised surface (`--app-panel-bg`, cf.
+     * `root.css`), their highlighted item (and the one whose submenu is
+     * open) as theirs (`--app-panel-highlight`).
      */
     dropdownMenu: {
+      slots: {
+        content: "bg-(--app-panel-bg)",
+      },
       variants: {
         active: {
           false: {
-            item: "data-highlighted:before:bg-(--app-menu-highlight) data-[state=open]:before:bg-(--app-menu-highlight)",
+            item: "data-highlighted:before:bg-(--app-panel-highlight) data-[state=open]:before:bg-(--app-panel-highlight)",
           },
         },
       },
     },
     select: {
       slots: {
-        item: "data-highlighted:not-data-disabled:before:bg-(--app-menu-highlight)",
+        content: "bg-(--app-panel-bg)",
+        item: "data-highlighted:not-data-disabled:before:bg-(--app-panel-highlight)",
       },
     },
     selectMenu: {
       slots: {
-        item: "data-highlighted:not-data-disabled:before:bg-(--app-menu-highlight)",
+        content: "bg-(--app-panel-bg)",
+        item: "data-highlighted:not-data-disabled:before:bg-(--app-panel-highlight)",
       },
     },
     input: {
