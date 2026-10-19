@@ -53,6 +53,27 @@ test.describe("the tags of an entry", () => {
     await expect.poll(() => tagNamesOf(page, "logos")).toEqual(["Rouge"]);
   });
 
+  test("a tag toggled with the pointer keeps the highlight, the pointer on it", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    await seedBookmarks(page, {
+      tags: [{ name: "Ciel", color: "Sky" }, { name: "Rouge", color: "Red" }, { name: "Vert", color: "Green" }],
+      current: "Ciel",
+    });
+    await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
+    const options = allTags(page).getByRole("option");
+    await expect(options).toHaveText(["Cielactive", "Rouge", "Vert"]);
+
+    for (const [i, selected] of [[2, "true"], [2, "false"], [1, "true"], [2, "true"]] as const) {
+      await options.nth(i).hover();
+      await options.nth(i).click();
+      await expect(options.nth(i)).toHaveAttribute("aria-selected", selected);
+      // Long enough for the bookmarks to be saved and the panel to update.
+      await page.waitForTimeout(300);
+      await expect(options.nth(i)).toHaveAttribute("data-highlighted");
+      await expect(options.and(page.locator("[data-highlighted]"))).toHaveCount(1);
+    }
+  });
+
   test("from eight tags, a field filters them, ignoring case and accents; Enter toggles the option", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     const names = ["Éthique", "Médecine", "Poésie", "Rhétorique", "Histoire", "Tragédie", "Comédie", "Épopée"];

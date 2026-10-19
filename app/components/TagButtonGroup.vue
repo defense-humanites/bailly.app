@@ -74,8 +74,17 @@
 
   /**
    * The options selected: the tags the entry has (compared by key, `by`).
+   * Set at once on a click or a key (the palette's own action), then only
+   * when the tags the entry has differ: a new selection coming later, once
+   * the change saved, made the palette highlight the first selected option
+   * (or the first one, when none is), away from the one under the pointer.
    */
-  const selectedItems = computed((): TagItem[] => tagItems.value.filter(item => entryTagKeys.value.has(item.key)));
+  const selectedItems = shallowRef<TagItem[]>([]);
+  watch([tagItems, entryTagKeys], () => {
+    const items = tagItems.value.filter(item => entryTagKeys.value.has(item.key));
+    const keys = new Set(selectedItems.value.map(item => item.key));
+    if (items.length !== keys.size || items.some(item => !keys.has(item.key))) selectedItems.value = items;
+  }, { immediate: true });
 
   /**
    * The panel's selection changed (a single option at a time): adds the entry
@@ -84,7 +93,8 @@
    * (Nuxt UI types it as a single one).
    */
   const onTagsChange = async (value: unknown): Promise<void> => {
-    const selected = new Set((value as TagItem[]).map(item => item.key));
+    selectedItems.value = value as TagItem[];
+    const selected = new Set(selectedItems.value.map(item => item.key));
     for (const key of selected) if (!entryTagKeys.value.has(key)) await setTagged(key, true);
     for (const key of entryTagKeys.value) if (!selected.has(key)) await setTagged(key, false);
   };
