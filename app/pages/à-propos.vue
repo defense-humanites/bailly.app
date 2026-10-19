@@ -51,7 +51,7 @@
       text: "En grec, en beta code ou en translittération : les résultats s'affichent dès la première lettre.",
     },
     inflected: {
-      title: "Atteignez les entrées à partir des formes fléchies",
+      title: "Partez d'une forme fléchie",
       text: "L'analyseur morphologique intégré à la recherche retrouve le lemme d'une forme conjuguée ou déclinée.",
     },
     bookmarks: {
@@ -319,13 +319,15 @@
         </h2>
         <!--
           Each card opens on its example, full bleed (an illustration, not a
-          box in the box), on the raised surface, a rule under it.
+          box in the box), on the raised surface, a rule under it; higher than
+          the text under it: 5:2, at least 10rem (on a phone, on two narrow
+          columns).
         -->
-        <ul class="grid gap-4 sm:grid-cols-2">
+        <ul class="grid gap-6 sm:grid-cols-2">
           <li class="flex flex-col overflow-hidden rounded-lg bg-default p-5 ring-1 ring-default">
             <div
               aria-hidden="true"
-              class="-mx-5 -mt-5 mb-4 flex h-32 items-center justify-center border-b border-default bg-(--app-surface-raised)"
+              class="-mx-5 -mt-5 mb-4 flex aspect-[5/2] min-h-40 items-center justify-center border-b border-default bg-(--app-surface-raised)"
             >
               <div class="flex items-center">
                 <div class="grid grid-cols-[auto_auto] items-center gap-x-1.5 gap-y-2 sm:gap-x-2">
@@ -358,7 +360,7 @@
           <li class="flex flex-col overflow-hidden rounded-lg bg-default p-5 ring-1 ring-default">
             <div
               aria-hidden="true"
-              class="-mx-5 -mt-5 mb-4 flex h-32 items-center justify-center border-b border-default bg-(--app-surface-raised)"
+              class="-mx-5 -mt-5 mb-4 flex aspect-[5/2] min-h-40 items-center justify-center border-b border-default bg-(--app-surface-raised)"
             >
               <!-- The results the API gives for ορνιθα: the lemma ὄρνις, and two entries beginning so. -->
               <div class="flex items-center gap-3">
@@ -387,7 +389,7 @@
           <li class="flex flex-col overflow-hidden rounded-lg bg-default p-5 ring-1 ring-default">
             <div
               aria-hidden="true"
-              class="-mx-5 -mt-5 mb-4 flex h-32 items-center justify-center border-b border-default bg-(--app-surface-raised)"
+              class="-mx-5 -mt-5 mb-4 flex aspect-[5/2] min-h-40 items-center justify-center border-b border-default bg-(--app-surface-raised)"
             >
               <ul class="flex max-w-72 flex-wrap items-center justify-center gap-2">
                 <li
@@ -416,7 +418,7 @@
           <li class="flex flex-col overflow-hidden rounded-lg bg-default p-5 ring-1 ring-default">
             <div
               aria-hidden="true"
-              class="-mx-5 -mt-5 mb-4 flex h-32 items-center justify-center border-b border-default bg-(--app-surface-raised)"
+              class="-mx-5 -mt-5 mb-4 flex aspect-[5/2] min-h-40 items-center justify-center border-b border-default bg-(--app-surface-raised)"
             >
               <div class="flex flex-col items-center gap-2">
                 <div
