@@ -686,7 +686,13 @@
             v-for="credit in credits"
             :key="credit.title"
           >
-            <h3 class="font-bold tracking-wide [font-variant-caps:all-small-caps]">
+            <!--
+              Bold small caps, real in Bailly Book's bold face only: the GFS
+              fonts' bold faces have none, and the browsers' synthetic ones
+              (scaled capitals) came out thin. With those, bold capitals, of
+              their own, smaller and a little spaced.
+            -->
+            <h3 class="font-bold tracking-wide [font-variant-caps:all-small-caps] [:root:not([data-reading-font=book])_&]:text-[0.75rem] [:root:not([data-reading-font=book])_&]:tracking-[0.08em] [:root:not([data-reading-font=book])_&]:uppercase [:root:not([data-reading-font=book])_&]:[font-variant-caps:normal]">
               {{ credit.title }}
             </h3>
             <p
