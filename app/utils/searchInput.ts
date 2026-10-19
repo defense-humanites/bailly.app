@@ -83,6 +83,14 @@ const removePendingCapitals = (text: string): string =>
 const BETA_CODE_LETTERS = /[a-z]+/gi;
 
 /**
+ * A pi already converted, followed by a Latin `s` just typed: back to `p`
+ * (`*p` for a capital), so that `ps` gives psi, as the converter reads it in
+ * a run of letters (`psuxh` → `ψυχη`), and as the transliteration writes it;
+ * typed one letter at a time, it gave πσ, a sequence Greek doesn't write.
+ */
+const PI_BEFORE_S = /[πΠ](?=s)/gi;
+
+/**
  * The API's metacharacters for the position of the query in the headwords:
  * this position is now a search option (cf. `toPositionedQuery`).
  */
@@ -198,7 +206,7 @@ function applyDiacritics(text: string): string {
  */
 export function toSearchGreek(input: string): string {
   return normalizeSearchGreek(applyDiacritics(
-    input.replace(POSITION_METACHARACTERS, "").replace(BETA_CODE_LETTERS, run => convert(run.toLowerCase(), "beta-code", "greek", { removeDiacritics: true })),
+    input.replace(POSITION_METACHARACTERS, "").replace(PI_BEFORE_S, pi => (pi === "Π" ? "*p" : "p")).replace(BETA_CODE_LETTERS, run => convert(run.toLowerCase(), "beta-code", "greek", { removeDiacritics: true })),
   ));
 }
 

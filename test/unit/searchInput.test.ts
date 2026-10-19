@@ -20,6 +20,17 @@ test("converts Beta Code letters", () => {
   expect(toSearchGreek("logos ergon")).toBe("λογος εργον");
 });
 
+test("psi typed as ps, one letter at a time as in a run", () => {
+  expect(type("ps")).toBe("ψ");
+  expect(type("psuxh")).toBe("ψυχη");
+  expect(type("yuxh")).toBe("ψυχη");
+  expect(type("*ps")).toBe("Ψ");
+  expect(type("lo/ps")).toBe("λόψ");
+  expect(toSearchGreek("psuxh")).toBe("ψυχη");
+  // Greek typed as such stays as it is.
+  expect(toSearchGreek("πσα")).toBe("πσα");
+});
+
 test("converts Beta Code diacritics and capitals", () => {
   expect(toSearchGreek("h(me/ra")).toBe("ἡμέρα");
   expect(toSearchGreek("a)nh/r")).toBe("ἀνήρ");
