@@ -112,8 +112,8 @@
         :aria-invalid="!!error"
         enterkeyhint="done"
         :maxlength="IdbTags.nameMaxLength"
-        :class="[FIELD_HALO, { 'z-10 outline-error/25 max-lg:border-error max-lg:ring max-lg:ring-error max-lg:has-[:focus-visible]:ring-error lg:border-error lg:has-[:focus-visible]:border-error': error }]"
-        :ui="{ base: `h-full rounded-none shadow-none pe-24 focus-visible:outline-transparent max-lg:rounded-t-(--field-inner-radius) ${FIELD_BACKGROUND}`, leading: 'ps-1.5', trailing: 'gap-2 pe-3' }"
+        :class="['group/field', FIELD_HALO, { 'z-10 outline-error/25 max-lg:border-error max-lg:ring max-lg:ring-error max-lg:has-[:focus-visible]:ring-error lg:border-error lg:has-[:focus-visible]:border-error': error }]"
+        :ui="{ base: `h-full rounded-none shadow-none pe-24 focus-visible:outline-transparent max-lg:rounded-t-(--field-inner-radius) ${FIELD_BACKGROUND} group-hover/field:bg-(--app-field-hover)`, leading: 'ps-1.5', trailing: 'gap-2 pe-3' }"
         @keydown.enter="createTag"
       >
         <!-- Color picker -->
@@ -123,7 +123,9 @@
             outline nor a background of its own, on the field's, whatever its
             state and theme. Hovered, pressed or while its popover is open,
             its icon takes the tag's identity shade (500, the swatches'):
-            brighter in the light theme, a little deeper in the dark one.
+            brighter in the light theme, a little deeper in the dark one. The
+            field keeps its hover under it (and under the Enter key): hovered
+            as a whole (`group/field`), not only its input.
           -->
           <TagColorPicker
             v-model="newTagColor"
@@ -180,6 +182,7 @@
             <UKbd
               value="enter"
               size="lg"
+              variant="solid"
               aria-hidden="true"
             />
           </button>
