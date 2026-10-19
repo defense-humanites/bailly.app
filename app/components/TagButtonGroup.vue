@@ -176,7 +176,7 @@
       />
 
       <template #content>
-        <div class="w-64 max-w-[calc(var(--app-width)-2rem)] p-1">
+        <div class="group/tags w-64 max-w-[calc(var(--app-width)-2rem)] p-1">
           <h2
             class="px-2 pt-1.5 pb-1 text-xs uppercase tracking-wide text-muted"
           >
@@ -207,7 +207,7 @@
             :ui="{
               input: '[&_input]:text-sm',
               viewport: 'max-h-72 p-0',
-              item: 'rounded-md px-2 py-1.5 before:rounded-md data-highlighted:not-data-disabled:before:bg-(--app-panel-highlight)',
+              item: 'rounded-md px-2 py-1.5 before:rounded-md data-highlighted:not-data-disabled:before:bg-(--app-panel-highlight) group-has-[footer_a:hover]/tags:before:bg-transparent!',
               itemTrailingIcon: 'hidden',
               empty: 'px-2 py-1.5 text-start text-sm',
             }"
@@ -246,16 +246,23 @@
             Aucune étiquette pour l'instant.
           </p>
 
+          <!--
+            The link to the bookmarks, as the tags above it: their size,
+            padding and highlight (`--app-panel-highlight`); hovered, the
+            list's highlight (on its first tag from the start, as Reka
+            highlights it) is hidden, one highlight at a time.
+          -->
           <footer class="mt-1 border-t border-default px-1 pt-1">
-            <UButton
+            <NuxtLink
               to="/signets"
-              label="Gérer les étiquettes"
-              icon="i-lucide-bookmark"
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              class="w-full rounded-md"
-            />
+              class="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-highlighted transition-colors hover:bg-(--app-panel-highlight) focus-visible:bg-(--app-panel-highlight) focus-visible:outline-none"
+            >
+              <UIcon
+                name="i-lucide-bookmark"
+                class="size-5 shrink-0"
+              />
+              Gérer les étiquettes
+            </NuxtLink>
           </footer>
         </div>
       </template>
