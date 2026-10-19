@@ -77,7 +77,12 @@ test.describe("home page", () => {
     await page.keyboard.press("Escape");
     await page.getByRole("link", { name: "À propos", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`${encodeURI("/à-propos")}$`));
-    await page.getByRole("link", { name: "Bailly.app" }).click();
+    // The header hidden on the cover until the pointer comes back to it.
+    const logo = page.getByRole("link", { name: "Bailly.app" });
+    const box = (await logo.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, 400);
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await logo.click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(searchInput(page)).toHaveValue("λογος");

@@ -23,6 +23,37 @@ test.describe("about page", () => {
     await expect(searchInput(page)).toBeFocused();
   });
 
+  test("the header, hidden on the cover: shown once the pointer comes back to it, on scrolling or by « Chercher un mot »", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await goto("/", { waitUntil: "hydration" });
+    const nav = page.locator("header > nav");
+    // Reached from the header's menu: the pointer on it, the header hides.
+    await page.locator("header").getByRole("link", { name: "À propos" }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Anatole");
+    await page.mouse.move(640, 30, { steps: 2 });
+    await expect(nav).toHaveCSS("opacity", "0");
+    // The pointer out of the header, then back: it shows.
+    await page.mouse.move(640, 400, { steps: 4 });
+    await expect(nav).toHaveCSS("opacity", "0");
+    await page.mouse.move(640, 30, { steps: 4 });
+    await expect(nav).toHaveCSS("opacity", "1");
+
+    // Reached afresh, the pointer on the header: hidden until the page scrolls.
+    await page.mouse.move(640, 30);
+    await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
+    await page.mouse.move(600, 30, { steps: 2 });
+    await expect(nav).toHaveCSS("opacity", "0");
+    await page.mouse.move(640, 400);
+    await page.mouse.wheel(0, 200);
+    await expect(nav).toHaveCSS("opacity", "1");
+
+    // « Chercher un mot » shows it too (the search field focused).
+    await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
+    await expect(nav).toHaveCSS("opacity", "0");
+    await page.getByRole("button", { name: "Chercher un mot" }).click();
+    await expect(nav).toHaveCSS("opacity", "1");
+  });
+
   test("leads to the privacy page", async ({ page, goto }) => {
     await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
     await page.getByRole("link", { name: "confidentialité" }).click();
