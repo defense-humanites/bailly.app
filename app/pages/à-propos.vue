@@ -65,6 +65,15 @@
   };
 
   /**
+   * The credits' small caps (titles and subtitles): real ones in Bailly Book
+   * only. The GFS fonts' bold faces have none (the browsers' synthetic ones,
+   * scaled capitals, came out thin) and their roman ones lack figures and
+   * parentheses: with those fonts, capitals of their own, smaller and a
+   * little spaced.
+   */
+  const SMALL_CAPS = "[font-variant-caps:all-small-caps] [:root:not([data-reading-font=book])_&]:text-[0.75rem] [:root:not([data-reading-font=book])_&]:tracking-[0.08em] [:root:not([data-reading-font=book])_&]:uppercase [:root:not([data-reading-font=book])_&]:[font-variant-caps:normal]";
+
+  /**
    * The errors of the text go to the team of the 2020 edition, with the entry
    * and the version (as its notice asks).
    */
@@ -686,18 +695,12 @@
             v-for="credit in credits"
             :key="credit.title"
           >
-            <!--
-              Bold small caps, real in Bailly Book's bold face only: the GFS
-              fonts' bold faces have none, and the browsers' synthetic ones
-              (scaled capitals) came out thin. With those, bold capitals, of
-              their own, smaller and a little spaced.
-            -->
-            <h3 class="font-bold tracking-wide [font-variant-caps:all-small-caps] [:root:not([data-reading-font=book])_&]:text-[0.75rem] [:root:not([data-reading-font=book])_&]:tracking-[0.08em] [:root:not([data-reading-font=book])_&]:uppercase [:root:not([data-reading-font=book])_&]:[font-variant-caps:normal]">
+            <h3 :class="['font-bold tracking-wide', SMALL_CAPS]">
               {{ credit.title }}
             </h3>
             <p
               v-if="credit.description"
-              class="[font-variant-caps:all-small-caps]"
+              :class="SMALL_CAPS"
             >
               {{ credit.description }}
             </p>
@@ -726,12 +729,12 @@
                       v-for="item in credit.details.items"
                       :key="item.title"
                     >
-                      <h4 class="font-bold tracking-wide [font-variant-caps:all-small-caps]">
+                      <h4 :class="['font-bold tracking-wide', SMALL_CAPS]">
                         {{ item.title }}
                       </h4>
                       <p
                         v-if="item.description"
-                        class="[font-variant-caps:all-small-caps]"
+                        :class="SMALL_CAPS"
                       >
                         {{ item.description }}
                       </p>
