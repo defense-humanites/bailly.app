@@ -148,10 +148,12 @@
   --app-page-hover: var(--ui-bg-elevated);
   --app-highlight: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
   --app-surface-raised: color-mix(in oklab, var(--ui-color-neutral-800) 50%, var(--ui-color-neutral-900));
-  /* The bookmarks' bar's hover: the raised surface (between marble 800 and
-     900), half a shade gentler than `bg-elevated` on the dark cards. */
+  /* The bars' buttons: hovered, the raised surface (between marble 800 and
+     900), half a shade gentler than `bg-elevated` on the dark cards;
+     pressed or open, sunk below the card as in the light theme, to the
+     page's background (vernis). */
   --app-button-hover: var(--app-surface-raised);
-  --app-button-active: var(--ui-bg-elevated);
+  --app-button-active: var(--app-page-bg);
   --app-field-hover: var(--app-button-hover);
   --app-field-focus: var(--app-button-hover);
   /*

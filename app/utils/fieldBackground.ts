@@ -12,7 +12,7 @@ export const FIELD_BACKGROUND = "bg-(--app-field-bg) hover:bg-(--app-field-hover
 /**
  * The same bar's select (the active tag): the fields' background, but a
  * button's states, as the bar's other buttons (`--app-button-hover`,
- * `--app-button-active`): raised when hovered, sunk (light theme) when
+ * `--app-button-active`): raised when hovered, sunk when
  * pressed or open, rather than a field's lighter focus.
  */
 export const SELECT_BACKGROUND = "bg-(--app-field-bg) hover:bg-(--app-button-hover) active:bg-(--app-button-active) aria-expanded:bg-(--app-button-active) disabled:bg-(--app-field-bg)";
