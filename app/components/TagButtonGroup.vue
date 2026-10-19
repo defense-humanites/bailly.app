@@ -3,9 +3,10 @@
   import type { IdbEntry, IdbTag, TagKey } from "~/idb";
 
   /*
-   * The toolbar's buttons, hovered or pressed: raised (lighter), a notch
-   * lighter still when pressed or open, as the bookmarks' bar's
-   * (`--app-button-hover`, `--app-button-active`, cf. `root.css`).
+   * The toolbar's buttons: raised (lighter) when hovered, sunk (darker)
+   * when pressed or open, as the bookmarks' bar's (`--app-button-hover`,
+   * `--app-button-active`, cf. `root.css`); the tags' panel raised above
+   * the interface (`--app-panel-bg`), as the search's panels.
    * Kept in step with `TagButtonGroupStatic` and `EntryCitationButton`.
    */
   const TOOLBAR_HOVER = "hover:bg-(--app-button-hover) active:bg-(--app-button-active)";
@@ -162,7 +163,10 @@
       (`rounded-md`), as the history's and the menus' items, rather than the
       buttons' pill shape.
     -->
-    <UPopover :content="popoverContent">
+    <UPopover
+      :content="popoverContent"
+      :ui="{ content: 'bg-(--app-panel-bg)' }"
+    >
       <UButton
         icon="i-lucide-tags"
         color="neutral"
@@ -203,7 +207,7 @@
             :ui="{
               input: '[&_input]:text-sm',
               viewport: 'max-h-72 p-0',
-              item: 'rounded-md px-2 py-1.5 before:rounded-md data-highlighted:not-data-disabled:before:bg-(--app-menu-highlight)',
+              item: 'rounded-md px-2 py-1.5 before:rounded-md data-highlighted:not-data-disabled:before:bg-(--app-panel-highlight)',
               itemTrailingIcon: 'hidden',
               empty: 'px-2 py-1.5 text-start text-sm',
             }"

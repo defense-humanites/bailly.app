@@ -80,11 +80,16 @@
    * 10 », lighter than the cards without the glare of a pure white.
    */
   --app-surface-raised: color-mix(in oklab, var(--ui-color-neutral-50) 50%, #fff);
-  /* The bookmarks' bar's buttons: raised (lighter) when hovered, as the
-     search bar in use; a notch lighter still when pressed or open (only
-     the accented buttons darken). */
+  /* The bars' buttons (the bookmarks' bar, an entry's toolbar): raised
+     (lighter) when hovered, as the search bar in use; pressed or open,
+     sunk a shade below the card (between marble 100 and 200), as the
+     search bar's buttons (`--search-active`). */
   --app-button-hover: var(--app-surface-raised);
-  --app-button-active: color-mix(in oklab, var(--ui-color-neutral-50) 20%, #fff);
+  --app-button-active: color-mix(in oklab, var(--ui-color-neutral-100) 50%, var(--ui-color-neutral-200));
+  /* The panels they open (an entry's tags): raised above the interface,
+     as the search's panels, their highlighted item in marble 100. */
+  --app-panel-bg: var(--app-surface-raised);
+  --app-panel-highlight: var(--ui-color-neutral-100);
   /* The fields of the bookmarks' bar (cf. `FIELD_BACKGROUND`): raised as
      its buttons, hovered or focused. */
   --app-field-bg: var(--ui-bg);
@@ -154,6 +159,10 @@
   --app-card-hover: color-mix(in oklab, var(--ui-bg-accented) 50%, transparent);
   --app-card-active: color-mix(in oklab, var(--ui-bg-accented) 65%, transparent);
   --app-menu-highlight: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
+  /* The panels: raised as in the light theme, the search's surface; their
+     highlighted item as the search bar's hover (`--search-hover`). */
+  --app-panel-bg: var(--app-surface-raised);
+  --app-panel-highlight: color-mix(in oklab, var(--ui-color-neutral-700) 50%, var(--app-surface-raised));
   --app-field-ring: color-mix(in oklab, var(--ui-color-neutral-500) 75%, var(--ui-bg));
   --link-mark-primary: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 16 16' fill='none' stroke='%23dc7643' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
   --link-mark-secondary: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 16 16' fill='none' stroke='%2386b6e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
