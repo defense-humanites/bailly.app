@@ -655,9 +655,13 @@
               class="group flex flex-col py-1.5 sm:flex-row sm:items-baseline sm:gap-2"
             >
               <span class="font-serif text-base/7 group-hover:text-primary">{{ resource.title }}</span>
+              <!--
+                The leader on the baseline, as in a table of contents (an empty
+                item's baseline is its bottom edge): its dots as full stops.
+              -->
               <span
                 aria-hidden="true"
-                class="hidden min-w-6 flex-1 translate-y-[-0.3em] border-b-2 border-dotted border-dimmed/60 sm:block"
+                class="hidden min-w-6 flex-1 border-b-2 border-dotted border-dimmed/60 sm:block"
               />
               <span class="shrink-0 text-sm text-muted tabular-nums">
                 PDF · {{ resource.pages }}<span aria-hidden="true">&nbsp;p.</span><span class="sr-only">&nbsp;pages</span> · {{ resource.size }}&nbsp;Ko
