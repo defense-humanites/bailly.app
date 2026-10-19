@@ -841,7 +841,7 @@
           <NuxtLink
             :to="encodeURI('/confidentialité')"
             class="link"
-          >Confidentialité</NuxtLink>.
+          >confidentialité</NuxtLink>.
         </p>
       </section>
     </div>
