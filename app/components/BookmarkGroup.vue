@@ -735,7 +735,7 @@
               size="sm"
               color="error"
               variant="outline"
-              class="bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
+              class="bg-default ring-error/30 hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
               :aria-label="`Supprimer ${groupName}`"
               @click="onDeleteTag"
             />
@@ -814,7 +814,7 @@
                   variant="ghost"
                   color="error"
                   aria-label="Supprimer la description"
-                  class="absolute end-1 top-1 rounded-md bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
+                  class="absolute end-1 top-1 rounded-md bg-default ring ring-inset ring-error/30 hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
                   @click="clearDescription"
                 />
               </UTooltip>
@@ -910,7 +910,7 @@
             text="Retirer"
           >
             <UButton
-              class="absolute end-1 top-1/2 -translate-y-1/2 rounded-md bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
+              class="absolute end-1 top-1/2 -translate-y-1/2 rounded-md bg-default ring ring-inset ring-error/30 hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))]"
               icon="i-lucide-x"
               size="xs"
               color="error"
@@ -934,8 +934,9 @@
           class="group/item relative"
         >
           <!--
-            Shown on every entry in edit mode (not only on hover): a plain
-            cross (no ring) on a rounded square, opaque, a little inside the
+            Shown on every entry in edit mode (not only on hover): a cross
+            on a rounded square, opaque, with a light red ring that always
+            shows its shape (as the other removal buttons), a little inside the
             entry's corner, its shadow in the cards' background fading the text
             under it (as the description's clear button). The entry stays
             hovered while the cross is (`group/item`). Above the entry's card
@@ -946,7 +947,7 @@
             text="Retirer"
           >
             <UButton
-              class="absolute top-1.5 right-1.5 z-1 rounded-md bg-default hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] shadow-[-0.75rem_0_0.5rem_0.125rem_var(--ui-bg)]"
+              class="absolute top-1.5 right-1.5 z-1 rounded-md bg-default ring ring-inset ring-error/30 hover:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] active:bg-[color-mix(in_oklab,var(--ui-error)_12%,var(--ui-bg))] shadow-[-0.75rem_0_0.5rem_0.125rem_var(--ui-bg)]"
               icon="i-lucide-x"
               size="xs"
               color="error"
