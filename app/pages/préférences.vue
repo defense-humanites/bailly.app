@@ -232,7 +232,7 @@
           </template>
           <SettingsRow
             label="Formes fléchies"
-            description="Chercher aussi les formes déclinées ou conjuguées (analyse morphologique)."
+            description="Chercher aussi les formes déclinées ou conjuguées."
             :synced="synced('inflectedForms')"
             :control="inflectedFormsId"
             inline
@@ -258,7 +258,7 @@
             <template #label-trailing>
               <UModal
                 title="Table de correspondance"
-                description="Les lettres grecques en beta code et en translittération ; le grec est toujours accepté."
+                description="En beta code et en translittération ; le grec est toujours accepté."
                 :ui="{ body: 'sm:p-6' }"
               >
                 <UTooltip text="Table de correspondance">
