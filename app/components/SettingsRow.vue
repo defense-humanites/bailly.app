@@ -62,6 +62,8 @@
             />
           </span>
         </UTooltip>
+        <!-- A button about the setting (e.g. a window explaining it). -->
+        <slot name="label-trailing" />
       </p>
       <p
         v-if="description || $slots.description"

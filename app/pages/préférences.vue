@@ -245,22 +245,32 @@
           </SettingsRow>
           <SettingsRow
             label="Saisie"
+            description="Par défaut, suit l'affichage du grec."
             :synced="synced('inputMode')"
           >
-            <!-- The correspondence of the letters, in a window (as the published version's). -->
-            <template #description>
-              Par défaut, elle suit l'affichage du grec. Le grec est toujours accepté.
+            <!--
+              The correspondence of the letters, in a window (as the published
+              version's), opened by a button next to the setting's name (a
+              button's hover, apart from the synchronization's cloud): the
+              setting on two lines. That Greek is always accepted, in the
+              window.
+            -->
+            <template #label-trailing>
               <UModal
                 title="Table de correspondance"
-                description="Les lettres grecques en beta code et en translittération."
+                description="Les lettres grecques en beta code et en translittération ; le grec est toujours accepté."
                 :ui="{ body: 'sm:p-6' }"
               >
-                <button
-                  type="button"
-                  class="link"
-                >
-                  Table de correspondance
-                </button>
+                <UTooltip text="Table de correspondance">
+                  <UButton
+                    icon="i-lucide-table"
+                    color="neutral"
+                    variant="ghost"
+                    size="xs"
+                    class="-my-1 text-muted hover:text-highlighted"
+                    aria-label="Table de correspondance"
+                  />
+                </UTooltip>
                 <template #body>
                   <ConversionTable />
                 </template>
