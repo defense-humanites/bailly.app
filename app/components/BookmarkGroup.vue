@@ -596,9 +596,12 @@
               in the name's text: its height comes from the same padding and
               line height as the name (32 px), rather than from a fixed
               height, in which each browser centres the text its own way.
-              Its ring goes round the whole field, color included: the focus
-              ring, whichever part has the keyboard focus (which part shows by
-              its lighter background), and the ring of a name that cannot be
+              One background for the whole field, lighter when hovered or
+              focused anywhere (as the new tag's, cf. `CreateTag`); the color
+              button without one of its own, its icon in the tag's identity
+              shade (500) when hovered, focused or open. Its ring goes round
+              the whole field, color included: the focus ring, whichever part
+              has the keyboard focus, and the ring of a name that cannot be
               used, told as for a new tag (cf. `CreateTag`): a red ring, the
               message in a bubble under the field and in a live region.
             -->
@@ -610,8 +613,8 @@
             >
               <template #anchor>
                 <div
-                  class="flex min-w-0 grow rounded-full"
-                  :class="nameError ? 'ring-2 ring-error' : 'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-tag-300'"
+                  class="flex min-w-0 grow rounded-full bg-default/60 transition-colors hover:bg-default/90 has-[:focus]:bg-default/90"
+                  :class="[nameError ? 'ring-2 ring-error' : 'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-tag-300', { 'bg-default/90': isTagColorPopoverOpen }]"
                 >
                   <TagColorPicker
                     v-model:open="isTagColorPopoverOpen"
@@ -627,7 +630,7 @@
                         variant="ghost"
                         color="neutral"
                         :ui="{
-                          base: `h-8 w-10 justify-center rounded-l-full rounded-r-none focus-visible:outline-none focus-visible:bg-default/90 ${isTagColorPopoverOpen ? 'bg-default/90 hover:bg-default/90 active:bg-default/90' : 'bg-default/60 hover:bg-default/90 active:bg-default/90'}`,
+                          base: 'h-8 w-10 justify-center rounded-l-full rounded-r-none bg-transparent hover:bg-transparent active:bg-transparent data-[state=open]:bg-transparent focus-visible:outline-none hover:text-(--tag-500) active:text-(--tag-500) focus-visible:text-(--tag-500) data-[state=open]:text-(--tag-500)',
                         }"
                       />
                     </template>
@@ -640,7 +643,7 @@
                     :aria-describedby="nameErrorId"
                     :aria-invalid="!!nameError"
                     :maxlength="IdbTags.nameMaxLength"
-                    class="min-w-0 grow rounded-r-full bg-default/60 px-2 py-0.5 text-xl/7 font-bold text-tag-text hover:bg-default/90 focus:bg-default/90 focus:outline-none md:py-0 md:text-2xl/8"
+                    class="min-w-0 grow rounded-r-full bg-transparent px-2 py-0.5 text-xl/7 font-bold text-tag-text focus:outline-none md:py-0 md:text-2xl/8"
                   >
                 </div>
               </template>
