@@ -214,14 +214,15 @@ export default defineAppConfig({
       },
     },
     /*
-     * The tooltips in the bar's color (`bg-bar`, as the outline's popover of
-     * the compact bar), set apart from the cards they open over; a faint
-     * border (half the muted one) with a shadow, and a slightly toned text
-     * (not the content's).
+     * The tooltips, as the bubbles that inform (cf. `bubble.ts`): in the
+     * light theme a shade darker than the cards and the page with a clear
+     * border, in the dark one the bar's color with a faint border
+     * (`--app-bubble-bg`, `--app-bubble-ring`, cf. `root.css`); a shadow,
+     * and a slightly toned text (not the content's).
      */
     tooltip: {
       slots: {
-        content: "bg-bar ring-muted/50 shadow-md text-toned",
+        content: "bg-(--app-bubble-bg) ring-(--app-bubble-ring) shadow-md text-toned",
       },
     },
     toaster: {

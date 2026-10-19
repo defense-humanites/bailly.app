@@ -92,10 +92,9 @@
      as the search's panels, their highlighted item in marble 100. */
   --app-panel-bg: var(--app-surface-raised);
   --app-panel-highlight: var(--ui-color-neutral-100);
-  /* The bubbles that inform (a field's error or hint, cf. `bubble.ts`): a
-     shade darker than the cards and the page (marble 200), a clear border
-     (marble 300): set apart from the tooltips (the bar's color, which is
-     the page's) and from the panels (raised). */
+  /* The bubbles that inform (the tooltips, a field's error or hint, cf.
+     `bubble.ts`): a shade darker than the cards and the page (marble 200),
+     a clear border (marble 300), set apart from the panels (raised). */
   --app-bubble-bg: var(--ui-color-neutral-200);
   --app-bubble-ring: var(--ui-border-accented);
   /* The fields of the bookmarks' bar (cf. `FIELD_BACKGROUND`): raised as
@@ -173,7 +172,7 @@
      highlighted item as the search bar's hover (`--search-hover`). */
   --app-panel-bg: var(--app-surface-raised);
   --app-panel-highlight: color-mix(in oklab, var(--ui-color-neutral-700) 50%, var(--app-surface-raised));
-  /* The bubbles: the tooltips' look, the bar's color, a faint border. */
+  /* The bubbles and tooltips: the bar's color, a faint border. */
   --app-bubble-bg: var(--app-bar-bg);
   --app-bubble-ring: color-mix(in oklab, var(--ui-border-muted) 50%, transparent);
   --app-field-ring: color-mix(in oklab, var(--ui-color-neutral-500) 75%, var(--ui-bg));
