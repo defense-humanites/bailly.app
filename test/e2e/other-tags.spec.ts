@@ -55,19 +55,28 @@ test.describe("the tags of an entry", () => {
 
   test("the tags in the bookmarks page's order, in the panel (the active one first) and the active tag's menu", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
-    // Created in this order: by latest addition (the default), Gamma, Bêta,
-    // Alpha; Alpha active.
+    // Created in this order: by latest addition (the default), Delta, Gamma,
+    // Bêta, Alpha, but Bêta pinned first; Alpha active.
     await seedBookmarks(page, {
-      tags: [{ name: "Alpha", color: "Green" }, { name: "Bêta", color: "Rose" }, { name: "Gamma", color: "Sky" }],
+      tags: [{ name: "Alpha", color: "Green" }, { name: "Bêta", color: "Rose", pinned: true }, { name: "Gamma", color: "Sky" }, { name: "Delta", color: "Red", entries: [logos] }],
       current: "Alpha",
     });
     await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
-    await expect(allTags(page).getByRole("option")).toHaveText(["Alphaactive", "Gamma", "Bêta"]);
+    const options = allTags(page).getByRole("option");
+    await expect(options).toHaveText(["Alphaactive", "Bêta", "Delta", "Gamma"]);
+    // A pinned tag shows a pin (filled when the entry has it), the others a tag.
+    await expect(options.nth(1).locator(".iconify.i-lucide\\:pin")).toBeVisible();
+    await expect(options.nth(2).locator(".iconify.i-bailly\\:tag-filled")).toBeVisible();
+    await options.nth(1).click();
+    await expect(options.nth(1).locator(".iconify.i-bailly\\:pin-filled")).toBeVisible();
     await page.keyboard.press("Escape");
 
     await goto("/signets", { waitUntil: "hydration" });
     await page.getByRole("group", { name: "Étiquettes" }).getByRole("button", { name: "Étiquette active" }).click();
-    await expect(page.getByRole("listbox").getByRole("option")).toHaveText(["Gamma", "Bêta", "Alpha"]);
+    const items = page.getByRole("listbox").getByRole("option");
+    await expect(items).toHaveText(["Bêta", "Delta", "Gamma", "Alpha"]);
+    await expect(items.nth(0).locator(".iconify.i-bailly\\:pin-filled")).toBeVisible();
+    await expect(items.nth(1).locator(".iconify.i-bailly\\:tag-filled")).toBeVisible();
   });
 
   test("a tag toggled with the pointer keeps the highlight, the pointer on it", async ({ page, goto }) => {

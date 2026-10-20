@@ -96,7 +96,7 @@
    * `ACTIVE_FILTER_FROM` tags, the menu can be filtered.
    */
   const ACTIVE_FILTER_FROM = 8;
-  const activeItems = computed(() => sortedTags.value.map(tag => ({ label: tag.name, value: tag.key, color: tag.color })));
+  const activeItems = computed(() => sortedTags.value.map(tag => ({ label: tag.name, value: tag.key, color: tag.color, pinned: tag.pinnedAt !== undefined })));
   /**
    * The active tag's key, once its tag is listed only: the field would show
    * the bare key otherwise (on a reload, the key is known before the tags
@@ -202,9 +202,10 @@
                   class="size-5 shrink-0 text-tag-text"
                 />
               </template>
+              <!-- A pinned tag: a pin, as in the table of contents. -->
               <template #item-leading="{ item }">
                 <UIcon
-                  name="i-bailly-tag-filled"
+                  :name="item.pinned ? 'i-bailly-pin-filled' : 'i-bailly-tag-filled'"
                   :data-tag-color="item.color"
                   class="size-5 shrink-0 text-tag-text"
                 />

@@ -95,9 +95,9 @@
    */
   const fuseOptions = { resultLimit: 50, fuseOptions: { ignoreDiacritics: true } };
 
-  type TagItem = CommandPaletteItem & { key: TagKey; color: IdbTag["color"] };
+  type TagItem = CommandPaletteItem & { key: TagKey; color: IdbTag["color"]; pinned: boolean };
 
-  const tagItems = computed((): TagItem[] => panelTags.value.map(tag => ({ key: tag.key, label: tag.name, color: tag.color })));
+  const tagItems = computed((): TagItem[] => panelTags.value.map(tag => ({ key: tag.key, label: tag.name, color: tag.color, pinned: tag.pinnedAt !== undefined })));
   const tagGroups = computed((): CommandPaletteGroup[] => [{ id: "tags", items: tagItems.value }]);
 
   /**
@@ -252,9 +252,16 @@
             }"
             @update:model-value="onTagsChange"
           >
+            <!--
+              A tag, or a pin for a pinned tag (as in the bookmarks page's
+              table of contents and active tag's menu): filled when the entry
+              has it.
+            -->
             <template #item-leading="{ item }">
               <UIcon
-                :name="entryTagKeys.has(item.key) ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
+                :name="item.pinned
+                  ? (entryTagKeys.has(item.key) ? 'i-bailly-pin-filled' : 'i-lucide-pin')
+                  : (entryTagKeys.has(item.key) ? 'i-bailly-tag-filled' : 'i-lucide-tag')"
                 :data-tag-color="item.color"
                 class="size-5 shrink-0 text-tag-text"
               />

@@ -60,6 +60,7 @@ interface BookmarksStore {
   starEntry: (entry: Bookmark) => Promise<unknown>;
   createTag: (tag: { name: string; color: string }) => Promise<{ data: { key: string } }>;
   tagEntry: (entry: Bookmark, tagKey: string) => Promise<unknown>;
+  pinTag: (key: string, pinned: boolean) => Promise<unknown>;
   setCurrentTag: (key: string) => void;
   tagKeysOf: (uri: string) => string[];
   tags: { name: string; key: string }[];
@@ -78,21 +79,22 @@ export type AppRoot = Element & {
  * Adds bookmarks through the app's store (IndexedDB), then reloads the page
  * (and waits for its hydration).
  * @param tags Tags to create, in this order (a new tag becomes the current
- * one), with their entries.
+ * one), with their entries, pinned if asked.
  * @param current The name of the tag to make current afterwards.
  */
 export async function seedBookmarks(
   page: Page,
-  { starred = [], tags = [], current }: { starred?: Bookmark[]; tags?: { name: string; color: string; entries?: Bookmark[] }[]; current?: string },
+  { starred = [], tags = [], current }: { starred?: Bookmark[]; tags?: { name: string; color: string; entries?: Bookmark[]; pinned?: boolean }[]; current?: string },
 ): Promise<void> {
   await page.evaluate(async ({ starred, tags, current }) => {
     const root = document.querySelector("#__nuxt") as AppRoot;
     const store = root.__vue_app__.config.globalProperties.$pinia._s.get("bookmarks")!;
     await store.initialize();
     for (const entry of starred) await store.starEntry(entry);
-    for (const { name, color, entries = [] } of tags) {
+    for (const { name, color, entries = [], pinned } of tags) {
       const { data } = await store.createTag({ name, color });
       for (const entry of entries) await store.tagEntry(entry, data.key);
+      if (pinned) await store.pinTag(data.key, true);
     }
     const currentKey = store.tags.find(tag => tag.name === current)?.key;
     if (currentKey !== undefined) store.setCurrentTag(currentKey);
