@@ -91,11 +91,12 @@
   const INLINE_ICON = "inline-block size-4 align-[-0.15em]";
 
   /**
-   * The tags to choose the active one from, in their order; from
+   * The tags to choose the active one from, in the cards' order (the pinned
+   * ones first, then as the user chose to sort them); from
    * `ACTIVE_FILTER_FROM` tags, the menu can be filtered.
    */
   const ACTIVE_FILTER_FROM = 8;
-  const activeItems = computed(() => tags.value.map(tag => ({ label: tag.name, value: tag.key, color: tag.color })));
+  const activeItems = computed(() => sortedTags.value.map(tag => ({ label: tag.name, value: tag.key, color: tag.color })));
   /**
    * The active tag's key, once its tag is listed only: the field would show
    * the bare key otherwise (on a reload, the key is known before the tags

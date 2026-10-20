@@ -53,6 +53,23 @@ test.describe("the tags of an entry", () => {
     await expect.poll(() => tagNamesOf(page, "logos")).toEqual(["Rouge"]);
   });
 
+  test("the tags in the bookmarks page's order, in the panel (the active one first) and the active tag's menu", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    // Created in this order: by latest addition (the default), Gamma, Bêta,
+    // Alpha; Alpha active.
+    await seedBookmarks(page, {
+      tags: [{ name: "Alpha", color: "Green" }, { name: "Bêta", color: "Rose" }, { name: "Gamma", color: "Sky" }],
+      current: "Alpha",
+    });
+    await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
+    await expect(allTags(page).getByRole("option")).toHaveText(["Alphaactive", "Gamma", "Bêta"]);
+    await page.keyboard.press("Escape");
+
+    await goto("/signets", { waitUntil: "hydration" });
+    await page.getByRole("group", { name: "Étiquettes" }).getByRole("button", { name: "Étiquette active" }).click();
+    await expect(page.getByRole("listbox").getByRole("option")).toHaveText(["Gamma", "Bêta", "Alpha"]);
+  });
+
   test("a tag toggled with the pointer keeps the highlight, the pointer on it", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     await seedBookmarks(page, {
@@ -61,7 +78,8 @@ test.describe("the tags of an entry", () => {
     });
     await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
     const options = allTags(page).getByRole("option");
-    await expect(options).toHaveText(["Cielactive", "Rouge", "Vert"]);
+    // The latest created first (the default sorting), after the active one.
+    await expect(options).toHaveText(["Cielactive", "Vert", "Rouge"]);
 
     for (const [i, selected] of [[2, "true"], [2, "false"], [1, "true"], [2, "true"]] as const) {
       await options.nth(i).hover();

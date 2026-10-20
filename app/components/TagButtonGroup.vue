@@ -45,13 +45,33 @@
 
   /**
    * All the tags, the current one first (marked « active »), then the others
-   * in their order: the entry can be added to (or removed from) them in
-   * the popover, where the names show in full.
+   * in the bookmarks page's order (the pinned ones first, then as the user
+   * chose to sort them, cf. `sortTags`): the entry can be added to (or
+   * removed from) them in the popover, where the names show in full. The
+   * order is kept while the panel is open: adding the entry to a tag would
+   * otherwise move it (sorted by the latest addition, or by number of
+   * entries) from under the pointer.
    */
-  const panelTags = computed(() => [
-    ...tags.value.filter(tag => tag.key === currentTag.value?.key),
-    ...tags.value.filter(tag => tag.key !== currentTag.value?.key),
-  ]);
+  const tagSort = useTagSort();
+  const orderedTags = computed(() => {
+    const sorted = sortTags(tags.value, tagSort.value, bookmarksStore.entriesOf);
+    return [
+      ...sorted.filter(tag => tag.key === currentTag.value?.key),
+      ...sorted.filter(tag => tag.key !== currentTag.value?.key),
+    ];
+  });
+  const panelOpen = ref(false);
+  const frozenOrder = shallowRef<TagKey[] | null>(null);
+  watch(panelOpen, (open) => {
+    frozenOrder.value = open ? orderedTags.value.map(tag => tag.key) : null;
+  });
+  const panelTags = computed(() => {
+    const order = frozenOrder.value;
+    if (!order) return orderedTags.value;
+    const rank = new Map(order.map((key, i) => [key, i]));
+    // A tag created meanwhile (in another tab) comes last.
+    return [...tags.value].sort((a, b) => (rank.get(a.key) ?? order.length) - (rank.get(b.key) ?? order.length));
+  });
 
   const entryTagKeys = computed(() => new Set(bookmarksStore.tagKeysOf(props.entry.uri)));
 
@@ -182,6 +202,7 @@
       buttons' pill shape.
     -->
     <UPopover
+      v-model:open="panelOpen"
       :content="popoverContent"
       :ui="{ content: 'bg-(--app-panel-bg)' }"
     >
