@@ -67,6 +67,14 @@
    */
   const filterInput = { ui: { base: "rounded-none shadow-none" } };
 
+  /**
+   * The filter's options, defined once: an object written in the template is
+   * a new one at each render (unless the compiler hoists it, as in the
+   * build), and the palette, its search redone, highlighted its first option
+   * (the current tag) after each change, away from the one under the pointer.
+   */
+  const fuseOptions = { resultLimit: 50, fuseOptions: { ignoreDiacritics: true } };
+
   type TagItem = CommandPaletteItem & { key: TagKey; color: IdbTag["color"] };
 
   const tagItems = computed((): TagItem[] => panelTags.value.map(tag => ({ key: tag.key, label: tag.name, color: tag.color })));
@@ -213,7 +221,7 @@
             :input="filterable && filterInput"
             placeholder="Filtrer les étiquettes"
             :autofocus="filterable"
-            :fuse="{ resultLimit: 50, fuseOptions: { ignoreDiacritics: true } }"
+            :fuse="fuseOptions"
             :ui="{
               input: '[&_input]:text-sm',
               viewport: 'max-h-72 p-0',
