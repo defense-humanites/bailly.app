@@ -32,6 +32,9 @@ test.describe("error page", () => {
     });
     await page.goto(encodeURI("/à-propos"));
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Une erreur est survenue");
+    // Try again, or write to us, the page in the subject.
+    await expect(page.getByRole("link", { name: "écrivez-nous" }))
+      .toHaveAttribute("href", `mailto:contact@bailly.app?subject=${encodeURIComponent("Erreur sur la page /à-propos")}`);
     // Nothing of the page served left under it.
     await expect(page.getByRole("heading", { name: /Le dictionnaire grec-français/ })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Signets" })).toHaveCount(1);

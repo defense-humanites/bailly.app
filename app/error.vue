@@ -18,7 +18,24 @@
   const description = computed((): string => {
     if (notFound.value) return "Cette adresse ne mène à aucune entrée du dictionnaire ni à aucune page de l'application.";
     const message = props.error.message;
-    return OWN_MESSAGES.has(message) ? `${message} Réessayez dans un instant.` : "La page n'a pas pu être affichée. Réessayez dans un instant.";
+    return OWN_MESSAGES.has(message) ? message : "La page n'a pas pu être affichée.";
+  });
+
+  /**
+   * Any other error than a missing page may not pass by itself (e.g. a
+   * browser lacking a function, as on iOS 16, issue #10): the reader is
+   * asked to try again, and to write to us if it lasts, the page's address
+   * in the subject.
+   */
+  const route = useRoute();
+  const contactHref = computed((): string => {
+    let path = route.path;
+    try {
+      path = decodeURI(path);
+    } catch {
+      // A malformed address: kept as it is.
+    }
+    return `mailto:contact@bailly.app?subject=${encodeURIComponent(`Erreur sur la page ${path}`)}`;
   });
 
   useSeoMeta({
@@ -62,7 +79,7 @@
       >
         <header>
           <UIcon
-            :name="notFound ? 'i-lucide-search-x' : 'i-lucide-cloud-off'"
+            :name="notFound ? 'i-lucide-search-x' : 'i-lucide-triangle-alert'"
             class="mb-4 size-8 text-primary"
           />
           <h1 class="text-3xl font-bold">
@@ -70,6 +87,13 @@
           </h1>
           <p class="mt-2 text-lg text-muted font-medium">
             {{ description }}
+            <template v-if="!notFound">
+              Réessayez, et si le problème persiste,
+              <a
+                :href="contactHref"
+                class="link"
+              >écrivez-nous</a>.
+            </template>
           </p>
         </header>
       </article>
