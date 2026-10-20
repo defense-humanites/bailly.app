@@ -48,6 +48,9 @@ function scrollPage(target: { hash: string } | { top: number }, behavior: Scroll
  * `utils/pageScroll.ts`).
  */
 export default {
+  // Deprecated by Vue Router 5.4 for an experimental API (`ScrollRestoration`),
+  // which Nuxt doesn't use yet: its own option, as Nuxt's own file.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   scrollBehavior(to, from, savedPosition) {
     if (samePath(to, from)) {
       // The anchor of what is being read, given as the page scrolls (cf.
