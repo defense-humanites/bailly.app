@@ -17,4 +17,23 @@ test.describe("error page", () => {
     await expect(page).toHaveURL(/\/logos$/);
     await expect(page.locator("main h1")).toHaveText("λόγος");
   });
+
+  test("a failure while starting: the error page alone, the page served cleared", async ({ page }) => {
+    // The API plugin fails in the browser only (as with `URL.canParse` on
+    // iOS 16, issue #10): its host refused as a URL.
+    await page.addInitScript(() => {
+      const NativeURL = URL;
+      window.URL = new Proxy(NativeURL, {
+        construct(target, [url, base]: [string | URL, string?]) {
+          if (String(url).startsWith("http://127.0.0.1:4010")) throw new TypeError("Invalid URL");
+          return new target(url, base);
+        },
+      });
+    });
+    await page.goto(encodeURI("/à-propos"));
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Une erreur est survenue");
+    // Nothing of the page served left under it.
+    await expect(page.getByRole("heading", { name: /Le dictionnaire grec-français/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Signets" })).toHaveCount(1);
+  });
 });

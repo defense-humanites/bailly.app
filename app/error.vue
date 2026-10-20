@@ -31,6 +31,22 @@
   // the header's menu, toasts).
   useAppShell();
   const toaster: ToasterProps = { expand: false, progress: false };
+
+  /**
+   * A failure while the application starts in the browser (e.g. a plugin,
+   * as with `URL.canParse` on iOS 16, issue #10) renders this page in place
+   * of the page served, whose markup Vue then leaves in place after its own
+   * (a hydration mismatch): the two showed one over the other (the pages
+   * scroll in fixed boxes). What isn't this page's is removed from the
+   * application's root.
+   */
+  const article = useTemplateRef("article");
+  onMounted(() => {
+    const root = document.getElementById("__nuxt");
+    for (const child of [...root?.children ?? []]) {
+      if (!child.contains(article.value)) child.remove();
+    }
+  });
 </script>
 
 <template>
@@ -40,7 +56,10 @@
   -->
   <UApp :toaster="toaster">
     <NuxtLayout name="single-column">
-      <article class="space-y-6">
+      <article
+        ref="article"
+        class="space-y-6"
+      >
         <header>
           <UIcon
             :name="notFound ? 'i-lucide-search-x' : 'i-lucide-cloud-off'"
