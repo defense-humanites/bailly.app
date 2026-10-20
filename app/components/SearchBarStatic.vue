@@ -46,7 +46,7 @@
         type="text"
         autocomplete="off"
         data-slot="base"
-        class="transition-colors rounded-full px-3 py-2 gap-2 text-highlighted bg-default ring ring-inset ring-accented w-full border-0 placeholder:text-dimmed group-not-only:group-first:rounded-e-none group-not-only:group-last:rounded-s-none group-not-last:group-not-first:rounded-none outline-primary/25 focus-visible:outline-3 focus-visible:ring-primary ps-10 pe-10 shadow-xs text-base/6 focus-visible:outline-transparent"
+        class="appearance-none transition-colors rounded-full px-3 py-2 gap-2 text-highlighted bg-default ring ring-inset ring-accented w-full border-0 placeholder:text-dimmed group-not-only:group-first:rounded-e-none group-not-only:group-last:rounded-s-none group-not-last:group-not-first:rounded-none outline-primary/25 focus-visible:outline-3 focus-visible:ring-primary ps-10 pe-10 shadow-xs text-base/6 focus-visible:outline-transparent"
         :aria-label="`Rechercher une entrée (${transliterating ? 'translittération' : 'beta code'} ou grec)`"
         autocapitalize="off"
         autocorrect="off"

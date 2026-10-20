@@ -458,7 +458,9 @@
       :content="{ align: 'start', collisionPadding: 8, reference: groupElement }"
       :ui="{
         root: 'has-focus-visible:z-auto',
-        base: 'shadow-xs text-base/6 focus-visible:outline-transparent',
+        // Without its native appearance: Safari on iOS 16 drew its own field
+        // over the ring (a bar without its border, buttons aside).
+        base: 'appearance-none shadow-xs text-base/6 focus-visible:outline-transparent',
         content: contentClass,
         // The homonyms' indent comes from their label (`data-nested`), not from
         // an item class: the input menu reuses its items by position without
