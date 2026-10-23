@@ -159,11 +159,15 @@
   <!--
     In the card's header (cf. `EntryCard`): a framed group of buttons, ruled
     between them, on the cards' background (the header is tinted), as the
-    entry's tools at the other end (cf. `EntryCitationButton`).
+    entry's tools at the other end (cf. `EntryCitationButton`). The rules'
+    color is set on every button, ruled or not: otherwise, when the current
+    tag's button comes in first (once the bookmarks are loaded), the next
+    button's new rule fades in from the text's color (the buttons'
+    `transition-colors`), a dark line flashing in the light theme.
   -->
   <div
     data-toolbar-group
-    class="flex min-w-0 items-center rounded-lg border border-default bg-default shadow-xs [&>*+*]:border-s [&>*+*]:border-default [&>button]:rounded-none [&>:first-child]:rounded-s-md [&>:last-child]:rounded-e-md"
+    class="flex min-w-0 items-center rounded-lg border border-default bg-default shadow-xs [&>*]:border-default [&>*+*]:border-s [&>button]:rounded-none [&>:first-child]:rounded-s-md [&>:last-child]:rounded-e-md"
   >
     <!--
       The current tag, in one click (the most frequent action while reading):
