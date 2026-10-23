@@ -12,7 +12,7 @@
   const TOOLBAR_HOVER = "hover:bg-(--app-button-hover) active:bg-(--app-button-active)";
 
   const bookmarksStore = useBookmarksStore();
-  const { currentTag, tags } = storeToRefs(bookmarksStore);
+  const { currentTag, initialized, tags } = storeToRefs(bookmarksStore);
 
   const props = defineProps<{
     /**
@@ -48,6 +48,31 @@
       if (!tag) return;
       fadeCurrentTag.value = true;
       stop();
+    });
+  });
+
+  /**
+   * Whether the buttons' colors may change with a transition: not until the
+   * bookmarks are loaded and drawn (two frames later), or a starred entry's
+   * star, at first the text's color, turned yellow under the eyes on a full
+   * load (and the current tag's button its tag's color). Their colors change
+   * with a transition when the user acts.
+   */
+  const settled = ref(false);
+  onMounted(() => {
+    const settle = (): void => {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        settled.value = true;
+      }));
+    };
+    if (initialized.value) {
+      settled.value = true;
+      return;
+    }
+    const stop = watch(initialized, (ready) => {
+      if (!ready) return;
+      stop();
+      settle();
     });
   });
 
@@ -184,6 +209,7 @@
   <div
     data-toolbar-group
     class="flex min-w-0 items-center rounded-lg border border-default bg-default shadow-xs [&>*]:border-default [&>*+*]:border-s [&>button]:rounded-none [&>:first-child]:rounded-s-md [&>:last-child]:rounded-e-md"
+    :class="{ '[&_button]:transition-none': !settled }"
   >
     <!--
       The current tag, in one click (the most frequent action while reading):
