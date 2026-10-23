@@ -32,12 +32,12 @@
         variant="ghost"
         class="rounded-md hover:bg-(--app-button-hover) active:bg-(--app-button-active) data-[state=open]:bg-(--app-button-active)"
       />
-      <!-- The title after an opening quotation mark (Lucide's "quote", a closing one, turned). -->
+      <!-- The title after the button's icon. -->
       <template #title>
         <span class="flex items-center gap-2">
           <UIcon
             name="i-lucide-quote"
-            class="size-5 shrink-0 rotate-180 text-muted"
+            class="size-5 shrink-0 text-muted"
           />
           Citer cette entrée
         </span>
