@@ -36,6 +36,22 @@
   );
 
   /**
+   * Whether the current tag's button fades in: when it comes in after the
+   * toolbar's first render (on a full load, the bookmarks are read once the
+   * page is interactive), rather than appearing at once; not when it is
+   * already there (a page opened in the app). Not with reduced motion.
+   */
+  const fadeCurrentTag = ref(false);
+  onMounted(() => {
+    if (currentTag.value) return;
+    const stop = watch(currentTag, (tag) => {
+      if (!tag) return;
+      fadeCurrentTag.value = true;
+      stop();
+    });
+  });
+
+  /**
    * The panel (a dialog) is named after its trigger by Reka
    * (`aria-labelledby`); the `aria-label` is a fallback, for the trigger's
    * id may differ between the server and the client (then the reference is
@@ -185,7 +201,7 @@
         :aria-pressed="taggedAsCurrent"
         :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
         :data-tag-color="currentTag.color"
-        :class="[TOOLBAR_HOVER, taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text']"
+        :class="[TOOLBAR_HOVER, taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text', fadeCurrentTag && 'animate-[fade-in_200ms_ease-out] motion-reduce:animate-none']"
         :ui="{ label: 'max-w-36 truncate text-xs tracking-tight sm:max-w-56' }"
         color="neutral"
         variant="ghost"
