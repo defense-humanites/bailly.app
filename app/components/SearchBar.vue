@@ -460,7 +460,11 @@
         root: 'has-focus-visible:z-auto',
         // Without its native appearance: Safari on iOS 16 drew its own field
         // over the ring (a bar without its border, buttons aside).
-        base: 'appearance-none shadow-xs text-base/6 focus-visible:outline-transparent',
+        // The halo is the whole bar's (cf. `UFieldGroup`), not the input's:
+        // its outline transparent at rest too, not only once focused, or its
+        // color faded out from Nuxt UI's (`transition-colors`), a halo
+        // flashing over the input.
+        base: 'appearance-none shadow-xs text-base/6 outline-transparent',
         content: contentClass,
         // The homonyms' indent comes from their label (`data-nested`), not from
         // an item class: the input menu reuses its items by position without

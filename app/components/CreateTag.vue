@@ -113,7 +113,7 @@
         enterkeyhint="done"
         :maxlength="IdbTags.nameMaxLength"
         :class="['group/field', FIELD_HALO, { 'z-10 outline-error/25 max-lg:border-error max-lg:ring max-lg:ring-error max-lg:has-[:focus-visible]:ring-error lg:border-error lg:has-[:focus-visible]:border-error': error }]"
-        :ui="{ base: `h-full rounded-none shadow-none pe-24 focus-visible:outline-transparent max-lg:rounded-t-(--field-inner-radius) ${FIELD_BACKGROUND} group-hover/field:bg-(--app-field-hover)`, leading: 'ps-1.5', trailing: 'gap-2 pe-3' }"
+        :ui="{ base: `h-full rounded-none shadow-none pe-24 outline-transparent max-lg:rounded-t-(--field-inner-radius) ${FIELD_BACKGROUND} group-hover/field:bg-(--app-field-hover)`, leading: 'ps-1.5', trailing: 'gap-2 pe-3' }"
         @keydown.enter="createTag"
       >
         <!-- Color picker -->
