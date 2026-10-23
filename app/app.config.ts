@@ -1,3 +1,10 @@
+/**
+ * The close buttons of the windows, toasts and alerts: rounded squares, as
+ * the other icon buttons (`rounded-md`), rather than circles (the buttons'
+ * `rounded-full`, cf. `button` below).
+ */
+const CLOSE = "rounded-md";
+
 export default defineAppConfig({
   ui: {
     // The palette « Grèce classique » (cf. `assets/css/theme.css`).
@@ -159,6 +166,9 @@ export default defineAppConfig({
      * rather than aligned with the contents under them (16px).
      */
     modal: {
+      slots: {
+        close: CLOSE,
+      },
       variants: {
         fullscreen: {
           false: {
@@ -202,6 +212,11 @@ export default defineAppConfig({
         base: "data-[state=unchecked]:bg-(--ui-color-neutral-300) dark:data-[state=unchecked]:bg-accented",
       },
     },
+    alert: {
+      slots: {
+        close: CLOSE,
+      },
+    },
     /*
      * The toasts stand out from the page: the background of the search bar
      * in use (`--app-surface-raised`, cf. `root.css`), and, on a phone, as
@@ -211,6 +226,7 @@ export default defineAppConfig({
     toast: {
       slots: {
         root: "bg-(--app-surface-raised)",
+        close: CLOSE,
       },
     },
     /*
