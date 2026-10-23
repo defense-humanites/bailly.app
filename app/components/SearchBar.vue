@@ -35,7 +35,7 @@
   };
 
   const { query, result, resultQuery, status, pending } = useEntrySearch();
-  const { position, diacriticSensitive, inputMode, isDefault: defaultOptions, reset: resetOptions } = useSearchOptions();
+  const { position, diacriticSensitive, inputMode, placeholder, isDefault: defaultOptions, reset: resetOptions } = useSearchOptions();
 
   const transliterating = computed((): boolean => inputMode.value === InputMode.Transliteration);
 
@@ -445,7 +445,7 @@
       :items="items"
       ignore-filter
       icon="i-lucide-search"
-      :placeholder="transliterating ? 'anazêtéô…' : 'ἀναζητέω…'"
+      :placeholder="placeholder"
       :aria-label="`Rechercher une entrée (${transliterating ? 'translittération' : 'beta code'} ou grec)`"
       size="lg"
       fixed

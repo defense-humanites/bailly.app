@@ -254,6 +254,20 @@ export function toPositionedQuery(query: string, position: SearchPosition): stri
 }
 
 /**
+ * The search bar's placeholder, a verb in the input mode: the contracted form
+ * usually read (ἀναζητῶ) when inflected forms are looked up, the morphological
+ * analysis finding its headword; the headword itself (ἀναζητέω) otherwise,
+ * which the user would have to type. A discreet hint of the preference.
+ * @remarks The transliteration's ô and tilde are combining marks (ỗ is in a
+ * block left out of Inter's subset, cf. `scripts/subset-fonts.sh`).
+ * @example searchPlaceholder(InputMode.BetaCode, true) // "ἀναζητῶ…"
+ */
+export function searchPlaceholder(inputMode: InputMode, lemmatizing: boolean): string {
+  if (inputMode === InputMode.Transliteration) return lemmatizing ? "anazêto\u0302\u0303…" : "anazêtéô…";
+  return lemmatizing ? "ἀναζητῶ…" : "ἀναζητέω…";
+}
+
+/**
  * Whether inflected forms can be looked up too (through the morphological
  * analysis): not for a part of a word (`contains`, `end`), which can't be
  * analyzed, nor with wildcards (the API doesn't apply them to the analyses).

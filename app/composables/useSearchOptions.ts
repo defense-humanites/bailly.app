@@ -1,5 +1,5 @@
 import { InputMode } from "~/enums";
-import type { SearchPosition } from "~/utils/searchInput";
+import { isLemmatizable, searchPlaceholder, type SearchPosition } from "~/utils/searchInput";
 
 /**
  * The search options of the search bar, and the search preferences.
@@ -49,10 +49,18 @@ export function useSearchOptions() {
    */
   const isDefault = computed((): boolean => position.value === "start" && !diacriticSensitive.value);
 
+  /**
+   * The search bar's placeholder: whether inflected forms are looked up shows
+   * in it (cf. `searchPlaceholder`).
+   */
+  const placeholder = computed((): string =>
+    searchPlaceholder(inputMode.value, inflectedForms.value && isLemmatizable(position.value)),
+  );
+
   const reset = (): void => {
     position.value = "start";
     diacriticSensitive.value = false;
   };
 
-  return { position, diacriticSensitive, inputMode, inflectedForms, isDefault, reset };
+  return { position, diacriticSensitive, inputMode, inflectedForms, placeholder, isDefault, reset };
 }

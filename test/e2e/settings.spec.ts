@@ -277,8 +277,10 @@ test.describe("settings", () => {
   test("search: shared with the search options", async ({ page, goto }) => {
     await goto("/préférences", { waitUntil: "hydration" });
     await page.getByText("Translittération", { exact: true }).click();
-    await expect(page.locator("header input[role=combobox]")).toHaveAttribute("placeholder", "anazêtéô…");
+    await expect(page.locator("header input[role=combobox]")).toHaveAttribute("placeholder", "anazêto\u0302\u0303…");
     await page.getByRole("switch", { name: "Formes fléchies" }).click();
+    // Without the inflected forms, the headword the user would have to type.
+    await expect(page.locator("header input[role=combobox]")).toHaveAttribute("placeholder", "anazêtéô…");
     await page.getByRole("button", { name: "Options de recherche" }).click();
     await expect(page.getByRole("dialog").getByRole("switch", { name: /Formes fléchies/ })).not.toBeChecked();
   });

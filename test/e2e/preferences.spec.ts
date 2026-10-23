@@ -32,7 +32,8 @@ test.describe("preferences", () => {
     // The server's HTML already has the transliteration placeholder.
     // (Fetched by the browser: the cookie is secure outside development.)
     const html = await page.evaluate(async () => (await fetch("/")).text());
-    expect(html).toContain("placeholder=\"anazêtéô…\"");
+    // (Inflected forms looked up: the contracted form, cf. `searchPlaceholder`.)
+    expect(html).toContain("placeholder=\"anazêto\u0302\u0303…\"");
   });
 
   test("the previous application's storage is migrated once", async ({ page, goto, context }) => {

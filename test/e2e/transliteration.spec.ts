@@ -26,7 +26,7 @@ test.describe("transliterated Greek", () => {
     await goto("/", { waitUntil: "hydration" });
     // Typed in Latin characters too (the input mode following the display,
     // as long as the user hasn't chosen one).
-    await expect(searchInput(page)).toHaveAttribute("placeholder", "anazêtéô…");
+    await expect(searchInput(page)).toHaveAttribute("placeholder", "anazêto\u0302\u0303…");
     await searchInput(page).fill("logos");
     await expect(searchResults(page).getByRole("option", { name: /^logos, ou/ })).toBeVisible();
     await expect(searchInput(page)).toHaveValue("logos");
@@ -43,7 +43,7 @@ test.describe("transliterated Greek", () => {
   test("the input mode back to Beta Code with the Greek display", async ({ page, context, goto }) => {
     await page.getByRole("switch", { name: "Grec translittéré" }).click();
     await goto("/", { waitUntil: "hydration" });
-    await expect(searchInput(page)).toHaveAttribute("placeholder", "ἀναζητέω…");
+    await expect(searchInput(page)).toHaveAttribute("placeholder", "ἀναζητῶ…");
     await searchInput(page).pressSequentially("logos");
     await expect(searchInput(page)).toHaveValue("λογος");
     // Still following the display: no input mode stored.
@@ -57,7 +57,7 @@ test.describe("transliterated Greek", () => {
     await page.getByRole("radio", { name: "Beta code" }).click({ force: true });
     await expect(page.getByRole("radio", { name: "Beta code" })).toBeChecked();
     await goto("/", { waitUntil: "hydration" });
-    await expect(searchInput(page)).toHaveAttribute("placeholder", "ἀναζητέω…");
+    await expect(searchInput(page)).toHaveAttribute("placeholder", "ἀναζητῶ…");
     await searchInput(page).pressSequentially("logos");
     await expect(searchInput(page)).toHaveValue("λογος");
   });

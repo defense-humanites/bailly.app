@@ -14,7 +14,7 @@
    * the server (`/recherche`, cf. `server/routes/recherche.get.ts`); and what
    * is typed is handed to the search bar replacing it (cf. `handOffSearch`).
    */
-  const { inputMode } = useSearchOptions();
+  const { inputMode, placeholder } = useSearchOptions();
   const transliterating = computed((): boolean => inputMode.value === InputMode.Transliteration);
 
   const input = useTemplateRef("input");
@@ -53,7 +53,7 @@
         spellcheck="false"
         enterkeyhint="search"
         :lang="transliterating ? 'grc-Latn' : 'grc'"
-        :placeholder="transliterating ? 'anazêtéô…' : 'ἀναζητέω…'"
+        :placeholder="placeholder"
       >
       <span
         data-slot="leading"

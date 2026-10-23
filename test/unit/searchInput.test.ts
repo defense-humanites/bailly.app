@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { InputMode } from "../../app/enums";
 import { normalizeSearchGreek } from "../../shared/utils/searchGreek";
-import { convertSearchInput, hasWildcards, isLemmatizable, toLookupQuery, toPositionedQuery, toSearchGreek, toSearchQuery, toTransliteratedInput } from "../../app/utils/searchInput";
+import { convertSearchInput, hasWildcards, isLemmatizable, searchPlaceholder, toLookupQuery, toPositionedQuery, toSearchGreek, toSearchQuery, toTransliteratedInput } from "../../app/utils/searchInput";
 
 /**
  * Types the input one character at a time, as in the search bar.
@@ -85,6 +85,15 @@ test("looks inflected forms up for whole words only", () => {
   expect(isLemmatizable("contains")).toBe(false);
   expect(isLemmatizable("end")).toBe(false);
   expect(isLemmatizable("start", true)).toBe(false); // Wildcards.
+});
+
+test("shows in the placeholder whether inflected forms are looked up", () => {
+  expect(searchPlaceholder(InputMode.BetaCode, true)).toBe("ἀναζητῶ…");
+  expect(searchPlaceholder(InputMode.BetaCode, false)).toBe("ἀναζητέω…");
+  expect(searchPlaceholder(InputMode.Transliteration, true).normalize("NFC")).toBe("anazêtỗ…");
+  expect(searchPlaceholder(InputMode.Transliteration, false)).toBe("anazêtéô…");
+  // The transliteration in the input mode reads as the Greek.
+  expect(toLookupQuery(searchPlaceholder(InputMode.Transliteration, true).slice(0, -1), InputMode.Transliteration)).toBe("ἀναζητῶ");
 });
 
 test("keeps the wildcards within a word", () => {
