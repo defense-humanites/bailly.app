@@ -27,6 +27,9 @@ test("psi typed as ps, one letter at a time as in a run", () => {
   expect(type("*ps")).toBe("Ψ");
   expect(type("lo/ps")).toBe("λόψ");
   expect(toSearchGreek("psuxh")).toBe("ψυχη");
+  expect(toSearchGreek("PSUXH")).toBe("ψυχη");
+  // Not ks for xi: a velar before a sigma stays (ἔκστασις).
+  expect(toSearchGreek("e)/kstasis")).toBe("ἔκστασις");
   // Greek typed as such stays as it is.
   expect(toSearchGreek("πσα")).toBe("πσα");
 });

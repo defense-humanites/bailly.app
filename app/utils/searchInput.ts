@@ -83,12 +83,15 @@ const removePendingCapitals = (text: string): string =>
 const BETA_CODE_LETTERS = /[a-z]+/gi;
 
 /**
- * A pi already converted, followed by a Latin `s` just typed: back to `p`
- * (`*p` for a capital), so that `ps` gives psi, as the converter reads it in
- * a run of letters (`psuxh` → `ψυχη`), and as the transliteration writes it;
- * typed one letter at a time, it gave πσ, a sequence Greek doesn't write.
+ * `ps` typed for psi, as the transliteration writes it (Beta Code's own
+ * spelling is `y`): a Latin `p`, or a pi already converted from it (typed one
+ * letter at a time), before a Latin `s` becomes `y` (`*y` for a capital pi).
+ * The converter no longer reads `ps` as psi in Beta Code (since
+ * greek-conversion 1.0.0-rc.3, for words such as ἔκστασις, where a velar or a
+ * labial meets a sigma); πσ hardly occurs in Greek, so psi it is here. Not
+ * `ks` for xi (Beta Code `c`): κσ is common (ἐκσ-).
  */
-const PI_BEFORE_S = /[πΠ](?=s)/gi;
+const PSI_AS_PS = /([pPπΠ])[sS]/g;
 
 /**
  * The API's metacharacters for the position of the query in the headwords:
@@ -206,7 +209,7 @@ function applyDiacritics(text: string): string {
  */
 export function toSearchGreek(input: string): string {
   return normalizeSearchGreek(applyDiacritics(
-    input.replace(POSITION_METACHARACTERS, "").replace(PI_BEFORE_S, pi => (pi === "Π" ? "*p" : "p")).replace(BETA_CODE_LETTERS, run => convert(run.toLowerCase(), "beta-code", "greek", { removeDiacritics: true })),
+    input.replace(POSITION_METACHARACTERS, "").replace(PSI_AS_PS, (_, pi: string) => (pi === "Π" ? "*y" : "y")).replace(BETA_CODE_LETTERS, run => convert(run.toLowerCase(), "beta-code", "greek", { removeDiacritics: true })),
   ));
 }
 
