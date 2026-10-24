@@ -7,6 +7,24 @@
     /** The data's version (the API's). */
     version?: string;
   }>();
+
+  /**
+   * The window is mounted on its first opening only, not with the page:
+   * hydrated with every card, its components weighed on the hydration's task
+   * (cf. `audit-inp.md`). Without Reka's trigger, the focus goes back to the
+   * button on closing.
+   */
+  const open = shallowRef(false);
+  const mounted = shallowRef(false);
+  const button = useTemplateRef("button");
+  const show = (): void => {
+    mounted.value = true;
+    open.value = true;
+  };
+  const focusButton = (event: Event): void => {
+    event.preventDefault();
+    (button.value?.$el as HTMLElement | undefined)?.focus();
+  };
 </script>
 
 <!--
@@ -21,17 +39,24 @@
     data-toolbar-group
     class="rounded-lg border border-default bg-default shadow-xs"
   >
+    <UButton
+      ref="button"
+      icon="i-lucide-quote"
+      aria-label="Citer cette entrée"
+      aria-haspopup="dialog"
+      :aria-expanded="open"
+      color="neutral"
+      variant="ghost"
+      class="rounded-md hover:bg-(--app-button-hover) active:bg-(--app-button-active) aria-expanded:bg-(--app-button-active)"
+      @click="show"
+    />
     <UModal
+      v-if="mounted"
+      v-model:open="open"
       title="Citer cette entrée"
+      :content="{ onCloseAutoFocus: focusButton }"
       :ui="{ content: 'sm:max-w-lg' }"
     >
-      <UButton
-        icon="i-lucide-quote"
-        aria-label="Citer cette entrée"
-        color="neutral"
-        variant="ghost"
-        class="rounded-md hover:bg-(--app-button-hover) active:bg-(--app-button-active) data-[state=open]:bg-(--app-button-active)"
-      />
       <!-- The title after the button's icon. -->
       <template #title>
         <span class="flex items-center gap-2">
