@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { deferMount } from "~/utils/deferredMount";
   import { convert } from "@humanities/greek-conversion";
   import type { OutlineItem, SenseStep } from "~/utils/sensePath";
 
@@ -182,7 +183,14 @@
     if (!same) outline.value = shown;
     updateSensePath();
   };
-  onMounted(readOutline);
+  /**
+   * Whether the outline's column shows (from `xl`): below, it isn't rendered
+   * at all (rather than hidden), its many buttons costing the hydration's
+   * task on a phone (cf. `audit-inp.md`). The outline is read in a task of
+   * its own, after the hydration (cf. `deferMount`).
+   */
+  const wide = useMediaQuery("(min-width: 80rem)");
+  onMounted(() => deferMount(readOutline, 3));
   watch(greek.transliterated, () => nextTick(readOutline));
   const readOutlineSoon = useDebounceFn(readOutline, 150);
   useResizeObserver(article, () => {
@@ -388,7 +396,7 @@
         </template>
       </EntryCard>
       <aside
-        v-if="outline.length"
+        v-if="outline.length && wide"
         class="absolute start-full top-0 ms-12 hidden h-full w-56 xl:block"
       >
         <div class="sticky top-[calc(var(--header-bottom)+1.5rem)] flex max-h-[calc(100dvh-var(--header-bottom)-3rem)] flex-col">
