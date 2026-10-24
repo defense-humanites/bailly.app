@@ -309,14 +309,13 @@
             </h2>
           </template>
           <!-- The preview follows the settings below. -->
-          <!-- eslint-disable vue/no-v-html -->
-          <div
+          <!-- Not set again at the hydration (cf. `RawHtml`). -->
+          <RawHtml
             class="definition py-3 font-serif"
             aria-label="Aperçu"
             role="figure"
-            v-html="greek.html(preview)"
+            :html="greek.html(preview)"
           />
-          <!-- eslint-enable vue/no-v-html -->
           <SettingsRow
             label="Police"
             :synced="synced('readingFont')"

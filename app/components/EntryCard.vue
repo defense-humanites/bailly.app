@@ -123,16 +123,17 @@
 
 <template>
   <DefineEntry v-slot="{ entry: shown }">
-    <!-- The definition's HTML comes from our own API (never from IndexedDB). -->
-    <!-- eslint-disable vue/no-v-html -->
-    <div
+    <!--
+      The definition's HTML comes from our own API (never from IndexedDB);
+      set as `v-html` would, but not again at the hydration (cf. `RawHtml`).
+    -->
+    <RawHtml
       v-if="shown.htmlDefinition"
       class="definition font-serif"
       :class="ui?.entry"
+      :html="definitionHtml(shown, shown.htmlDefinition)"
       @click="onDefinitionClick"
-      v-html="definitionHtml(shown, shown.htmlDefinition)"
     />
-    <!-- eslint-enable vue/no-v-html -->
     <div
       v-else
       class="definition font-serif"
