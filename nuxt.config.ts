@@ -12,6 +12,14 @@ const cloudflare = Boolean(
 );
 
 /**
+ * The classes of the icons whose CSS is served with the style sheet
+ * (`app/assets/css/icons.css`, cf. `scripts/icon-css.mjs`): Nuxt Icon then
+ * leaves their CSS out of the pages, and doesn't add it on the client.
+ */
+const iconClasses = [...readFileSync(new URL("./app/assets/css/icons.css", import.meta.url), "utf8").matchAll(/:where\(\.(i-[\w-]+)\\:([\w-]+)\)/g)]
+  .map(([, prefix, name]) => `${prefix}:${name}`);
+
+/**
  * The notice of an outdated browser (cf. `app/assets/outdated-browser.js`),
  * inlined without its comments.
  */
@@ -79,7 +87,7 @@ export default defineNuxtConfig({
       script: [{ innerHTML: outdatedBrowserScript, tagPosition: "bodyClose" }],
     },
   },
-  css: ["~/assets/css/main.css"],
+  css: ["~/assets/css/main.css", "~/assets/css/icons.css"],
   /**
    * The theme is kept in a cookie: the server renders the theme's choice (on
    * the preferences page) and class as stored. In the local storage, the
@@ -229,5 +237,7 @@ export default defineNuxtConfig({
     clientBundle: { scan: true },
     // Never rely on the Iconify API: a missing icon must show up in development.
     fallbackToApi: false,
+    // Their CSS in the style sheet (cf. `iconClasses`).
+    serverKnownCssClasses: iconClasses,
   },
 });
