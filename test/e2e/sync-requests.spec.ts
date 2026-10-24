@@ -1,11 +1,7 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
-import type { Page } from "@playwright/test";
-import { seedBookmarks } from "./helpers";
+import { seedBookmarks, waitForHydration } from "./helpers";
 
 const logos = { word: "λόγος", uri: "logos", excerpt: "λόγος, ου (ὁ) A parole" };
-
-const waitForHydration = (page: Page) =>
-  page.waitForFunction(() => (window as unknown as { useNuxtApp?: () => { isHydrating: boolean } }).useNuxtApp?.().isHydrating === false);
 
 /**
  * The most requests made within a window of `span` ms.

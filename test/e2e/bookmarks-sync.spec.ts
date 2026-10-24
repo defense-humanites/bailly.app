@@ -1,12 +1,9 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
 import type { Browser, Page } from "@playwright/test";
-import { bookmarksState, seedBookmarks, type AppRoot } from "./helpers";
+import { bookmarksState, seedBookmarks, waitForHydration, type AppRoot } from "./helpers";
 
 const logos = { word: "λόγος", uri: "logos", excerpt: "λόγος, ου (ὁ) A parole" };
 const psuche = { word: "ψυχή", uri: "psuchê", excerpt: "ψυχή, ῆς (ἡ) souffle, âme" };
-
-const waitForHydration = (page: Page) =>
-  page.waitForFunction(() => (window as unknown as { useNuxtApp?: () => { isHydrating: boolean } }).useNuxtApp?.().isHydrating === false);
 
 /**
  * Another device: a new browser context (its own storage), on the bookmarks

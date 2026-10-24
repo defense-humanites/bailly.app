@@ -6,9 +6,6 @@ import type { Page } from "@playwright/test";
 export const searchInput = (page: Page) => page.locator("header input[role=combobox]");
 
 /**
- * The search bar (field and options button).
- */
-/**
  * A length of `root.css`, in pixels (e.g. `--search-overhang`, `--reading-width`,
  * in rem): the tests follow the layout's values rather than repeat them.
  */
@@ -20,6 +17,9 @@ export async function rootLength(page: Page, name: string): Promise<number> {
   }, name);
 }
 
+/**
+ * The search bar (field and options button).
+ */
 export const searchBar = (page: Page) => page.locator("header .group\\/search");
 
 /**
@@ -69,6 +69,13 @@ interface BookmarksStore {
 }
 
 /**
+ * Waits for the page's hydration (e.g. after a navigation not made with
+ * `goto`, in another tab, or a reload).
+ */
+export const waitForHydration = (page: Page) =>
+  page.waitForFunction(() => (window as unknown as { useNuxtApp?: () => { isHydrating: boolean } }).useNuxtApp?.().isHydrating === false);
+
+/**
  * The app's root element, through which the tests reach its Pinia stores.
  */
 export type AppRoot = Element & {
@@ -102,7 +109,7 @@ export async function seedBookmarks(
     await new Promise(resolve => setTimeout(resolve, 50));
   }, { starred, tags, current });
   await page.reload();
-  await page.waitForFunction(() => (window as unknown as { useNuxtApp?: () => { isHydrating: boolean } }).useNuxtApp?.().isHydrating === false);
+  await waitForHydration(page);
 }
 
 /**

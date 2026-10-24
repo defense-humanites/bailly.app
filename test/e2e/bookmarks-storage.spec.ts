@@ -1,11 +1,7 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
-import type { Page } from "@playwright/test";
-import { bookmarksState, seedBookmarks, type AppRoot } from "./helpers";
+import { bookmarksState, seedBookmarks, waitForHydration, type AppRoot } from "./helpers";
 
 const logos = { word: "λόγος", uri: "logos", excerpt: "λόγος, ου (ὁ) A parole" };
-
-const waitForHydration = (page: Page) =>
-  page.waitForFunction(() => (window as unknown as { useNuxtApp?: () => { isHydrating: boolean } }).useNuxtApp?.().isHydrating === false);
 
 test("a change in a tab shows in the other tabs", async ({ page, goto, context, baseURL }) => {
   await goto("/signets", { waitUntil: "hydration" });

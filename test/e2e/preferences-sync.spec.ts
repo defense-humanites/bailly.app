@@ -1,11 +1,8 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
 import type { Browser, Page } from "@playwright/test";
-import type { AppRoot } from "./helpers";
+import { waitForHydration, type AppRoot } from "./helpers";
 
 const PREFERENCES_PATH = encodeURI("/préférences");
-
-const waitForHydration = (page: Page) =>
-  page.waitForFunction(() => (window as unknown as { useNuxtApp?: () => { isHydrating: boolean } }).useNuxtApp?.().isHydrating === false);
 
 /**
  * Another device: a new browser context (its own storage and cookies).
