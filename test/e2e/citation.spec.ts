@@ -40,6 +40,23 @@ test.describe("citing an entry", () => {
     await expect(citation.locator("section p").nth(1)).toContainText("BAILLY, Anatole.");
   });
 
+  test("its window mounted on opening, the focus back on its button once closed", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    // (By its attributes: the page is hidden from the accessibility tree
+    // while the window is open.)
+    const button = page.locator("main button[aria-label='Citer cette entrée']").first();
+    await expect(button).toHaveAttribute("aria-expanded", "false");
+    const citation = await openCitation(page);
+    await expect(citation).toBeVisible();
+    await expect(button).toHaveAttribute("aria-expanded", "true");
+    await page.keyboard.press("Escape");
+    await expect(citation).toBeHidden();
+    await expect(button).toBeFocused();
+    await expect(button).toHaveAttribute("aria-expanded", "false");
+    // Opened again, the window already mounted.
+    await expect(await openCitation(page)).toBeVisible();
+  });
+
   test("a homonym cited with its number after the headword, from its own card", async ({ page, goto }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await goto("/logades", { waitUntil: "hydration" });
