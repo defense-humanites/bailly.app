@@ -62,9 +62,26 @@ export default defineNuxtPlugin({
     });
 
     const bookmarksStore = useBookmarksStore();
+    const router = useRouter();
     onNuxtReady(async () => {
-      await bookmarksStore.initialize();
-      if (blockedToast !== undefined) toast.remove(blockedToast);
+      try {
+        await bookmarksStore.initialize();
+      } catch (error) {
+        console.error(error);
+        // Said here, but on the bookmarks page, by the page itself (with a
+        // new attempt, cf. `signets.vue`).
+        if (router.currentRoute.value.path !== "/signets") {
+          toast.add({
+            title: "Signets indisponibles",
+            description: "Le stockage de ce navigateur est inaccessible (navigation privée, espace disque plein, données du site bloquées…).",
+            icon: "i-lucide-circle-alert",
+            color: "error",
+          });
+        }
+        return;
+      } finally {
+        if (blockedToast !== undefined) toast.remove(blockedToast);
+      }
       // At each visit, the tombstones old enough are forgotten, and the
       // missing excerpts fetched.
       void IdbBookmarks.compact();

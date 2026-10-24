@@ -70,7 +70,9 @@ export default defineNuxtPlugin({
     );
 
     onNuxtReady(async () => {
-      await bookmarksStore.initialize();
+      // Without IndexedDB, nothing to synchronize (said by the bookmarks
+      // plugin).
+      if (!(await bookmarksStore.initialize().then(() => true, () => false))) return;
       await syncStore.load();
       // The preferences synchronized that the cookie lacks (e.g. expired),
       // even offline.

@@ -167,3 +167,34 @@ test("an import beyond the limits asks first, then leaves out what does not fit"
   await expect(page.getByText("Ajout : 1 étiquette et 1 entrée.", { exact: true })).toBeVisible();
   expect(await bookmarksState(page)).toEqual({ tags: ["Homère"], tagged: 1, starred: 100 });
 });
+
+test("bookmarks that can't be loaded: said, with a new attempt on their page", async ({ page, goto }) => {
+  // The database refuses to open (as in some private windows), until told otherwise.
+  await page.addInitScript(() => {
+    const state = window as unknown as { idbRefused?: boolean };
+    state.idbRefused = true;
+    const open = indexedDB.open.bind(indexedDB);
+    IDBFactory.prototype.open = (...args: Parameters<IDBFactory["open"]>) => {
+      if (state.idbRefused) throw new DOMException("Refused", "InvalidStateError");
+      return open(...args);
+    };
+  });
+
+  await goto("/", { waitUntil: "hydration" });
+  // (The toast, and its announcement for screen readers.)
+  await expect(page.getByText("Signets indisponibles").first()).toBeVisible();
+
+  await goto("/signets", { waitUntil: "hydration" });
+  const alert = page.getByText("Vos signets n'ont pas pu être chargés");
+  await expect(alert).toBeVisible();
+  // (Not said twice.)
+  await expect(page.getByText("Signets indisponibles")).toHaveCount(0);
+  await expect(page.locator("main section")).toHaveAttribute("aria-busy", "false");
+
+  await page.evaluate(() => {
+    (window as unknown as { idbRefused?: boolean }).idbRefused = false;
+  });
+  await page.getByRole("button", { name: "Réessayer" }).click();
+  await expect(alert).toHaveCount(0);
+  await expect(page.locator("#favoris")).toBeVisible();
+});

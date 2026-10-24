@@ -38,6 +38,11 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    */
   const initialized = ref(false);
   /**
+   * Whether the last loading failed (e.g. the database could not be opened,
+   * cf. `initialize`), until an attempt succeeds.
+   */
+  const loadFailed = ref(false);
+  /**
    * List of existing tags, the pinned ones first (cf. `orderTags`).
    */
   const tags = ref<IdbTagWithKey[]>([]);
@@ -192,8 +197,10 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
         refreshNewTagColor(),
       ]);
       initialized.value = true;
+      loadFailed.value = false;
     })().catch((error: unknown) => {
       initialization = undefined;
+      loadFailed.value = true;
       throw error;
     });
 
@@ -444,6 +451,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
 
   return {
     initialized,
+    loadFailed,
     tags,
     taggedEntries,
     starredEntries,

@@ -9,7 +9,22 @@
   });
 
   const bookmarksStore = useBookmarksStore();
-  const { initialized, tags, starredEntries, currentTagKey, currentTag } = storeToRefs(bookmarksStore);
+  const { initialized, loadFailed, tags, starredEntries, currentTagKey, currentTag } = storeToRefs(bookmarksStore);
+
+  /**
+   * A new attempt at loading the bookmarks, after a failure (cf. `loadFailed`).
+   */
+  const retrying = ref(false);
+  const retryLoading = async (): Promise<void> => {
+    retrying.value = true;
+    try {
+      await bookmarksStore.initialize();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      retrying.value = false;
+    }
+  };
 
   /**
    * The id of a group's card (the target of its link in the table of
@@ -18,16 +33,16 @@
   const groupId = (key: string): string => (key === "favorites" ? "favoris" : `etiquette-${key}`);
 
   /**
-   * The table of contents: the favorites, then the tags in their order, with
-   * their number of entries.
-   */
-  /**
    * The tags as shown (cards, table of contents): the pinned ones first, then
    * the others as the user chose to sort them (cf. `BookmarksDisplayMenu`).
    */
   const tagSort = useTagSort();
   const sortedTags = computed(() => sortTags(tags.value, tagSort.value, bookmarksStore.entriesOf));
 
+  /**
+   * The table of contents: the favorites, then the tags in their order, with
+   * their number of entries.
+   */
   const toc = computed((): TocGroup[] => [
     { key: "favorites", id: groupId("favorites"), name: "Favoris", color: "Yellow", icon: "i-bailly-star-filled", count: starredEntries.value.length, active: true },
     ...sortedTags.value.map(tag => ({
@@ -122,7 +137,7 @@
     <section
       class="mx-auto grid max-w-(--reading-width) grid-cols-1 items-start gap-(--cards-gap) [--cards-gap:1.5rem] supports-[display:grid-lanes]:[display:grid-lanes] supports-[display:grid-lanes]:[flow-tolerance:2.5rem] lg:max-w-(--content-max-width) lg:grid-cols-2"
       :class="{ '[--toc-height:3rem]': showToc }"
-      :aria-busy="!initialized"
+      :aria-busy="!initialized && !loadFailed"
     >
       <!--
         The header: the title (for screen readers only), then a menu bar, in
@@ -399,6 +414,23 @@
           Cette étiquette ne référence aucune entrée.
         </BookmarkGroup>
       </template>
+      <!--
+        The database could not be opened (e.g. private browsing, full storage,
+        site data blocked): said, with a new attempt. Its text in the alert's
+        color mixed with the text's (darker in the light theme, paler in the
+        dark one), as `InstalledOnIosNotice`'s.
+      -->
+      <UAlert
+        v-else-if="loadFailed"
+        class="col-span-full"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-circle-alert"
+        title="Vos signets n'ont pas pu être chargés"
+        description="Le stockage de ce navigateur est inaccessible (navigation privée, espace disque plein, données du site bloquées…)."
+        :ui="{ description: 'text-[color-mix(in_oklab,var(--ui-error)_55%,var(--ui-text-highlighted))] opacity-100' }"
+        :actions="[{ label: 'Réessayer', icon: 'i-lucide-rotate-cw', color: 'error', variant: 'outline', loading: retrying, onClick: retryLoading }]"
+      />
       <template v-else>
         <USkeleton
           v-for="n in 2"
