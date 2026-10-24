@@ -152,6 +152,20 @@ export default defineNuxtConfig({
     "/paramètres": { redirect: { to: encodeURI("/préférences"), statusCode: 301 } },
   },
   devServer: { port: 4321 },
+  experimental: {
+    defaults: {
+      nuxtLink: {
+        /*
+         * Pages prefetched when a link is hovered or touched, not as soon as
+         * it is in view: the header's links (« À propos »…) loaded their
+         * page's style sheet into every page a moment after its hydration,
+         * the browser then computing the whole page's style again (cf.
+         * `claude/audit-inp.md`).
+         */
+        prefetchOn: { visibility: false, interaction: true },
+      },
+    },
+  },
   compatibilityDate: "2025-07-15",
   nitro: {
     /** The site map, a static file (cf. `server/routes/sitemap.xml.ts`). */
