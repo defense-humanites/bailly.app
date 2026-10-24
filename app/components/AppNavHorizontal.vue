@@ -166,16 +166,17 @@
         </div>
       </nav>
       <!--
-        The search bar is interactive once the page is hydrated; before, and
+        The search bar is interactive once the page is hydrated, mounted
+        first in a task of its own (cf. `DeferredClientOnly`); before, and
         on the server, its markup alone, much lighter to render (cf.
         `SearchBarStatic`).
       -->
-      <ClientOnly>
+      <DeferredClientOnly>
         <SearchBar :class="SEARCH_BAR" />
         <template #fallback>
           <SearchBarStatic :class="SEARCH_BAR" />
         </template>
-      </ClientOnly>
+      </DeferredClientOnly>
       <!--
         The menu; on mobile, on the home page only, cotillons and a heart
         first lead to the news and the donation (the page's own buttons are
@@ -210,7 +211,7 @@
                 :key="item.to"
                 :class="ITEM"
               >
-                <ClientOnly>
+                <DeferredClientOnly :priority="2">
                   <UTooltip
                     :text="item.label"
                     :disabled="showLabels"
@@ -226,7 +227,7 @@
                       :current="isCurrent(item.to)"
                     />
                   </template>
-                </ClientOnly>
+                </DeferredClientOnly>
               </li>
             </ul>
           </div>

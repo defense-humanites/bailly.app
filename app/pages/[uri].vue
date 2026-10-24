@@ -241,6 +241,8 @@
   };
 
   onMounted(updateCompactBar);
+  // (Mounted after the page, cf. the template.)
+  watch(compactBar, updateCompactBar);
   watch(y, () => requestAnimationFrame(updateCompactBar));
 
   /**
@@ -272,18 +274,25 @@
 
 <template>
   <article ref="article">
-    <EntryCompactBar
-      ref="compactBar"
-      :word="greek.text(entry.word)"
-      :siblings="siblings"
-      :shown="compactBarShown"
-      :homonyms="!!entry.children?.length"
-      :homonym="homonymShown"
-      :path="sensePathShown"
-      :outline="outline"
-      :current="currentSense"
-      @select="goToSense"
-    />
+    <!--
+      Mounted after the hydration (hidden until the title is scrolled past,
+      it takes no room): its components weighed on the hydration's task
+      (cf. `DeferredClientOnly`).
+    -->
+    <DeferredClientOnly :priority="2">
+      <EntryCompactBar
+        ref="compactBar"
+        :word="greek.text(entry.word)"
+        :siblings="siblings"
+        :shown="compactBarShown"
+        :homonyms="!!entry.children?.length"
+        :homonym="homonymShown"
+        :path="sensePathShown"
+        :outline="outline"
+        :current="currentSense"
+        @select="goToSense"
+      />
+    </DeferredClientOnly>
     <header ref="title">
       <!--
         The links' hover is the header menu's (`bg-elevated`, Nuxt UI's, is
@@ -319,7 +328,10 @@
                 </h1>
               </li>
               <li :class="ITEM">
-                <ClientOnly v-if="neighbour.sibling">
+                <DeferredClientOnly
+                  v-if="neighbour.sibling"
+                  :priority="2"
+                >
                   <!--
                     The word after the direction, set apart as a key would be
                     (`SEPARATED`); named in full for screen readers.
@@ -345,7 +357,7 @@
                       :direction="neighbour.direction"
                     />
                   </template>
-                </ClientOnly>
+                </DeferredClientOnly>
               </li>
             </template>
           </ul>

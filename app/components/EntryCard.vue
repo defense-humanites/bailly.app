@@ -167,12 +167,15 @@
         #header
       >
         <div class="flex items-center justify-between gap-2">
-          <ClientOnly v-if="toolbar">
+          <DeferredClientOnly
+            v-if="toolbar"
+            :priority="1"
+          >
             <TagButtonGroup :entry="shown" />
             <template #fallback>
               <TagButtonGroupStatic />
             </template>
-          </ClientOnly>
+          </DeferredClientOnly>
           <div
             v-if="$slots.tools"
             class="ms-auto flex items-center gap-2"
