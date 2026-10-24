@@ -41,7 +41,9 @@
   A notice: a limitation of iOS (not of Bailly.app), the way round it (the
   synchronization, the key's words typed, the QR code opening in Safari).
   The same text on both pages (the bookmarks and the preferences): dismissed
-  on one, it is so on the other.
+  on one, it is so on the other. Its text in the alert's color mixed with
+  the text's: tinted, but darker in the light theme and paler in the dark
+  one than the title.
 -->
 <template>
   <UAlert
@@ -51,7 +53,7 @@
     variant="soft"
     title="Application installée : des données à part"
     description="Sur iPhone et iPad, iOS isole l'application ajoutée à l'écran d'accueil de Safari : elle n'a pas accès aux signets ni aux préférences enregistrés dans Safari. Pour les y retrouver, synchronisez-les ; le QR code s'ouvrant dans Safari, saisissez dans l'application les douze mots de votre clé."
-    :ui="{ description: 'text-default opacity-100' }"
+    :ui="{ description: 'text-[color-mix(in_oklab,var(--ui-warning)_55%,var(--ui-text-highlighted))] opacity-100' }"
     :actions="[{ label: 'Synchroniser', icon: 'i-lucide-cloud-upload', color: 'secondary', variant: 'solid', onClick: () => emit('synchronize', unsynced[0]!) }]"
     close
     @update:open="dismissed = true"
