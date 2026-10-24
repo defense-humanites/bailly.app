@@ -441,9 +441,10 @@ export class Idb {
           });
         }
 
-        // Future versions: add `if (oldVersion < 5) { … }` blocks here (only
-        // once the application is online: until then, the schema of version
-        // 4 changes in place, the test devices clearing their site data).
+        // Future versions: add `if (oldVersion < 5) { … }` blocks here. The
+        // application being online (since 4 October 2026), the schema no
+        // longer changes in place: each change is a new version, migrating
+        // the data of the previous ones.
       },
       blocked() {
         // Another tab (e.g. of the previous version) keeps the database open

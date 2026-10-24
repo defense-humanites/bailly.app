@@ -222,11 +222,11 @@
     class="flex flex-col gap-6"
   >
     <!--
-      Each homonym is anchored by its number (e.g. `oudos#2` → `#2`). The
-      anchor is offset to clear the header and the sticky title of the entry
-      page (about 3.5rem): the router's scroll ignores
-      `scroll-margin-top` for ids starting with a digit (`#2` isn't a valid
-      CSS selector).
+      Each homonym is anchored by its number (e.g. `oudos#2` → `#2`; the
+      router finds it with `getElementById`, an id starting with a digit not
+      being a valid CSS selector, cf. `router.options.ts`). The anchor sits
+      about 3.5rem above the card, to clear the entry's compact bar
+      (`--header-bottom` is 0 in the pages' scroller, cf. `PageScroller`).
     -->
     <div
       v-for="(childEntry, index) in entry.children"

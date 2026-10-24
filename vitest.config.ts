@@ -4,7 +4,6 @@ import { defineVitestProject } from "@nuxt/test-utils/config";
 
 export default defineConfig({
   test: {
-    // `test/nuxt` is empty for now.
     passWithNoTests: true,
     projects: [
       {

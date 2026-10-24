@@ -42,7 +42,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
    */
   const tags = ref<IdbTagWithKey[]>([]);
   /**
-   * Entries linked to tags, sorted alphabetically.
+   * Entries linked to tags, the latest added first.
    */
   const taggedEntries = ref<IdbTagged[]>([]);
   /**
