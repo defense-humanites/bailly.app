@@ -8,7 +8,9 @@ export type SearchField = "word" | "uri" | "excerpt";
 
 /**
  * Looks entries up as the query changes (debounced, cf. `searchDebounceTime`).
- * @remarks Client-side only; a newer query cancels the pending request. The
+ * @remarks Client-side only; a newer query cancels the pending request
+ * (Nuxt's signal, passed to the request), whose answer, if it arrives anyway,
+ * is ignored rather than shown over the newer one's. The
  * state is shared (`useState`, keyed `useAsyncData`), since the search bar is
  * remounted when the layout changes: `useAsyncData` then keeps the handler of
  * its first call, which must therefore only read shared state. The result
@@ -46,9 +48,9 @@ export function useEntrySearch() {
    */
   const result = useState<LookupResult<SearchField> | null>("entry-search-result", () => null);
 
-  const { status } = useAsyncData(
+  const { status, refresh } = useAsyncData(
     "entry-search",
-    async (): Promise<LookupResult<SearchField>> => {
+    async (_nuxtApp, { signal }): Promise<LookupResult<SearchField>> => {
       const input = debouncedQuery.value;
       const greek = toLookupQuery(input, inputMode.value);
       const found = await lookup(toPositionedQuery(greek, position.value), {
@@ -56,18 +58,27 @@ export function useEntrySearch() {
         inputMode: "greek",
         diacriticSensitive: diacriticSensitive.value,
         skipMorpheus: !(inflectedForms.value && isLemmatizable(position.value, hasWildcards(greek))),
-      });
-      result.value = found;
-      resultQuery.value = input;
+      }, { signal });
+      if (!signal.aborted) {
+        result.value = found;
+        resultQuery.value = input;
+      }
       return found;
     },
     {
       server: false,
       immediate: false,
-      watch: [debouncedQuery, position, diacriticSensitive, inputMode, inflectedForms],
       default: () => null,
     },
   );
+
+  // Not `useAsyncData`'s `watch` option: a change while a request is pending
+  // then waits for its answer (shown a moment) before the new request is made
+  // (Nuxt 4.6, `debounceTick`), the wait doubled on a slow network; `refresh`
+  // cancels it at once.
+  watch([debouncedQuery, position, diacriticSensitive, inputMode, inflectedForms], () => {
+    void refresh();
+  });
 
   /**
    * Whether results are on their way (including during the debounce delay).

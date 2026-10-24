@@ -12,6 +12,27 @@ test.describe("search bar", () => {
     await goto("/", { waitUntil: "hydration" });
   });
 
+  test("a newer query cancels the pending request, without waiting for its answer", async ({ page }) => {
+    // The answer for « λογ » held back 3 s: « λογος », typed meanwhile, is
+    // looked up at once, and only its result is shown.
+    const earlier = (url: URL) => decodeURIComponent(url.pathname).endsWith("/lookup/λογ");
+    await page.route(earlier, async (route) => {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      // (Cancelled meanwhile: nothing to continue.)
+      await route.continue().catch(() => undefined);
+    });
+    const input = searchInput(page);
+    await input.click();
+    const request = page.waitForRequest(request => earlier(new URL(request.url())));
+    await input.pressSequentially("log");
+    const cancelled = (await request).response();
+    await input.pressSequentially("os");
+    await expect(searchResults(page).getByRole("option")).toHaveCount(1, { timeout: 2000 });
+    expect(await cancelled).toBeNull();
+    await page.waitForTimeout(1500);
+    await expect(searchResults(page).getByRole("option")).toHaveCount(1);
+  });
+
   test("converts beta code to Greek, diacritics waiting for their letter", async ({ page }) => {
     const input = searchInput(page);
     await input.click();

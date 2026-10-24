@@ -82,6 +82,7 @@ export function useApiEntries<F extends EntryField>(
 /**
  * Returns a function that looks entries up, e.g. for a search as you type.
  * @remarks The API validates the query: an invalid one gets an empty result.
+ * A `signal` cancels the request (e.g. a newer query).
  */
 export function useApiLookup() {
   const { $api, $config } = useNuxtApp();
@@ -89,12 +90,14 @@ export function useApiLookup() {
   return async <F extends EntryField>(
     query: string,
     params: LookupParams<F>,
+    { signal }: { signal?: AbortSignal } = {},
   ): Promise<LookupResult<F>> => {
     const q = query.trim();
     if (!q) return { count: 0, countAll: 0, orphanMorphology: {}, entries: [] };
 
     const { data } = await $api<ApiResponse<ApiLookupData<F>>>(`lookup/${encodeURIComponent(q)}`, {
       query: toApiQuery({ limit: $config.public.searchResultsLength, ...params }),
+      signal,
     });
 
     return {
