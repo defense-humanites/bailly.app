@@ -27,6 +27,9 @@
 #   derives from. A character dropped here falls back to IFAOGrec, then to
 #   the system's serif font: check the dictionary's characters after a change
 #   (`scripts/check-font-coverage.py`).
+#   Without its hinting (TrueType instructions, a quarter of its weight), as
+#   Inter and the GFS fonts, which have none: the browsers on Windows
+#   (DirectWrite) barely use it at the reading sizes.
 #
 # The other reading fonts are served as they are: GFS Didot and GFS Neohellenic are
 # (as GFS Artemisia and GFS Bodoni) light and their names reserved (a modified
@@ -76,7 +79,7 @@ for face in Roman Italic Bold BoldItalic; do
   for part in subset extra; do
     out="$FONTS/Gentium_Book_Plus/BaillyBook-$face.$part.woff2"
     if [ $part = subset ]; then unicodes=$BOOK; else unicodes=$BOOK_EXTRA; fi
-    subset "$src" "$out" "$unicodes" --layout-features+=smcp,c2sc,tnum,lnum,onum,case --name-IDs='*'
+    subset "$src" "$out" "$unicodes" --layout-features+=smcp,c2sc,tnum,lnum,onum,case --name-IDs='*' --no-hinting
     # Renamed (the Reserved Font Names "Gentium" and "SIL" left out of its
     # names), the copyright and the license kept.
     python3 - "$out" <<'EOF'
