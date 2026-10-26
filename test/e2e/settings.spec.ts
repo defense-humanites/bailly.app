@@ -146,6 +146,27 @@ test.describe("settings", () => {
     expect(requested).not.toContain("Bailly Book");
   });
 
+  test("reading: the files of the rare characters only fetched for a page that has some", async ({ page, goto }) => {
+    // Bailly Book and Inter in two files each (cf. `fonts.css`): the common
+    // characters, and the rare ones.
+    const extra: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().includes(".extra.")) extra.push(request.url());
+    });
+    await goto("/logos", { waitUntil: "hydration" });
+    await page.evaluate(() => document.fonts.ready);
+    expect(extra).toEqual([]);
+
+    // A rare character (ǵ, Latin Extended-B) in the reading font.
+    await page.evaluate(() => {
+      const text = document.createElement("p");
+      text.className = "font-serif";
+      text.textContent = "ǵ";
+      document.querySelector("main")!.append(text);
+    });
+    await expect.poll(() => extra).toEqual([expect.stringMatching(/BaillyBook-Roman\.extra\.[\w-]+\.woff2$/)]);
+  });
+
   // In their italic and bold faces, U+2009 is drawn (in Didot Italic, an
   // exclamation mark), and U+202F, missing, was shaped with it: Inter's
   // spaces stand in for them (cf. fonts.css).

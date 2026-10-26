@@ -33,34 +33,53 @@
 # version would have to be renamed), and IFAOGrec is only downloaded for the rare characters that need
 # it.
 #
+# Each subset is split in two files (cf. `fonts.css`): `*.subset.woff2`, the
+# characters of nearly every page (Latin to Latin Extended-A, Greek and Greek
+# Extended, the combining diacritics, the general punctuation, the super- and
+# subscripts; for Inter, the symbols of the interface: ↵ and ⇧ of the
+# keyboard keys, the arrows, the euro sign, ✓ and ✗), and `*.extra.woff2`,
+# the rare ones, which a browser only downloads for a page that has some
+# (`unicode-range`). Measured on 400 random entries of the dictionary: two
+# use a character of the second file (₂ before this split, now in the first;
+# ǵ). The first files weigh about a third of the former subsets (Gentium's
+# rare blocks, e.g. Latin Extended Additional, hold most of its glyphs).
+#
 # Requires fontTools with Brotli (`pip install fonttools brotli`).
 set -e
 FONTS="$(dirname "$0")/../app/assets/fonts"
 
-subset() { # <file> <unicodes> [pyftsubset options]
-  file=$1; unicodes=$2; shift 2
-  pyftsubset "$file.woff2" --unicodes="$unicodes" --flavor=woff2 --output-file="$file.subset.woff2" "$@"
-  echo "$file.subset.woff2: $(wc -c < "$file.woff2") -> $(wc -c < "$file.subset.woff2") bytes"
+# <source> <output> <unicodes> [pyftsubset options]
+subset() {
+  src=$1; out=$2; unicodes=$3; shift 3
+  pyftsubset "$src" --unicodes="$unicodes" --flavor=woff2 --output-file="$out" "$@"
+  echo "$out: $(wc -c < "$src") -> $(wc -c < "$out") bytes"
 }
 
-INTER="U+0000-024F,U+02B0-036F,U+0370-03FF,U+1F00-1FFF,U+2000-206F,U+2070-209F,U+20A0-20CF,U+2100-218F,U+2190-21FF,U+2200-22FF,U+2300-23FF,U+25A0-25FF,U+2713,U+2717,U+FB01-FB02,U+FEFF,U+FFFD"
+# The ranges of the two files of each font (cf. `fonts.css`, which repeats
+# them in `unicode-range`).
+INTER="U+0000-017F,U+0300-036F,U+0370-03FF,U+1F00-1FFF,U+2000-206F,U+2070-209F,U+20AC,U+2190-2193,U+21B5,U+21E7,U+2713,U+2717,U+FEFF,U+FFFD"
+INTER_EXTRA="U+0180-024F,U+02B0-02FF,U+20A0-20AB,U+20AD-20CF,U+2100-218F,U+2194-21B4,U+21B6-21E6,U+21E8-21FF,U+2200-22FF,U+2300-23FF,U+25A0-25FF,U+FB01-FB02"
+BOOK="U+0000-017F,U+0300-036F,U+0370-03FF,U+1F00-1FFF,U+2000-206F,U+2070-209F,U+FEFF,U+FFFD"
+BOOK_EXTRA="U+0180-02FF,U+0440-0441,U+1DC0-1DFF,U+1E00-1EFF,U+20A0-20FF,U+2100-218F,U+2190-23FF,U+25A0-27BF,U+2C80-2CFF,U+2E00-2E7F,U+FB00-FB06,U+10100-1018F,U+1D200-1D24F"
+
 for face in Roman Italic; do
   file="$FONTS/Inter_Variable/Inter_Variable-$face"
   # The weights beyond the interface's dropped first (cf. `fonts.css`).
   fonttools varLib.instancer "$file.woff2" wght=400:700 --output="$file.wght.woff2"
-  pyftsubset "$file.wght.woff2" --unicodes="$INTER" --layout-features+=tnum,case --flavor=woff2 --output-file="$file.subset.woff2"
+  subset "$file.wght.woff2" "$file.subset.woff2" "$INTER" --layout-features+=tnum,case
+  subset "$file.wght.woff2" "$file.extra.woff2" "$INTER_EXTRA" --layout-features+=tnum,case
   rm "$file.wght.woff2"
-  echo "$file.subset.woff2: $(wc -c < "$file.woff2") -> $(wc -c < "$file.subset.woff2") bytes"
 done
 
-BOOK="U+0000-036F,U+0370-03FF,U+0440-0441,U+1DC0-1DFF,U+1E00-1EFF,U+1F00-1FFF,U+2000-20FF,U+2100-218F,U+2190-23FF,U+25A0-27BF,U+2C80-2CFF,U+2E00-2E7F,U+FB00-FB06,U+FEFF,U+FFFD,U+10100-1018F,U+1D200-1D24F"
 for face in Roman Italic Bold BoldItalic; do
-  subset "$FONTS/Gentium_Book_Plus/GentiumBookPlus-$face" "$BOOK" --layout-features+=smcp,c2sc,tnum,lnum,onum,case --name-IDs='*'
-  out="$FONTS/Gentium_Book_Plus/BaillyBook-$face.subset.woff2"
-  mv "$FONTS/Gentium_Book_Plus/GentiumBookPlus-$face.subset.woff2" "$out"
-  # Renamed (the Reserved Font Names "Gentium" and "SIL" left out of its
-  # names), the copyright and the license kept.
-  python3 - "$out" <<'EOF'
+  src="$FONTS/Gentium_Book_Plus/GentiumBookPlus-$face.woff2"
+  for part in subset extra; do
+    out="$FONTS/Gentium_Book_Plus/BaillyBook-$face.$part.woff2"
+    if [ $part = subset ]; then unicodes=$BOOK; else unicodes=$BOOK_EXTRA; fi
+    subset "$src" "$out" "$unicodes" --layout-features+=smcp,c2sc,tnum,lnum,onum,case --name-IDs='*'
+    # Renamed (the Reserved Font Names "Gentium" and "SIL" left out of its
+    # names), the copyright and the license kept.
+    python3 - "$out" <<'EOF'
 import sys
 from fontTools.ttLib import TTFont
 path = sys.argv[1]
@@ -78,4 +97,5 @@ name.setName(f"Bailly Book {name.getDebugName(2)}: {name.getDebugName(5)}", 3, 3
 name.setName("Bailly Book: a subset of Gentium Book Plus (SIL International), renamed as the SIL Open Font License requires.", 10, 3, 1, 0x409)
 font.save(path)
 EOF
+  done
 done
