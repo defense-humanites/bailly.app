@@ -136,6 +136,14 @@
    */
   const fuseOptions = { resultLimit: 50, fuseOptions: { ignoreDiacritics: true } };
 
+  /*
+   * The panel's list (`UCommandPalette`, with Fuse.js) in a file of its own
+   * (`LazyUCommandPalette`): not among the scripts every page loads at first
+   * (about 10 KB compressed). Fetched once the page is ready, idle, so that
+   * the panel opens with it at once (its focus as before).
+   */
+  onNuxtReady(() => prefetchComponents("UCommandPalette"));
+
   type TagItem = CommandPaletteItem & { key: TagKey; color: IdbTag["color"]; pinned: boolean };
 
   const tagItems = computed((): TagItem[] => panelTags.value.map(tag => ({ key: tag.key, label: tag.name, color: tag.color, pinned: tag.pinnedAt !== undefined })));
@@ -278,7 +286,7 @@
             of its own (Reka's `ListboxContent` takes no attributes): the
             dialog is named, and the heading above it names the list.
           -->
-          <UCommandPalette
+          <LazyUCommandPalette
             v-if="panelTags.length"
             :model-value="selectedItems"
             :groups="tagGroups"
@@ -330,7 +338,7 @@
             <template #empty>
               Aucune étiquette ne correspond.
             </template>
-          </UCommandPalette>
+          </LazyUCommandPalette>
           <p
             v-else
             class="px-2 py-1.5 text-sm text-muted"
