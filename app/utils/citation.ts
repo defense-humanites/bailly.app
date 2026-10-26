@@ -209,3 +209,98 @@ export function workCitation(style: CitationStyle, { version = DATA_VERSION, acc
       ]);
   }
 }
+
+/** A date as `YYYY-MM-DD`, the reader's day (their time zone). */
+export function isoDate(date: Date): string {
+  const pad = (n: number): string => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/**
+ * The entry's key in a BibLaTeX file: « bailly: » and its address on
+ * Bailly.app without diacritics, a homonym's number after a hyphen
+ * (`bailly:oudos-2`). The same for every reader: a text can cite the entry
+ * (`\cite{bailly:logos}`) before its reference is added to the file.
+ */
+export function bibKey({ uri }: CitedEntry): string {
+  return `bailly:${uri.normalize("NFD").replace(/\p{M}/gu, "").replace("#", "-").replace(/[^\w-]/g, "")}`;
+}
+
+/** A text as a BibLaTeX field's value: LaTeX's special characters escaped. */
+const latex = (text: string): string => text.replace(/[\\{}#$%&_^~]/g, (char) => {
+  if (char === "\\") return "\\textbackslash{}";
+  if (char === "^" || char === "~") return `\\${char}{}`;
+  return `\\${char}`;
+});
+
+/** The persons of the edition (as in `workCitation`), as BibLaTeX names. */
+const EDITOR = "Gréco, Gérard";
+const COLLABORATORS = ["Charbonnet, André", "De Wilde, Mark", "Maréchal, Bernard"];
+
+/**
+ * The entry as a BibLaTeX record, for LaTeX (biblatex and biber: the Greek
+ * headword in UTF-8, which BibTeX would not read) and the reference managers
+ * that import it (Zotero, JabRef…). An article of a reference work
+ * (`@inreference`, the dictionary cited by entry); the persons and the
+ * edition as in the other references (cf. `workCitation`), the
+ * collaborators as such (`editora`, « avec la collaboration de » in
+ * French); the date, the version's, the original's apart (`origdate`); the
+ * entry's address and the day of consultation.
+ */
+export function biblatexEntry(entry: CitedEntry, { version = DATA_VERSION, accessed }: Context): string {
+  const homonym = /#(\d+)$/.exec(entry.uri)?.[1];
+  const fields: [string, string][] = [
+    ["author", "Bailly, Anatole"],
+    ["title", `${latex(entry.word)}${homonym ? `\\textsuperscript{${homonym}}` : ""}`],
+    ["booktitle", "Dictionnaire grec-français"],
+    ["editor", EDITOR],
+    ["editora", COLLABORATORS.join(" and ")],
+    ["editoratype", "collaborator"],
+    ["edition", "Nouvelle édition revue et corrigée, dite Bailly 2020 -- Hugo Chávez"],
+    ["date", version],
+    ["origdate", ORIGINAL_YEAR],
+    ["publisher", "Association pour la défense des humanités"],
+    ["location", "Bordeaux"],
+    ["url", entryUrl(entry)],
+    ["urldate", isoDate(accessed)],
+    ["langid", "french"],
+  ];
+  const width = Math.max(...fields.map(([name]) => name.length));
+  return [
+    `@inreference{${bibKey(entry)},`,
+    ...fields.map(([name, value]) => `  ${name.padEnd(width)} = {${value}},`),
+    "}",
+  ].join("\n");
+}
+
+/** The name of an entry's BibLaTeX file (its key, without the prefix). */
+export const biblatexFileName = (entry: CitedEntry): string => `bailly-${bibKey(entry).slice("bailly:".length)}.bib`;
+
+/**
+ * The metadata of an entry's page for the reference managers: Zotero's
+ * connector saves the page as a dictionary entry (`dictionaryEntry`), with
+ * its dictionary, persons, edition, date and publisher (translator
+ * « Embedded Metadata »: the item type and the dictionary's title in its
+ * RDF namespaces, `z` and PRISM, the rest as Highwire's `citation_*` tags;
+ * not `citation_book_title`, which would make it a book section). The
+ * address as the references give it, readable (`citation_public_url`; else
+ * the canonical link's, its path percent-encoded, e.g. `kathustere%C3%B4`);
+ * the day of consultation, the connector's. Without the collaborators:
+ * Highwire's persons, which replace the others, are authors and editors only.
+ */
+export function entryMetadata(entry: CitedEntry, version: string = DATA_VERSION): { name: string; content: string }[] {
+  return [
+    { name: "z.itemType", content: "dictionaryEntry" },
+    { name: "DC.title", content: entry.word },
+    { name: "citation_title", content: entry.word },
+    { name: "citation_author", content: "Bailly, Anatole" },
+    { name: "citation_editor", content: EDITOR },
+    { name: "prism.publicationName", content: "Dictionnaire grec-français" },
+    { name: "prism.edition", content: "Nouvelle édition revue et corrigée, dite Bailly 2020 – Hugo Chávez" },
+    { name: "citation_date", content: version },
+    { name: "citation_publisher", content: "Association pour la défense des humanités" },
+    { name: "eprints.place_of_pub", content: "Bordeaux" },
+    { name: "citation_language", content: "fr" },
+    { name: "citation_public_url", content: entryUrl(entry) },
+  ];
+}

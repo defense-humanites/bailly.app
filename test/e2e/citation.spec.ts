@@ -1,4 +1,5 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
+import { readFileSync } from "node:fs";
 import type { Page } from "@playwright/test";
 
 // The entry's citation: in a window, from a button at the end of a card's
@@ -95,6 +96,41 @@ test.describe("citing an entry", () => {
     // A click elsewhere (the selection given up) copies it all.
     await page.mouse.click(box.x + box.width * 0.9, box.y + box.height / 2);
     await expect(citation.getByRole("button", { name: "Référence copiée" })).toBeVisible();
+  });
+
+  test("as a BibLaTeX record: copied, or downloaded as a file", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+    await goto("/logades", { waitUntil: "hydration" });
+    const citation = await openCitation(page, 1);
+    const record = citation.locator("pre");
+    await expect(record).toContainText("@inreference{bailly:logades-2,");
+    await expect(record).toContainText("url         = {https://bailly.app/logades#2},");
+    // Its height bounded, scrolled (by the keyboard too).
+    expect(await record.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
+    await record.focus();
+    await page.keyboard.press("End");
+    await expect.poll(() => record.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+
+    await citation.getByRole("button", { name: "Copier l'entrée BibLaTeX" }).click();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/^@inreference\{bailly:logades-2,\n[^]*\n\}$/);
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      citation.getByRole("button", { name: "Télécharger le fichier BibLaTeX" }).click(),
+    ]);
+    expect(download.suggestedFilename()).toBe("bailly-logades-2.bib");
+    const text = readFileSync(await download.path(), "utf8");
+    expect(text).toMatch(/^@inreference\{bailly:logades-2,[^]*\}\n$/);
+  });
+
+  test("an entry's page described for the reference managers (Zotero)", async ({ page, goto }) => {
+    // In the page served (Zotero's connector reads it as it is).
+    await goto("/logos", { waitUntil: "hydration" });
+    const html = await page.evaluate(async () => (await fetch("/logos")).text());
+    expect(html).toContain("<meta name=\"z.itemType\" content=\"dictionaryEntry\">");
+    expect(html).toContain("<meta name=\"citation_title\" content=\"λόγος\">");
+    expect(html).toContain("<meta name=\"prism.publicationName\" content=\"Dictionnaire grec-français\">");
   });
 
   test("on the home page's random entry", async ({ page, goto }) => {

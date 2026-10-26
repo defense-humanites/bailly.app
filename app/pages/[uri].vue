@@ -278,6 +278,9 @@
     title: `${plainGreek(entry.word)} (${convert(entry.word, "greek", "transliteration", { preset: "ala-lc-ancient" })})`,
     description: entry.excerpt,
   });
+
+  // For the reference managers (Zotero's connector, cf. `entryMetadata`).
+  useHead({ meta: entryMetadata(entry, dataVersion) });
 </script>
 
 <template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {
-    CITATION_STYLE_LABELS, CITATION_STYLES, citedLemma, clipboardHtml, ENTRY_CITATION_FORMS, entryCitation, entryCitationFormLabel, isCitationStyle,
-    isEntryCitationForm, workCitation, type Citation, type CitationStyle, type CitedEntry, type EntryCitationForm,
+    biblatexEntry, biblatexFileName, CITATION_STYLE_LABELS, CITATION_STYLES, citedLemma, clipboardHtml, ENTRY_CITATION_FORMS, entryCitation,
+    entryCitationFormLabel, isCitationStyle, isEntryCitationForm, workCitation, type Citation, type CitationStyle, type CitedEntry, type EntryCitationForm,
   } from "~/utils/citation";
   import { StorageKey } from "~/enums";
 
@@ -35,6 +35,7 @@
 
   const entryHeadingId = useId();
   const workHeadingId = useId();
+  const biblatexHeadingId = useId();
 
   /**
    * The style's select, opened from the author-date form's mention (a focus
@@ -107,6 +108,24 @@
   const reportUrl = computed(() =>
     `mailto:contact@bailly.app?subject=${encodeURIComponent(`Citation ${CITATION_STYLE_LABELS[style.value]} : ${citedLemma(props.entry)}`)}`);
 
+  /**
+   * The entry as a BibLaTeX record (cf. `biblatexEntry`): to paste in a
+   * `.bib` file, or downloaded as one (which LaTeX, Zotero, JabRef… read).
+   */
+  const biblatex = computed((): string => biblatexEntry(props.entry, { version: props.version, accessed: accessed.value }));
+
+  const downloadBiblatex = (): void => {
+    accessed.value = new Date();
+    const url = URL.createObjectURL(new Blob([`${biblatex.value}\n`], { type: "application/x-bibtex;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = biblatexFileName(props.entry);
+    link.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 0);
+  };
+
   const toast = useToast();
 
   /**
@@ -115,12 +134,15 @@
    * as plain text only where the clipboard takes no HTML. Whether it could
    * (cf. `CopyBox`).
    */
-  const copy = async (which: "entry" | "work"): Promise<boolean> => {
-    const reference = (): Citation => (which === "entry" ? entryReference.value : workReference.value);
+  const copy = async (which: "entry" | "work" | "biblatex"): Promise<boolean> => {
+    const reference = (): Citation => {
+      if (which === "biblatex") return { text: biblatex.value, html: "" };
+      return which === "entry" ? entryReference.value : workReference.value;
+    };
     accessed.value = new Date();
     const { text, html } = reference();
     try {
-      if (typeof ClipboardItem !== "undefined") {
+      if (html && typeof ClipboardItem !== "undefined") {
         await navigator.clipboard.write([new ClipboardItem({
           "text/plain": new Blob([text], { type: "text/plain" }),
           "text/html": new Blob([clipboardHtml(html, navigator.vendor === "Apple Computer, Inc.")], { type: "text/html" }),
@@ -141,7 +163,10 @@
   To cite the entry read: in the text or a note (three forms), and the work
   in the bibliography (four styles), alike: a title, the form or style
   chosen in a select on its right, the reference in a box which a click
-  copies (`CopyBox`, as the synchronization's key). Rendered in the browser only:
+  copies (`CopyBox`, as the synchronization's key). Then the entry for a
+  reference manager, as a BibLaTeX record: the same box (copied as plain
+  text, in a monospace font), and its file to download in the select's
+  place. Rendered in the browser only:
   the date of consultation is the reader's, and the choices are kept on
   the device.
 -->
@@ -203,6 +228,47 @@
             v-html="part.reference.html"
           />
           <!-- eslint-enable vue/no-v-html -->
+        </CopyBox>
+      </section>
+      <section
+        :aria-labelledby="biblatexHeadingId"
+        class="space-y-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <h3
+            :id="biblatexHeadingId"
+            class="font-semibold text-highlighted"
+          >
+            Pour LaTeX ou un gestionnaire de références
+          </h3>
+          <UButton
+            icon="i-lucide-download"
+            label="Fichier .bib"
+            color="neutral"
+            variant="outline"
+            size="xs"
+            class="rounded-md"
+            aria-label="Télécharger le fichier BibLaTeX"
+            @click="downloadBiblatex"
+          />
+        </div>
+        <p class="text-muted">
+          Au format BibLaTeX, que lisent aussi Zotero, JabRef ou Mendeley.
+        </p>
+        <CopyBox
+          label="Copier l'entrée BibLaTeX"
+          copied-label="Entrée BibLaTeX copiée"
+          :copy="() => copy('biblatex')"
+        >
+          <!--
+            Some eight lines and a half (the last one cut, a sign of the
+            rest), scrolled; by the keyboard too, once focused.
+          -->
+          <pre
+            tabindex="0"
+            aria-label="Entrée BibLaTeX"
+            class="max-h-[10.625rem] overflow-y-auto overscroll-contain rounded-sm font-mono text-xs/5 whitespace-pre-wrap wrap-anywhere text-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ui-border-inverted)"
+          >{{ biblatex }}</pre>
         </CopyBox>
       </section>
       <!--

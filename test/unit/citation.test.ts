@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { accessDate, citedLemma, clipboardHtml, entryCitation, entryCitationFormLabel, versionDate, workCitation } from "../../app/utils/citation";
+import {
+  accessDate, bibKey, biblatexEntry, biblatexFileName, citedLemma, clipboardHtml, entryCitation, entryCitationFormLabel, entryMetadata, isoDate, versionDate, workCitation,
+} from "../../app/utils/citation";
 
 const NBSP = " ";
 // Spaces made visible: the references put non-breaking ones where French
@@ -85,5 +87,59 @@ describe("clipboardHtml", () => {
     expect(clipboardHtml("A. Bailly, <i>Dictionnaire</i>", false)).toBe("A. Bailly, <i>Dictionnaire</i>");
     expect(clipboardHtml("A. Bailly, <i>Dictionnaire</i>", true))
       .toBe("<span style=\"font-family: 'Times New Roman', serif\">A. Bailly, <i>Dictionnaire</i></span>");
+  });
+});
+
+describe("biblatexEntry", () => {
+  it("an article of a reference work, the persons and the edition as in the other references", () => {
+    expect(biblatexEntry(logos, { accessed })).toBe([
+      "@inreference{bailly:logos,",
+      "  author      = {Bailly, Anatole},",
+      "  title       = {λόγος},",
+      "  booktitle   = {Dictionnaire grec-français},",
+      "  editor      = {Gréco, Gérard},",
+      "  editora     = {Charbonnet, André and De Wilde, Mark and Maréchal, Bernard},",
+      "  editoratype = {collaborator},",
+      "  edition     = {Nouvelle édition revue et corrigée, dite Bailly 2020 -- Hugo Chávez},",
+      "  date        = {2023-02-28},",
+      "  origdate    = {1894},",
+      "  publisher   = {Association pour la défense des humanités},",
+      "  location    = {Bordeaux},",
+      "  url         = {https://bailly.app/logos},",
+      "  urldate     = {2026-10-05},",
+      "  langid      = {french},",
+      "}",
+    ].join("\n"));
+  });
+
+  it("a homonym: its number in superscript, its anchor in the address, a key of its own", () => {
+    const entry = biblatexEntry(oudos2, { version: "2027-01-15", accessed });
+    expect(entry).toContain("@inreference{bailly:oudos-2,");
+    expect(entry).toContain("title       = {οὐδός\\textsuperscript{2}},");
+    expect(entry).toContain("url         = {https://bailly.app/oudos#2},");
+    expect(entry).toContain("date        = {2027-01-15},");
+  });
+
+  it("keys without diacritics, LaTeX's special characters escaped", () => {
+    expect(bibKey({ word: "ψυχή", uri: "psuchê" })).toBe("bailly:psuche");
+    expect(biblatexFileName({ word: "οὐδός", uri: "oudos#2" })).toBe("bailly-oudos-2.bib");
+    expect(biblatexEntry({ word: "a_b&c", uri: "ab" }, { accessed })).toContain("title       = {a\\_b\\&c},");
+  });
+
+  it("the date of consultation, the reader's day", () => {
+    expect(isoDate(new Date(2026, 0, 3, 23, 59))).toBe("2026-01-03");
+  });
+});
+
+describe("entryMetadata", () => {
+  it("a dictionary entry for Zotero, without Highwire's book title (a book section)", () => {
+    const meta = Object.fromEntries(entryMetadata({ word: "λόγος", uri: "logos" }).map(({ name, content }) => [name, content]));
+    expect(meta["z.itemType"]).toBe("dictionaryEntry");
+    expect(meta["citation_title"]).toBe("λόγος");
+    expect(meta["prism.publicationName"]).toBe("Dictionnaire grec-français");
+    expect(meta["citation_date"]).toBe("2023-02-28");
+    expect(entryMetadata({ word: "καθυστερέω", uri: "kathustereô-ô" })).toContainEqual({ name: "citation_public_url", content: "https://bailly.app/kathustereô-ô" });
+    expect(meta).not.toHaveProperty("citation_book_title");
+    expect(meta).not.toHaveProperty("citation_inbook_title");
   });
 });
