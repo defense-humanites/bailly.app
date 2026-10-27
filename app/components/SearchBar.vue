@@ -552,14 +552,18 @@
             @click="resetOptions"
           />
         </p>
-        <!-- In the primary color, as the sparkles marking these results. -->
+        <!--
+          In gold, as the sparkles marking these results; its text in the
+          alert's color mixed with the text's, as the notice of the
+          application installed on iOS (`InstalledOnIosNotice`).
+        -->
         <UAlert
           v-if="hasMorpheusResults && !morpheusWarningDismissed"
           class="m-1.5 w-auto shrink-0"
           icon="i-lucide-sparkles"
           color="warning"
           variant="soft"
-          :ui="{ description: 'text-default opacity-100' }"
+          :ui="{ description: 'text-[color-mix(in_oklab,var(--ui-warning)_55%,var(--ui-text-highlighted))] opacity-100' }"
           description="Les résultats issus de l'analyse morphologique, signalés par une icône scintillante, peuvent être lacunaires."
           close
           @update:open="morpheusWarningDismissed = true"
