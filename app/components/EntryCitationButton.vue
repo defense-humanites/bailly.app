@@ -34,12 +34,14 @@
   as theirs around them (cf. `TagButtonGroup`); on the entry page, a homonym's card citing that
   homonym, and on the home page's random entry. Named « Citer », as the
   window: the entry, or the work.
+  Pointed out in the primary color (from a home page's tip, cf. `HomeTip`),
+  as the search's options button.
 -->
 <template>
   <div
     data-toolbar-group
     data-citation
-    class="rounded-lg border border-default bg-default shadow-xs"
+    class="rounded-lg [--card-highlight:var(--ui-primary)] border border-default bg-default shadow-xs"
   >
     <UButton
       ref="button"

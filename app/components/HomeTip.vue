@@ -105,8 +105,9 @@
 
   /**
    * The action of a tip without a page: a search typed, the search's
-   * options opened, or the random entry's citation button pointed out in
-   * gold, as the tip, then its window opened, once the eye has found it
+   * options opened, or the random entry's citation button pointed out (in
+   * the primary color, as the search's options button from the news, cf.
+   * `EntryCitationButton`), then its window opened, once the eye has found it
    * (when its outline is at its brightest, cf. `card-highlight`); the focus
    * back on it when closed. Nothing if the entry is not shown yet.
    */
@@ -121,7 +122,6 @@
     }
     const button = document.querySelector<HTMLElement>("[data-random-opening] [data-citation]");
     if (!button) return;
-    button.style.setProperty("--card-highlight", "var(--ui-warning)");
     revealThen(button, () => {
       pointOut(button);
       setTimeout(() => {
