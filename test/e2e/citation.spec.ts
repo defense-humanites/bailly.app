@@ -144,12 +144,18 @@ test.describe("citing an entry", () => {
     expect(html).toContain("<meta name=\"prism.publicationName\" content=\"Dictionnaire grec-français\">");
   });
 
-  test("the home page described as the dictionary itself (a book, for Zotero)", async ({ page, goto }) => {
+  test("the other pages described as the dictionary itself (a book, for Zotero)", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
-    const html = await page.evaluate(async () => (await fetch("/")).text());
-    expect(html).toContain("<meta name=\"z.itemType\" content=\"book\">");
-    expect(html).toContain("<meta name=\"citation_title\" content=\"Dictionnaire grec-français\">");
-    expect(html).toContain("<meta name=\"citation_public_url\" content=\"https://bailly.app\">");
+    for (const path of ["/", "/signets"]) {
+      const html = await page.evaluate(async url => (await fetch(url)).text(), path);
+      expect(html).toContain("<meta name=\"z.itemType\" content=\"book\">");
+      expect(html).toContain("<meta name=\"citation_title\" content=\"Dictionnaire grec-français\">");
+      expect(html).toContain("<meta name=\"citation_public_url\" content=\"https://bailly.app\">");
+    }
+    // An entry's page: the entry's only.
+    const entry = await page.evaluate(async () => (await fetch("/logos")).text());
+    expect(entry.match(/name="z\.itemType"/g)).toHaveLength(1);
+    expect(entry).toContain("<meta name=\"citation_public_url\" content=\"https://bailly.app/logos\">");
   });
 
   test("on the home page's random entry", async ({ page, goto }) => {

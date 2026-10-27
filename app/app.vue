@@ -32,6 +32,15 @@
   useHead({
     link: [computed(() => ({ rel: "canonical", href: `${SITE_URL}${readablePath(route.path)}` }))],
   });
+
+  /**
+   * For the reference managers, every page describes the dictionary itself
+   * (cf. `workMetadata`): Zotero's connector, offered on any page, saves the
+   * work rather than the application's pages (bookmarks, preferences…);
+   * an entry's page replaces it by the entry's (`[uri].vue`, the tags of
+   * the same names).
+   */
+  useHead({ meta: workMetadata() });
 </script>
 
 <template>

@@ -360,9 +360,9 @@ export function entryMetadata(entry: CitedEntry, version: string = DATA_VERSION)
 }
 
 /**
- * The metadata of the home page: the dictionary itself, as a book (as
- * `biblatexWork`), which Zotero's connector saves with the same fields as
- * an entry's (cf. `entryMetadata`); the other pages, web pages.
+ * The metadata of the pages but the entries': the dictionary itself, as a
+ * book (as `biblatexWork`), which Zotero's connector saves with the same
+ * fields as an entry's (cf. `entryMetadata`, the same tags).
  */
 export function workMetadata(version: string = DATA_VERSION): Metadata {
   return [
