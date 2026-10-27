@@ -228,13 +228,19 @@
   });
 
   // Another component may ask for the focus (e.g. the about page's "Search a
-  // word" button, the home page as it opens), possibly before the search bar
-  // is mounted.
+  // word" button, the home page as it opens), possibly with a search to type
+  // (a home page's tip), possibly before the search bar is mounted.
   const searchFocus = useSearchFocus();
   const onFocusRequest = (): void => {
     const request = searchFocus.take();
     if (!request || (request.ifEmpty && hasQuery.value)) return;
     (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
+    // A search to type (converted as typing does), its results shown.
+    if (request.text) {
+      query.value = transliterating.value ? toTransliteratedInput(request.text) : toSearchGreek(request.text);
+      syncInputText(query.value, query.value.length);
+      open.value = true;
+    }
   };
   watch(searchFocus.request, onFocusRequest);
   onMounted(onFocusRequest);

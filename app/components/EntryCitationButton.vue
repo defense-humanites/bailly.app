@@ -38,6 +38,7 @@
 <template>
   <div
     data-toolbar-group
+    data-citation
     class="rounded-lg border border-default bg-default shadow-xs"
   >
     <UButton

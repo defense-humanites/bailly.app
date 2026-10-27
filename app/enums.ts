@@ -76,6 +76,11 @@ export enum StorageKey {
    */
   CitationTab = "bailly:citationTab",
   /**
+   * The home page's tip last shown, not shown again next time (cf.
+   * `HomeTip`).
+   */
+  LastTip = "bailly:lastTip",
+  /**
    * The date (ms) of the latest change of this device not yet sent by the
    * synchronization (cf. `useSyncStore().changed`).
    */

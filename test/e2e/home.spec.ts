@@ -102,6 +102,42 @@ test.describe("home page", () => {
     expect(decodeURIComponent(cookies.find(cookie => cookie.name === "bailly-preferences")?.value ?? "")).toContain("\"transliterateGreek\":true");
   });
 
+  test("a tip drawn at random, its action tried; not the same next time", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    // Drawn as the third of the tips (beta code, with a fine pointer).
+    await page.addInitScript(() => {
+      Math.random = () => 0.3;
+    });
+    await goto("/", { waitUntil: "hydration" });
+    const tip = page.getByText("Tapez le grec en beta code");
+    await expect(tip).toBeVisible();
+    // Typed in the search field, converted, its results shown.
+    await page.getByRole("button", { name: "Rechercher « lo/gos »" }).click();
+    await expect(searchInput(page)).toHaveValue("λόγος");
+    await expect(page.getByRole("listbox")).toBeVisible();
+    await page.reload();
+    await expect(page.getByText("Une forme fléchie mène à son lemme")).toBeVisible();
+    await expect(tip).toHaveCount(0);
+  });
+
+  test("the citation's tip points out the random entry's citation button, then opens it", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    // Drawn as the first of the tips.
+    await page.addInitScript(() => {
+      Math.random = () => 0.01;
+    });
+    await goto("/", { waitUntil: "hydration" });
+    const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });
+    await expect(opening.locator(".definition")).toBeVisible();
+    await page.getByRole("button", { name: "Citer", exact: true }).first().click();
+    await expect(opening.locator("[data-citation]")).toHaveAttribute("data-card-highlight", "");
+    // Then its window opened, the focus back on it once closed.
+    const dialog = page.getByRole("dialog", { name: "Citer", exact: true });
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(opening.getByRole("button", { name: "Citer", exact: true })).toBeFocused();
+  });
+
   test("names the edition in a popover, after the title", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
     // The heading is named after its text only.

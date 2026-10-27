@@ -195,12 +195,14 @@
           </template>
         </UPopover></span>
       </h1>
-      <p class="order-3 text-lg text-pretty text-muted md:order-none">
+      <p class="order-3 text-lg font-medium text-pretty text-muted md:order-none">
         Une application libre et gratuite, pensée pour la lecture et la recherche (<NuxtLink
           :to="encodeURI('/à-propos')"
           class="link"
         >en savoir plus</NuxtLink>).
       </p>
+      <!-- A tip, under the text (cf. `HomeTip`); on a phone, after the offer. -->
+      <HomeTip class="order-4 md:order-none md:mt-5 lg:mt-0" />
     </section>
 
     <RandomOpening data-nosnippet />

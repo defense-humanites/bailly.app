@@ -132,6 +132,7 @@
 <template>
   <section
     aria-label="Le Bailly ouvert au hasard"
+    data-random-opening
     class="flex flex-col"
   >
     <!-- The opened page, framed like the about page's hero: the neighbors above and below. -->
