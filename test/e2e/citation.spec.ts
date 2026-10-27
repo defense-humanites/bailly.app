@@ -5,7 +5,7 @@ import type { Page } from "@playwright/test";
 // The entry's citation: in a window, from a button at the end of a card's
 // toolbar (of homonyms, the card's: `index`).
 const openCitation = async (page: Page, index = 0) => {
-  await page.locator("main").getByRole("button", { name: "Citer cette entrée" }).nth(index).click();
+  await page.locator("main").getByRole("button", { name: "Citer", exact: true }).nth(index).click();
   return page.getByRole("dialog", { name: "Citer", exact: true });
 };
 
@@ -45,7 +45,7 @@ test.describe("citing an entry", () => {
     await goto("/logos", { waitUntil: "hydration" });
     // (By its attributes: the page is hidden from the accessibility tree
     // while the window is open.)
-    const button = page.locator("main button[aria-label='Citer cette entrée']").first();
+    const button = page.locator("main button[aria-label='Citer']").first();
     await expect(button).toHaveAttribute("aria-expanded", "false");
     const citation = await openCitation(page);
     await expect(citation).toBeVisible();
@@ -147,7 +147,7 @@ test.describe("citing an entry", () => {
   test("on the home page's random entry", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
     const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });
-    await opening.getByRole("button", { name: "Citer cette entrée" }).click();
+    await opening.getByRole("button", { name: "Citer", exact: true }).click();
     await expect(page.getByRole("dialog", { name: "Citer", exact: true }).getByText("https://bailly.app/", { exact: false }).first()).toBeVisible();
   });
 });

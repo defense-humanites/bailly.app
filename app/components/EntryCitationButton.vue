@@ -32,7 +32,8 @@
   toolbar (the entry's tools, apart from the bookmarks' at its start),
   framed and hovered as the bookmarks' buttons, the frame around the button
   as theirs around them (cf. `TagButtonGroup`); on the entry page, a homonym's card citing that
-  homonym, and on the home page's random entry.
+  homonym, and on the home page's random entry. Named « Citer », as the
+  window: the entry, or the work.
 -->
 <template>
   <div
@@ -42,7 +43,7 @@
     <UButton
       ref="button"
       icon="i-lucide-quote"
-      aria-label="Citer cette entrée"
+      aria-label="Citer"
       aria-haspopup="dialog"
       :aria-expanded="open"
       color="neutral"
