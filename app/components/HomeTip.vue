@@ -161,7 +161,8 @@
           <UKbd
             v-else-if="'kbd' in part"
             :value="part.kbd"
-            class="align-[0.1em]"
+            variant="soft"
+            class="align-[0.1em] bg-accented"
           />
           <button
             v-else
