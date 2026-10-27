@@ -85,15 +85,33 @@ test.describe("citing an entry", () => {
     await goto("/logos", { waitUntil: "hydration" });
     const citation = await openCitation(page);
     const reference = citation.locator("section p").first();
-    // Selected with the mouse: the click ending the selection copies nothing.
-    const box = (await reference.boundingBox())!;
-    await page.mouse.move(box.x + 4, box.y + box.height / 2);
+    await expect(reference).toContainText("A. Bailly");
+    // Once the window has stopped moving (its opening animation, which
+    // lasts longer on a slow machine, as the CI's).
+    await page.evaluate(() => Promise.all(document.getAnimations()
+      .filter(animation => animation.effect?.getTiming().iterations !== Infinity)
+      .map(animation => animation.finished)));
+    // Selected with the mouse, from the first letter to the eighth (on the
+    // text itself): the click ending the selection copies nothing.
+    const [from, to] = await reference.evaluate((element) => {
+      const text = document.createTreeWalker(element, NodeFilter.SHOW_TEXT).nextNode()!;
+      const rect = (start: number): DOMRect => {
+        const range = document.createRange();
+        range.setStart(text, start);
+        range.setEnd(text, start + 1);
+        return range.getBoundingClientRect();
+      };
+      const [first, eighth] = [rect(0), rect(7)];
+      return [{ x: first.left + 1, y: first.top + first.height / 2 }, { x: eighth.right - 1, y: eighth.top + eighth.height / 2 }];
+    });
+    await page.mouse.move(from.x, from.y);
     await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 });
+    await page.mouse.move(to.x, to.y, { steps: 5 });
     await page.mouse.up();
     expect(await page.evaluate(() => getSelection()!.toString().length)).toBeGreaterThan(0);
     await expect(citation.getByRole("button", { name: "Référence copiée" })).toHaveCount(0);
     // A click elsewhere (the selection given up) copies it all.
+    const box = (await reference.boundingBox())!;
     await page.mouse.click(box.x + box.width * 0.9, box.y + box.height / 2);
     await expect(citation.getByRole("button", { name: "Référence copiée" })).toBeVisible();
   });
