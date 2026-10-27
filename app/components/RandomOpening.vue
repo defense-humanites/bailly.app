@@ -143,10 +143,9 @@
         <!--
           The entry lies on the page's background, not on a card. Its
           toolbar neither ruled nor tinted (the frame's rules are close), its
-          groups of buttons on the page's background, with the logic of an
-          entry's page a notch down: raised to the cards' background when
-          hovered; pressed or open, sunk below the page (marble 200 in the
-          light theme, the page's vernis darkened in the dark one); the
+          groups of buttons on the page's background, their states the
+          page's (`--app-page-hover`, `--app-page-active`): a shade darker
+          when hovered, two when pressed or open, as every button; the
           entry's text close under it.
         -->
         <div
@@ -161,7 +160,7 @@
             link
             link-rel="nofollow"
             :ui="{
-              root: 'h-full flex flex-col overflow-hidden bg-transparent shadow-none ring-0 divide-y-0 rounded-none [&_[data-toolbar-group]]:bg-transparent [--app-button-hover:var(--ui-bg)] [--app-button-active:var(--ui-color-neutral-200)] dark:[--app-button-active:color-mix(in_oklab,var(--app-page-bg)_80%,black)]',
+              root: 'h-full flex flex-col overflow-hidden bg-transparent shadow-none ring-0 divide-y-0 rounded-none [&_[data-toolbar-group]]:bg-transparent [--app-button-hover:var(--app-page-hover)] [--app-button-active:var(--app-page-active)]',
               header: 'bg-transparent',
               body: 'min-h-0 flex-1 mask-b-from-80%',
             }"

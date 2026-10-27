@@ -3,9 +3,9 @@
   import type { IdbEntry, IdbTag, TagKey } from "~/idb";
 
   /*
-   * The toolbar's buttons: raised (lighter) when hovered, sunk (darker)
-   * when pressed or open, as the bookmarks' bar's (`--app-button-hover`,
-   * `--app-button-active`, cf. `root.css`); the tags' panel raised above
+   * The toolbar's buttons: a shade darker when hovered, two when pressed
+   * or open, as every button (`--app-button-hover`, `--app-button-active`,
+   * cf. `root.css`); the tags' panel raised above
    * the interface (`--app-panel-bg`), as the search's panels.
    * Kept in step with `TagButtonGroupStatic` and `EntryCitationButton`.
    */

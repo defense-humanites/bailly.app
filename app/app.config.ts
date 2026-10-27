@@ -102,8 +102,8 @@ export default defineAppConfig({
     /*
      * The selects open a list, as the bars' buttons open a menu: their
      * states (`--app-button-hover`, `--app-button-active`, cf. `root.css`),
-     * raised when hovered, sunk when pressed or open, rather
-     * than Nuxt UI's `bg-elevated` (darker in the light theme) on hover.
+     * a shade darker when hovered, two when pressed or open, as every
+     * button.
      */
     select: {
       slots: {

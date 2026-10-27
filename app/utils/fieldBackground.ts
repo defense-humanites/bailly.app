@@ -12,8 +12,8 @@ export const FIELD_BACKGROUND = "bg-(--app-field-bg) hover:bg-(--app-field-hover
 /**
  * The same bar's select (the active tag): the fields' background, but a
  * button's states, as the bar's other buttons (`--app-button-hover`,
- * `--app-button-active`): raised when hovered, sunk when
- * pressed or open, rather than a field's lighter focus. Focused (as after
+ * `--app-button-active`): darker when hovered, more when pressed or open,
+ * rather than a field's lighter hover and focus. Focused (as after
  * a choice, the list closed), its background at rest rather than the
  * `soft` variant's (`focus:bg-elevated`), which looked still open; the
  * keyboard's focus shows by its halo (`FIELD_HALO`).
