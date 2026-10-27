@@ -54,7 +54,7 @@
     {
       icon: "i-lucide-quote",
       title: "Des entrées faciles à citer.",
-      text: "Le bouton aux guillemets, en tête de chaque entrée, propose une référence prête à copier, à placer dans le texte ou en note (forme complète, abrégée ou auteur-date), et une notice pour la bibliographie, selon la norme de votre choix (APA, MLA, ISO 690 ou Chicago). La référence indique la version consultée du dictionnaire, et l'italique est conservé au collage dans votre traitement de texte.",
+      text: "Le bouton aux guillemets, en tête de chaque entrée, propose une référence prête à copier, à placer dans le texte ou en note (forme complète, abrégée ou auteur-date), et une notice pour la bibliographie, selon la norme de votre choix (APA, MLA, ISO 690 ou Chicago). La référence indique la version consultée du dictionnaire, et l'italique est conservé au collage dans votre traitement de texte. Pour LaTeX ou un gestionnaire de références, l'entrée est aussi proposée au format BibLaTeX, à copier ou à télécharger ; et le connecteur de Zotero l'enregistre d'un clic, comme article de dictionnaire.",
     },
     {
       icon: "i-lucide-search",

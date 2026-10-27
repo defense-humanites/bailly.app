@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {
-    biblatexEntry, biblatexFileName, CITATION_STYLE_LABELS, CITATION_STYLES, citedLemma, clipboardHtml, ENTRY_CITATION_FORMS, entryCitation,
-    entryCitationFormLabel, isCitationStyle, isEntryCitationForm, workCitation, type Citation, type CitationStyle, type CitedEntry, type EntryCitationForm,
+    biblatexEntry, biblatexFileName, biblatexWork, bibKey, CITATION_STYLE_LABELS, CITATION_STYLES, citedLemma, clipboardHtml, ENTRY_CITATION_FORMS, entryCitation,
+    entryCitationFormLabel, isCitationStyle, isEntryCitationForm, WORK_BIB_KEY, workCitation, type Citation, type CitationStyle, type CitedEntry, type EntryCitationForm,
   } from "~/utils/citation";
   import { StorageKey } from "~/enums";
 
@@ -18,6 +18,7 @@
    */
   const storedForm = useLocalStorage<string>(StorageKey.CitationForm, "note", { writeDefaults: false, initOnMounted: true });
   const storedStyle = useLocalStorage<string>(StorageKey.CitationStyle, "apa", { writeDefaults: false, initOnMounted: true });
+  const storedScope = useLocalStorage<string>(StorageKey.CitationBiblatex, "entry", { writeDefaults: false, initOnMounted: true });
   const form = computed<EntryCitationForm>({
     get: () => (isEntryCitationForm(storedForm.value) ? storedForm.value : "note"),
     set: (value) => {
@@ -32,6 +33,18 @@
   });
 
   const NBSP = " ";
+
+  /** What the BibLaTeX record cites: the entry, or the dictionary (cf. `biblatexWork`). */
+  const scope = computed<"entry" | "work">({
+    get: () => (storedScope.value === "work" ? "work" : "entry"),
+    set: (value) => {
+      storedScope.value = value;
+    },
+  });
+  const scopeItems = [{ label: "Cette entrée", value: "entry" }, { label: "L'ouvrage", value: "work" }];
+  const chooseScope = (value: unknown): void => {
+    if (value === "entry" || value === "work") scope.value = value;
+  };
 
   const entryHeadingId = useId();
   const workHeadingId = useId();
@@ -109,17 +122,32 @@
     `mailto:contact@bailly.app?subject=${encodeURIComponent(`Citation ${CITATION_STYLE_LABELS[style.value]} : ${citedLemma(props.entry)}`)}`);
 
   /**
-   * The entry as a BibLaTeX record (cf. `biblatexEntry`): to paste in a
-   * `.bib` file, or downloaded as one (which LaTeX, Zotero, JabRef… read).
+   * The entry, or the dictionary, as a BibLaTeX record (cf. `biblatexEntry`,
+   * `biblatexWork`): to paste in a `.bib` file, or downloaded as one (which
+   * LaTeX, Zotero, JabRef… read).
    */
-  const biblatex = computed((): string => biblatexEntry(props.entry, { version: props.version, accessed: accessed.value }));
+  const biblatex = computed((): string => {
+    const context = { version: props.version, accessed: accessed.value };
+    return scope.value === "work" ? biblatexWork(context) : biblatexEntry(props.entry, context);
+  });
+
+  /**
+   * The record's lines, a field's wrapped lines indented: under its value
+   * (after its brace, the names aligned, cf. `biblatexEntry`), or by a
+   * little on a phone (the value would have no room).
+   */
+  const biblatexLines = computed(() => biblatex.value.split("\n").map(text => ({
+    text,
+    field: text.startsWith(" "),
+    style: { "--hang": `${text.indexOf("{") + 1}ch` },
+  })));
 
   const downloadBiblatex = (): void => {
     accessed.value = new Date();
     const url = URL.createObjectURL(new Blob([`${biblatex.value}\n`], { type: "application/x-bibtex;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = biblatexFileName(props.entry);
+    link.download = biblatexFileName(scope.value === "work" ? WORK_BIB_KEY : bibKey(props.entry));
     link.click();
     setTimeout(() => {
       URL.revokeObjectURL(url);
@@ -165,71 +193,74 @@
   chosen in a select on its right, the reference in a box which a click
   copies (`CopyBox`, as the synchronization's key). Then the entry for a
   reference manager, as a BibLaTeX record: the same box (copied as plain
-  text, in a monospace font), and its file to download in the select's
-  place. Rendered in the browser only:
+  text, in a monospace font, its whole height), and its file to download
+  in the select's place; in a column of its own from `lg` (the window
+  widened, cf. `EntryCitationButton`). Rendered in the browser only:
   the date of consultation is the reader's, and the choices are kept on
   the device.
 -->
 <template>
-  <div class="space-y-5 text-sm">
+  <div class="grid gap-5 text-sm lg:grid-cols-2 lg:gap-x-8">
     <ClientOnly>
-      <section
-        v-for="part in parts"
-        :key="part.key"
-        :aria-labelledby="part.headingId"
-        class="space-y-2"
-      >
-        <div class="flex items-center justify-between gap-2">
-          <h3
-            :id="part.headingId"
-            class="font-semibold text-highlighted"
+      <div class="space-y-5">
+        <section
+          v-for="part in parts"
+          :key="part.key"
+          :aria-labelledby="part.headingId"
+          class="space-y-2"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <h3
+              :id="part.headingId"
+              class="font-semibold text-highlighted"
+            >
+              {{ part.title }}
+            </h3>
+            <USelect
+              :model-value="part.value"
+              :open="part.open"
+              :items="part.items"
+              size="xs"
+              :aria-label="part.selectLabel"
+              class="w-36"
+              @update:model-value="part.choose"
+              @update:open="part.setOpen"
+            />
+          </div>
+          <div
+            v-if="part.followsStyle"
+            class="flex gap-2 text-muted"
           >
-            {{ part.title }}
-          </h3>
-          <USelect
-            :model-value="part.value"
-            :open="part.open"
-            :items="part.items"
-            size="xs"
-            :aria-label="part.selectLabel"
-            class="w-36"
-            @update:model-value="part.choose"
-            @update:open="part.setOpen"
-          />
-        </div>
-        <div
-          v-if="part.followsStyle"
-          class="flex gap-2 text-muted"
-        >
-          <UIcon
-            name="i-lucide-info"
-            class="mt-0.5 size-4 shrink-0"
-          />
-          <span>
-            Suit la norme choisie pour la bibliographie,
-            <!-- Never the style's name alone on a line. -->
-            <span class="whitespace-nowrap">ci-dessous{{ NBSP }}:
-              <button
-                type="button"
-                class="link cursor-pointer text-default"
-                @click="styleOpen = true"
-              >{{ CITATION_STYLE_LABELS[style] }}</button>.</span>
-          </span>
-        </div>
-        <CopyBox
-          label="Copier la référence"
-          copied-label="Référence copiée"
-          :copy="() => copy(part.key)"
-        >
-          <!-- Our own references (their lemma escaped, cf. `utils/citation.ts`). -->
-          <!-- eslint-disable vue/no-v-html -->
-          <p
-            class="font-serif text-default"
-            v-html="part.reference.html"
-          />
+            <UIcon
+              name="i-lucide-info"
+              class="mt-0.5 size-4 shrink-0"
+            />
+            <span>
+              Suit la norme choisie pour la bibliographie,
+              <!-- Never the style's name alone on a line. -->
+              <span class="whitespace-nowrap">ci-dessous{{ NBSP }}:
+                <button
+                  type="button"
+                  class="link cursor-pointer text-default"
+                  @click="styleOpen = true"
+                >{{ CITATION_STYLE_LABELS[style] }}</button>.</span>
+            </span>
+          </div>
+          <CopyBox
+            label="Copier la référence"
+            copied-label="Référence copiée"
+            :copy="() => copy(part.key)"
+          >
+            <!-- Our own references (their lemma escaped, cf. `utils/citation.ts`). -->
+            <!-- eslint-disable vue/no-v-html -->
+            <p
+              class="font-serif text-default"
+              v-html="part.reference.html"
+            />
           <!-- eslint-enable vue/no-v-html -->
-        </CopyBox>
-      </section>
+          </CopyBox>
+        </section>
+      </div>
       <section
         :aria-labelledby="biblatexHeadingId"
         class="space-y-2"
@@ -239,43 +270,51 @@
             :id="biblatexHeadingId"
             class="font-semibold text-highlighted"
           >
-            Pour LaTeX ou un gestionnaire de références
+            En BibLaTeX
           </h3>
+          <USelect
+            :model-value="scope"
+            :items="scopeItems"
+            size="xs"
+            aria-label="Objet de l'entrée BibLaTeX"
+            class="w-36"
+            @update:model-value="chooseScope"
+          />
+        </div>
+        <div class="flex items-start justify-between gap-3">
+          <p class="text-muted">
+            Pour LaTeX ou un gestionnaire de références (Zotero, JabRef, Mendeley…).
+          </p>
           <UButton
             icon="i-lucide-download"
             label="Fichier .bib"
             color="neutral"
             variant="outline"
             size="xs"
-            class="rounded-md"
+            class="shrink-0 rounded-md"
             aria-label="Télécharger le fichier BibLaTeX"
             @click="downloadBiblatex"
           />
         </div>
-        <p class="text-muted">
-          Au format BibLaTeX, que lisent aussi Zotero, JabRef ou Mendeley.
-        </p>
         <CopyBox
           label="Copier l'entrée BibLaTeX"
           copied-label="Entrée BibLaTeX copiée"
           :copy="() => copy('biblatex')"
         >
-          <!--
-            Some eight lines and a half (the last one cut, a sign of the
-            rest), scrolled; by the keyboard too, once focused.
-          -->
-          <pre
-            tabindex="0"
-            aria-label="Entrée BibLaTeX"
-            class="max-h-[10.625rem] overflow-y-auto overscroll-contain rounded-sm font-mono text-xs/5 whitespace-pre-wrap wrap-anywhere text-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ui-border-inverted)"
-          >{{ biblatex }}</pre>
+          <pre class="font-mono text-xs/5 whitespace-pre-wrap wrap-anywhere text-default"><span
+            v-for="(line, index) in biblatexLines"
+            :key="index"
+            class="block"
+            :class="{ 'ps-[4ch] -indent-[4ch] sm:[padding-inline-start:var(--hang)] sm:[text-indent:calc(-1*var(--hang))]': line.field }"
+            :style="line.style"
+          >{{ line.text }}</span></pre>
         </CopyBox>
       </section>
       <!--
         Temporary, cf. `reportUrl`. Set apart as the synchronization key's
         warning (`SyncDialog`).
       -->
-      <p class="flex gap-2 border-t border-default pt-4 text-muted">
+      <p class="flex gap-2 border-t border-default pt-4 text-muted lg:col-span-2">
         <UIcon
           name="i-lucide-message-circle"
           class="mt-0.5 size-4 shrink-0"

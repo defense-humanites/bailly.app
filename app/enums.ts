@@ -66,6 +66,11 @@ export enum StorageKey {
    */
   CitationStyle = "bailly:citationStyle",
   /**
+   * What the BibLaTeX record last chosen cites, the entry or the dictionary
+   * (cf. `EntryCitation`).
+   */
+  CitationBiblatex = "bailly:citationBiblatex",
+  /**
    * The date (ms) of the latest change of this device not yet sent by the
    * synchronization (cf. `useSyncStore().changed`).
    */

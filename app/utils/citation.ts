@@ -218,12 +218,23 @@ export function isoDate(date: Date): string {
 
 /**
  * The entry's key in a BibLaTeX file: « bailly: » and its address on
- * Bailly.app without diacritics, a homonym's number after a hyphen
- * (`bailly:oudos-2`). The same for every reader: a text can cite the entry
- * (`\cite{bailly:logos}`) before its reference is added to the file.
+ * Bailly.app in ASCII (accented keys are not reliable with pdfLaTeX), as
+ * unique: its long vowels followed by a colon instead of their circumflex,
+ * the length mark (IPA's « ː ») in ASCII, a colon never being in an address
+ * (`logikôs` → `logiko:s`, apart from the adjective `logikos`); a homonym's
+ * number after a hyphen (`bailly:oudos-2`); the parentheses kept (`phi(n)`,
+ * apart from `phin`; `hoi_(3)`), any other character dropped; the case kept
+ * (`Polis` and `polis`: distinct for biber). The same for every reader: a text can cite the entry
+ * (`\cite{bailly:logos}`) before its record is added to the file. Checked
+ * unique over the dictionary by `scripts/check-bib-keys.py`.
  */
 export function bibKey({ uri }: CitedEntry): string {
-  return `bailly:${uri.normalize("NFD").replace(/\p{M}/gu, "").replace("#", "-").replace(/[^\w-]/g, "")}`;
+  const ascii = uri
+    .replace(/[êÊôÔ]/g, char => `${char.normalize("NFD")[0]}:`)
+    .normalize("NFD").replace(/\p{M}/gu, "")
+    .replace("#", "-")
+    .replace(/[^\w:()-]/g, "");
+  return `bailly:${ascii}`;
 }
 
 /** A text as a BibLaTeX field's value: LaTeX's special characters escaped. */
@@ -237,44 +248,76 @@ const latex = (text: string): string => text.replace(/[\\{}#$%&_^~]/g, (char) =>
 const EDITOR = "Gréco, Gérard";
 const COLLABORATORS = ["Charbonnet, André", "De Wilde, Mark", "Maréchal, Bernard"];
 
+/** The fields of the dictionary itself, in both records (cf. `biblatexEntry`). */
+const workFields = (version: string): [string, string][] => [
+  ["editor", EDITOR],
+  ["editora", COLLABORATORS.join(" and ")],
+  ["editoratype", "collaborator"],
+  ["edition", "Nouvelle édition revue et corrigée, dite Bailly 2020 -- Hugo Chávez"],
+  ["date", version],
+  ["origdate", ORIGINAL_YEAR],
+  ["publisher", "Association pour la défense des humanités"],
+  ["location", "Bordeaux"],
+];
+
+/** A BibLaTeX record: its fields one per line, their names aligned. */
+function biblatexRecord(type: string, key: string, fields: [string, string][]): string {
+  const width = Math.max(...fields.map(([name]) => name.length));
+  return [
+    `@${type}{${key},`,
+    ...fields.map(([name, value]) => `  ${name.padEnd(width)} = {${value}},`),
+    "}",
+  ].join("\n");
+}
+
 /**
  * The entry as a BibLaTeX record, for LaTeX (biblatex and biber: the Greek
  * headword in UTF-8, which BibTeX would not read) and the reference managers
  * that import it (Zotero, JabRef…). An article of a reference work
- * (`@inreference`, the dictionary cited by entry); the persons and the
- * edition as in the other references (cf. `workCitation`), the
+ * (`@inreference`, the dictionary cited by entry, as APA wants); the persons
+ * and the edition as in the other references (cf. `workCitation`), the
  * collaborators as such (`editora`, « avec la collaboration de » in
  * French); the date, the version's, the original's apart (`origdate`); the
  * entry's address and the day of consultation.
  */
 export function biblatexEntry(entry: CitedEntry, { version = DATA_VERSION, accessed }: Context): string {
   const homonym = /#(\d+)$/.exec(entry.uri)?.[1];
-  const fields: [string, string][] = [
+  return biblatexRecord("inreference", bibKey(entry), [
     ["author", "Bailly, Anatole"],
     ["title", `${latex(entry.word)}${homonym ? `\\textsuperscript{${homonym}}` : ""}`],
     ["booktitle", "Dictionnaire grec-français"],
-    ["editor", EDITOR],
-    ["editora", COLLABORATORS.join(" and ")],
-    ["editoratype", "collaborator"],
-    ["edition", "Nouvelle édition revue et corrigée, dite Bailly 2020 -- Hugo Chávez"],
-    ["date", version],
-    ["origdate", ORIGINAL_YEAR],
-    ["publisher", "Association pour la défense des humanités"],
-    ["location", "Bordeaux"],
+    ...workFields(version),
     ["url", entryUrl(entry)],
     ["urldate", isoDate(accessed)],
     ["langid", "french"],
-  ];
-  const width = Math.max(...fields.map(([name]) => name.length));
-  return [
-    `@inreference{${bibKey(entry)},`,
-    ...fields.map(([name, value]) => `  ${name.padEnd(width)} = {${value}},`),
-    "}",
-  ].join("\n");
+  ]);
 }
 
-/** The name of an entry's BibLaTeX file (its key, without the prefix). */
-export const biblatexFileName = (entry: CitedEntry): string => `bailly-${bibKey(entry).slice("bailly:".length)}.bib`;
+/** The dictionary's key in a BibLaTeX file (cf. `biblatexWork`). */
+export const WORK_BIB_KEY = "bailly";
+
+/**
+ * The dictionary as a BibLaTeX record: cited once, its entries in the
+ * citations' postnote, as the classics do (`\cite[s.~v. λόγος]{bailly}`);
+ * the same fields as an entry's (cf. `biblatexEntry`), the application's
+ * address. A `@book` (not `@reference`, which Zotero's import discards).
+ */
+export function biblatexWork({ version = DATA_VERSION, accessed }: Context): string {
+  return biblatexRecord("book", WORK_BIB_KEY, [
+    ["author", "Bailly, Anatole"],
+    ["title", "Dictionnaire grec-français"],
+    ...workFields(version),
+    ["url", CITATION_ORIGIN],
+    ["urldate", isoDate(accessed)],
+    ["langid", "french"],
+  ]);
+}
+
+/**
+ * The name of a BibLaTeX file, after its record's key, without its colons
+ * (forbidden in Windows's file names): `bailly-logikos.bib`, `bailly.bib`.
+ */
+export const biblatexFileName = (key: string): string => `${key.replace(":", "-").replaceAll(":", "")}.bib`;
 
 /**
  * The metadata of an entry's page for the reference managers: Zotero's

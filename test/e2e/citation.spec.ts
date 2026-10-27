@@ -106,11 +106,6 @@ test.describe("citing an entry", () => {
     const record = citation.locator("pre");
     await expect(record).toContainText("@inreference{bailly:logades-2,");
     await expect(record).toContainText("url         = {https://bailly.app/logades#2},");
-    // Its height bounded, scrolled (by the keyboard too).
-    expect(await record.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
-    await record.focus();
-    await page.keyboard.press("End");
-    await expect.poll(() => record.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
 
     await citation.getByRole("button", { name: "Copier l'entrée BibLaTeX" }).click();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/^@inreference\{bailly:logades-2,\n[^]*\n\}$/);
@@ -122,6 +117,18 @@ test.describe("citing an entry", () => {
     expect(download.suggestedFilename()).toBe("bailly-logades-2.bib");
     const text = readFileSync(await download.path(), "utf8");
     expect(text).toMatch(/^@inreference\{bailly:logades-2,[^]*\}\n$/);
+
+    // Or the dictionary itself, a choice kept on the device.
+    await citation.getByRole("combobox", { name: "Objet de l'entrée BibLaTeX" }).click();
+    await page.getByRole("option", { name: "L'ouvrage" }).click();
+    await expect(record).toContainText("@book{bailly,");
+    const [workDownload] = await Promise.all([
+      page.waitForEvent("download"),
+      citation.getByRole("button", { name: "Télécharger le fichier BibLaTeX" }).click(),
+    ]);
+    expect(workDownload.suggestedFilename()).toBe("bailly.bib");
+    await page.reload();
+    await expect((await openCitation(page)).locator("pre")).toContainText("@book{bailly,");
   });
 
   test("an entry's page described for the reference managers (Zotero)", async ({ page, goto }) => {

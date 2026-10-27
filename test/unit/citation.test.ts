@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  accessDate, bibKey, biblatexEntry, biblatexFileName, citedLemma, clipboardHtml, entryCitation, entryCitationFormLabel, entryMetadata, isoDate, versionDate, workCitation,
+  accessDate, bibKey, biblatexEntry, biblatexFileName, biblatexWork, citedLemma, clipboardHtml, entryCitation, entryCitationFormLabel, entryMetadata, isoDate, versionDate, workCitation,
 } from "../../app/utils/citation";
 
 const NBSP = " ";
@@ -120,14 +120,40 @@ describe("biblatexEntry", () => {
     expect(entry).toContain("date        = {2027-01-15},");
   });
 
-  it("keys without diacritics, LaTeX's special characters escaped", () => {
-    expect(bibKey({ word: "ψυχή", uri: "psuchê" })).toBe("bailly:psuche");
-    expect(biblatexFileName({ word: "οὐδός", uri: "oudos#2" })).toBe("bailly-oudos-2.bib");
+  it("keys in ASCII, unique: a colon after the long vowels; LaTeX's special characters escaped", () => {
+    expect(bibKey({ word: "ψυχή", uri: "psuchê" })).toBe("bailly:psuche:");
+    expect(bibKey({ word: "λογικῶς", uri: "logikôs" })).toBe("bailly:logiko:s");
+    expect(bibKey({ word: "λογικός", uri: "logikos" })).toBe("bailly:logikos");
+    // Not the doubled vowels of other words (ἀθεεί).
+    expect(bibKey({ word: "ἀθεεί", uri: "atheei" })).not.toBe(bibKey({ word: "ἀθηί", uri: "athêi" }));
+    expect(bibKey({ word: "λογάω-ῶ", uri: "logaô-ô" })).toBe("bailly:logao:-o:");
+    expect(bibKey({ word: "Ἦλις", uri: "Êlis" })).toBe("bailly:E:lis");
+    expect(bibKey({ word: "οἱ", uri: "hoi_(3)#2" })).toBe("bailly:hoi_(3)-2");
+    expect(bibKey({ word: "-φι(ν)", uri: "phi(n)" })).not.toBe(bibKey({ word: "φίν", uri: "phin" }));
+    expect(biblatexFileName("bailly:oudos-2")).toBe("bailly-oudos-2.bib");
+    expect(biblatexFileName("bailly:logao:-o:")).toBe("bailly-logao-o.bib");
+    expect(biblatexFileName("bailly:hoi_(3)-2")).toBe("bailly-hoi_(3)-2.bib");
+    expect(biblatexFileName("bailly")).toBe("bailly.bib");
     expect(biblatexEntry({ word: "a_b&c", uri: "ab" }, { accessed })).toContain("title       = {a\\_b\\&c},");
   });
 
   it("the date of consultation, the reader's day", () => {
     expect(isoDate(new Date(2026, 0, 3, 23, 59))).toBe("2026-01-03");
+  });
+});
+
+describe("biblatexWork", () => {
+  it("the dictionary itself, to cite its entries in the postnote", () => {
+    const work = biblatexWork({ accessed });
+    expect(work).toMatch(/^@book\{bailly,\n/);
+    expect(work).toContain("  title       = {Dictionnaire grec-français},");
+    expect(work).toContain("  url         = {https://bailly.app},");
+    expect(work).not.toContain("booktitle");
+    // The dictionary's fields as an entry's.
+    for (const field of ["editora", "edition", "date", "origdate", "publisher", "location", "urldate"]) {
+      const line = (record: string): string | undefined => record.split("\n").find(text => text.trimStart().startsWith(`${field} `));
+      expect(line(work)).toBe(line(biblatexEntry(logos, { accessed })));
+    }
   });
 });
 
