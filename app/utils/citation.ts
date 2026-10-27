@@ -124,8 +124,12 @@ export const entryUrl = ({ uri }: CitedEntry): string => `${CITATION_ORIGIN}/${u
 
 type Context = { version?: string; accessed: Date };
 
-/** The year of the dictionary's first edition (Hachette, 1894). */
-const ORIGINAL_YEAR = "1894";
+/**
+ * The year of the dictionary's first edition: Hachette, 1895 (its preface
+ * is dated November 1894; « parut en 1895 », H. Omont, Comptes rendus de
+ * l'Académie des inscriptions et belles-lettres, 1911, p. 829).
+ */
+const ORIGINAL_YEAR = "1895";
 
 /**
  * An entry's reference, in the text or in a note.
@@ -179,13 +183,13 @@ export function workCitation(style: CitationStyle, { version = DATA_VERSION, acc
         // The director as French adaptations write it (« dir. »); the
         // publisher before the address; the original's date as APA's
         // « Original work published » (cf. `verification-formats-citation.md`).
-        ` (G. Gréco, dir.; nouv. éd. rev. et corr., dite Bailly 2020 – Hugo Chávez, version du ${date}). Association pour la défense des humanités. ${CITATION_ORIGIN} (Ouvrage original publié en 1894)`,
+        ` (G. Gréco, dir.; nouv. éd. rev. et corr., dite Bailly 2020 – Hugo Chávez, version du ${date}). Association pour la défense des humanités. ${CITATION_ORIGIN} (Ouvrage original publié en ${ORIGINAL_YEAR})`,
       ]);
     case "mla":
       return render([
         "Bailly, Anatole. ",
         { italic: "Dictionnaire grec-français" },
-        `. 1894. Sous la direction de Gérard Gréco, avec le concours d'André Charbonnet et al., ${editionName}. `,
+        `. ${ORIGINAL_YEAR}. Sous la direction de Gérard Gréco, avec le concours d'André Charbonnet et al., ${editionName}. `,
         { italic: "Bailly.app" },
         // The site as a second container: its title, its publisher (the
         // association, not the persons: as in the other styles), its date

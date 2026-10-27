@@ -47,8 +47,8 @@ describe("entryCitation", () => {
   });
 
   it("author-date: after the bibliography's style, the entry in quotation marks", () => {
-    expect(plain(entryCitation("authorDate", logos, "apa", { accessed }).text)).toBe("(Bailly, 1894/2023, s. v. « λόγος »)");
-    expect(plain(entryCitation("authorDate", logos, "chicago", { accessed }).text)).toBe("(Bailly [1894] 2023, s.v. « λόγος »)");
+    expect(plain(entryCitation("authorDate", logos, "apa", { accessed }).text)).toBe("(Bailly, 1895/2023, s. v. « λόγος »)");
+    expect(plain(entryCitation("authorDate", logos, "chicago", { accessed }).text)).toBe("(Bailly [1895] 2023, s.v. « λόγος »)");
     expect(plain(entryCitation("authorDate", oudos2, "iso", { accessed }).text)).toBe("(Bailly, 2023 : s. v. « οὐδός² »)");
     expect(plain(entryCitation("authorDate", logos, "mla", { accessed }).text)).toBe("(Bailly, « λόγος »)");
     expect(entryCitationFormLabel("authorDate", "mla")).toBe("Dans le texte");
@@ -72,7 +72,7 @@ describe("workCitation", () => {
   });
 
   it("APA", () => {
-    expect(plain(workCitation("apa", { accessed }).text)).toBe("Bailly, A. (2023). Dictionnaire grec-français (G. Gréco, dir.; nouv. éd. rev. et corr., dite Bailly 2020 – Hugo Chávez, version du 28 février 2023). Association pour la défense des humanités. https://bailly.app (Ouvrage original publié en 1894)");
+    expect(plain(workCitation("apa", { accessed }).text)).toBe("Bailly, A. (2023). Dictionnaire grec-français (G. Gréco, dir.; nouv. éd. rev. et corr., dite Bailly 2020 – Hugo Chávez, version du 28 février 2023). Association pour la défense des humanités. https://bailly.app (Ouvrage original publié en 1895)");
   });
 
   it("MLA and ISO 690 with the date of consultation; MLA's container in italics", () => {
@@ -102,7 +102,7 @@ describe("biblatexEntry", () => {
       "  editoratype = {collaborator},",
       "  edition     = {Nouvelle édition revue et corrigée, dite Bailly 2020 -- Hugo Chávez},",
       "  date        = {2023-02-28},",
-      "  origdate    = {1894},",
+      "  origdate    = {1895},",
       "  publisher   = {Association pour la défense des humanités},",
       "  location    = {Bordeaux},",
       "  url         = {https://bailly.app/logos},",

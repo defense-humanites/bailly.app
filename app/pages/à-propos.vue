@@ -511,7 +511,7 @@
                 Le dictionnaire d'Anatole Bailly
               </h3>
               <p class="mt-2 text-muted">
-                L'ouvrage de référence des hellénistes francophones, paru en 1894 et maintes fois
+                L'ouvrage de référence des hellénistes francophones, paru en 1895 et maintes fois
                 réédité. Le texte de sa quatrième édition (1935) est passé dans le domaine public ; son
                 <a
                   href="https://archive.org/details/BaillyDictionnaireGrecFrancais"

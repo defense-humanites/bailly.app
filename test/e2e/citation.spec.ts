@@ -20,11 +20,11 @@ test.describe("citing an entry", () => {
 
     await citation.getByRole("combobox", { name: "Forme de la référence" }).click();
     await page.getByRole("option", { name: "Auteur-date" }).click();
-    await expect(entryReference).toHaveText("(Bailly, 1894/2023, s. v. « λόγος »)");
+    await expect(entryReference).toHaveText("(Bailly, 1895/2023, s. v. « λόγος »)");
     // Copied by its button (or a click on it), as the synchronization's key.
     await citation.getByRole("button", { name: "Copier la référence" }).first().click();
     await expect(citation.getByRole("button", { name: "Référence copiée" })).toBeVisible();
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("(Bailly, 1894/2023, s. v. « λόγος »)");
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("(Bailly, 1895/2023, s. v. « λόγος »)");
 
     // Author-date follows the bibliography's style; both choices kept.
     await citation.getByRole("combobox", { name: "Norme de la bibliographie" }).click();
