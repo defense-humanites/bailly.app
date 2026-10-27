@@ -71,6 +71,11 @@ export enum StorageKey {
    */
   CitationBiblatex = "bailly:citationBiblatex",
   /**
+   * The citation's tab last opened, for a word processor or for LaTeX
+   * (cf. `EntryCitation`).
+   */
+  CitationTab = "bailly:citationTab",
+  /**
    * The date (ms) of the latest change of this device not yet sent by the
    * synchronization (cf. `useSyncStore().changed`).
    */

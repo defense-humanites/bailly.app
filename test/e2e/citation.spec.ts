@@ -103,6 +103,9 @@ test.describe("citing an entry", () => {
     await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
     await goto("/logades", { waitUntil: "hydration" });
     const citation = await openCitation(page, 1);
+    // In its own tab, for LaTeX or a reference manager.
+    await expect(citation.locator("pre")).toHaveCount(0);
+    await citation.getByRole("tab", { name: "LaTeX et Zotero" }).click();
     const record = citation.locator("pre");
     await expect(record).toContainText("@inreference{bailly:logades-2,");
     await expect(record).toContainText("url         = {https://bailly.app/logades#2},");
@@ -127,6 +130,7 @@ test.describe("citing an entry", () => {
       citation.getByRole("button", { name: "Télécharger le fichier BibLaTeX" }).click(),
     ]);
     expect(workDownload.suggestedFilename()).toBe("bailly.bib");
+    // Reopened in the last tab opened.
     await page.reload();
     await expect((await openCitation(page)).locator("pre")).toContainText("@book{bailly,");
   });

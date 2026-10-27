@@ -19,6 +19,22 @@
   const storedForm = useLocalStorage<string>(StorageKey.CitationForm, "note", { writeDefaults: false, initOnMounted: true });
   const storedStyle = useLocalStorage<string>(StorageKey.CitationStyle, "apa", { writeDefaults: false, initOnMounted: true });
   const storedScope = useLocalStorage<string>(StorageKey.CitationBiblatex, "entry", { writeDefaults: false, initOnMounted: true });
+  const storedTab = useLocalStorage<string>(StorageKey.CitationTab, "text", { writeDefaults: false, initOnMounted: true });
+
+  /**
+   * The tab: the references for a word processor (`text`), or the BibLaTeX
+   * records (`bib`); each reader needing one only, the last one opened.
+   */
+  const tab = computed<"text" | "bib">({
+    get: () => (storedTab.value === "bib" ? "bib" : "text"),
+    set: (value) => {
+      storedTab.value = value;
+    },
+  });
+  const tabItems = [{ label: "Traitement de texte", value: "text" }, { label: "LaTeX et Zotero", value: "bib" }];
+  const chooseTab = (value: string | number): void => {
+    if (value === "text" || value === "bib") tab.value = value;
+  };
   const form = computed<EntryCitationForm>({
     get: () => (isEntryCitationForm(storedForm.value) ? storedForm.value : "note"),
     set: (value) => {
@@ -191,18 +207,29 @@
   To cite the entry read: in the text or a note (three forms), and the work
   in the bibliography (four styles), alike: a title, the form or style
   chosen in a select on its right, the reference in a box which a click
-  copies (`CopyBox`, as the synchronization's key). Then the entry for a
-  reference manager, as a BibLaTeX record: the same box (copied as plain
-  text, in a monospace font, its whole height), and its file to download
-  in the select's place; in a column of its own from `lg` (the window
-  widened, cf. `EntryCitationButton`). Rendered in the browser only:
+  copies (`CopyBox`, as the synchronization's key). In a tab of its own,
+  for LaTeX or a reference manager, the entry or the work as a BibLaTeX
+  record: the same box (copied as plain text, in a monospace font, its
+  whole height), its file to download beside its explanation. Rendered in
+  the browser only:
   the date of consultation is the reader's, and the choices are kept on
   the device.
 -->
 <template>
-  <div class="grid gap-5 text-sm lg:grid-cols-2 lg:gap-x-8">
+  <div class="space-y-5 text-sm">
     <ClientOnly>
-      <div class="space-y-5">
+      <UTabs
+        :model-value="tab"
+        :items="tabItems"
+        :content="false"
+        size="sm"
+        class="w-full"
+        @update:model-value="chooseTab"
+      />
+      <div
+        v-if="tab === 'text'"
+        class="space-y-5"
+      >
         <section
           v-for="part in parts"
           :key="part.key"
@@ -262,6 +289,7 @@
         </section>
       </div>
       <section
+        v-else
         :aria-labelledby="biblatexHeadingId"
         class="space-y-2"
       >
@@ -314,7 +342,7 @@
         Temporary, cf. `reportUrl`. Set apart as the synchronization key's
         warning (`SyncDialog`).
       -->
-      <p class="flex gap-2 border-t border-default pt-4 text-muted lg:col-span-2">
+      <p class="flex gap-2 border-t border-default pt-4 text-muted">
         <UIcon
           name="i-lucide-message-circle"
           class="mt-0.5 size-4 shrink-0"

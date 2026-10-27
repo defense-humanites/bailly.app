@@ -55,7 +55,7 @@
       v-model:open="open"
       title="Citer cette entrée"
       :content="{ onCloseAutoFocus: focusButton }"
-      :ui="{ content: 'sm:max-w-lg lg:max-w-5xl' }"
+      :ui="{ content: 'sm:max-w-lg' }"
     >
       <!-- The title after the button's icon. -->
       <template #title>
