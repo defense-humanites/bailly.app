@@ -21,6 +21,9 @@
     ogUrl: `${SITE_URL}/`,
   });
 
+  // For the reference managers: the dictionary itself (cf. `workMetadata`).
+  useHead({ meta: workMetadata() });
+
   /**
    * The site's name, as the search engines should show it (Google's
    * « WebSite » structured data, read on the home page): « Bailly.app », as

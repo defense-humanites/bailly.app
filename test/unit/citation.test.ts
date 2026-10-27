@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  accessDate, bibKey, biblatexEntry, biblatexFileName, biblatexWork, citedLemma, clipboardHtml, entryCitation, entryCitationFormLabel, entryMetadata, isoDate, versionDate, workCitation,
+  accessDate, bibKey, biblatexEntry, biblatexFileName, biblatexWork, citedLemma, clipboardHtml, entryCitation, entryCitationFormLabel, entryMetadata, isoDate, versionDate, workCitation, workMetadata,
 } from "../../app/utils/citation";
 
 const NBSP = " ";
@@ -153,6 +153,19 @@ describe("biblatexWork", () => {
     for (const field of ["editora", "edition", "date", "origdate", "publisher", "location", "urldate"]) {
       const line = (record: string): string | undefined => record.split("\n").find(text => text.trimStart().startsWith(`${field} `));
       expect(line(work)).toBe(line(biblatexEntry(logos, { accessed })));
+    }
+  });
+});
+
+describe("workMetadata", () => {
+  it("the dictionary as a book, with an entry's edition", () => {
+    const meta = Object.fromEntries(workMetadata().map(({ name, content }) => [name, content]));
+    expect(meta["z.itemType"]).toBe("book");
+    expect(meta["citation_title"]).toBe("Dictionnaire grec-français");
+    expect(meta["citation_public_url"]).toBe("https://bailly.app");
+    const entry = Object.fromEntries(entryMetadata(logos).map(({ name, content }) => [name, content]));
+    for (const name of ["citation_author", "citation_editor", "prism.edition", "citation_date", "citation_publisher", "eprints.place_of_pub"]) {
+      expect(meta[name]).toBe(entry[name]);
     }
   });
 });

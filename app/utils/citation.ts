@@ -323,6 +323,20 @@ export function biblatexWork({ version = DATA_VERSION, accessed }: Context): str
  */
 export const biblatexFileName = (key: string): string => `${key.replace(":", "-").replaceAll(":", "")}.bib`;
 
+/** A page's metadata for the reference managers (cf. `entryMetadata`). */
+type Metadata = { name: string; content: string }[];
+
+/** The dictionary's edition, in both pages' metadata. */
+const editionMetadata = (version: string): Metadata => [
+  { name: "citation_author", content: "Bailly, Anatole" },
+  { name: "citation_editor", content: EDITOR },
+  { name: "prism.edition", content: "Nouvelle édition revue et corrigée, dite Bailly 2020 – Hugo Chávez" },
+  { name: "citation_date", content: version },
+  { name: "citation_publisher", content: "Association pour la défense des humanités" },
+  { name: "eprints.place_of_pub", content: "Bordeaux" },
+  { name: "citation_language", content: "fr" },
+];
+
 /**
  * The metadata of an entry's page for the reference managers: Zotero's
  * connector saves the page as a dictionary entry (`dictionaryEntry`), with
@@ -330,24 +344,32 @@ export const biblatexFileName = (key: string): string => `${key.replace(":", "-"
  * « Embedded Metadata »: the item type and the dictionary's title in its
  * RDF namespaces, `z` and PRISM, the rest as Highwire's `citation_*` tags;
  * not `citation_book_title`, which would make it a book section). The
- * address as the references give it, readable (`citation_public_url`; else
- * the canonical link's, its path percent-encoded, e.g. `kathustere%C3%B4`);
- * the day of consultation, the connector's. Without the collaborators:
+ * address as the references give it, readable (`citation_public_url`); the
+ * day of consultation, the connector's. Without the collaborators:
  * Highwire's persons, which replace the others, are authors and editors only.
  */
-export function entryMetadata(entry: CitedEntry, version: string = DATA_VERSION): { name: string; content: string }[] {
+export function entryMetadata(entry: CitedEntry, version: string = DATA_VERSION): Metadata {
   return [
     { name: "z.itemType", content: "dictionaryEntry" },
     { name: "DC.title", content: entry.word },
     { name: "citation_title", content: entry.word },
-    { name: "citation_author", content: "Bailly, Anatole" },
-    { name: "citation_editor", content: EDITOR },
     { name: "prism.publicationName", content: "Dictionnaire grec-français" },
-    { name: "prism.edition", content: "Nouvelle édition revue et corrigée, dite Bailly 2020 – Hugo Chávez" },
-    { name: "citation_date", content: version },
-    { name: "citation_publisher", content: "Association pour la défense des humanités" },
-    { name: "eprints.place_of_pub", content: "Bordeaux" },
-    { name: "citation_language", content: "fr" },
+    ...editionMetadata(version),
     { name: "citation_public_url", content: entryUrl(entry) },
+  ];
+}
+
+/**
+ * The metadata of the home page: the dictionary itself, as a book (as
+ * `biblatexWork`), which Zotero's connector saves with the same fields as
+ * an entry's (cf. `entryMetadata`); the other pages, web pages.
+ */
+export function workMetadata(version: string = DATA_VERSION): Metadata {
+  return [
+    { name: "z.itemType", content: "book" },
+    { name: "DC.title", content: "Dictionnaire grec-français" },
+    { name: "citation_title", content: "Dictionnaire grec-français" },
+    ...editionMetadata(version),
+    { name: "citation_public_url", content: CITATION_ORIGIN },
   ];
 }

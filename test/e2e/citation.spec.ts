@@ -144,6 +144,14 @@ test.describe("citing an entry", () => {
     expect(html).toContain("<meta name=\"prism.publicationName\" content=\"Dictionnaire grec-français\">");
   });
 
+  test("the home page described as the dictionary itself (a book, for Zotero)", async ({ page, goto }) => {
+    await goto("/", { waitUntil: "hydration" });
+    const html = await page.evaluate(async () => (await fetch("/")).text());
+    expect(html).toContain("<meta name=\"z.itemType\" content=\"book\">");
+    expect(html).toContain("<meta name=\"citation_title\" content=\"Dictionnaire grec-français\">");
+    expect(html).toContain("<meta name=\"citation_public_url\" content=\"https://bailly.app\">");
+  });
+
   test("on the home page's random entry", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
     const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });

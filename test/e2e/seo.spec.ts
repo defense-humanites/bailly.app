@@ -19,12 +19,12 @@ test.describe("search engines", () => {
     await expect(page).toHaveTitle("À propos");
   });
 
-  // The canonical address: the site's host, the path without the query.
+  // The canonical address: the site's host, the path without the query, decoded.
   test("a canonical address, without the query", async ({ page, goto }) => {
     await goto("/logos?source=test", { waitUntil: "hydration" });
     await expect(page.locator("link[rel=canonical]")).toHaveAttribute("href", "https://bailly.app/logos");
     await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
-    await expect(page.locator("link[rel=canonical]")).toHaveAttribute("href", `https://bailly.app${encodeURI("/à-propos")}`);
+    await expect(page.locator("link[rel=canonical]")).toHaveAttribute("href", "https://bailly.app/à-propos");
   });
 
   // The entry drawn at random on the home page: its links `nofollow`.
