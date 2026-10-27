@@ -222,7 +222,6 @@
         :model-value="tab"
         :items="tabItems"
         :content="false"
-        size="sm"
         class="w-full"
         @update:model-value="chooseTab"
       />
@@ -309,9 +308,9 @@
             @update:model-value="chooseScope"
           />
         </div>
-        <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center justify-between gap-3">
           <p class="text-muted">
-            Pour LaTeX ou un gestionnaire de références (Zotero, JabRef, Mendeley…).
+            Pour LaTeX, Zotero, JabRef…
           </p>
           <UButton
             icon="i-lucide-download"

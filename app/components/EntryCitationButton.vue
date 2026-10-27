@@ -53,18 +53,21 @@
     <UModal
       v-if="mounted"
       v-model:open="open"
-      title="Citer cette entrée"
+      title="Citer"
       :content="{ onCloseAutoFocus: focusButton }"
       :ui="{ content: 'sm:max-w-lg' }"
     >
-      <!-- The title after the button's icon. -->
+      <!--
+        The title after the button's icon; « Citer » only, the entry or the
+        work being cited.
+      -->
       <template #title>
         <span class="flex items-center gap-2">
           <UIcon
             name="i-lucide-quote"
             class="size-5 shrink-0 text-muted"
           />
-          Citer cette entrée
+          Citer
         </span>
       </template>
       <template #body>

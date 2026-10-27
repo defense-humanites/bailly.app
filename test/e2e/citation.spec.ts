@@ -6,7 +6,7 @@ import type { Page } from "@playwright/test";
 // toolbar (of homonyms, the card's: `index`).
 const openCitation = async (page: Page, index = 0) => {
   await page.locator("main").getByRole("button", { name: "Citer cette entrée" }).nth(index).click();
-  return page.getByRole("dialog", { name: "Citer cette entrée" });
+  return page.getByRole("dialog", { name: "Citer", exact: true });
 };
 
 test.describe("citing an entry", () => {
@@ -148,6 +148,6 @@ test.describe("citing an entry", () => {
     await goto("/", { waitUntil: "hydration" });
     const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });
     await opening.getByRole("button", { name: "Citer cette entrée" }).click();
-    await expect(page.getByRole("dialog", { name: "Citer cette entrée" }).getByText("https://bailly.app/", { exact: false }).first()).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Citer", exact: true }).getByText("https://bailly.app/", { exact: false }).first()).toBeVisible();
   });
 });
