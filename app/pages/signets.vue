@@ -165,7 +165,7 @@
         <div
           role="group"
           aria-label="Étiquettes"
-          class="flex flex-wrap rounded-lg border border-default bg-default shadow-xs [--card-highlight:var(--ui-color-neutral-400)] [--field-inner-radius:calc(var(--radius-lg)-1px)] lg:flex-nowrap lg:gap-2 lg:border-0 lg:bg-transparent lg:shadow-none"
+          class="flex flex-wrap rounded-lg border border-accented bg-default shadow-xs [--card-highlight:var(--ui-color-neutral-400)] [--field-inner-radius:calc(var(--radius-lg)-1px)] lg:flex-nowrap lg:gap-2 lg:border-0 lg:bg-transparent lg:shadow-none"
         >
           <!--
             Below `lg`, one compact block on two lines (the field keeps a fair
@@ -177,7 +177,7 @@
           -->
           <CreateTag
             ref="createTag"
-            class="h-11 min-w-0 basis-full border-default max-lg:rounded-t-(--field-inner-radius) max-lg:border-b lg:basis-0 lg:grow lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
+            class="h-11 min-w-0 basis-full border-accented max-lg:rounded-t-(--field-inner-radius) max-lg:border-b lg:basis-0 lg:grow lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
           />
 
           <!--
@@ -188,7 +188,7 @@
           -->
           <div
             ref="activeField"
-            class="flex h-11 min-w-0 grow basis-24 border-default max-lg:rounded-bl-(--field-inner-radius) lg:basis-0 lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
+            class="flex h-11 min-w-0 grow basis-24 border-accented max-lg:rounded-bl-(--field-inner-radius) lg:basis-0 lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
             :class="FIELD_HALO"
           >
             <USelectMenu
@@ -231,20 +231,20 @@
           <!-- Display: the entries, the sorting of the tags -->
           <BookmarksDisplayMenu
             ref="displayMenu"
-            class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
+            class="flex h-11 border-s border-accented lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
           />
 
           <!-- Export, import -->
           <BookmarksMenu
             ref="filesMenu"
-            class="flex h-11 border-s border-default lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
+            class="flex h-11 border-s border-accented lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
           />
 
           <!-- Synchronization (its state, and its window) -->
           <SyncButton
             ref="syncButton"
             scope="bookmarks"
-            class="flex h-11 border-s border-default max-lg:overflow-hidden max-lg:rounded-br-(--field-inner-radius) lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
+            class="flex h-11 border-s border-accented max-lg:overflow-hidden max-lg:rounded-br-(--field-inner-radius) lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
           />
         </div>
       </header>
