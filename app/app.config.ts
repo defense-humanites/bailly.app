@@ -170,6 +170,13 @@ export default defineAppConfig({
         close: CLOSE,
       },
       variants: {
+        // The page's background behind the window (rather than
+        // `bg-elevated`, lighter in the dark theme: the page washed out).
+        overlay: {
+          true: {
+            overlay: "bg-(--app-page-bg)/75",
+          },
+        },
         fullscreen: {
           false: {
             content: "w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)]",
