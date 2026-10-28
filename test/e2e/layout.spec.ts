@@ -149,9 +149,10 @@ test.describe("header menu", () => {
   });
 });
 
-test("the audience measurement is loaded on the production host only", async ({ page, goto }) => {
+// Cloudflare adds its own, at the edge, on `bailly.app` only.
+test("no audience measurement's script in the pages served", async ({ page, goto }) => {
   await goto("/", { waitUntil: "hydration" });
-  await expect(page.locator("script[src*='simpleanalytics']")).toHaveCount(0);
+  await expect(page.locator("script[src*='simpleanalytics'], script[src*='cloudflareinsights']")).toHaveCount(0);
 });
 
 test("the application is at least 20rem wide", async ({ page, goto }) => {

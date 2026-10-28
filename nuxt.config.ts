@@ -135,12 +135,6 @@ export default defineNuxtConfig({
       // PayPal's donation button (cf. `PaypalDonateButton`).
       paypalDonateButtonId: "HFBZZVKRBE7HY",
       paypalEnv: "production",
-      /**
-       * Simple Analytics (cf. `app.vue`): its script is loaded only when the
-       * page is served on this host, the production site (not on the
-       * preview, in the tests nor in development). Empty: never loaded.
-       */
-      analyticsHost: "bailly.app",
     },
   },
   /**

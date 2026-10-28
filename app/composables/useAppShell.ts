@@ -20,17 +20,14 @@ export function useAppShell(): void {
   // The theme, a preference that the color mode applies.
   if (import.meta.client) useThemePreference();
 
-  /**
-   * The audience measurement (Simple Analytics: no cookie, no IP address
-   * kept), on the production host only (cf. `analyticsHost`).
+  /*
+   * The audience measurement (Cloudflare Web Analytics, since 28 October
+   * 2026): not in the application, its script added to the pages by
+   * Cloudflare, at the edge, on `bailly.app` only (its automatic setup, a
+   * setting of the zone): neither on the preview, nor in the tests or in
+   * development.
    */
-  const { analyticsHost } = useRuntimeConfig().public;
-  const analytics = analyticsHost !== "" && useRequestURL().hostname === analyticsHost;
-
   useHead({
-    script: analytics
-      ? [{ src: "https://scripts.simpleanalyticscdn.com/latest.js", async: true, tagPosition: "bodyClose" }]
-      : [],
     /*
      * A page's own title, bare (more readable, in a tab as in the results;
      * the search engines show the site's name apart, cf. the home page's

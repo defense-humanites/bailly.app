@@ -282,19 +282,19 @@
           <a
             target="_blank"
             rel="noopener"
-            href="https://docs.simpleanalytics.com/what-we-collect"
+            href="https://www.cloudflare.com/web-analytics/"
             class="link"
-          >Simple Analytics</a>, qui ne dépose aucun cookie et n'utilise aucune technique
-          équivalente (stockage local, empreinte du navigateur). Votre adresse IP n'est ni
-          conservée ni enregistrée.
+          >Cloudflare Web Analytics</a>, le service de notre hébergeur, qui ne dépose aucun
+          cookie et n'utilise aucun identifiant persistant (stockage local, empreinte du
+          navigateur)&nbsp;: une visite ne peut pas être rapprochée d'une autre.
         </p>
         <p>
-          Simple Analytics ne relève que des informations générales&nbsp;: la page consultée
-          (sans ses paramètres), la page d'où vous venez, la langue, la taille de l'écran, le
-          navigateur et le système sans leur version précise, le temps passé sur la page et son
-          défilement, et le pays, déduit du fuseau horaire. Ses serveurs sont aux Pays-Bas, et le
-          réglage «&nbsp;Ne pas suivre&nbsp;» (<em>Do Not Track</em>) de votre navigateur est
-          respecté.
+          Un court script, ajouté aux pages par Cloudflare, ne relève que des informations
+          générales&nbsp;: la page consultée (sans ses paramètres), la page d'où vous venez, le
+          navigateur et le système, le pays, et des mesures de rapidité de la page (temps de
+          chargement, réactivité). Ces données ne servent qu'à des statistiques d'ensemble,
+          consultées par l'association. Un bloqueur de publicités peut empêcher ce script de
+          se charger&nbsp;: le site fonctionne de la même façon.
         </p>
       </section>
 
