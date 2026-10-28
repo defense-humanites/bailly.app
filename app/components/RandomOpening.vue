@@ -133,7 +133,7 @@
   <section
     aria-label="Le Bailly ouvert au hasard"
     data-random-opening
-    class="flex flex-col"
+    class="relative flex flex-col"
   >
     <!-- The opened page, framed like the about page's hero: the neighbors above and below. -->
     <div class="rounded-xl border-2 border-terracotta-700 px-3 py-3 shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] sm:px-5 sm:py-4 dark:border-terracotta-700 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)]">
@@ -210,7 +210,11 @@
       </template>
     </div>
 
-    <div class="mt-4 flex justify-center">
+    <!--
+      Under the frame; from `lg`, out of the flow: the home page's text is
+      centred on the frame alone (cf. `index.vue`).
+    -->
+    <div class="mt-4 flex justify-center lg:absolute lg:inset-x-0 lg:top-full">
       <UButton
         color="neutral"
         variant="ghost"

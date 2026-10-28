@@ -85,25 +85,29 @@
 </script>
 
 <template>
-  <div class="mx-auto grid max-w-(--content-max-width) items-center gap-10 px-4 py-8 md:px-6 md:py-12 lg:min-h-[calc(100dvh-(var(--spacing)*14))] lg:grid-cols-2 lg:gap-12 lg:py-10">
+  <div class="mx-auto grid max-w-(--content-max-width) items-center gap-10 px-4 py-8 md:px-6 md:py-12 lg:min-h-[calc(100dvh-(var(--spacing)*14))] lg:grid-cols-2 lg:gap-12 lg:pt-10 lg:pb-[calc(var(--spacing)*10+3.25rem)]">
     <!--
-      On mobile, a grid: the title first and the transliteration offer right
-      under it (the news and the donation are the header's icons, cf.
-      `AppNavHorizontal`).
+      On mobile, a grid: the title first, the transliteration offer last,
+      above the random entry whose Greek it changes, as from `lg` (the news
+      and the donation are the header's icons, cf. `AppNavHorizontal`).
       On a tablet (`md`), the offer floats on the right, the donation's
       button, the title and the text around it. A column from `lg`. The
       order is CSS's only, the markup's being the same everywhere.
+      From `lg`, the text centred on the random entry's frame alone, its
+      button (« Ouvrir à une autre page ») out of the flow, below it, its
+      room in the bottom padding.
     -->
     <section class="@container grid grid-cols-1 justify-items-start gap-5 md:block lg:flex lg:flex-col lg:items-start">
       <!--
         For the readers who don't read Greek: the transliteration preference,
         whose effect shows at once on the opened entry (and is saved). First
         in the markup, to float on the right on a tablet (the title and the
-        text around it); last in the column from `lg`. The whole block is
-        the switch's label: a click anywhere toggles it (the focus stays on
-        the switch, its name and description given by the texts' ids).
+        text around it); last on a phone and in the column from `lg`. The
+        whole block is the switch's label: a click anywhere toggles it (the
+        focus stays on the switch, its name and description given by the
+        texts' ids).
       -->
-      <label class="order-2 flex w-full cursor-pointer items-start gap-3 rounded-lg bg-default/60 px-4 py-3 ring-1 ring-default transition-colors pointer-fine:hover:bg-default md:order-none md:float-right md:mb-4 md:ms-8 md:w-72 lg:float-none lg:order-last lg:m-0 lg:mt-3 lg:w-auto">
+      <label class="order-5 flex w-full cursor-pointer items-start gap-3 rounded-lg bg-default/60 px-4 py-3 ring-1 ring-default transition-colors pointer-fine:hover:bg-default md:order-none md:float-right md:mb-4 md:ms-8 md:w-72 lg:float-none lg:order-last lg:m-0 lg:mt-3 lg:w-auto">
         <USwitch
           v-model="transliterateGreek"
           aria-labelledby="translitteration"
