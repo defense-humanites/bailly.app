@@ -12,8 +12,7 @@ export const INLINE_BUTTON = `${INLINE_BUTTON_SHAPE} font-medium bg-default text
 
 /**
  * The same in gold, within a text in gold (the home page's tips): tinted,
- * a shade darker when hovered, two when pressed; its text as the tip's (its
- * weight too: in medium, it looked larger), a notch darker (800, 200 in the
- * dark theme).
+ * a shade darker when hovered, two when pressed; its text a notch darker
+ * than the tip's (800, 200 in the dark theme).
  */
-export const INLINE_BUTTON_GOLD = `${INLINE_BUTTON_SHAPE} bg-warning/10 text-(--ui-color-warning-800) ring-warning/35 hover:bg-warning/20 active:bg-warning/30 dark:text-(--ui-color-warning-200)`;
+export const INLINE_BUTTON_GOLD = `${INLINE_BUTTON_SHAPE} font-medium bg-warning/10 text-(--ui-color-warning-800) ring-warning/35 hover:bg-warning/20 active:bg-warning/30 dark:text-(--ui-color-warning-200)`;
