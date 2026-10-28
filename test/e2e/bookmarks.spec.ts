@@ -773,6 +773,22 @@ test.describe("bookmarks page on a touch screen", () => {
     await expect.poll(async () => (await bookmarksState(page)).tagged).toBe(1);
   });
 
+  // A touch on another menu of the bar closes the active tag's list (left
+  // open on iOS Safari, cf. `signets.vue`).
+  for (const name of ["Affichage", "Fichiers"]) {
+    test(`the active tag's list open, a touch on « ${name} » closes it and opens its menu`, async ({ page, goto }) => {
+      await goto("/signets", { waitUntil: "hydration" });
+      await seedBookmarks(page, { tags: [{ name: "Homère", color: "Blue" }, { name: "Tragiques", color: "Green" }] });
+      const bar = page.getByRole("group", { name: "Étiquettes" });
+      await bar.getByRole("button", { name: "Étiquette active" }).tap();
+      const list = page.getByRole("listbox");
+      await expect(list).toBeVisible();
+      await bar.getByRole("button", { name }).tap();
+      await expect(list).toBeHidden();
+      await expect(page.getByRole("menu")).toBeVisible();
+    });
+  }
+
   // The guide's keys open the bar's menus within the screen, even from below
   // the bar (« Fichiers », in the second card, the bar then out of view).
   for (const [key, guide] of [["tri", "Organiser vos entrées"], ["Fichiers", "Conserver vos signets"]] as const) {

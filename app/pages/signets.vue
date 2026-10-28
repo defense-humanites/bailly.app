@@ -118,6 +118,20 @@
    * are loaded; a new tag, before it is listed).
    */
   const activeKey = computed(() => activeItems.value.some(item => item.value === currentTagKey.value) ? currentTagKey.value! : undefined);
+
+  /**
+   * The active tag's list closed by any click outside it, before the click
+   * is handled (capture). On a touch screen, Reka closes it only on the
+   * click following the touch, unless a modal layer is open by then: a touch
+   * on « Affichage » or « Fichiers », whose menus open on that click, left
+   * it open (iOS Safari).
+   */
+  const activeOpen = ref(false);
+  useEventListener("click", (event: MouseEvent) => {
+    if (!activeOpen.value || !(event.target instanceof Element)) return;
+    if (activeField.value?.contains(event.target) || event.target.closest("[data-dismissable-layer]")) return;
+    activeOpen.value = false;
+  }, { capture: true });
 </script>
 
 <template>
@@ -194,6 +208,7 @@
             :class="FIELD_HALO"
           >
             <USelectMenu
+              v-model:open="activeOpen"
               :model-value="activeKey"
               :items="activeItems"
               value-key="value"
