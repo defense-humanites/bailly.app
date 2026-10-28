@@ -20,16 +20,22 @@
     text: TipPart[];
     /**
      * An example of a search, typed in the field (`search`); a page
-     * (`to`); the search's options (`options`); or the citation's button
-     * of the entry drawn at random beside it, pointed out (`citation`).
+     * (`to`), its control `point` pointed out there (cf.
+     * `usePointOutRequest`); the search's options (`options`); or the
+     * citation's button of the entry drawn at random beside it, pointed out
+     * (`citation`).
      */
-    action?: { label: string; icon: string; search?: string; to?: string; options?: true; citation?: true };
+    action?: { label: string; icon: string; search?: string; to?: string; point?: string; options?: true; citation?: true };
     when?: () => boolean;
   };
 
   const { inputMode, inflectedForms } = useSearchOptions();
   const searchFocus = useSearchFocus();
   const optionsPanel = useSearchOptionsPanel();
+  const pointOutRequest = usePointOutRequest();
+  // The citation's tab (cf. `EntryCitation`), set to the word processor's
+  // before its window opens from the citation's tip.
+  const citationTab = useLocalStorage<string>(StorageKey.CitationTab, "text", { writeDefaults: false, initOnMounted: true });
   // Whether the bookmarks are synchronized already (the cookie, known at
   // once; the store, once it has read IndexedDB).
   const syncHint = useCookie<unknown>(SYNC_HINT_COOKIE, syncHintCookieOptions);
@@ -69,7 +75,7 @@
     {
       id: "sync",
       text: ["Vos signets sur tous vos appareils, sans compte."],
-      action: { label: "Synchroniser", icon: "i-lucide-cloud", to: "/signets" },
+      action: { label: "Synchroniser", icon: "i-lucide-cloud", to: "/signets", point: "sync-bookmarks" },
       when: () => !bookmarksSynchronized(),
     },
     {
@@ -80,7 +86,7 @@
     {
       id: "fonts",
       text: ["Lisez le grec dans la police de votre choix."],
-      action: { label: "Préférences", icon: "i-lucide-sliders-horizontal", to: encodeURI("/préférences") },
+      action: { label: "Préférences", icon: "i-lucide-sliders-horizontal", to: encodeURI("/préférences"), point: "reading" },
     },
   ];
 
@@ -96,6 +102,21 @@
     if (tip.value) lastTip.value = tip.value.id;
   });
 
+  /**
+   * The tip's text, its last word glued to the action after it (a
+   * non-breaking space, the two unbroken): the button never alone on a
+   * line.
+   */
+  const textParts = computed((): { head: TipPart[]; tail: string } => {
+    const parts = tip.value?.text ?? [];
+    const last = parts.at(-1);
+    if (!tip.value?.action || typeof last !== "string") return { head: parts, tail: "" };
+    const cut = last.lastIndexOf(" ") + 1;
+    return { head: [...parts.slice(0, -1), last.slice(0, cut)], tail: last.slice(cut) };
+  });
+
+  const NBSP = "\u00a0";
+
   /** The citation's window opened after its button is pointed out (ms). */
   const CITATION_DELAY = 600;
 
@@ -107,7 +128,8 @@
    * The action of a tip without a page: a search typed, the search's
    * options opened, or the random entry's citation button pointed out (in
    * the primary color, as the search's options button from the news, cf.
-   * `EntryCitationButton`), then its window opened, once the eye has found it
+   * `EntryCitationButton`), then its window opened on the word processor's
+   * tab (the tip's styles), once the eye has found it
    * (when its outline is at its brightest, cf. `card-highlight`); the focus
    * back on it when closed. Nothing if the entry is not shown yet.
    */
@@ -125,6 +147,7 @@
     revealThen(button, () => {
       pointOut(button);
       setTimeout(() => {
+        citationTab.value = "text";
         button.querySelector("button")?.click();
       }, CITATION_DELAY);
     });
@@ -154,7 +177,7 @@
       />
       <span>
         <template
-          v-for="(part, index) in tip.text"
+          v-for="(part, index) in textParts.head"
           :key="index"
         >
           <template v-if="typeof part === 'string'">{{ part }}</template>
@@ -177,17 +200,20 @@
             />{{ part.search }}
           </button>
         </template>
-        <template v-if="tip.action">
-          {{ " " }}<NuxtLink
-            v-if="tip.action.to"
-            :to="tip.action.to"
-            :class="INLINE_BUTTON_GOLD"
-          >
-            <UIcon
-              :name="tip.action.icon"
-              class="size-4 shrink-0"
-            />{{ tip.action.label }}
-          </NuxtLink>
+        <span
+          v-if="tip.action"
+          class="whitespace-nowrap"
+        >{{ textParts.tail }}{{ NBSP }}<NuxtLink
+          v-if="tip.action.to"
+          :to="tip.action.to"
+          :class="INLINE_BUTTON_GOLD"
+          @click="tip.action.point && pointOutRequest.request(tip.action.point)"
+        >
+          <UIcon
+            :name="tip.action.icon"
+            class="size-4 shrink-0"
+          />{{ tip.action.label }}
+        </NuxtLink>
           <button
             v-else
             type="button"
@@ -199,8 +225,7 @@
               :name="tip.action.icon"
               class="size-4 shrink-0"
             />{{ tip.action.label }}
-          </button>
-        </template>
+          </button></span>
       </span>
     </p>
   </div>

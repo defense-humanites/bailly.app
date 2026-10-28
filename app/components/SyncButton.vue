@@ -149,6 +149,13 @@
     setTimeout(openSync, OPEN_DELAY);
   };
 
+  // Pointed out when reached from elsewhere (e.g. a home page's tip, cf.
+  // `usePointOutRequest`).
+  const pointOutRequest = usePointOutRequest();
+  onMounted(() => {
+    pointOutRequest.take(`sync-${props.scope}`, () => root.value);
+  });
+
   defineExpose({ enabled, open });
 </script>
 

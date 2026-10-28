@@ -14,6 +14,14 @@
   const { preference, reset: resetPreferences } = usePreferences();
   const syncStore = useSyncStore();
   const syncCard = useTemplateRef<{ open: (scope: SyncScope) => void }>("syncCard");
+
+  // The reading's card, pointed out when reached from elsewhere (e.g. a
+  // home page's tip, cf. `usePointOutRequest`).
+  const readingCard = useTemplateRef<{ $el: HTMLElement }>("readingCard");
+  const pointOutRequest = usePointOutRequest();
+  onMounted(() => {
+    pointOutRequest.take("reading", () => readingCard.value?.$el);
+  });
   // The switches, labelled by their rows' texts (cf. `SettingsRow`).
   const transliterateId = useId();
   const inflectedFormsId = useId();
@@ -291,6 +299,7 @@
       </div>
       <div class="contents lg:flex lg:flex-col lg:gap-6">
         <UCard
+          ref="readingCard"
           as="section"
           aria-labelledby="settings-reading"
           class="order-3"

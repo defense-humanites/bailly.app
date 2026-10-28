@@ -1,5 +1,6 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
 import { FEATURES } from "../../shared/utils/features";
+import type { Locator } from "@playwright/test";
 import { searchInput } from "./helpers";
 
 test.describe("home page", () => {
@@ -125,18 +126,39 @@ test.describe("home page", () => {
     // Drawn as the first of the tips.
     await page.addInitScript(() => {
       Math.random = () => 0.01;
+      // The citation's window last left on the LaTeX tab.
+      localStorage.setItem("bailly:citationTab", "bib");
     });
     await goto("/", { waitUntil: "hydration" });
     const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });
     await expect(opening.locator(".definition")).toBeVisible();
     await page.getByRole("button", { name: "Citer", exact: true }).first().click();
     await expect(opening.locator("[data-citation]")).toHaveAttribute("data-card-highlight", "");
-    // Then its window opened, the focus back on it once closed.
+    // Then its window opened, on the word processor's tab, the focus back on
+    // it once closed.
     const dialog = page.getByRole("dialog", { name: "Citer", exact: true });
     await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("tab", { name: "Traitement de texte" })).toHaveAttribute("aria-selected", "true");
     await page.keyboard.press("Escape");
     await expect(opening.getByRole("button", { name: "Citer", exact: true })).toBeFocused();
   });
+
+  for (const { name, draw, action, target } of [
+    { name: "the fonts' tip points out the reading's card", draw: 8.5 / 9, action: "Préférences", target: (card: Locator) => card.locator("#settings-reading") },
+    { name: "the synchronization's tip points out its button", draw: 6.5 / 9, action: "Synchroniser", target: (card: Locator) => card.getByRole("button", { name: /^Synchronisation/ }) },
+  ]) {
+    test(name, async ({ page, goto }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.addInitScript((draw) => {
+        Math.random = () => draw;
+      }, draw);
+      await goto("/", { waitUntil: "hydration" });
+      await page.locator("main").getByRole("link", { name: action, exact: true }).click();
+      const highlighted = page.locator("[data-card-highlight]");
+      await expect(highlighted).toHaveCount(1);
+      await expect(target(highlighted)).toHaveCount(1);
+    });
+  }
 
   test("names the edition in a popover, after the title", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
