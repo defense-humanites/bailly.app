@@ -19,6 +19,17 @@ test.describe("the tags of an entry", () => {
     expect(scripts).toEqual([]);
   });
 
+  test("a click outside only closes the panel, a definition's link not followed", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
+    await expect(allTags(page)).toBeVisible();
+    // (By the mouse: the page under the panel takes no pointer events.)
+    const box = (await page.locator("main .definition a").first().boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(allTags(page)).toBeHidden();
+    await expect(page).toHaveURL(/\/logos$/);
+  });
+
   test("every tag, the current one first (active), then in their order, selected if the entry has it", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     // In their order (by name): Ciel, Rouge, Vert; the current tag is Ciel.

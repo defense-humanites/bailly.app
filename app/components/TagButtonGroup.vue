@@ -260,8 +260,14 @@
       (`rounded-md`), as the history's and the menus' items, rather than the
       buttons' pill shape.
     -->
+    <!--
+      Modal: a click outside only closes the panel, not activating what lies
+      under it (a definition's link; on the home page, the random entry's
+      card, a link), above all on a phone, without an empty area to click.
+    -->
     <UPopover
       v-model:open="panelOpen"
+      modal
       :content="popoverContent"
       :ui="{ content: 'bg-(--app-panel-bg)' }"
     >
