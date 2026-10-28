@@ -144,7 +144,17 @@
             />
           </div>
           <p class="mt-1 text-xs text-muted @2xs:ps-27">
-            <kbd>?</kbd> une lettre · <kbd>*</kbd> plusieurs
+            <UKbd
+              value="?"
+              variant="soft"
+              size="sm"
+              class="bg-accented"
+            /> une lettre · <UKbd
+              value="*"
+              variant="soft"
+              size="sm"
+              class="bg-accented"
+            /> plusieurs
           </p>
         </div>
 
