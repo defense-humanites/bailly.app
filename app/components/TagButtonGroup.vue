@@ -82,8 +82,23 @@
    * (`aria-labelledby`); the `aria-label` is a fallback, for the trigger's
    * id may differ between the server and the client (then the reference is
    * broken, and the dialog would have no name).
+   *
+   * Kept within the pages' scroller (cf. `PageScroller`), under the header,
+   * and below an entry's compact bar (2.5 rem, cf. `EntryCompactBar`): its
+   * boundary, rather than the window's (the panel is in the body). Hidden
+   * once its trigger has scrolled away under them (`hideWhenDetached`),
+   * rather than staying over the header.
    */
-  const popoverContent = { "align": "end", "collisionPadding": 12, "aria-label": "Toutes les étiquettes" } as PopoverProps["content"];
+  const pageScroller = usePageScroller();
+  const COMPACT_BAR_HEIGHT = 40;
+  const COLLISION_PADDING = 12;
+  const popoverContent = computed(() => ({
+    "align": "end",
+    "collisionBoundary": pageScroller.value,
+    "collisionPadding": { top: COMPACT_BAR_HEIGHT + COLLISION_PADDING, right: COLLISION_PADDING, bottom: COLLISION_PADDING, left: COLLISION_PADDING },
+    "hideWhenDetached": true,
+    "aria-label": "Toutes les étiquettes",
+  }) as PopoverProps["content"]);
 
   /**
    * All the tags, the current one first (marked « active »), then the others

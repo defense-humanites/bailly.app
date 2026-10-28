@@ -19,6 +19,20 @@ test.describe("the tags of an entry", () => {
     expect(scripts).toEqual([]);
   });
 
+  test("hidden once its trigger has scrolled away under the header, not over it", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
+    await expect(allTags(page)).toBeVisible();
+    await page.locator("#page").evaluate((scroller) => {
+      scroller.scrollTo(0, 400);
+    });
+    await expect(allTags(page)).toBeHidden();
+    await page.locator("#page").evaluate((scroller) => {
+      scroller.scrollTo(0, 0);
+    });
+    await expect(allTags(page)).toBeVisible();
+  });
+
   test("every tag, the current one first (active), then in their order, selected if the entry has it", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     // In their order (by name): Ciel, Rouge, Vert; the current tag is Ciel.
