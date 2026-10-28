@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import type { CommandPaletteGroup, CommandPaletteItem, PopoverProps } from "@nuxt/ui";
   import type { IdbEntry, IdbTag, TagKey } from "~/idb";
+  import { LazyUCommandPalette } from "#components";
 
   /*
    * The toolbar's buttons: a shade darker when hovered, two when pressed
@@ -140,9 +141,13 @@
    * The panel's list (`UCommandPalette`, with Fuse.js) in a file of its own
    * (`LazyUCommandPalette`): not among the scripts every page loads at first
    * (about 10 KB compressed). Fetched once the page is ready, idle, so that
-   * the panel opens with it at once (its focus as before).
+   * the panel opens with it at once (its focus as before): by the async
+   * component's own loader (`prefetchComponents` only reaches the global
+   * components, which Nuxt UI's are not: it did nothing).
    */
-  onNuxtReady(() => prefetchComponents("UCommandPalette"));
+  onNuxtReady(() => {
+    void (LazyUCommandPalette as { __asyncLoader?: () => Promise<unknown> }).__asyncLoader?.();
+  });
 
   type TagItem = CommandPaletteItem & { key: TagKey; color: IdbTag["color"]; pinned: boolean };
 

@@ -7,6 +7,18 @@ const logos = { word: "λόγος", uri: "logos", excerpt: "λόγος, ου (�
 const allTags = (page: Page) => page.getByRole("dialog", { name: "Toutes les étiquettes" });
 
 test.describe("the tags of an entry", () => {
+  test("its list fetched once the page is ready, before the panel opens", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    // (Seeding reloads the page.)
+    await seedBookmarks(page, { tags: [{ name: "Vert", color: "Green", entries: [logos] }], current: "Vert" });
+    await page.waitForLoadState("networkidle");
+    const scripts: string[] = [];
+    page.on("request", request => request.resourceType() === "script" && scripts.push(request.url()));
+    await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
+    await expect(allTags(page).getByRole("option", { name: "Vert" })).toBeVisible();
+    expect(scripts).toEqual([]);
+  });
+
   test("every tag, the current one first (active), then in their order, selected if the entry has it", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     // In their order (by name): Ciel, Rouge, Vert; the current tag is Ciel.
