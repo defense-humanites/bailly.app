@@ -150,7 +150,9 @@
         shape, their background telling them from its buttons (ghost). Below `lg`, the field takes the bar's first
         row. Icons only (square buttons) below `xl`, as the header menu (the
         labels stay for screen readers and show in tooltips; cf.
-        `useButtonLabels`).
+        `useButtonLabels`). Its controls pointed out (from the guide, or a
+        home page's tip) in terracotta, the application's accent; the
+        synchronization in its Aegean blue (`--card-highlight`).
       -->
       <header class="col-span-full flex flex-col xl:mb-2">
         <!--
@@ -165,7 +167,7 @@
         <div
           role="group"
           aria-label="Étiquettes"
-          class="flex flex-wrap rounded-lg border border-accented bg-default shadow-xs [--card-highlight:var(--ui-color-neutral-400)] [--field-inner-radius:calc(var(--radius-lg)-1px)] lg:flex-nowrap lg:gap-2 lg:border-0 lg:bg-transparent lg:shadow-none"
+          class="flex flex-wrap rounded-lg border border-accented bg-default shadow-xs [--card-highlight:var(--ui-primary)] [--field-inner-radius:calc(var(--radius-lg)-1px)] lg:flex-nowrap lg:gap-2 lg:border-0 lg:bg-transparent lg:shadow-none"
         >
           <!--
             Below `lg`, one compact block on two lines (the field keeps a fair

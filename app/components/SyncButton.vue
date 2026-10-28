@@ -160,7 +160,11 @@
 </script>
 
 <template>
-  <div ref="root">
+  <!-- Pointed out in its own accent, Aegean blue (`--card-highlight`). -->
+  <div
+    ref="root"
+    class="[--card-highlight:var(--ui-secondary)]"
+  >
     <!--
       An item of the bookmarks page's menu bar (cf. `signets.vue`), as
       « Fichiers » (cf. `BookmarksMenu`): square-cornered, as high as the bar.

@@ -302,7 +302,7 @@
           ref="readingCard"
           as="section"
           aria-labelledby="settings-reading"
-          class="order-3"
+          class="order-3 [--card-highlight:var(--ui-primary)]"
           :ui="cardUi"
         >
           <template #header>

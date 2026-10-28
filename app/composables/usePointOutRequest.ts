@@ -11,9 +11,10 @@ const ARRIVAL_DELAY = 350;
  * Lets a page point out a control of another, reached by a link (e.g. a
  * home page's tip leading to the bookmarks' synchronization button): the
  * request waits for the control, which takes it as it mounts, then is
- * pointed out (`pointOut`, once in view: `revealThen`) in the primary
- * color, as every control pointed out from elsewhere. A request not taken
- * soon (the navigation given up) is forgotten.
+ * pointed out (`pointOut`, once in view: `revealThen`) in its own
+ * `--card-highlight`: the primary color, or its accent (the
+ * synchronization's Aegean blue). A request not taken soon (the
+ * navigation given up) is forgotten.
  */
 export function usePointOutRequest() {
   const request = useState<{ target: string; at: number } | null>("point-out-request", () => null);
@@ -35,7 +36,6 @@ export function usePointOutRequest() {
       setTimeout(() => {
         const found = element();
         if (!found) return;
-        found.style.setProperty("--card-highlight", "var(--ui-primary)");
         revealThen(found, () => {
           pointOut(found);
         });
