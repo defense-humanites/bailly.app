@@ -6,6 +6,12 @@ use area, then to the system's font). Useful to evaluate a reading font.
 
 Usage: scripts/check-font-coverage.py <the API's database, e.g. bailly-rev4.db> <font file>…
 
+A font served in several files (cf. `scripts/subset-fonts.sh`: the common
+characters, `*.subset.woff2`, and the rare ones, `*.extra.woff2`, which the
+browser combines through `unicode-range`) is checked as one: a
+`*.subset.woff2` with its `*.extra.woff2` beside it, or files joined by `+`
+(`a.woff2+b.woff2`).
+
 Every text column of every table is read. The private use area (drawn by
 IFAOGrec, for which those characters were encoded) and the control
 characters are left out. Requires fontTools (`pip install fonttools brotli`).
@@ -14,6 +20,7 @@ characters are left out. Requires fontTools (`pip install fonttools brotli`).
 import sqlite3
 import sys
 import unicodedata
+from pathlib import Path
 
 from fontTools.ttLib import TTFont
 
@@ -35,12 +42,21 @@ relevant = sorted(
     if not 0xE000 <= ord(char) <= 0xF8FF and unicodedata.category(char) not in ("Cc", "Cf")
 )
 
+def files(argument: str) -> list[str]:
+    """The files of a font: joined by `+`, or a subset with its extra file."""
+    if "+" in argument:
+        return argument.split("+")
+    extra = Path(argument.replace(".subset.", ".extra."))
+    return [argument, str(extra)] if ".subset." in argument and extra.exists() else [argument]
+
+
 missing = 0
-for path in sys.argv[2:]:
-    cmap = set(TTFont(path).getBestCmap())
+for argument in sys.argv[2:]:
+    paths = files(argument)
+    cmap = set().union(*(TTFont(path).getBestCmap() for path in paths))
     absent = [char for char in relevant if ord(char) not in cmap]
     missing += len(absent)
-    print(f"{path}: {len(absent)} of the dictionary's {len(relevant)} characters not drawn")
+    print(f"{' + '.join(paths)}: {len(absent)} of the dictionary's {len(relevant)} characters not drawn")
     for char in absent:
         print(f"  U+{ord(char):04X} {unicodedata.name(char, '?')} ({used[char]} occurrence(s))")
 
