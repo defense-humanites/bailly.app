@@ -807,6 +807,25 @@ test.describe("bookmarks page on a touch screen", () => {
     await expect(page.getByRole("tooltip")).toHaveCount(0);
   });
 
+  test("the active tag's list, opened by a touch: its filter not focused, below the field as the keyboard shows", async ({ page, goto }) => {
+    await goto("/signets", { waitUntil: "hydration" });
+    await seedBookmarks(page, { tags: Array.from({ length: 10 }, (_, index) => ({ name: `Étiquette ${index}`, color: "Green" })) });
+    const field = page.getByRole("group", { name: "Étiquettes" }).getByRole("button", { name: "Étiquette active" });
+    await field.tap();
+    const list = page.getByRole("listbox");
+    await expect(list).toBeVisible();
+    const filter = page.getByPlaceholder("Filtrer…");
+    await expect(filter).not.toBeFocused();
+    await filter.tap();
+    await expect(filter).toBeFocused();
+    // The keyboard shown: less room below; the list stays there.
+    await page.setViewportSize({ width: 390, height: 420 });
+    await page.waitForTimeout(300);
+    await expect(list).toBeVisible();
+    const [fieldBox, filterBox] = await Promise.all([field.boundingBox(), filter.boundingBox()]);
+    expect(filterBox!.y).toBeGreaterThan(fieldBox!.y);
+  });
+
   // A touch on another menu of the bar closes the active tag's list (left
   // open on iOS Safari, cf. `signets.vue`).
   for (const name of ["Affichage", "Fichiers"]) {

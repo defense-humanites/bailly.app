@@ -127,6 +127,23 @@
    * it open (iOS Safari).
    */
   const activeOpen = ref(false);
+
+  /**
+   * Opened by a touch, the list doesn't focus its filter (no keyboard
+   * hiding half the screen at once), as the tags' panel (cf.
+   * `TagButtonGroup`); and it stays below the field (`sideFlip`), the
+   * keyboard shown (its field touched) leaving less room below: it was
+   * turned over, above the field and the header (iOS Safari). At the
+   * page's top, the field has room below it; the list shortens then (at
+   * most the room left, Nuxt UI's).
+   */
+  const activeOpenedByTouch = ref(false);
+  const onActivePointerDown = (event: PointerEvent): void => {
+    activeOpenedByTouch.value = event.pointerType === "touch";
+  };
+  const onActiveKeydown = (): void => {
+    activeOpenedByTouch.value = false;
+  };
   useEventListener("click", (event: MouseEvent) => {
     if (!activeOpen.value || !(event.target instanceof Element)) return;
     if (activeField.value?.contains(event.target) || event.target.closest("[data-dismissable-layer]")) return;
@@ -206,6 +223,8 @@
             ref="activeField"
             class="flex h-11 min-w-0 grow basis-24 border-accented max-lg:rounded-bl-(--field-inner-radius) lg:basis-0 lg:overflow-hidden lg:rounded-lg lg:border lg:bg-default lg:shadow-xs"
             :class="FIELD_HALO"
+            @pointerdown.capture="onActivePointerDown"
+            @keydown.capture="onActiveKeydown"
           >
             <USelectMenu
               v-model:open="activeOpen"
@@ -217,7 +236,8 @@
               variant="soft"
               :disabled="!activeItems.length"
               :placeholder="initialized ? 'Aucune étiquette' : undefined"
-              :search-input="activeItems.length >= ACTIVE_FILTER_FROM && { placeholder: 'Filtrer…', ui: { base: 'rounded-none shadow-none' } }"
+              :search-input="activeItems.length >= ACTIVE_FILTER_FROM && { placeholder: 'Filtrer…', autofocus: !activeOpenedByTouch, ui: { base: 'rounded-none shadow-none' } }"
+              :content="{ side: 'bottom', sideFlip: false }"
               aria-label="Étiquette active"
               class="h-full min-w-0 grow"
               :ui="{ base: `h-full gap-2 rounded-none ps-3 shadow-none outline-transparent max-lg:rounded-bl-(--field-inner-radius) ${SELECT_BACKGROUND}`, leading: 'static shrink-0 ps-0' }"
