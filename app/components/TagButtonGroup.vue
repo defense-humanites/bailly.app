@@ -146,30 +146,11 @@
   const panelOpen = ref(false);
 
   /**
-   * The panel closed as soon as the page scrolls, as a system's menu: it
-   * doesn't follow its button under the header and the compact bar. By more
-   * than `SCROLL_CLOSE_DISTANCE` (a touchpad's brush tolerated). The panel's
-   * own list scrolls in its element: not the page's scroll. The focus back
-   * on the button then, without scrolling the page back to it.
-   *
-   * Two scrolls of the page are not the reader's:
-   * - within `OPENING` of the panel's opening, without a wheel nor a touch
-   *   of the reader's, the page brought by the panel itself (Reka's list
-   *   bringing its highlighted tag into view, `scrollIntoView`, all the
-   *   scrollers above it too: Safari did it before the panel was placed, at
-   *   the scroller's top): undone at once, before it is painted;
-   * - within `FIELD_FOCUS` of its field being focused, the page brought to
-   *   the field by iOS Safari, as its keyboard shows: kept, not closing it.
+   * The panel closed as soon as the page scrolls (cf. `usePageScrollDismiss`),
+   * the focus back on its button then, without scrolling the page to it.
    */
-  const SCROLL_CLOSE_DISTANCE = 12;
-  const OPENING = 400;
-  const FIELD_FOCUS = 1000;
+  const scrollDismiss = usePageScrollDismiss(panelOpen);
   const trigger = useTemplateRef<ComponentPublicInstance>("trigger");
-  let openedAt = 0;
-  let readerScrolledAt = -Infinity;
-  let fieldFocusedAt = -Infinity;
-  let scrollFrom = 0;
-  let closedByScroll = false;
   watch(panelOpen, (open) => {
     placed.value = null;
     if (!open) return;
@@ -181,8 +162,7 @@
       left: COLLISION_PADDING + areas.left,
     };
     makeRoom();
-    openedAt = performance.now();
-    scrollFrom = pageScroller.value?.scrollTop ?? 0;
+    scrollDismiss.opened();
   });
   /**
    * Room made for the panel, if it fits neither above nor below its button
@@ -210,24 +190,8 @@
     if (above >= needed || below >= needed) return;
     scroller.scrollTop += box.top - (area.top + padding.value.top);
   };
-  const readerScrolls = (): void => {
-    readerScrolledAt = performance.now();
-  };
-  useEventListener(pageScroller, ["wheel", "touchmove"], readerScrolls, { passive: true });
-  useEventListener(pageScroller, "scroll", () => {
-    const scroller = pageScroller.value;
-    if (!panelOpen.value || !scroller) return;
-    const now = performance.now();
-    if (now - openedAt < OPENING && readerScrolledAt < openedAt) scroller.scrollTop = scrollFrom;
-    else if (now - fieldFocusedAt < FIELD_FOCUS) scrollFrom = scroller.scrollTop;
-    else if (Math.abs(scroller.scrollTop - scrollFrom) > SCROLL_CLOSE_DISTANCE) {
-      closedByScroll = true;
-      panelOpen.value = false;
-    }
-  }, { passive: true });
   function restoreFocus(event: Event): void {
-    if (!closedByScroll) return;
-    closedByScroll = false;
+    if (!scrollDismiss.closedByScroll()) return;
     event.preventDefault();
     (trigger.value?.$el as HTMLElement | undefined)?.focus({ preventScroll: true });
   }
@@ -255,7 +219,7 @@
   }
   const onPanelFocusIn = (event: FocusEvent): void => {
     if (!(event.target instanceof HTMLInputElement)) return;
-    fieldFocusedAt = performance.now();
+    scrollDismiss.fieldFocused();
     const body = panelBody.value;
     const side = body?.closest("[data-side]")?.getAttribute("data-side");
     if (!openedByTouch || placed.value || !body || (side !== "top" && side !== "bottom")) return;

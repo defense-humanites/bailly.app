@@ -32,6 +32,27 @@ test.describe("bookmarks page", () => {
     expect(inside).toBe(true);
   });
 
+  test("the active tag's list: scrolling with its field (in the pages' scroller), closed when the page scrolls", async ({ page }) => {
+    await page.setViewportSize({ width: 1100, height: 500 });
+    const field = page.getByRole("group", { name: "Étiquettes" }).getByRole("button", { name: "Étiquette active" });
+    await field.click();
+    const list = page.getByRole("listbox");
+    await expect(list).toBeVisible();
+    await expect(page.locator("#page > [data-reka-popper-content-wrapper]")).toHaveCount(1);
+    const gap = async (): Promise<number> => (await list.boundingBox())!.y - (await field.boundingBox())!.y;
+    const before = await gap();
+    await page.waitForTimeout(500);
+    await page.mouse.move(900, 450);
+    // A brush: kept open, scrolling with its field.
+    await page.mouse.wheel(0, 8);
+    await page.waitForTimeout(200);
+    await expect(list).toBeVisible();
+    expect(await gap()).toBeCloseTo(before, 0);
+    // The page scrolled: closed.
+    await page.mouse.wheel(0, 100);
+    await expect(list).toBeHidden();
+  });
+
   test("reloaded, the active tag's field never shows its key", async ({ page }) => {
     const field = page.getByRole("group", { name: "Étiquettes" }).getByRole("button", { name: "Étiquette active" });
     await field.click();
@@ -800,7 +821,9 @@ test.describe("bookmarks page on a touch screen", () => {
     await expect(page.getByRole("tooltip")).toHaveCount(0);
 
     await page.keyboard.press("Escape");
+    await expect(page.getByRole("menu")).toHaveCount(0);
     await bar.getByRole("button", { name: "Affichage" }).tap();
+    await expect(page.getByRole("menu")).toContainText("Entrées");
     await page.getByRole("menuitemcheckbox").nth(1).tap();
     await expect(page.getByRole("menu")).toHaveCount(0);
     await page.waitForTimeout(500);

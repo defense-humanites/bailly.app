@@ -144,6 +144,23 @@
   const onActiveKeydown = (): void => {
     activeOpenedByTouch.value = false;
   };
+
+  /**
+   * The list closed as soon as the page scrolls, as the tags' panel (cf.
+   * `usePageScrollDismiss`); in the pages' scroller (cf. `PageScroller`),
+   * placed there (`absolute`): it scrolls with the field, natively, until it
+   * closes (fixed in the body, it was placed again after each scroll, a frame
+   * late: it shook, and went over the header). In front of the bookmarks'
+   * table of contents (`z-10`, cf. `BookmarksToc`): `z-30`.
+   */
+  const pageScroller = usePageScroller();
+  const activeScrollDismiss = usePageScrollDismiss(activeOpen);
+  watch(activeOpen, (open) => {
+    if (open) activeScrollDismiss.opened();
+  });
+  useEventListener("focusin", (event: FocusEvent) => {
+    if (activeOpen.value && event.target instanceof HTMLInputElement && !activeField.value?.contains(event.target)) activeScrollDismiss.fieldFocused();
+  });
   useEventListener("click", (event: MouseEvent) => {
     if (!activeOpen.value || !(event.target instanceof Element)) return;
     if (activeField.value?.contains(event.target) || event.target.closest("[data-dismissable-layer]")) return;
@@ -237,10 +254,11 @@
               :disabled="!activeItems.length"
               :placeholder="initialized ? 'Aucune étiquette' : undefined"
               :search-input="activeItems.length >= ACTIVE_FILTER_FROM && { placeholder: 'Filtrer…', autofocus: !activeOpenedByTouch, ui: { base: 'rounded-none shadow-none' } }"
-              :content="{ side: 'bottom', sideFlip: false }"
+              :content="{ side: 'bottom', sideFlip: false, positionStrategy: 'absolute' }"
+              :portal="pageScroller ?? true"
               aria-label="Étiquette active"
               class="h-full min-w-0 grow"
-              :ui="{ base: `h-full gap-2 rounded-none ps-3 shadow-none outline-transparent max-lg:rounded-bl-(--field-inner-radius) ${SELECT_BACKGROUND}`, leading: 'static shrink-0 ps-0' }"
+              :ui="{ base: `h-full gap-2 rounded-none ps-3 shadow-none outline-transparent max-lg:rounded-bl-(--field-inner-radius) ${SELECT_BACKGROUND}`, leading: 'static shrink-0 ps-0', content: 'z-30' }"
               @update:model-value="(key: TagKey) => bookmarksStore.setCurrentTag(key)"
             >
               <template #leading>
