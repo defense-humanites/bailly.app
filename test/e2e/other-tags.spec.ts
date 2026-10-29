@@ -230,6 +230,27 @@ test.describe("the tags of an entry", () => {
 test.describe("the tags of an entry on a touch screen", () => {
   test.use({ viewport: { width: 390, height: 700 }, hasTouch: true, isMobile: true });
 
+  test("a phone held sideways, its button low: two tags at least, its field in view, at 16 px (no zoom of iOS)", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await goto("/logos", { waitUntil: "hydration" });
+    await seedBookmarks(page, { tags: Array.from({ length: 12 }, (_, index) => ({ name: `Étiquette ${index}`, color: "Green" })) });
+    await goto("/", { waitUntil: "hydration" });
+    const trigger = page.getByRole("button", { name: "Toutes les étiquettes" });
+    await expect(trigger).toBeVisible();
+    await page.locator("#page").evaluate((scroller) => {
+      scroller.scrollBy(0, document.querySelector("button[aria-label='Toutes les étiquettes']")!.getBoundingClientRect().bottom - 300);
+    });
+    await trigger.tap();
+    const filter = allTags(page).getByRole("textbox");
+    await expect(filter).toBeVisible();
+    const [field, scroller] = await Promise.all([filter.boundingBox(), page.locator("#page").boundingBox()]);
+    expect(field!.y).toBeGreaterThanOrEqual(scroller!.y);
+    expect(await filter.evaluate(input => getComputedStyle(input).fontSize)).toBe("16px");
+    const options = allTags(page).getByRole("option");
+    await expect(options.nth(0)).toBeInViewport({ ratio: 1 });
+    await expect(options.nth(1)).toBeInViewport({ ratio: 1 });
+  });
+
   test("opened by a touch: its whole list, its field not focused; touched, the panel kept in place as the keyboard shows", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     await seedBookmarks(page, { tags: Array.from({ length: 20 }, (_, index) => ({ name: `Étiquette ${index}`, color: "Green" })) });

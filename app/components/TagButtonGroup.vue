@@ -89,7 +89,8 @@
    * closes (cf. below); fixed in the body, it was placed again after each
    * scroll, a frame late: it shook. In front of an entry's compact bar
    * (`z-20`, cf. `EntryCompactBar`; the panel's `z-30`). Its collisions
-   * within the scroller, below the compact bar (2.5 rem). Its side and its
+   * within the scroller, below the compact bar if shown as it opens (2.5
+   * rem: none on the home page, nor at an entry's top). Its side and its
    * height kept once placed, when its field is touched (`placed`, cf.
    * below).
    */
@@ -97,13 +98,18 @@
   const COMPACT_BAR_HEIGHT = 40;
   const COLLISION_PADDING = 12;
   const placed = shallowRef<{ side: "top" | "bottom"; height: number } | null>(null);
+  const topPadding = ref(COLLISION_PADDING);
+  const compactBarShown = (): boolean => {
+    const bar = document.querySelector("[data-compact-bar]");
+    return !!bar && getComputedStyle(bar).visibility === "visible";
+  };
   const popoverContent = computed(() => ({
     "align": "end",
     "side": placed.value?.side ?? "bottom",
     "sideFlip": !placed.value,
     "positionStrategy": "absolute",
     "collisionBoundary": pageScroller.value,
-    "collisionPadding": { top: COMPACT_BAR_HEIGHT + COLLISION_PADDING, right: COLLISION_PADDING, bottom: COLLISION_PADDING, left: COLLISION_PADDING },
+    "collisionPadding": { top: topPadding.value, right: COLLISION_PADDING, bottom: COLLISION_PADDING, left: COLLISION_PADDING },
     "aria-label": "Toutes les étiquettes",
     "onOpenAutoFocus": focusOnOpen,
     "onCloseAutoFocus": restoreFocus,
@@ -156,6 +162,7 @@
   watch(panelOpen, (open) => {
     placed.value = null;
     if (!open) return;
+    topPadding.value = COLLISION_PADDING + (compactBarShown() ? COMPACT_BAR_HEIGHT : 0);
     openedAt = performance.now();
     scrollFrom = pageScroller.value?.scrollTop ?? 0;
   });
@@ -388,7 +395,7 @@
       <template #content>
         <div
           ref="panelBody"
-          class="group/tags flex max-h-(--reka-popover-content-available-height) w-64 max-w-[calc(var(--app-width)-2rem)] flex-col p-1"
+          class="group/tags flex max-h-[max(var(--reka-popover-content-available-height),13rem)] w-64 max-w-[calc(var(--app-width)-2rem)] flex-col p-1"
           :style="placed && { maxHeight: `${placed.height}px` }"
           @focusin="onPanelFocusIn"
         >
@@ -414,8 +421,10 @@
             panel at most as tall as the room left beside its button (above,
             under the header and the compact bar), its list scrolling the
             rest, without passing its scroll to the page's (which would close
-            the panel): its field always in view (many tags, a phone's
-            keyboard shown).
+            the panel): its field in view (many tags, a phone's keyboard
+            shown). Not less than 13 rem though (two tags and a half, in a
+            phone held sideways). The field's text at 16 px on a touch screen:
+            iOS Safari zooms on a smaller one, focused.
           -->
           <LazyUCommandPalette
             v-if="panelTags.length"
@@ -429,7 +438,7 @@
             :autofocus="false"
             :fuse="fuseOptions"
             :ui="{
-              input: '[&_input]:text-sm',
+              input: '[&_input]:text-sm pointer-coarse:[&_input]:text-base',
               content: 'min-h-0',
               viewport: 'max-h-72 overscroll-contain p-0',
               item: 'rounded-md px-2 py-1.5 before:rounded-md data-highlighted:not-data-disabled:before:bg-(--app-panel-highlight) group-has-[footer_a:hover]/tags:before:bg-transparent!',
