@@ -89,17 +89,23 @@
    * closes (cf. below); fixed in the body, it was placed again after each
    * scroll, a frame late: it shook. In front of an entry's compact bar
    * (`z-20`, cf. `EntryCompactBar`; the panel's `z-30`). Its collisions
-   * within the scroller, below the compact bar (2.5 rem).
+   * within the scroller, below the compact bar (2.5 rem). Its side and its
+   * height kept once placed, when its field is touched (`placed`, cf.
+   * below).
    */
   const pageScroller = usePageScroller();
   const COMPACT_BAR_HEIGHT = 40;
   const COLLISION_PADDING = 12;
+  const placed = shallowRef<{ side: "top" | "bottom"; height: number } | null>(null);
   const popoverContent = computed(() => ({
     "align": "end",
+    "side": placed.value?.side ?? "bottom",
+    "sideFlip": !placed.value,
     "positionStrategy": "absolute",
     "collisionBoundary": pageScroller.value,
     "collisionPadding": { top: COMPACT_BAR_HEIGHT + COLLISION_PADDING, right: COLLISION_PADDING, bottom: COLLISION_PADDING, left: COLLISION_PADDING },
     "aria-label": "Toutes les étiquettes",
+    "onOpenAutoFocus": focusOnOpen,
     "onCloseAutoFocus": restoreFocus,
   }) as PopoverProps["content"]);
 
@@ -124,29 +130,46 @@
 
   /**
    * The panel closed as soon as the page scrolls, as a system's menu: it
-   * doesn't follow its button under the header and the compact bar. By more than
-   * `SCROLL_CLOSE_DISTANCE` (a touchpad's brush tolerated), not within
-   * `SCROLL_CLOSE_GRACE` of its opening (the page brought to the focused
-   * field, e.g. by iOS Safari, as its keyboard shows). The panel's own list
-   * scrolls in its element: not the page's scroll. The focus back on the
-   * button then, without scrolling the page back to it.
+   * doesn't follow its button under the header and the compact bar. By more
+   * than `SCROLL_CLOSE_DISTANCE` (a touchpad's brush tolerated). The panel's
+   * own list scrolls in its element: not the page's scroll. The focus back
+   * on the button then, without scrolling the page back to it.
+   *
+   * Two scrolls of the page are not the reader's:
+   * - within `OPENING` of the panel's opening, without a wheel nor a touch
+   *   of the reader's, the page brought by the panel itself (Reka's list
+   *   bringing its highlighted tag into view, `scrollIntoView`, all the
+   *   scrollers above it too: Safari did it before the panel was placed, at
+   *   the scroller's top): undone at once, before it is painted;
+   * - within `FIELD_FOCUS` of its field being focused, the page brought to
+   *   the field by iOS Safari, as its keyboard shows: kept, not closing it.
    */
   const SCROLL_CLOSE_DISTANCE = 12;
-  const SCROLL_CLOSE_GRACE = 400;
+  const OPENING = 400;
+  const FIELD_FOCUS = 1000;
   const trigger = useTemplateRef<ComponentPublicInstance>("trigger");
   let openedAt = 0;
+  let readerScrolledAt = -Infinity;
+  let fieldFocusedAt = -Infinity;
   let scrollFrom = 0;
   let closedByScroll = false;
   watch(panelOpen, (open) => {
+    placed.value = null;
     if (!open) return;
     openedAt = performance.now();
     scrollFrom = pageScroller.value?.scrollTop ?? 0;
   });
+  const readerScrolls = (): void => {
+    readerScrolledAt = performance.now();
+  };
+  useEventListener(pageScroller, ["wheel", "touchmove"], readerScrolls, { passive: true });
   useEventListener(pageScroller, "scroll", () => {
-    if (!panelOpen.value || !pageScroller.value) return;
-    const top = pageScroller.value.scrollTop;
-    if (performance.now() - openedAt < SCROLL_CLOSE_GRACE) scrollFrom = top;
-    else if (Math.abs(top - scrollFrom) > SCROLL_CLOSE_DISTANCE) {
+    const scroller = pageScroller.value;
+    if (!panelOpen.value || !scroller) return;
+    const now = performance.now();
+    if (now - openedAt < OPENING && readerScrolledAt < openedAt) scroller.scrollTop = scrollFrom;
+    else if (now - fieldFocusedAt < FIELD_FOCUS) scrollFrom = scroller.scrollTop;
+    else if (Math.abs(scroller.scrollTop - scrollFrom) > SCROLL_CLOSE_DISTANCE) {
       closedByScroll = true;
       panelOpen.value = false;
     }
@@ -157,6 +180,36 @@
     event.preventDefault();
     (trigger.value?.$el as HTMLElement | undefined)?.focus({ preventScroll: true });
   }
+
+  /**
+   * Opened by a touch, the panel shows its whole list, its field not focused
+   * (no keyboard hiding half the screen at once): the dialog is, for a
+   * screen reader. Its field, touched then, brings the keyboard, which
+   * leaves less room: the panel keeps its side and its height (`placed`),
+   * rather than turning over its button or crushing its list, placed again
+   * in the room left.
+   */
+  const panelBody = useTemplateRef<HTMLElement>("panelBody");
+  let openedByTouch = false;
+  const onTriggerPointerDown = (event: PointerEvent): void => {
+    openedByTouch = event.pointerType === "touch";
+  };
+  const onTriggerKeydown = (): void => {
+    openedByTouch = false;
+  };
+  function focusOnOpen(event: Event): void {
+    if (!openedByTouch) return;
+    event.preventDefault();
+    panelBody.value?.closest<HTMLElement>("[role=dialog]")?.focus({ preventScroll: true });
+  }
+  const onPanelFocusIn = (event: FocusEvent): void => {
+    if (!(event.target instanceof HTMLInputElement)) return;
+    fieldFocusedAt = performance.now();
+    const body = panelBody.value;
+    const side = body?.closest("[data-side]")?.getAttribute("data-side");
+    if (!openedByTouch || placed.value || !body || (side !== "top" && side !== "bottom")) return;
+    placed.value = { side, height: body.getBoundingClientRect().height };
+  };
 
   const frozenOrder = shallowRef<TagKey[] | null>(null);
   watch(panelOpen, (open) => {
@@ -328,10 +381,17 @@
         variant="ghost"
         :class="[TOOLBAR_HOVER, 'data-[state=open]:bg-(--app-button-active)']"
         aria-label="Toutes les étiquettes"
+        @pointerdown="onTriggerPointerDown"
+        @keydown="onTriggerKeydown"
       />
 
       <template #content>
-        <div class="group/tags flex max-h-(--reka-popover-content-available-height) w-64 max-w-[calc(var(--app-width)-2rem)] flex-col p-1">
+        <div
+          ref="panelBody"
+          class="group/tags flex max-h-(--reka-popover-content-available-height) w-64 max-w-[calc(var(--app-width)-2rem)] flex-col p-1"
+          :style="placed && { maxHeight: `${placed.height}px` }"
+          @focusin="onPanelFocusIn"
+        >
           <h2
             class="shrink-0 px-2 pt-1.5 pb-1 text-xs uppercase tracking-wide text-muted"
           >
