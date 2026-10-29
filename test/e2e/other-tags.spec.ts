@@ -34,9 +34,16 @@ test.describe("the tags of an entry", () => {
     expect(await page.locator("#page").evaluate(scroller => scroller.scrollTop)).toBe(400);
   });
 
-  test("kept open by a scroll right after its opening, or by a brush", async ({ page, goto }) => {
+  test("kept open by a scroll right after its opening, or by a brush, scrolling with its button", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
-    await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
+    const trigger = page.getByRole("button", { name: "Toutes les étiquettes" });
+    await trigger.click();
+    await expect(allTags(page)).toBeVisible();
+    // In the pages' scroller: it scrolls with the page, natively (not
+    // placed again after the scroll, a frame late).
+    await expect(page.locator("#page > [data-reka-popper-content-wrapper]")).toHaveCount(1);
+    const gap = async (): Promise<number> => (await allTags(page).boundingBox())!.y - (await trigger.boundingBox())!.y;
+    const before = await gap();
     // The page brought to the focused field (iOS Safari).
     await page.locator("#page").evaluate((scroller) => {
       scroller.scrollBy(0, 100);
@@ -47,6 +54,7 @@ test.describe("the tags of an entry", () => {
     });
     await page.waitForTimeout(100);
     await expect(allTags(page)).toBeVisible();
+    expect(await gap()).toBeCloseTo(before, 0);
   });
 
   test("every tag, the current one first (active), then in their order, selected if the entry has it", async ({ page, goto }) => {

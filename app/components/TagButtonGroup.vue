@@ -84,16 +84,19 @@
    * id may differ between the server and the client (then the reference is
    * broken, and the dialog would have no name).
    *
-   * Placed within the pages' scroller (cf. `PageScroller`), under the
-   * header, and below an entry's compact bar (2.5 rem, cf.
-   * `EntryCompactBar`): its boundary, rather than the window's (the panel is
-   * in the body). Closed when the page scrolls (cf. below).
+   * In the pages' scroller (cf. `PageScroller`), placed there (`absolute`):
+   * it scrolls with the page, natively, its button and it as one, until it
+   * closes (cf. below); fixed in the body, it was placed again after each
+   * scroll, a frame late: it shook. In front of an entry's compact bar
+   * (`z-20`, cf. `EntryCompactBar`; the panel's `z-30`). Its collisions
+   * within the scroller, below the compact bar (2.5 rem).
    */
   const pageScroller = usePageScroller();
   const COMPACT_BAR_HEIGHT = 40;
   const COLLISION_PADDING = 12;
   const popoverContent = computed(() => ({
     "align": "end",
+    "positionStrategy": "absolute",
     "collisionBoundary": pageScroller.value,
     "collisionPadding": { top: COMPACT_BAR_HEIGHT + COLLISION_PADDING, right: COLLISION_PADDING, bottom: COLLISION_PADDING, left: COLLISION_PADDING },
     "aria-label": "Toutes les étiquettes",
@@ -121,8 +124,7 @@
 
   /**
    * The panel closed as soon as the page scrolls, as a system's menu: it
-   * neither follows its button under the header and the compact bar, nor
-   * shakes, placed again after each scroll (it is in the body). By more than
+   * doesn't follow its button under the header and the compact bar. By more than
    * `SCROLL_CLOSE_DISTANCE` (a touchpad's brush tolerated), not within
    * `SCROLL_CLOSE_GRACE` of its opening (the page brought to the focused
    * field, e.g. by iOS Safari, as its keyboard shows). The panel's own list
@@ -316,7 +318,8 @@
     <UPopover
       v-model:open="panelOpen"
       :content="popoverContent"
-      :ui="{ content: 'bg-(--app-panel-bg)' }"
+      :portal="pageScroller ?? true"
+      :ui="{ content: 'z-30 bg-(--app-panel-bg)' }"
     >
       <UButton
         ref="trigger"
