@@ -154,7 +154,7 @@
   };
 
   const syncStore = useSyncStore();
-  const showButtonLabels = useButtonLabels();
+  const iconButtonTooltips = useIconButtonTooltips();
 
   const items: DropdownMenuItem[] = [
     {
@@ -197,8 +197,16 @@
 
 <template>
   <div ref="root">
+    <!--
+      Not modal, as the bar's other menu (cf. `BookmarksDisplayMenu`) and the active
+      tag's list: a click on the bar's next button, the menu open, closes
+      it and acts at once, rather than only closing it (the focus then back
+      on this button, its tooltip shown: a second touch was needed, above
+      all on iOS).
+    -->
     <UDropdownMenu
       v-model:open="isMenuOpen"
+      :modal="false"
       :items="items"
       :content="{ align: 'end', collisionPadding: 8 }"
       :ui="{ content: 'max-w-[calc(var(--app-width)-1rem)]' }"
@@ -211,7 +219,7 @@
       -->
       <UTooltip
         text="Fichiers"
-        :disabled="showButtonLabels"
+        :disabled="!iconButtonTooltips"
       >
         <UButton
           label="Fichiers"

@@ -2,7 +2,7 @@
   import type { DropdownMenuItem } from "@nuxt/ui";
   import { TAG_SORT_LABELS, TAG_SORTS } from "~/utils/tagSort";
 
-  const showButtonLabels = useButtonLabels();
+  const iconButtonTooltips = useIconButtonTooltips();
   const display = useBookmarksDisplay();
   const sort = useTagSort();
 
@@ -61,8 +61,16 @@
 
 <template>
   <div ref="root">
+    <!--
+      Not modal, as the bar's other menu (cf. `BookmarksMenu`) and the active
+      tag's list: a click on the bar's next button, the menu open, closes
+      it and acts at once, rather than only closing it (the focus then back
+      on this button, its tooltip shown: a second touch was needed, above
+      all on iOS).
+    -->
     <UDropdownMenu
       v-model:open="isMenuOpen"
+      :modal="false"
       :items="items"
       :content="{ align: 'end' }"
     >
@@ -74,7 +82,7 @@
       -->
       <UTooltip
         text="Affichage"
-        :disabled="showButtonLabels"
+        :disabled="!iconButtonTooltips"
       >
         <UButton
           label="Affichage"

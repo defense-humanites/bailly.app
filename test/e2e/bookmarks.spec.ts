@@ -57,6 +57,18 @@ test.describe("bookmarks page", () => {
     expect(seen.some(text => text.includes(key!))).toBe(false);
   });
 
+  test("a click on « Fichiers », « Affichage » open, opens it at once", async ({ page }) => {
+    await page.setViewportSize({ width: 1100, height: 800 });
+    const bar = page.getByRole("group", { name: "Étiquettes" });
+    const files = (await bar.getByRole("button", { name: "Fichiers" }).boundingBox())!;
+    await bar.getByRole("button", { name: "Affichage" }).click();
+    await expect(page.getByRole("menu")).toContainText("Entrées");
+    await page.mouse.click(files.x + files.width / 2, files.y + files.height / 2);
+    // (The first one closing meanwhile.)
+    await expect(page.getByRole("menu").filter({ hasText: "Exporter les signets" })).toBeVisible();
+    await expect(page.getByRole("menu")).toHaveCount(1);
+  });
+
   test("editing with the keyboard: rename, delete with an undo", async ({ page }) => {
     const edit = page.getByRole("button", { name: "Modifier l'étiquette « Vide »" });
     await edit.focus();
@@ -771,6 +783,28 @@ test.describe("bookmarks page on a touch screen", () => {
     await edit.tap();
     await page.getByRole("button", { name: "Retirer « ἄναξ » de l'étiquette « Homère »" }).tap();
     await expect.poll(async () => (await bookmarksState(page)).tagged).toBe(1);
+  });
+
+  // A touch on the bar's next menu opens it at once (the menus not modal):
+  // no stray tooltip of the first one's, as the focus came back to it.
+  test("a touch on « Fichiers », « Affichage » open, opens it at once; an option chosen, no tooltip", async ({ page, goto }) => {
+    await goto("/signets", { waitUntil: "hydration" });
+    const bar = page.getByRole("group", { name: "Étiquettes" });
+    const files = (await bar.getByRole("button", { name: "Fichiers" }).boundingBox())!;
+    await bar.getByRole("button", { name: "Affichage" }).tap();
+    await expect(page.getByRole("menu")).toContainText("Entrées");
+    await page.touchscreen.tap(files.x + files.width / 2, files.y + files.height / 2);
+    // (The first one closing meanwhile.)
+    await expect(page.getByRole("menu").filter({ hasText: "Exporter les signets" })).toBeVisible();
+    await expect(page.getByRole("menu")).toHaveCount(1);
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+
+    await page.keyboard.press("Escape");
+    await bar.getByRole("button", { name: "Affichage" }).tap();
+    await page.getByRole("menuitemcheckbox").nth(1).tap();
+    await expect(page.getByRole("menu")).toHaveCount(0);
+    await page.waitForTimeout(500);
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
   });
 
   // A touch on another menu of the bar closes the active tag's list (left
