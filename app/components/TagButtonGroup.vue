@@ -90,18 +90,29 @@
    * scroll, a frame late: it shook. In front of an entry's compact bar
    * (`z-20`, cf. `EntryCompactBar`; the panel's `z-30`). Its collisions
    * within the scroller, below the compact bar if shown as it opens (2.5
-   * rem: none on the home page, nor at an entry's top). Its side and its
-   * height kept once placed, when its field is touched (`placed`, cf.
-   * below).
+   * rem: none on the home page, nor at an entry's top), and within the
+   * screen's safe areas (an iPhone's notch and round corners, held
+   * sideways). Its side and its height kept once placed, when its field is
+   * touched (`placed`, cf. below).
    */
   const pageScroller = usePageScroller();
   const COMPACT_BAR_HEIGHT = 40;
   const COLLISION_PADDING = 12;
   const placed = shallowRef<{ side: "top" | "bottom"; height: number } | null>(null);
-  const topPadding = ref(COLLISION_PADDING);
+  const padding = shallowRef({ top: COLLISION_PADDING, right: COLLISION_PADDING, bottom: COLLISION_PADDING, left: COLLISION_PADDING });
   const compactBarShown = (): boolean => {
     const bar = document.querySelector("[data-compact-bar]");
     return !!bar && getComputedStyle(bar).visibility === "visible";
+  };
+  /** The screen's safe areas (`env(safe-area-inset-*)`), in pixels. */
+  const safeAreas = (): { right: number; bottom: number; left: number } => {
+    const probe = document.createElement("div");
+    probe.style.cssText = "position: fixed; visibility: hidden; padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)";
+    document.body.append(probe);
+    const style = getComputedStyle(probe);
+    const areas = { right: Number.parseFloat(style.paddingRight) || 0, bottom: Number.parseFloat(style.paddingBottom) || 0, left: Number.parseFloat(style.paddingLeft) || 0 };
+    probe.remove();
+    return areas;
   };
   const popoverContent = computed(() => ({
     "align": "end",
@@ -109,7 +120,7 @@
     "sideFlip": !placed.value,
     "positionStrategy": "absolute",
     "collisionBoundary": pageScroller.value,
-    "collisionPadding": { top: topPadding.value, right: COLLISION_PADDING, bottom: COLLISION_PADDING, left: COLLISION_PADDING },
+    "collisionPadding": padding.value,
     "aria-label": "Toutes les étiquettes",
     "onOpenAutoFocus": focusOnOpen,
     "onCloseAutoFocus": restoreFocus,
@@ -162,10 +173,43 @@
   watch(panelOpen, (open) => {
     placed.value = null;
     if (!open) return;
-    topPadding.value = COLLISION_PADDING + (compactBarShown() ? COMPACT_BAR_HEIGHT : 0);
+    const areas = safeAreas();
+    padding.value = {
+      top: COLLISION_PADDING + (compactBarShown() ? COMPACT_BAR_HEIGHT : 0),
+      right: COLLISION_PADDING + areas.right,
+      bottom: COLLISION_PADDING + areas.bottom,
+      left: COLLISION_PADDING + areas.left,
+    };
+    makeRoom();
     openedAt = performance.now();
     scrollFrom = pageScroller.value?.scrollTop ?? 0;
   });
+  /**
+   * Room made for the panel, if it fits neither above nor below its button
+   * (a phone held sideways, its button half-way): the page scrolled first
+   * (at once, before the panel is placed), its button brought under the
+   * header, the panel opening below it, whole, as iOS does with its own
+   * lists. Its height estimated from its tags: its rows (`PANEL_ROW`), its
+   * heading, its field and its link (`PANEL_CHROME`), not above its least
+   * height (13 rem, cf. the template).
+   */
+  const PANEL_ROW = 32;
+  const PANEL_CHROME = 80;
+  const PANEL_FIELD = 44;
+  const SIDE_OFFSET = 8;
+  const makeRoom = (): void => {
+    const scroller = pageScroller.value;
+    const button = trigger.value?.$el as HTMLElement | undefined;
+    if (!scroller || !button) return;
+    const least = 13 * Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const needed = Math.min(least, PANEL_CHROME + (filterable.value ? PANEL_FIELD : 0) + panelTags.value.length * PANEL_ROW);
+    const area = scroller.getBoundingClientRect();
+    const box = button.getBoundingClientRect();
+    const above = box.top - SIDE_OFFSET - (area.top + padding.value.top);
+    const below = area.bottom - padding.value.bottom - box.bottom - SIDE_OFFSET;
+    if (above >= needed || below >= needed) return;
+    scroller.scrollTop += box.top - (area.top + padding.value.top);
+  };
   const readerScrolls = (): void => {
     readerScrolledAt = performance.now();
   };

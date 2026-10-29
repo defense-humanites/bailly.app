@@ -230,7 +230,7 @@ test.describe("the tags of an entry", () => {
 test.describe("the tags of an entry on a touch screen", () => {
   test.use({ viewport: { width: 390, height: 700 }, hasTouch: true, isMobile: true });
 
-  test("a phone held sideways, its button low: two tags at least, its field in view, at 16 px (no zoom of iOS)", async ({ page, goto }) => {
+  test("a phone held sideways, its button half-way: two tags at least, the whole panel in view, its field at 16 px (no zoom of iOS)", async ({ page, goto }) => {
     await page.setViewportSize({ width: 844, height: 390 });
     await goto("/logos", { waitUntil: "hydration" });
     await seedBookmarks(page, { tags: Array.from({ length: 12 }, (_, index) => ({ name: `Étiquette ${index}`, color: "Green" })) });
@@ -243,8 +243,11 @@ test.describe("the tags of an entry on a touch screen", () => {
     await trigger.tap();
     const filter = allTags(page).getByRole("textbox");
     await expect(filter).toBeVisible();
-    const [field, scroller] = await Promise.all([filter.boundingBox(), page.locator("#page").boundingBox()]);
-    expect(field!.y).toBeGreaterThanOrEqual(scroller!.y);
+    // Fitting neither above nor below its button, the panel opens below it,
+    // whole, the page scrolled first: not under the header.
+    const [panel, scroller] = await Promise.all([allTags(page).boundingBox(), page.locator("#page").boundingBox()]);
+    expect(panel!.y).toBeGreaterThanOrEqual(scroller!.y);
+    await expect(allTags(page)).toHaveAttribute("data-side", "bottom");
     expect(await filter.evaluate(input => getComputedStyle(input).fontSize)).toBe("16px");
     const options = allTags(page).getByRole("option");
     await expect(options.nth(0)).toBeInViewport({ ratio: 1 });
