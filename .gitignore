@@ -9,6 +9,9 @@ dist
 # Node dependencies
 node_modules
 
+# Python virtual environment (the font scripts: fontTools, Brotli, uharfbuzz)
+.venv
+
 # Playwright outputs
 test-results
 playwright-report
