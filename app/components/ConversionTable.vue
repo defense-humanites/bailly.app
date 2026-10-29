@@ -7,8 +7,9 @@
    * that it can't drift from it: Beta Code (its capitals marked by an
    * asterisk, their diacritics before the letter), and the transliteration,
    * the circumflex of the long vowels first (as typed), then the macron (as
-   * the search bar shows them, cf. `toTransliteratedInput`), and y as a
-   * variant of upsilon. The lowercase letters only (and the final sigma):
+   * the search bar shows them, cf. `toTransliteratedInput`), and u as a
+   * variant of upsilon (y, as the transliteration the entries display,
+   * ALA-LC; both are read as upsilon). The lowercase letters only (and the final sigma):
    * the capitals add nothing to the correspondence.
    */
   const NAMES = [
@@ -16,7 +17,7 @@
     "nu", "xi", "omicron", "pi", "rhô", "sigma", "tau", "upsilon", "phi", "khi", "psi", "ôméga",
   ];
   const CIRCUMFLEXED: Record<string, string> = { η: "ê", ω: "ô" };
-  const VARIANTS: Record<string, string> = { υ: "y" };
+  const VARIANTS: Record<string, string> = { υ: "u" };
 
   const letters = Array.from("αβγδεζηθικλμνξοπρστυφχψω", greek => greek).map((greek, index) => ({
     name: NAMES[index]!,
@@ -42,7 +43,7 @@
   const examples = [
     { betaCode: "a)/nqrwpos", greek: "ἄνθρωπος", transliteration: "anthrôpos" },
     { betaCode: "ci/fos", greek: "ξίφος", transliteration: "xiphos" },
-    { betaCode: "yuxh/", greek: "ψυχή", transliteration: "psuchê" },
+    { betaCode: "yuxh/", greek: "ψυχή", transliteration: "psychê" },
     { betaCode: "o(do/s", greek: "ὁδός", transliteration: "hodos" },
     { betaCode: "*(h/ra", greek: "Ἥρα", transliteration: "Hêra" },
   ];

@@ -209,7 +209,7 @@ function applyDiacritics(text: string): string {
  */
 export function toSearchGreek(input: string): string {
   return normalizeSearchGreek(applyDiacritics(
-    input.replace(POSITION_METACHARACTERS, "").replace(PSI_AS_PS, (_, pi: string) => (pi === "Π" ? "*y" : "y")).replace(BETA_CODE_LETTERS, run => convert(run.toLowerCase(), "beta-code", "greek", { removeDiacritics: true })),
+    input.replace(POSITION_METACHARACTERS, "").replace(PSI_AS_PS, (_, pi: string) => (pi === "Π" ? "*y" : "y")).replace(BETA_CODE_LETTERS, run => convert(run, "beta-code", "greek")),
   ));
 }
 

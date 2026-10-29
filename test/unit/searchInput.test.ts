@@ -44,6 +44,12 @@ test("converts Beta Code diacritics and capitals", () => {
   expect(toSearchGreek("r(")).toBe("ῥ");
 });
 
+test("converts Beta Code whatever its case", () => {
+  expect(toSearchGreek("logos")).toBe("λογος");
+  expect(toSearchGreek("LOGOS")).toBe("λογος");
+  expect(toSearchGreek("Qeo/s")).toBe("θεός");
+});
+
 test("adds a diacritic to a letter already converted", () => {
   expect(toSearchGreek("α)")).toBe("ἀ");
   expect(toSearchGreek("ἀ/")).toBe("ἄ");
@@ -157,6 +163,9 @@ test("converts transliterated input when looked up", () => {
   expect(toLookupQuery("lógos", InputMode.Transliteration)).toBe("λόγος");
   expect(toLookupQuery("hēméra", InputMode.Transliteration)).toBe("ἡμέρα");
   expect(toLookupQuery("psychḗ", InputMode.Transliteration)).toBe("ψυχή");
+  // Upsilon typed u or y (as the displayed transliteration, ALA-LC).
+  expect(toLookupQuery("psuchḗ", InputMode.Transliteration)).toBe("ψυχή");
+  expect(toLookupQuery("kyrios", InputMode.Transliteration)).toBe(toLookupQuery("kurios", InputMode.Transliteration));
   expect(toLookupQuery("logos$", InputMode.Transliteration)).toBe("λογος");
   expect(toLookupQuery("λόγος", InputMode.Transliteration)).toBe("λόγος"); // Greek is accepted.
   expect(toLookupQuery("λόγος", InputMode.BetaCode)).toBe("λόγος");
@@ -166,6 +175,9 @@ test("converts transliterated input when looked up", () => {
 test("converts the input when the input mode changes", () => {
   expect(convertSearchInput("λόγος", InputMode.Transliteration)).toBe("lógos");
   expect(convertSearchInput("ἡμέρα", InputMode.Transliteration)).toBe("hēméra");
+  // Upsilon as y, as the displayed transliteration (ALA-LC); in a diphthong, u.
+  expect(convertSearchInput("ψυχή", InputMode.Transliteration)).toBe("psychḗ");
+  expect(convertSearchInput("αὐτός", InputMode.Transliteration)).toBe("autós");
   // Typed with a circumflex, eta and omega take a macron (both looked up alike).
   expect(toTransliteratedInput("psuchê")).toBe("psuchē");
   expect(toTransliteratedInput("Hêra anthrôpos")).toBe("Hēra anthrōpos");
