@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import type { CommandPaletteGroup, CommandPaletteItem, PopoverProps } from "@nuxt/ui";
   import type { IdbEntry, IdbTag, TagKey } from "~/idb";
+  import type { ComponentPublicInstance } from "vue";
   import { LazyUCommandPalette } from "#components";
 
   /*
@@ -83,11 +84,10 @@
    * id may differ between the server and the client (then the reference is
    * broken, and the dialog would have no name).
    *
-   * Kept within the pages' scroller (cf. `PageScroller`), under the header,
-   * and below an entry's compact bar (2.5 rem, cf. `EntryCompactBar`): its
-   * boundary, rather than the window's (the panel is in the body). Hidden
-   * once its trigger has scrolled away under them (`hideWhenDetached`),
-   * rather than staying over the header.
+   * Placed within the pages' scroller (cf. `PageScroller`), under the
+   * header, and below an entry's compact bar (2.5 rem, cf.
+   * `EntryCompactBar`): its boundary, rather than the window's (the panel is
+   * in the body). Closed when the page scrolls (cf. below).
    */
   const pageScroller = usePageScroller();
   const COMPACT_BAR_HEIGHT = 40;
@@ -96,8 +96,8 @@
     "align": "end",
     "collisionBoundary": pageScroller.value,
     "collisionPadding": { top: COMPACT_BAR_HEIGHT + COLLISION_PADDING, right: COLLISION_PADDING, bottom: COLLISION_PADDING, left: COLLISION_PADDING },
-    "hideWhenDetached": true,
     "aria-label": "Toutes les étiquettes",
+    "onCloseAutoFocus": restoreFocus,
   }) as PopoverProps["content"]);
 
   /**
@@ -118,6 +118,44 @@
     ];
   });
   const panelOpen = ref(false);
+
+  /**
+   * The panel closed as soon as the page scrolls, as a system's menu: it
+   * neither follows its button under the header and the compact bar, nor
+   * shakes, placed again after each scroll (it is in the body). By more than
+   * `SCROLL_CLOSE_DISTANCE` (a touchpad's brush tolerated), not within
+   * `SCROLL_CLOSE_GRACE` of its opening (the page brought to the focused
+   * field, e.g. by iOS Safari, as its keyboard shows). The panel's own list
+   * scrolls in its element: not the page's scroll. The focus back on the
+   * button then, without scrolling the page back to it.
+   */
+  const SCROLL_CLOSE_DISTANCE = 12;
+  const SCROLL_CLOSE_GRACE = 400;
+  const trigger = useTemplateRef<ComponentPublicInstance>("trigger");
+  let openedAt = 0;
+  let scrollFrom = 0;
+  let closedByScroll = false;
+  watch(panelOpen, (open) => {
+    if (!open) return;
+    openedAt = performance.now();
+    scrollFrom = pageScroller.value?.scrollTop ?? 0;
+  });
+  useEventListener(pageScroller, "scroll", () => {
+    if (!panelOpen.value || !pageScroller.value) return;
+    const top = pageScroller.value.scrollTop;
+    if (performance.now() - openedAt < SCROLL_CLOSE_GRACE) scrollFrom = top;
+    else if (Math.abs(top - scrollFrom) > SCROLL_CLOSE_DISTANCE) {
+      closedByScroll = true;
+      panelOpen.value = false;
+    }
+  }, { passive: true });
+  function restoreFocus(event: Event): void {
+    if (!closedByScroll) return;
+    closedByScroll = false;
+    event.preventDefault();
+    (trigger.value?.$el as HTMLElement | undefined)?.focus({ preventScroll: true });
+  }
+
   const frozenOrder = shallowRef<TagKey[] | null>(null);
   watch(panelOpen, (open) => {
     frozenOrder.value = open ? orderedTags.value.map(tag => tag.key) : null;
@@ -281,6 +319,7 @@
       :ui="{ content: 'bg-(--app-panel-bg)' }"
     >
       <UButton
+        ref="trigger"
         icon="i-lucide-tags"
         color="neutral"
         variant="ghost"

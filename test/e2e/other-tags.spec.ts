@@ -19,17 +19,33 @@ test.describe("the tags of an entry", () => {
     expect(scripts).toEqual([]);
   });
 
-  test("hidden once its trigger has scrolled away under the header, not over it", async ({ page, goto }) => {
+  test("closed when the page scrolls, the focus back on its button without scrolling back", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
-    await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
+    const trigger = page.getByRole("button", { name: "Toutes les étiquettes" });
+    await trigger.click();
     await expect(allTags(page)).toBeVisible();
+    // (After the grace following its opening.)
+    await page.waitForTimeout(500);
     await page.locator("#page").evaluate((scroller) => {
       scroller.scrollTo(0, 400);
     });
     await expect(allTags(page)).toBeHidden();
+    await expect(trigger).toBeFocused();
+    expect(await page.locator("#page").evaluate(scroller => scroller.scrollTop)).toBe(400);
+  });
+
+  test("kept open by a scroll right after its opening, or by a brush", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
+    // The page brought to the focused field (iOS Safari).
     await page.locator("#page").evaluate((scroller) => {
-      scroller.scrollTo(0, 0);
+      scroller.scrollBy(0, 100);
     });
+    await page.waitForTimeout(500);
+    await page.locator("#page").evaluate((scroller) => {
+      scroller.scrollBy(0, 8);
+    });
+    await page.waitForTimeout(100);
     await expect(allTags(page)).toBeVisible();
   });
 
