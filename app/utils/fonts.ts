@@ -1,5 +1,6 @@
-import bookBold from "~/assets/fonts/Gentium_Book_Plus/BaillyBook-Bold.subset.woff2";
-import bookRoman from "~/assets/fonts/Gentium_Book_Plus/BaillyBook-Roman.subset.woff2";
+import bookBold from "~/assets/fonts/Gentium/BaillyBook-Bold.subset.woff2";
+import bookMedium from "~/assets/fonts/Gentium/BaillyBook-Medium.subset.woff2";
+import bookRegular from "~/assets/fonts/Gentium/BaillyBook-Regular.subset.woff2";
 import artemisiaBold from "~/assets/fonts/GFS_Artemisia/GFS_Artemisia-Bold.woff2";
 import artemisiaRoman from "~/assets/fonts/GFS_Artemisia/GFS_Artemisia-Roman.woff2";
 import bodoniBold from "~/assets/fonts/GFS_Bodoni/GFS_Bodoni-Bold.woff2";
@@ -25,32 +26,42 @@ function path(url: string): string {
  * preference). They replace the serif font across the application (`--font-serif`,
  * cf. `root.css` and `fonts.css`), IFAOGrec remaining the fallback for the
  * rare Greek characters and the private use area. Their files are those of
- * `fonts.css` (the same URLs, versioned by Vite), preloaded (cf. `app.vue`).
+ * `fonts.css` (the same URLs, versioned by Vite), preloaded (cf. `app.vue`):
+ * the face of the entries' text for each weight of the `readingWeight`
+ * preference (`text`), and the bold face (`bold`, the headwords, the
+ * titles). Bailly Book's text « appuyé » has a face of its own, Medium,
+ * between its Regular and its Bold; the others have two weights only, their
+ * text « appuyé » in their bold face.
  */
 export const READING_FONTS = {
   // A subset of Gentium Book Plus, renamed as its license requires (cf.
   // `scripts/subset-fonts.sh`, the README).
   book: {
     label: "Bailly Book",
-    files: { normal: path(bookRoman), bold: path(bookBold) },
+    text: { normal: path(bookRegular), bold: path(bookMedium) },
+    bold: path(bookBold),
   },
   didot: {
     label: "GFS Didot",
-    files: { normal: path(didotRoman), bold: path(didotBold) },
+    text: { normal: path(didotRoman), bold: path(didotBold) },
+    bold: path(didotBold),
   },
   artemisia: {
     label: "GFS Artemisia",
-    files: { normal: path(artemisiaRoman), bold: path(artemisiaBold) },
+    text: { normal: path(artemisiaRoman), bold: path(artemisiaBold) },
+    bold: path(artemisiaBold),
   },
   bodoni: {
     label: "GFS Bodoni",
-    files: { normal: path(bodoniRoman), bold: path(bodoniBold) },
+    text: { normal: path(bodoniRoman), bold: path(bodoniBold) },
+    bold: path(bodoniBold),
   },
   neohellenic: {
     label: "GFS NeoHellenic",
-    files: { normal: path(neohellenicRoman), bold: path(neohellenicBold) },
+    text: { normal: path(neohellenicRoman), bold: path(neohellenicBold) },
+    bold: path(neohellenicBold),
   },
-} as const satisfies Record<string, { label: string; files: Record<ReadingWeight, string> }>;
+} as const satisfies Record<string, { label: string; text: Record<ReadingWeight, string>; bold: string }>;
 
 export type ReadingFont = keyof typeof READING_FONTS;
 
@@ -61,4 +72,13 @@ export type ReadingFont = keyof typeof READING_FONTS;
  */
 export function readingFamily(): string | undefined {
   return getComputedStyle(document.documentElement).getPropertyValue("--font-serif").split(",")[0]?.trim() || undefined;
+}
+
+/**
+ * The weight of the entries' text (`--reading-font-weight`, cf. `root.css`:
+ * 400, or 500 or 700 for the text « appuyé »), for `document.fonts.load`. In
+ * the browser only.
+ */
+export function readingTextWeight(): string {
+  return getComputedStyle(document.documentElement).getPropertyValue("--reading-font-weight").trim() || "400";
 }

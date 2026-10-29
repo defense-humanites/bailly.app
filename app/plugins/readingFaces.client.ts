@@ -1,6 +1,7 @@
 /**
  * Once the page is interactive, while the browser is idle, fetches the
- * reading font's regular and bold faces: only the face of the entries' text
+ * reading font's faces of the text (its weight, cf. `readingTextWeight`)
+ * and of the bold: only the face of the entries' text
  * is preloaded (cf. `useAppShell`), and a face `fonts.css` declares with
  * `font-display: block` is only fetched when some text uses it, its text
  * staying invisible meanwhile (up to 3 s). The headwords of the search
@@ -12,7 +13,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     const fetchFaces = (): void => {
       const family = readingFamily();
       if (!family) return;
-      for (const weight of ["normal", "bold"]) {
+      for (const weight of [readingTextWeight(), "bold"]) {
         document.fonts.load(`${weight} 1em ${family}`, "α").catch(() => {});
       }
     };

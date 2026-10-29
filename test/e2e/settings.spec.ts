@@ -83,11 +83,17 @@ test.describe("settings", () => {
     await page.getByRole("radio", { name: "Très grande" }).click({ force: true });
     await page.getByText("Appuyée", { exact: true }).click();
     await expect(preview).toHaveCSS("font-size", "18.5px");
-    await expect(preview).toHaveCSS("font-weight", "700");
+    // Bailly Book's text « appuyé »: its Medium face, between its Regular
+    // and its Bold (the headwords' face, distinct).
+    await expect(preview).toHaveCSS("font-weight", "500");
 
-    // The entry pages are rendered with them.
+    // The entry pages are rendered with them, the Medium face preloaded, and
+    // the Bold one (the headwords).
     const html = await page.evaluate(async () => (await fetch("/logos")).text());
     expect(html).toMatch(/<html[^>]*data-reading-size="larger"/);
+    expect(html).toMatch(/href="\/_nuxt\/(?:\w+\/)?BaillyBook-Medium\.subset\.[\w-]+\.woff2"/);
+    expect(html).toMatch(/href="\/_nuxt\/(?:\w+\/)?BaillyBook-Bold\.subset\.[\w-]+\.woff2"/);
+    expect(html).not.toMatch(/BaillyBook-Regular/);
     await goto("/logos", { waitUntil: "hydration" });
     await expect(page.locator("main .definition").first()).toHaveCSS("font-size", "18.5px");
 
@@ -121,10 +127,10 @@ test.describe("settings", () => {
     const preloaded = () => page.locator("link[rel=preload][as=font]").evaluateAll(links => links.map(link => link.getAttribute("href")).sort());
     expect(await preloaded()).toEqual([
       expect.stringMatching(/^\/_nuxt\/(?:\w+\/)?BaillyBook-Bold\.subset\.[\w-]+\.woff2$/),
-      expect.stringMatching(/^\/_nuxt\/(?:\w+\/)?BaillyBook-Roman\.subset\.[\w-]+\.woff2$/),
+      expect.stringMatching(/^\/_nuxt\/(?:\w+\/)?BaillyBook-Regular\.subset\.[\w-]+\.woff2$/),
     ]);
     await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
-    expect(await preloaded()).toEqual([expect.stringMatching(/^\/_nuxt\/(?:\w+\/)?BaillyBook-Roman\.subset\.[\w-]+\.woff2$/)]);
+    expect(await preloaded()).toEqual([expect.stringMatching(/^\/_nuxt\/(?:\w+\/)?BaillyBook-Regular\.subset\.[\w-]+\.woff2$/)]);
 
     await goto("/préférences", { waitUntil: "hydration" });
     await page.getByRole("combobox", { name: "Police" }).click();
@@ -164,7 +170,7 @@ test.describe("settings", () => {
       text.textContent = "ǵ";
       document.querySelector("main")!.append(text);
     });
-    await expect.poll(() => extra).toEqual([expect.stringMatching(/BaillyBook-Roman\.extra\.[\w-]+\.woff2$/)]);
+    await expect.poll(() => extra).toEqual([expect.stringMatching(/BaillyBook-Regular\.extra\.[\w-]+\.woff2$/)]);
   });
 
   // In their italic and bold faces, U+2009 is drawn (in Didot Italic, an

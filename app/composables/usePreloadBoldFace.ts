@@ -6,7 +6,8 @@ import { READING_FONTS } from "~/utils/fonts";
  * their text (cf. `useAppShell`): a face declared with `font-display: block`
  * is otherwise fetched when some text first uses it, its text staying
  * invisible meanwhile (up to 3 s, on slow networks), then laid out anew.
- * Not when the entries' text is itself bold (already preloaded).
+ * Not when the entries' text is itself in the bold face (already
+ * preloaded: the text « appuyé » of the fonts without a medium weight).
  */
 export function usePreloadBoldFace(): void {
   const { preference } = usePreferences();
@@ -14,8 +15,11 @@ export function usePreloadBoldFace(): void {
   const readingWeight = preference("readingWeight");
 
   useHead({
-    link: computed(() => readingWeight.value === "bold"
-      ? []
-      : [{ rel: "preload", as: "font", type: "font/woff2", href: READING_FONTS[readingFont.value].files.bold, crossorigin: "anonymous" }]),
+    link: computed(() => {
+      const font = READING_FONTS[readingFont.value];
+      return font.text[readingWeight.value] === font.bold
+        ? []
+        : [{ rel: "preload", as: "font", type: "font/woff2", href: font.bold, crossorigin: "anonymous" }];
+    }),
   });
 }

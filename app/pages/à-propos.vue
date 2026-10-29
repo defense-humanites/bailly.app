@@ -128,8 +128,8 @@
   const FONTS: FontCredit[] = [
     {
       title: "Bailly Book",
-      description: "Fonte de lecture par défaut, sous-ensemble renommé de Gentium Book Plus",
-      authors: "SIL International",
+      description: "Fonte de lecture par défaut, sous-ensemble renommé de Gentium",
+      authors: "SIL Global",
       licence: OFL,
       links: [
         { label: "Licence", href: OFL_URL },

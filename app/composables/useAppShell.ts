@@ -54,7 +54,7 @@ export function useAppShell(): void {
       // The face of the entries' text (the chosen font and weight), known
       // by the server: fetched as soon as possible.
       computed(() => {
-        const href = READING_FONTS[readingFont.value].files[readingWeight.value];
+        const href = READING_FONTS[readingFont.value].text[readingWeight.value];
         return { rel: "preload", as: "font", type: "font/woff2", href, crossorigin: "anonymous" };
       }),
       { rel: "icon", type: "image/png", href: "/favicon/favicon-96x96.png" },

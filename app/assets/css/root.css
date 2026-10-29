@@ -324,6 +324,11 @@
   --reading-font-weight: 700;
 }
 
+/* Bailly Book's text « appuyé »: its Medium face (cf. `fonts.css`). */
+:root[data-reading-weight="bold"][data-reading-font="book"] {
+  --reading-font-weight: 500;
+}
+
 /*
  * The search bar and its panels (results, history, options), raised above
  * the page (4 October 2026): « marble 10 » in the light theme, half a shade lighter

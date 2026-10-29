@@ -26,7 +26,7 @@ de Modification_ (CC&nbsp;BY-NC-ND&nbsp;4.0).
 
 Cette application utilise les fontes de lecture « Bailly Book » (par défaut),
 sous-ensemble renommé de
-[Gentium Book Plus](https://software.sil.org/gentium/) (SIL International),
+[Gentium](https://software.sil.org/gentium/) (SIL Global),
 [GFS Artemisia](https://www.greekfontsociety-gfs.gr/typefaces/20th_21st_century),
 [GFS Bodoni](https://www.greekfontsociety-gfs.gr/typefaces/19th_century),
 [GFS Didot](https://www.greekfontsociety-gfs.gr/typefaces/19th_century) et
@@ -38,9 +38,9 @@ que la fonte
 (Jean-Luc Fournet, Ralph Hancock & Adam Bülow-Jacobsen), qui est libre de tous
 droits, pour rendre les caractères les plus spécifiques. 
 
-Gentium Book Plus et
+Gentium et
 Inter sont servies en sous-ensembles (`scripts/subset-fonts.sh`) ; « Gentium »
-étant un nom réservé de sa licence, le sous-ensemble de Gentium Book Plus porte
+étant un nom réservé de sa licence, le sous-ensemble de Gentium porte
 le nom « Bailly Book ».
 
 Les fichiers des fontes, accompagnés de leurs licences, se trouvent dans

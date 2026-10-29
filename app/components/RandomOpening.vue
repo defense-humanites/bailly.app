@@ -11,8 +11,6 @@
 
   const { $api } = useNuxtApp();
   const greek = useGreek();
-  const { preference } = usePreferences();
-  const readingWeight = preference("readingWeight");
   const { apiHost } = useRuntimeConfig().public;
 
   /**
@@ -75,7 +73,7 @@
   function loadFaces(): Promise<unknown> {
     const family = readingFamily();
     if (!family) return Promise.resolve();
-    const text = readingWeight.value === "bold" ? "bold" : "normal";
+    const text = readingTextWeight();
     const faces = [text, "bold", `italic ${text}`].map(face => document.fonts.load(`${face} 1em ${family}`, "α").catch(() => {}));
     return Promise.race([Promise.all(faces), new Promise(resolve => setTimeout(resolve, 3000))]);
   }

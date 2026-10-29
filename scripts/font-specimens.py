@@ -30,7 +30,7 @@ WORD = "λόγος"
 # Name shown, file, `size-adjust` (cf. `fonts.css`).
 # In the order of the preferences: the default font, then alphabetically.
 SPECIMENS = [
-    ("Bailly Book", "Gentium_Book_Plus/BaillyBook-Roman.subset.woff2", 1.176),
+    ("Bailly Book", "Gentium/BaillyBook-Regular.subset.woff2", 1.176),
     ("GFS Artemisia", "GFS_Artemisia/GFS_Artemisia-Roman.woff2", 1.129),
     ("GFS Bodoni", "GFS_Bodoni/GFS_Bodoni-Roman.woff2", 1.116),
     ("GFS Didot", "GFS_Didot/GFS_Didot-Roman.woff2", 1.179),

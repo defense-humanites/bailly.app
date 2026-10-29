@@ -15,7 +15,9 @@
 #   the browsers apply by default are kept, with the tabular numerals
 #   (`tabular-nums`) and the case forms. Roman: 346 KB -> about 142 KB.
 #
-# - Gentium Book Plus (SIL), the default reading font, covers many scripts.
+# - Gentium (SIL, version 7), the default reading font, covers many scripts:
+#   its Regular, Medium (the text, « Normale » or « Appuyée » in the
+#   preferences) and Bold faces (the bold text), with their italics.
 #   Its subset keeps the Latin scripts (with the extended blocks, for
 #   transliterations), the Greek, the combining diacritics, the punctuation
 #   and the symbols, and the Cyrillic р and с (U+0440, U+0441), which the
@@ -74,14 +76,14 @@ for face in Roman Italic; do
   rm "$file.wght.woff2"
 done
 
-for face in Roman Italic Bold BoldItalic; do
-  src="$FONTS/Gentium_Book_Plus/GentiumBookPlus-$face.woff2"
+for face in Regular Italic Medium MediumItalic Bold BoldItalic; do
+  src="$FONTS/Gentium/Gentium-$face.woff2"
   for part in subset extra; do
-    out="$FONTS/Gentium_Book_Plus/BaillyBook-$face.$part.woff2"
+    out="$FONTS/Gentium/BaillyBook-$face.$part.woff2"
     if [ $part = subset ]; then unicodes=$BOOK; else unicodes=$BOOK_EXTRA; fi
     subset "$src" "$out" "$unicodes" --layout-features+=smcp,c2sc,tnum,lnum,onum,case --name-IDs='*' --no-hinting
     # Renamed (the Reserved Font Names "Gentium" and "SIL" left out of its
-    # names), the copyright and the license kept.
+    # names, its trademark's notice too), the copyright and the license kept.
     python3 - "$out" <<'EOF'
 import sys
 from fontTools.ttLib import TTFont
@@ -91,13 +93,13 @@ name = font["name"]
 for record in list(name.names):
     if record.nameID in (0, 13, 14):
         continue
-    text = record.toUnicode().replace("Gentium Book Plus", "Bailly Book").replace("GentiumBookPlus", "BaillyBook")
+    text = record.toUnicode().replace("Gentium-", "BaillyBook-").replace("Gentium", "Bailly Book")
     if "Gentium" in text or "SIL" in text:
         name.removeNames(nameID=record.nameID, platformID=record.platformID, platEncID=record.platEncID, langID=record.langID)
     else:
         record.string = text
 name.setName(f"Bailly Book {name.getDebugName(2)}: {name.getDebugName(5)}", 3, 3, 1, 0x409)
-name.setName("Bailly Book: a subset of Gentium Book Plus (SIL International), renamed as the SIL Open Font License requires.", 10, 3, 1, 0x409)
+name.setName("Bailly Book: a subset of Gentium 7 (SIL Global), renamed as the SIL Open Font License requires.", 10, 3, 1, 0x409)
 font.save(path)
 EOF
   done

@@ -1,25 +1,18 @@
 /**
- * Short real entries (27) to preview the reading settings (cf. the
+ * Short real entries (17) to preview the reading settings (cf. the
  * preferences page), one drawn at each visit. Each takes three lines on a desktop screen
  * (the definition on two, the etymology on one) whatever the font, size and
  * weight, so that the preview keeps its height when they change (checked by
  * a test, `settings.spec.ts`, with every reading font), with a margin: they
  * keep their three lines in a preview 16 px narrower (three entries, within
  * 4 px of a fourth line at the largest size, took one in Chrome 153, the
- * CI's, and were removed on 6 October 2026). Their HTML comes from the API
+ * CI's, and were removed on 6 October 2026), and their three lines in a
+ * preview 8 px wider (ten entries, taking two lines at the smallest size with
+ * Bailly Book's Regular, narrower than Gentium Book's former face, were
+ * removed on 29 October 2026). Their HTML comes from the API
  * (`htmlDefinition`), as it was on 1 October 2026.
  */
 export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string }[] = [
-  {
-    word: "ὀψομανής",
-    uri: "opsomanês",
-    html: "<span class=\"entreea\"><span class=\"grec\">ὀψο·μανής,</span></span> <span class=\"des\">ής, ές</span>\n[<span class=\"grec\">ᾰ</span>] passionné pour la bonne chère,\ngourmet, <span class=\"aut\">Ath.</span> <span class=\"refpa\">464</span><span class=\"refpb\">e</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/opson\">ὄψον</a>, <a href=\"/mainomai\">μαίνομαι</a></span>.</div>\n",
-  },
-  {
-    word: "ἀμετροπαθής",
-    uri: "ametropathês",
-    html: "<span class=\"entreea\"><span class=\"grec\">ἀμετρο·παθής,</span></span> <span class=\"des\">ής, ές</span>\n[<span class=\"grec\">πᾰ</span>] passionné outre mesure, <span class=\"aut\">Alcin.</span> <span class=\"oeuv\">Intr. Plat.</span>\n<span class=\"refch\">p. 118</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">ἄ. <a href=\"/pathos\">πάθος</a></span>.</div>\n",
-  },
   {
     word: "ἀλληλοφονία",
     uri: "allêlophonia",
@@ -36,11 +29,6 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
     html: "<span class=\"entreea\"><span class=\"grec\">ἰσο·φέριστος,</span></span> <span class=\"des\">ος, ον</span>\n[<span class=\"grec-longueur\">ῑσο</span>] égal au meilleur,\négalement excellent, <span class=\"aut\">Naz.</span> <span class=\"refch\">3, 401 Migne</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">ἴ. <a href=\"/pheristos\">φέριστος</a></span>.</div>\n",
   },
   {
-    word: "ὀξυμέριμνος",
-    uri: "oxumerimnos",
-    html: "<span class=\"entreea\"><span class=\"grec\">ὀξυ·μέριμνος,</span></span> <span class=\"des\">ος, ον</span>\n[<span class=\"grec\">ῠ</span>] qui demande un esprit aiguisé,\nsubtil, <span class=\"aut\">Ar.</span> <span class=\"oeuv\">Ran.</span>\n<span class=\"refch\">877</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">ὀ. <a href=\"/merimna\">μέριμνα</a></span>.</div>\n",
-  },
-  {
     word: "ὀνόπορδον",
     uri: "onopordon",
     html: "<span class=\"entreea\"><span class=\"grec\">ὀνό·πορδον,</span></span> <span class=\"gens\">ου</span>\n(<span class=\"grec\"><span data-linked-entries=\"ho_(1),to\">τὸ</span></span>) sorte de grand chardon (<span class=\"ital\">propr.</span> pet d’âne), <span class=\"aut\">Plin.</span>\n<span class=\"oeuv\">H.N.</span> <span class=\"refch\">27, 87</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/onos\">ὄνος</a>, <a href=\"/perididomai\">πέρδω</a></span>.</div>\n",
@@ -49,11 +37,6 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
     word: "μεγαλοκίνδυνος",
     uri: "megalokindunos",
     html: "<span class=\"entreea\"><span class=\"grec\">μεγαλο·κίνδυνος,</span></span> <span class=\"des\">ος,\nον</span> [<span class=\"grec-longueur\">ᾰῡ</span>] qui s’expose à de\ngrands dangers, <span class=\"aut\">Arstt.</span> <span class=\"oeuv\">Nic.</span> <span class=\"refch\">4, 3, 23</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">μ. κ.</span></div>\n",
-  },
-  {
-    word: "ὀρνιθογνώμων",
-    uri: "ornithognômôn",
-    html: "<span class=\"entreea\"><span class=\"grec\">ὀρνιθο·γνώμων,</span></span> <span class=\"des\">ων,\nον,</span> <span class=\"ital\">gén.</span> <span class=\"gens\">ονος,</span> qui se connaît en oiseaux, <span class=\"aut\">El.</span> <span class=\"oeuv\">N.A.</span> <span class=\"refch\">16, 2</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/ornis\">ὄρνις</a>, <a href=\"/gnômê\">γνώμη</a></span>.</div>\n",
   },
   {
     word: "μεγαλοεργέω",
@@ -106,39 +89,9 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
     html: "<span class=\"entreea\"><span class=\"grec\">οὐδέ·πη</span></span> <span class=\"ital\">ou</span>\n<span class=\"es\">οὐδέ πη,</span> <span class=\"ital\">adv.</span> en\naucune façon, <span class=\"aut\">Il.</span> <span class=\"refch\">6,\n267,</span> <span class=\"ital\">etc. ;</span> <span class=\"aut\">Od.</span> <span class=\"refch\">12, 232 ;</span> <span class=\"aut\">Hh.</span> <span class=\"refch\">6, 58</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><span data-linked-entries=\"oude,oudos\">οὐδέ</span>, πῆ</span>.</div>\n",
   },
   {
-    word: "ἡμιδανάκη",
-    uri: "hêmidanakê",
-    html: "<span class=\"entreea\"><span class=\"grec\">ἡμι·δανάκη,</span></span> <span class=\"gens\">ης</span>\n<span class=\"art\">(<span class=\"grec\"><span data-linked-entries=\"hê_(1),ho_(1)\">ἡ</span></span>)</span>\n[<span class=\"grec-longueur\">ᾰν</span>] demi-<span class=\"grec\">δανάκη,</span> <span class=\"ital\">monnaie barbare,</span>\n<span class=\"aut\">Théon</span> <span class=\"oeuv\">Prog.</span>\n<span class=\"refch\">13 conj.</span>\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/hêmi-\">ἡμι-</a></span>, <span class=\"grec\">δ.</span></div>\n",
-  },
-  {
     word: "Δαμοίτας",
     uri: "Damoitas",
     html: "<span class=\"entreea\"><span class=\"grec\">Δαμοίτας,</span></span> <span class=\"gens\">α</span>\n<span class=\"art\">(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)</span>\n[<span class=\"grec-longueur\">ᾱᾱ</span>] Damœtas :\n<div class=\"pp\"><span class=\"ppa\">1</span> berger, <span class=\"aut\">Thcr.</span> <span class=\"oeuv\">Idyl.</span> <span class=\"refch\">6, 1</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> pêcheur, <span class=\"aut\">Anth.</span> <span class=\"refch\">6, 193</span>.</div>\n",
-  },
-  {
-    word: "ἀνταγανακτέω-ῶ",
-    uri: "antaganakteô-ô",
-    html: "<span class=\"entreea\"><span class=\"grec\">ἀντ·αγανακτέω-ῶ</span></span> [<span class=\"grec\">ᾰγᾰν</span>] s’indigner à son tour, <span class=\"aut\">Œnom.</span> (<span class=\"aut\">Eus.</span> <span class=\"refch\">3, 437 Migne</span>).\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/anti\">ἀντί</a>, ἀγ.</span></div>\n",
-  },
-  {
-    word: "Ἀρχιτέλης",
-    uri: "Architelês",
-    html: "<span class=\"entreea\"><span class=\"grec\">Ἀρχι·τέλης,</span></span> <span class=\"gens\">ους,</span>\n<span class=\"ital\">acc.</span> <span class=\"des\">ην</span>\n(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>) Arkhitélès, <span class=\"ital\">h.</span> <span class=\"aut\">Plut.</span> <span class=\"oeuv\">Them.</span> <span class=\"refch\">7 ;</span> <span class=\"aut\">Luc.</span> <span class=\"oeuv\">Scyth.</span> <span class=\"refch\">2,</span> <span class=\"ital\">etc.</span>\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/archô\">ἄρχω</a>, <a href=\"/telos\">τέλος</a></span>.</div>\n",
-  },
-  {
-    word: "ψυχάω-ῶ",
-    uri: "psuchaô-ô",
-    html: "<span class=\"entreea\"><span class=\"grec\">ψυχάω-ῶ</span></span> [<span class=\"grec-longueur\">ῡ</span>]\nrafraîchir, <span class=\"ital\">seul. moy.</span> <span class=\"grec\">ψυχάομαι</span> <span class=\"grec\">-ῶμαι</span>, se\nrafraîchir, <span class=\"aut\">El.</span> <span class=\"oeuv\">V.H.</span> <span class=\"refch\">3, 1</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/psuchos\">ψῦχος</a></span>.</div>\n",
-  },
-  {
-    word: "δυσώνης",
-    uri: "dusônês",
-    html: "<span class=\"entreea\"><span class=\"grec\">δυσ·ώνης,</span></span> <span class=\"gens\">ου</span>\n(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>) [<span class=\"grec\">ῠ</span>] mauvais\nacheteur, qui marchande, <span class=\"aut\">Lync.</span>\n(<span class=\"aut\">Ath.</span> <span class=\"refpa\">228</span><span class=\"refpb\">c</span>).\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\">δ. <a href=\"/ôneomai\">ὠνέομαι</a></span>.</div>\n",
-  },
-  {
-    word: "διανάγκασις",
-    uri: "dianankasis",
-    html: "<span class=\"entreea\"><span class=\"grec\">διανάγκασις,</span></span> <span class=\"gens\">εως</span>\n<span class=\"art\">(<span class=\"grec\"><span data-linked-entries=\"hê_(1),ho_(1)\">ἡ</span></span>)</span>\n[<span class=\"grec-longueur\">ᾰν</span>] action de réduire un membre\nluxé, <span class=\"aut\">Hpc.</span> <span class=\"refpa\">863</span><span class=\"refpb\">g</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/dianankazô\">διαναγκάζω</a></span>.</div>\n",
   },
   {
     word: "ἀναλακτίζω",
