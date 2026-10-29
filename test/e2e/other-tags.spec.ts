@@ -151,6 +151,27 @@ test.describe("the tags of an entry", () => {
     }
   });
 
+  test("many tags, its button low on a phone: the panel within the room left, its field in view", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 390, height: 500 });
+    await goto("/logos", { waitUntil: "hydration" });
+    await seedBookmarks(page, { tags: Array.from({ length: 20 }, (_, index) => ({ name: `Étiquette ${index}`, color: "Green" })) });
+    const trigger = page.getByRole("button", { name: "Toutes les étiquettes" });
+    // The toolbar near the screen's bottom (the panel opening upward).
+    await page.locator("#page").evaluate((scroller) => {
+      scroller.style.paddingTop = "600px";
+      scroller.scrollBy(0, document.querySelector("button[aria-label='Toutes les étiquettes']")!.getBoundingClientRect().bottom - 470);
+    });
+    const scrolled = await page.locator("#page").evaluate(scroller => scroller.scrollTop);
+    await trigger.click();
+    const filter = allTags(page).getByRole("textbox");
+    await expect(filter).toBeFocused();
+    await expect(filter).toBeInViewport({ ratio: 1 });
+    const [panelTop, scrollerTop] = await Promise.all([allTags(page).boundingBox(), page.locator("#page").boundingBox()]);
+    expect(panelTop!.y).toBeGreaterThanOrEqual(scrollerTop!.y);
+    // Focused without scrolling the page.
+    expect(await page.locator("#page").evaluate(scroller => scroller.scrollTop)).toBe(scrolled);
+  });
+
   test("from eight tags, a field filters them, ignoring case and accents; Enter toggles the option", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     const names = ["Éthique", "Médecine", "Poésie", "Rhétorique", "Histoire", "Tragédie", "Comédie", "Épopée"];

@@ -331,9 +331,9 @@
       />
 
       <template #content>
-        <div class="group/tags w-64 max-w-[calc(var(--app-width)-2rem)] p-1">
+        <div class="group/tags flex max-h-(--reka-popover-content-available-height) w-64 max-w-[calc(var(--app-width)-2rem)] flex-col p-1">
           <h2
-            class="px-2 pt-1.5 pb-1 text-xs uppercase tracking-wide text-muted"
+            class="shrink-0 px-2 pt-1.5 pb-1 text-xs uppercase tracking-wide text-muted"
           >
             Étiquettes
           </h2>
@@ -347,6 +347,15 @@
             accents), the arrows moving in the list. The list box has no name
             of its own (Reka's `ListboxContent` takes no attributes): the
             dialog is named, and the heading above it names the list.
+            The field focused as the panel opens, by Reka (its first
+            focusable), without scrolling the page: not by the list itself
+            (`autofocus`, a bare `focus()`, which Safari could scroll the page
+            with, to the panel's place before it is placed: the top). The
+            panel at most as tall as the room left beside its button (above,
+            under the header and the compact bar), its list scrolling the
+            rest, without passing its scroll to the page's (which would close
+            the panel): its field always in view (many tags, a phone's
+            keyboard shown).
           -->
           <LazyUCommandPalette
             v-if="panelTags.length"
@@ -357,11 +366,12 @@
             highlight-on-hover
             :input="filterable && filterInput"
             placeholder="Filtrer les étiquettes"
-            :autofocus="filterable"
+            :autofocus="false"
             :fuse="fuseOptions"
             :ui="{
               input: '[&_input]:text-sm',
-              viewport: 'max-h-72 p-0',
+              content: 'min-h-0',
+              viewport: 'max-h-72 overscroll-contain p-0',
               item: 'rounded-md px-2 py-1.5 before:rounded-md data-highlighted:not-data-disabled:before:bg-(--app-panel-highlight) group-has-[footer_a:hover]/tags:before:bg-transparent!',
               itemTrailingIcon: 'hidden',
               empty: 'px-2 py-1.5 text-start text-sm',
@@ -414,7 +424,7 @@
             list's highlight (on its first tag from the start, as Reka
             highlights it) is hidden, one highlight at a time.
           -->
-          <footer class="mt-1 border-t border-default px-1 pt-1">
+          <footer class="mt-1 shrink-0 border-t border-default px-1 pt-1">
             <NuxtLink
               to="/signets"
               class="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-highlighted transition-colors hover:bg-(--app-panel-highlight) focus-visible:bg-(--app-panel-highlight) focus-visible:outline-none"
