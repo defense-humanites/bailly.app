@@ -82,6 +82,27 @@
   watch(editionOpen, (open) => {
     if (!open) hovered = false;
   });
+
+  /**
+   * A click on the button, the popover opened by hovering it a moment
+   * before (the pointer entering it first), keeps it open, rather than
+   * toggling it closed at once; a second click closes it.
+   */
+  let clickKeepsOpen = false;
+
+  function onEditionPointerDown(event: PointerEvent): void {
+    clickKeepsOpen = event.pointerType === "mouse" && editionOpen.value && hovered;
+  }
+
+  function onEditionOpen(open: boolean): void {
+    if (!open && clickKeepsOpen) {
+      clickKeepsOpen = false;
+      hovered = false;
+      return;
+    }
+    clickKeepsOpen = false;
+    editionOpen.value = open;
+  }
 </script>
 
 <template>
@@ -168,10 +189,11 @@
         class="order-1 font-serif text-2xl/[1.25] font-bold text-balance md:order-none md:mb-5 md:text-3xl/[1.25] lg:mb-0 lg:text-[length:min(2.25rem,5.6cqi)]"
       >
         <span id="titre-accueil">Consultez le dictionnaire <br class="max-lg:hidden">grec-français d'Anatole&nbsp;Bailly</span><span class="whitespace-nowrap">&nbsp;<UPopover
-          v-model:open="editionOpen"
+          :open="editionOpen"
           :content="{ side: 'top', sideOffset: 6, onOpenAutoFocus }"
           :ui="{ content: BUBBLE, arrow: BUBBLE_ARROW }"
           arrow
+          @update:open="onEditionOpen"
         >
           <UButton
             color="neutral"
@@ -182,6 +204,7 @@
             :ui="{ leadingIcon: 'size-full' }"
             @pointerenter="hover($event, true)"
             @pointerleave="hover($event, false)"
+            @pointerdown="onEditionPointerDown"
           />
           <template #content>
             <p
