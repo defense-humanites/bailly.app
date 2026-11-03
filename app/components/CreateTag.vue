@@ -99,6 +99,10 @@
     :ui="{ content: `${BUBBLE} px-3 py-2 text-sm text-error` }"
   >
     <template #anchor>
+      <!--
+        « Intitulé », not « Nom », in its accessible name, and without
+        autocompletion: Safari offered the contacts (AutoFill) for it.
+      -->
       <UInput
         ref="field"
         v-bind="$attrs"
@@ -107,7 +111,8 @@
         variant="soft"
         :color="error ? 'error' : 'neutral'"
         placeholder="Nouvelle étiquette"
-        aria-label="Nom de la nouvelle étiquette"
+        aria-label="Intitulé de la nouvelle étiquette"
+        autocomplete="off"
         :aria-describedby="`${errorId} ${hintId}`"
         :aria-invalid="!!error"
         enterkeyhint="done"

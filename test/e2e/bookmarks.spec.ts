@@ -95,7 +95,7 @@ test.describe("bookmarks page", () => {
     await edit.focus();
     await page.keyboard.press("Enter");
     await expect(edit).toHaveAttribute("aria-pressed", "true");
-    const name = card(page, "Vide").getByRole("textbox", { name: "Nom de l'étiquette" });
+    const name = card(page, "Vide").getByRole("textbox", { name: "Intitulé de l'étiquette" });
     await name.fill("Vide renommée");
     await name.press("Enter");
     await page.keyboard.press("Escape");
@@ -118,7 +118,7 @@ test.describe("bookmarks page", () => {
   // focus on Enter; Escape gives it up.
   test("renaming a tag: a taken name told on the field", async ({ page }) => {
     await page.getByRole("button", { name: "Modifier l'étiquette « Vide »" }).click();
-    const name = card(page, "Vide").getByRole("textbox", { name: "Nom de l'étiquette" });
+    const name = card(page, "Vide").getByRole("textbox", { name: "Intitulé de l'étiquette" });
     // One field, the color included: its ring goes round both.
     const field = name.locator("..");
     await expect(field.getByRole("button", { name: /^Couleur de l'étiquette/ })).toBeVisible();
@@ -234,7 +234,7 @@ test.describe("bookmarks page", () => {
     // Without a description, the card keeps its height too (with
     // `grid-lanes`, the next cards could otherwise change columns).
     await page.getByRole("button", { name: "Modifier l'étiquette « Vocabulaire homérique et tragique »" }).click();
-    const name = group.getByRole("textbox", { name: "Nom de l'étiquette" });
+    const name = group.getByRole("textbox", { name: "Intitulé de l'étiquette" });
     await expect(name).toHaveValue("Vocabulaire homérique et tragique");
     expect(await name.evaluate(element => element.getBoundingClientRect().height)).toBe(32);
     expect(await height()).toBe(before);
@@ -324,7 +324,7 @@ test.describe("bookmarks page", () => {
 
   // No submit button: Enter adds the tag, as the key drawn in the field says.
   test("creating a tag with Enter, its hint named", async ({ page }) => {
-    const field = page.getByRole("textbox", { name: "Nom de la nouvelle étiquette" });
+    const field = page.getByRole("textbox", { name: "Intitulé de la nouvelle étiquette" });
     await expect(field).toHaveAccessibleDescription(/^Entrée pour ajouter/);
     await expect(field).toHaveAttribute("enterkeyhint", "done");
     await field.fill("Pindare");
@@ -345,7 +345,7 @@ test.describe("bookmarks page", () => {
   // The error where the eyes are: on the field, as soon as the name is taken
   // (case and diacritics ignored) or reserved; gone once it changes.
   test("creating a tag: a taken name told on the field, before Enter", async ({ page }) => {
-    const field = page.getByRole("textbox", { name: "Nom de la nouvelle étiquette" });
+    const field = page.getByRole("textbox", { name: "Intitulé de la nouvelle étiquette" });
     await field.fill("vidé");
     await expect(field).toHaveAttribute("aria-invalid", "true");
     await expect(field).toHaveAccessibleDescription(/L'étiquette « Vide » existe déjà\./);
@@ -591,7 +591,7 @@ test.describe("bookmarks page, quotas", () => {
   test("the tags' quota in the new tag field", async ({ page, goto }) => {
     await goto("/signets", { waitUntil: "hydration" });
     await seedBookmarks(page, { tags: [{ name: "Un", color: "Sky" }, { name: "Deux", color: "Rose" }] });
-    const field = page.getByRole("textbox", { name: "Nom de la nouvelle étiquette" });
+    const field = page.getByRole("textbox", { name: "Intitulé de la nouvelle étiquette" });
     await expect(page.getByText("2/50", { exact: true })).toBeVisible();
     await expect(field).toHaveAccessibleDescription(/\(2 étiquettes sur 50 au plus\)/);
 

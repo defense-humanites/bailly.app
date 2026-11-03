@@ -640,11 +640,13 @@
                       />
                     </template>
                   </TagColorPicker>
+                  <!-- « Intitulé », not « Nom », as the new tag's field (cf. `CreateTag`). -->
                   <input
                     ref="tag-name-input"
                     v-model="tagName"
                     type="text"
-                    aria-label="Nom de l'étiquette"
+                    aria-label="Intitulé de l'étiquette"
+                    autocomplete="off"
                     :aria-describedby="nameErrorId"
                     :aria-invalid="!!nameError"
                     :maxlength="IdbTags.nameMaxLength"

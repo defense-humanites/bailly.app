@@ -503,7 +503,7 @@ test("the synchronization waits while a tag is being edited", async ({ page, got
 
   // The laptop edits a tag while the phone adds a favorite.
   await page.getByRole("button", { name: "Modifier l'étiquette « Homère »" }).click();
-  await expect(page.getByRole("textbox", { name: "Nom de l'étiquette" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Intitulé de l'étiquette" })).toBeVisible();
   await seedBookmarks(phone, { starred: [psuche] });
   // (Once its settings are loaded, after the reload.)
   await expect.poll(() => syncNow(phone)).toBe(true);
