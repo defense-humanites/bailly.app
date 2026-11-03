@@ -24,7 +24,7 @@ export const NOTICES = {
   installedOnIos: "Application installée : des données à part",
   /**
    * The bookmarks introduced at the first star, in a bubble on the star
-   * (`TagButtonGroup`): shown once (marked as dismissed as it opens).
+   * (`TagButtonGroup`): read once one of its buttons is chosen.
    */
   starIntro: "Premier favori : présentation des signets",
 } as const;

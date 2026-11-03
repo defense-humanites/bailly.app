@@ -324,10 +324,12 @@
   };
 
   /**
-   * Whether the bookmarks were introduced at a first star (a bubble on the
-   * star, `starIntroOpen`): once, to a user who has neither favorites nor
-   * tags yet (who has them has found the bookmarks page). Marked as such as
-   * it opens, synchronized as a dismissed notice (cf. `useDismissed`).
+   * Whether the bookmarks were introduced at a star (a bubble on the star,
+   * `starIntroOpen`), to a user who has no tags yet (who has them has found
+   * the bookmarks page): read once one of its buttons is chosen (« Compris »,
+   * « Voir les signets »), synchronized as a dismissed notice (cf.
+   * `useDismissed`). Closed otherwise (the star clicked again, a click
+   * elsewhere, Escape, a scroll), it shows again at the next star.
    */
   const starIntroShown = useDismissed("starIntro");
   const starIntroOpen = ref(false);
@@ -352,6 +354,14 @@
     },
   }));
 
+  /**
+   * The bubble closed by one of its buttons: read.
+   */
+  const readStarIntro = (): void => {
+    starIntroShown.value = true;
+    starIntroOpen.value = false;
+  };
+
   const toggleStar = async (): Promise<void> => {
     if (starred.value) {
       starIntroOpen.value = false;
@@ -359,11 +369,9 @@
       return;
     }
 
-    const introduce = initialized.value && !starIntroShown.value
-      && !tags.value.length && !bookmarksStore.starredEntries.length;
+    const introduce = initialized.value && !starIntroShown.value && !tags.value.length;
     const result = await bookmarksStore.starEntry(props.entry);
     if (introduce && result.state === "success") {
-      starIntroShown.value = true;
       starIntroOpen.value = true;
       starIntroDismiss.opened();
     }
@@ -612,14 +620,14 @@
               color="neutral"
               variant="outline"
               size="sm"
-              @click="starIntroOpen = false"
+              @click="readStarIntro"
             />
             <UButton
               label="Voir les signets"
               icon="i-lucide-bookmark"
               to="/signets"
               size="sm"
-              @click="starIntroOpen = false"
+              @click="readStarIntro"
             />
           </div>
         </div>
