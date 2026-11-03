@@ -5,6 +5,7 @@
   import { splitExcerpt } from "~/helpers";
   import type { SearchField } from "~/composables/useEntrySearch";
   import { entryRoute, homonymAnchor } from "~/utils/entryUri";
+  import { formatCount } from "~/utils/numbers";
   import { takeSearchHandoff } from "~/utils/searchHandoff";
   import { convertSearchInput, hasWildcards, toLookupQuery, toSearchGreek, toSearchQuery, toTransliteratedInput } from "~/utils/searchInput";
 
@@ -526,7 +527,7 @@
               class="size-3.5 animate-spin"
             />
             <template v-else>
-              {{ result?.countAll }}
+              {{ formatCount(result?.countAll ?? 0) }}
             </template>
           </UBadge>
         </span>
@@ -611,7 +612,7 @@
           v-if="hasMoreResults"
           class="shrink-0 border-t border-default p-2 text-center text-sm text-muted"
         >
-          Précisez votre recherche pour voir les {{ result?.countAll }} résultats.
+          Précisez votre recherche pour voir les {{ formatCount(result?.countAll ?? 0) }} résultats.
         </p>
       </template>
     </UInputMenu>
