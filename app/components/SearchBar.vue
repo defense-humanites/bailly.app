@@ -607,12 +607,16 @@
         <span v-else>Aucun résultat pour « {{ searchTerm }} ».</span>
       </template>
 
+      <!--
+        Below the results shown, the API's first ones (`count`), how many
+        were found in all (`countAll`).
+      -->
       <template #content-bottom>
         <p
           v-if="hasMoreResults"
           class="shrink-0 border-t border-default p-2 text-center text-sm text-muted"
         >
-          Précisez votre recherche pour voir les {{ formatCount(result?.countAll ?? 0) }} résultats.
+          {{ result?.count }} résultats affichés sur {{ formatCount(result?.countAll ?? 0) }}. Précisez votre recherche.
         </p>
       </template>
     </UInputMenu>
