@@ -378,11 +378,26 @@
     if (!can && editMode.value) exitEditMode();
   });
 
+  /**
+   * The page held where it is as the edit mode changes (cf.
+   * `holdPageScroll`): near the page's end, Safari scrolled it up as the
+   * entries were rendered again (links in one mode, not in the other), the
+   * cards in lanes (`display: grid-lanes`, cf. `signets.vue`), the page's
+   * height unchanged. The user, who clicked the edit button, sees what they
+   * want to see.
+   */
+  const pageScroller = usePageScroller();
+  const keepPageScroll = (): void => {
+    if (pageScroller.value) holdPageScroll(pageScroller.value);
+  };
+
   const enterEditMode = (): void => {
+    keepPageScroll();
     editMode.value = true;
   };
 
   const exitEditMode = (): void => {
+    keepPageScroll();
     editMode.value = false;
     isAddingDescription.value = false;
     void onUpdateTag();

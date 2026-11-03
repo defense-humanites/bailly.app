@@ -34,3 +34,34 @@ export function savedPageScroll(): number | undefined {
   const position = historyPosition();
   return position === undefined ? undefined : positions.get(position);
 }
+
+/**
+ * The scroll positions held, by scroller (cf. `holdPageScroll`).
+ */
+const held = new WeakMap<HTMLElement, number>();
+
+/**
+ * Holds the page where it is for `duration` ms: its scrolls meanwhile are
+ * undone (as they happen, before they are painted), unless the reader's own
+ * (a wheel, a touch, a key). Called again meanwhile, the page stays held at
+ * the first position (e.g. a tag's edit mode ending as another's begins).
+ * @remarks For a change of the page that must not move it, but after which
+ * the browser scrolls it by itself (cf. `BookmarkGroup`'s edit mode).
+ */
+export function holdPageScroll(scroller: HTMLElement, duration = 300): void {
+  if (held.has(scroller)) return;
+  const top = scroller.scrollTop;
+  held.set(scroller, top);
+  const restore = (): void => {
+    if (scroller.scrollTop !== top) scroller.scrollTop = top;
+  };
+  const release = (): void => {
+    clearTimeout(timer);
+    held.delete(scroller);
+    scroller.removeEventListener("scroll", restore);
+    for (const type of ["wheel", "touchmove", "keydown"]) window.removeEventListener(type, release, true);
+  };
+  const timer = setTimeout(release, duration);
+  scroller.addEventListener("scroll", restore, { passive: true });
+  for (const type of ["wheel", "touchmove", "keydown"]) window.addEventListener(type, release, { capture: true, passive: true });
+}

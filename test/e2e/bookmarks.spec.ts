@@ -22,6 +22,25 @@ test.describe("bookmarks page", () => {
     await expect(card(page, "Vocabulaire homérique")).toBeVisible();
   });
 
+  test("the edit mode, near the page's end, leaves the page where it is", async ({ page }) => {
+    // At the page's end, entering and leaving the edit mode of the cards
+    // (one's ending as another's begins) doesn't scroll the page (Safari
+    // scrolled it up, the cards laid out in lanes).
+    await page.setViewportSize({ width: 1512, height: 860 });
+    const scroller = page.locator("main#page");
+    const bottom = () => scroller.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+      return element.scrollTop;
+    });
+    const top = await bottom();
+    expect(top).toBeGreaterThan(0);
+    for (const name of ["Vide", "Vocabulaire homérique et tragique", "Vide"]) {
+      await card(page, name).getByRole("button", { name: /^Modifier l'étiquette/ }).click();
+      await page.waitForTimeout(400);
+      expect(await scroller.evaluate(element => element.scrollTop)).toBe(top);
+    }
+  });
+
   test("tags: by name (none pinned), a long name inside its card", async ({ page }) => {
     expect((await bookmarksState(page)).tags).toEqual(["Vide", "Vocabulaire homérique et tragique"]);
     const header = card(page, "Vocabulaire homérique").locator("[data-slot=header]");
