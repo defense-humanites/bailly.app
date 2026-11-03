@@ -565,8 +565,17 @@
       arrow
       :ui="{ content: 'z-30 bg-(--app-panel-bg)', arrow: 'fill-(--app-panel-bg)' }"
     >
+      <!--
+        The star's tooltip not while the bubble shows, nor for the focus
+        given back to the star as it closes (only a keyboard's focus shows
+        it): it flashed or stayed over the star.
+      -->
       <template #anchor>
-        <UTooltip :text="starred ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+        <UTooltip
+          :text="starred ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+          :disabled="starIntroOpen"
+          ignore-non-keyboard-focus
+        >
           <UButton
             ref="starButton"
             :icon="starred ? 'i-bailly-star-filled' : 'i-lucide-star'"
@@ -593,13 +602,14 @@
             Entrée ajoutée aux favoris
           </p>
           <p class="mt-1 text-muted">
-            Retrouvez-la dans vos signets, où vous pourrez aussi ranger vos entrées sous des étiquettes.
+            Retrouvez-la dans vos signets, où vous pourrez aussi définir des étiquettes personnalisées.
           </p>
-          <div class="mt-3 flex justify-end gap-2">
+          <!-- As a dialog's buttons: the dismissal on the left, the action on the right. -->
+          <div class="mt-3 flex justify-between gap-2">
             <UButton
               label="Compris"
               color="neutral"
-              variant="ghost"
+              variant="outline"
               size="sm"
               @click="starIntroOpen = false"
             />
