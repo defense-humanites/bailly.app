@@ -8,16 +8,13 @@
  */
 
 /**
- * Current database revision (cf. `database/REVISION_HISTORY.md`).
+ * Current database revision (cf. `docs/database-revisions.md`). The database is not
+ * distributed with the code (`database/` is ignored by git).
  *
- * Node.js: the `.gz` archive is decompressed at startup if needed (cf.
- * `SqliteDictionary.open()`). Cloudflare: the same revision is imported into the D1
- * database bound as `DB` (cf. `wrangler.jsonc`); `version` is the only part of this
- * constant the Worker uses.
- *
- * To deploy a new revision: put `database/bailly-revN.db`, update this constant, run
- * `npm run db:pack`, commit the `.gz` archive, then push: code and data are deployed
- * together. `tests/database.test.ts` fails if the archive is missing or untracked.
+ * Node.js: `database/bailly-revN.db` (or its `.gz` archive, decompressed at startup,
+ * cf. `SqliteDictionary.open()`). Cloudflare: the same revision is imported into the
+ * D1 database bound as `DB` (cf. `wrangler.jsonc`); `version` is the only part of
+ * this constant the Worker uses.
  */
 export const DATABASE = {
   filePath: "database/bailly-rev4.db",

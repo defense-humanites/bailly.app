@@ -58,7 +58,9 @@ const db = new DatabaseSync(localPath);
 console.info(`⏳ Copying ${DATABASE.filePath} into ${localPath}...`);
 const start = performance.now();
 
-db.exec(`ATTACH DATABASE '${DATABASE.filePath.replaceAll("'", "''")}' AS src`);
+db.exec(
+  `ATTACH DATABASE 'file:${encodeURI(DATABASE.filePath)}?mode=ro' AS src`
+);
 
 // The table and its indexes, as the source defines them.
 const schema = db.prepare(

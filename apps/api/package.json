@@ -2,7 +2,7 @@
   "name": "bailly-api",
   "version": "2.0.0",
   "private": true,
-  "description": "API of the Bailly application (Greek–French dictionary): dictionary entries, lookups and morphological analysis.",
+  "description": "API of the Bailly application (Greek\u2013French dictionary): dictionary entries, lookups and morphological analysis.",
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "engines": {
@@ -12,11 +12,11 @@
     "dev": "node --watch --env-file-if-exists=.env src/node.ts",
     "start": "node src/node.ts",
     "dev:worker": "wrangler dev",
-    "typecheck": "tsc --noEmit",
+    "types": "wrangler types",
+    "typecheck": "npm run types && tsc --noEmit",
     "test": "vitest run --project node",
     "test:workers": "vitest run --project workers",
     "test:all": "vitest run",
-    "db:pack": "node scripts/db_pack.ts",
     "morpheus:data": "node scripts/morpheus_data.ts",
     "d1:local": "node scripts/d1_local_import.ts"
   },

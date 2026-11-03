@@ -33,24 +33,31 @@ des `vars` de `wrangler.jsonc`.
 
 ## Mise en route
 
-Node.js 22.18 ou plus récent (les sources TypeScript sont exécutées directement) et
-npm 11.
+Prérequis : Node.js 22.18 ou plus récent (les sources TypeScript sont exécutées
+directement, sans compilation) et npm 11.
 
 ```sh
 npm ci
 npm run morpheus:data   # données de Morpheus (Alpheios) dans morpheus-data/, hors git
+npm run types           # worker-configuration.d.ts (types du Worker, hors git)
 cp .env.example .env    # puis ajuster
-npm run dev             # serveur Node.js, port 3000, base décompressée au premier lancement
 ```
 
-La révision de la base est versionnée avec le code (`src/defaults.ts`) : pour en
-publier une nouvelle, placer `database/bailly-revN.db`, mettre à jour `DATABASE`,
-compresser la base avec `npm run db:pack`, commiter l'archive `.gz`. Les tests échouent
-si l'archive de la révision courante manque ou n'est pas suivie par git.
+### La base de données
 
-`@humanities/bailly-search-key`, qui calcule les clés de recherche (partagées avec le
-convertisseur des données), n'est publié que sur JSR : ses sources sont copiées
-provisoirement dans `src/vendor/` (cf. `src/searchKey.ts`).
+Elle n'est pas distribuée avec le code (`database/` est ignoré par git) : les données
+du Bailly 2020 sont sous licence CC BY-NC-ND, et l'API ne les a jamais publiées. Pour
+la produire, convertir le fichier HTML source avec le convertisseur de l'application
+(table `bailly` et ses index, cf. `docs/database-revisions.md` pour l'historique des
+révisions), puis placer `database/bailly-revN.db` — ou son archive `.gz`, que le
+serveur Node.js décompresse au premier démarrage. La révision attendue est fixée dans
+`src/defaults.ts` (`DATABASE`), avec la date des données exposée comme `version`.
+
+### Serveur Node.js
+
+```sh
+npm run dev             # port 3000 (`npm start` sans rechargement)
+```
 
 ### Worker (Cloudflare)
 
@@ -67,14 +74,18 @@ de build de Workers Builds : `npm run morpheus:data`, déploiement par
 Base de production : une base D1 par révision (`bailly-dictionary`, identifiant à
 reporter dans `wrangler.jsonc`), importée par `wrangler d1 import` depuis un export
 SQL de la révision ; la bascule d'une révision à l'autre se fait en changeant le
-binding.
+binding. `npm run types` est à relancer quand `wrangler.jsonc` change.
+
+`@humanities/bailly-search-key`, qui calcule les clés de recherche (partagées avec le
+convertisseur des données), n'est publié que sur JSR : ses sources sont copiées
+provisoirement dans `src/vendor/` (cf. `src/searchKey.ts`).
 
 ## Tests
 
 ```sh
 npm test                # suite sous Node.js (SQLite + Wasm), ~10 s
 npm run test:workers    # la même suite contre le Worker servi par wrangler dev (D1 local)
-npm run typecheck
+npm run typecheck       # génère les types du Worker, puis tsc
 ```
 
 Les deux projets Vitest (`vitest.config.ts`) font tourner les mêmes fichiers de test ;
