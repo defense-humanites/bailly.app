@@ -33,8 +33,9 @@ des `vars` de `wrangler.jsonc`.
 
 ## Mise en route
 
-Prérequis : Node.js 24 ou plus récent (les sources TypeScript sont exécutées
-directement, sans compilation) et npm 11.
+Prérequis : Node.js 24 ou plus récent, qui exécute directement les sources TypeScript,
+sans compilation (version indiquée dans `.node-version`, que lisent Workers Builds et
+les gestionnaires de versions comme nvm, fnm ou Volta), et npm 11.
 
 ```sh
 npm ci
