@@ -122,9 +122,10 @@
     </table>
 
     <p class="text-muted">
-      En beta code, une majuscule se marque d'un astérisque (*a → Α) ; le
+      En beta code, une majuscule se marque d'un astérisque (<span class="font-mono text-highlighted">*a →
+        Α</span>) ; le
       sigma final (ς) est placé de lui-même. En translittération, un h initial
-      note l'esprit rude (hodos → ὁδος).
+      note l'esprit rude (<span class="font-mono text-highlighted">hodos → ὁδος</span>).
     </p>
 
     <section aria-labelledby="conversion-diacritiques">
@@ -136,7 +137,7 @@
       </h3>
       <p class="mb-2 text-muted">
         Facultatifs, ils se tapent après la lettre ; pour une majuscule, avant
-        elle, après l'astérisque (*)/a → Ἄ).
+        elle, après l'astérisque (<span class="font-mono text-highlighted">*)/a → Ἄ</span>).
       </p>
       <table class="w-full table-fixed">
         <tbody>
