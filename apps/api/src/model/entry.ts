@@ -1,5 +1,5 @@
 import { reencode } from "@humanities/greek-conversion";
-import { Database } from "../Database.ts";
+import type { Dictionary } from "../db/dictionary.ts";
 import type {
   ApiEntryParams,
   ApiEntryResponse,
@@ -31,13 +31,15 @@ function normalizeUri(q: string): string {
 export async function getEntry<
   K extends keyof QueryableFields,
   S extends keyof QueryableFields = K
->({
-  q,
-  fields,
-  siblings: getSiblings,
-  siblingsFields
-}: ApiEntryParams<K, S>): Promise<ApiEntryResponse<K, S>> {
-  const db = await Database.getConnection();
+>(
+  db: Dictionary,
+  {
+    q,
+    fields,
+    siblings: getSiblings,
+    siblingsFields
+  }: ApiEntryParams<K, S>
+): Promise<ApiEntryResponse<K, S>> {
   const settings = Settings.getSettings();
   const fieldsStr: string = fields.join(", ");
 
@@ -48,21 +50,21 @@ export async function getEntry<
   const entriesSql = `
     SELECT orderedID, ${!fieldsStr.includes("word") ? `word, ${fieldsStr}` : fieldsStr}
     FROM bailly
-    WHERE uri = $q
-    OR uri GLOB $qHashNumber
+    WHERE uri = ?1
+    OR uri GLOB ?2
   `;
 
-  const entriesStmt = db.prepare(entriesSql);
   const fetchEntries = (q: string) =>
-    <PartialExcept<DatabaseEntry, "orderedID" | "word">[]> (
-      entriesStmt.all({ $q: q, $qHashNumber: `${q}#?` })
-    );
+    db.all<PartialExcept<DatabaseEntry, "orderedID" | "word">>(entriesSql, [
+      q,
+      `${q}#?`
+    ]);
 
   // Try the URI as is first, then its normalized form if it matches nothing.
-  let data = fetchEntries(q);
+  let data = await fetchEntries(q);
   if (!data.length) {
     const normalizedQ = normalizeUri(q);
-    if (normalizedQ !== q) data = fetchEntries(normalizedQ);
+    if (normalizedQ !== q) data = await fetchEntries(normalizedQ);
   }
 
   if (!data.length) {
@@ -115,21 +117,17 @@ export async function getEntry<
   const siblingsSql = `
     SELECT orderedID, ${(siblingsFields ?? fields).join(", ")}
     FROM bailly
-    WHERE orderedID = $previousID
-    OR orderedID = $nextID
+    WHERE orderedID = ?1
+    OR orderedID = ?2
   `;
 
   const nextSiblingID = Array.isArray(entry.children)
     ? entry.orderedID + entry.children.length
     : entry.orderedID + 1;
 
-  const siblingsParams = {
-    $previousID: entry.orderedID - 1,
-    $nextID: nextSiblingID
-  };
-
-  const siblings = <PartialExcept<DatabaseEntry, "orderedID">[]> (
-    db.prepare(siblingsSql).all(siblingsParams)
+  const siblings = await db.all<PartialExcept<DatabaseEntry, "orderedID">>(
+    siblingsSql,
+    [entry.orderedID - 1, nextSiblingID]
   );
 
   let previousEntry: Partial<Entry> = {};

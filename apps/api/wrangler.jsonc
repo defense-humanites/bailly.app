@@ -1,0 +1,50 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bailly-api",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "invocation_logs": false
+    }
+  },
+  // The dictionary (cf. `src/defaults.ts` for the revision and `README.md` for the
+  // import). `database_id`: to be set once the database exists on Cloudflare; local
+  // runs (`wrangler dev`, tests) only need the binding.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bailly-dictionary",
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  // The stem data of Morpheus, bundled as Data modules (`ArrayBuffer`): cf.
+  // `scripts/morpheus_data.ts`, which generates the imports.
+  "rules": [
+    {
+      "type": "Data",
+      "globs": [
+        "**/morpheus-data/**/*.table",
+        "**/morpheus-data/**/*.out",
+        "**/morpheus-data/**/*.lindex",
+        "**/morpheus-data/**/*.ml",
+        "**/morpheus-data/**/nomind",
+        "**/morpheus-data/**/vbind",
+        "**/morpheus-data/**/nendind",
+        "**/morpheus-data/**/vbendind",
+        "**/morpheus-data/**/derivind",
+        "**/morpheus-data/**/lemlist"
+      ],
+      "fallthrough": true
+    }
+  ],
+  // Cf. `src/Settings.ts` (`.env.example` documents them for Node.js).
+  "vars": {
+    "API_ENV": "production",
+    "QUERY_ALLOWED_FIELDS": "word,uri,htmlDefinition,definition,htmlExcerpt,excerpt",
+    "QUERY_DEFAULT_FIELDS": "word,uri,excerpt",
+    "QUERY_MAX_BATCH_SIZE": "5",
+    "QUERY_MAX_ROWS": "100"
+  }
+}

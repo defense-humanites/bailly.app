@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": [
+      "ES2024"
+    ],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "types": [
+      "node"
+    ],
+    "paths": {
+      "#test-app": [
+        "./tests/support/app.node.ts"
+      ]
+    },
+    "baseUrl": "."
+  },
+  "include": [
+    "src",
+    "tests",
+    "scripts",
+    "vitest.config.ts",
+    "worker-configuration.d.ts"
+  ]
+}

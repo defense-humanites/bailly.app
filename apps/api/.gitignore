@@ -5,11 +5,19 @@
 
 node_modules/
 
-.env*
+.env
+.env.*
+!.env.example
 
 # The database is decompressed at startup. Ignore any databases that have
 # already been extracted.
 database/*.db
 
-# libmorpheus, installed by `heroku_build.ts` (Heroku build).
-vendor/
+# Morpheus stem data, acquired by `npm run morpheus:data`, and the manifest of its
+# runtime subset, generated from it for the Worker.
+morpheus-data/
+src/morpheus/stemlib-manifest.mjs
+
+# Wrangler: local state (the local D1 database, cf. `npm run d1:local`), build output.
+.wrangler/
+dist/

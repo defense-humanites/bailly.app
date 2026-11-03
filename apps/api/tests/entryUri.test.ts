@@ -1,6 +1,8 @@
-import { assertEquals } from "@std/assert";
-import { describe } from "@std/testing/bdd";
-import { app } from "../src/index.ts";
+import { assertEquals } from "./support/assert.ts";
+import { describe } from "vitest";
+import { app } from "#test-app";
+import { json } from "./support/http.ts";
+import { test } from "./support/test.ts";
 
 /*
  * URI resolution by `/entry` (cf. `src/model/entry.ts`): an exact URI is used as is;
@@ -28,7 +30,7 @@ const getEntry = async (uri: string): Promise<EntryData> => {
     `/entry/${encodeURIComponent(uri)}?fields=word,uri`
   );
   assertEquals(response.status, 200);
-  return (await response.json()).data;
+  return (await json(response)).data;
 };
 
 // Databases generated before the NFC normalization of the data converter keep
@@ -48,7 +50,7 @@ const simplify = ({ entry }: EntryData): Expected =>
 
 const runCases = (cases: [string, Expected][]) => {
   for (const [uri, expected] of cases) {
-    Deno.test(`GET /entry/${uri}`, async () => {
+    test(`GET /entry/${uri}`, async () => {
       assertEquals(simplify(await getEntry(uri)), nfc(expected));
     });
   }
@@ -123,7 +125,7 @@ describe("GET /entry: no false matches", () => {
 });
 
 describe("POST /entry (batch)", () => {
-  Deno.test("POST /entry: homoios,agapaô-ô,hódos", async () => {
+  test("POST /entry: homoios,agapaô-ô,hódos", async () => {
     const response = await app.request("/entry", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -131,9 +133,9 @@ describe("POST /entry (batch)", () => {
     });
     assertEquals(response.status, 200);
 
-    const json = await response.json();
+    const body = await json(response);
     assertEquals(
-      json.queries.map((query: { data: EntryData }) => query.data.entry.uri),
+      body.queries.map((query: { data: EntryData }) => query.data.entry.uri),
       ["homoios", "agapaô-ô", "hodos"]
     );
   });

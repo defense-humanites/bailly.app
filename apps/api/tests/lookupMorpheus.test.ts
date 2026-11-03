@@ -1,6 +1,7 @@
-import { assert, assertEquals, equal } from "@std/assert";
-import { app } from "../src/index.ts";
-import { Morpheus } from "../src/Morpheus.ts";
+import { assert, assertEquals, equal } from "./support/assert.ts";
+import { app, morpheusAvailable } from "#test-app";
+import { json } from "./support/http.ts";
+import { test as denoTest } from "./support/test.ts";
 
 /*
  * Morpheus results in `/lookup` (default search: case and diacritics insensitive).
@@ -13,11 +14,10 @@ import { Morpheus } from "../src/Morpheus.ts";
  *   - A Morpheus result is always an exact match: `isExact` is true (the front end
  *     relies on it to highlight, sort and filter the results).
  *
- * These tests need libmorpheus (MORPHEUS_LIBRARY_PATH, MORPHEUS_STEMLIB_PATH):
- * they are ignored when it is not available.
+ * These tests need the Morpheus stem data (`npm run morpheus:data`): they are
+ * ignored when it is not available.
  */
 
-const morpheusAvailable = (await Morpheus.getMorpheus()).isAvailable;
 
 if (!morpheusAvailable) {
   console.warn("⚠️ libmorpheus unavailable: the Morpheus lookup tests are ignored.");
@@ -30,14 +30,14 @@ const lookup = async (q: string, params = ""): Promise<LookupEntry[]> => {
     `/lookup/${encodeURIComponent(q)}?fields=uri${params}`
   );
   assertEquals(response.status, 200);
-  return (await response.json()).data.entries;
+  return (await json(response)).data.entries;
 };
 
 const morpheusURIs = (entries: LookupEntry[]): string[] =>
   entries.filter((entry) => entry.isMorpheus).map((entry) => entry.uri);
 
 const test = (name: string, fn: () => Promise<void>) =>
-  Deno.test({ name, ignore: !morpheusAvailable, fn });
+  denoTest({ name, ignore: !morpheusAvailable, fn });
 
 const assertIncludes = (actual: string[], expected: string[], q: string) => {
   for (const uri of expected) {
@@ -171,7 +171,7 @@ const readings = async (q: string, uri: string) => {
   const response = await app.request(
     `/lookup/${encodeURIComponent(q)}?fields=uri&morphology=true`
   );
-  const entries: MorphologyEntry[] = (await response.json()).data.entries;
+  const entries: MorphologyEntry[] = (await json(response)).data.entries;
   const entry = entries.find((entry) => entry.uri === uri);
   assert(entry?.morphology, `${q}: ${uri} should have a morphology`);
   return Object.values(entry.morphology).flat();

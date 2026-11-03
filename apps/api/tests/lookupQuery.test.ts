@@ -1,5 +1,7 @@
-import { assert, assertEquals } from "@std/assert";
-import { app } from "../src/index.ts";
+import { assert, assertEquals } from "./support/assert.ts";
+import { app } from "#test-app";
+import { json } from "./support/http.ts";
+import { test } from "./support/test.ts";
 
 /*
  * `/lookup` without Morpheus: wildcards and counts.
@@ -20,28 +22,28 @@ const lookup = async (q: string, params = ""): Promise<LookupData> => {
     `/lookup/${encodeURIComponent(q)}?fields=uri&skipMorpheus=true${params}`
   );
   assertEquals(response.status, 200);
-  return (await response.json()).data;
+  return (await json(response)).data;
 };
 
 const uris = (data: LookupData): string[] => data.entries.map((entry) => entry.uri);
 
-Deno.test("GET /lookup/λογο?: `?` matches exactly one character", async () => {
+test("GET /lookup/λογο?: `?` matches exactly one character", async () => {
   assertEquals(uris(await lookup("λογο?")), ["logos", "logoô-ô"]);
 });
 
-Deno.test("GET /lookup/ω?: no `*` appended after a trailing wildcard", async () => {
+test("GET /lookup/ω?: no `*` appended after a trailing wildcard", async () => {
   const exact = await lookup("ω?");
   const prefix = await lookup("ω?*");
   assert(exact.countAll > 0, "ω? should match the two-letter words in ω");
   assert(prefix.countAll > exact.countAll);
 });
 
-Deno.test("GET /lookup/?ων: leading `?`", async () => {
+test("GET /lookup/?ων: leading `?`", async () => {
   const data = await lookup("?ων", "&limit=100");
   assert(uris(data).includes("bôn"), "?ων should match βῶν");
 });
 
-Deno.test("GET /lookup/α: `countAll` does not depend on the limit", async () => {
+test("GET /lookup/α: `countAll` does not depend on the limit", async () => {
   const limited = await lookup("α", "&limit=10");
   const larger = await lookup("α", "&limit=100");
   assertEquals(limited.count, 10);
@@ -50,18 +52,18 @@ Deno.test("GET /lookup/α: `countAll` does not depend on the limit", async () =>
   assert(limited.countAll > 100);
 });
 
-Deno.test("GET /lookup/λογο?: `countAll` equals `count` under the limit", async () => {
+test("GET /lookup/λογο?: `countAll` equals `count` under the limit", async () => {
   const data = await lookup("λογο?", "&limit=50");
   assertEquals(data.countAll, data.count);
 });
 
-Deno.test("GET /lookup/*ων: leading `*` (full scan), counted", async () => {
+test("GET /lookup/*ων: leading `*` (full scan), counted", async () => {
   const data = await lookup("*ων", "&limit=5");
   assertEquals(data.count, 5);
   assert(data.countAll > 5);
 });
 
-Deno.test("GET /lookup/ζζζζζ: invalid query, empty response", async () => {
+test("GET /lookup/ζζζζζ: invalid query, empty response", async () => {
   const data = await lookup("ζζζζζ");
   assertEquals([data.count, data.countAll, data.entries], [0, 0, []]);
 });

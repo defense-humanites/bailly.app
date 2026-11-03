@@ -1,4 +1,4 @@
-import { Database } from "../Database.ts";
+import type { Dictionary } from "../db/dictionary.ts";
 import type { ApiExcerptsResponse, ExcerptEntry } from "../definitions.ts";
 import { Settings } from "../Settings.ts";
 
@@ -55,7 +55,7 @@ export function parseExcerptsUris(param: string | undefined): string[] {
 const ENTRIES_SQL = `
   SELECT uri, word, excerpt
   FROM bailly
-  WHERE uri IN (SELECT value FROM json_each($uris))
+  WHERE uri IN (SELECT value FROM json_each(?1))
 `;
 
 /**
@@ -66,7 +66,7 @@ const ENTRIES_SQL = `
  */
 const GROUPS_SQL = `
   SELECT requested.value AS uri, MIN(bailly.word) AS word, COUNT(*) AS homonyms
-  FROM json_each($uris) AS requested
+  FROM json_each(?1) AS requested
   JOIN bailly
     ON bailly.uri > requested.value || '#'
    AND bailly.uri < requested.value || '$'
@@ -81,17 +81,13 @@ const GROUPS_SQL = `
  * group returns `excerpt: ""` and its number of entries (`homonyms`). The URIs that
  * match nothing are listed in `missing`.
  */
-export async function getExcerpts(uris: string[]): Promise<ApiExcerptsResponse> {
-  // Not `Database.prepare()`: that cache is kept for the lookup statements, all
-  // prepared at startup; this route is rarely called.
-  const db = await Database.getConnection();
-  const $uris = JSON.stringify(uris);
-
+export async function getExcerpts(
+  db: Dictionary,
+  uris: string[]
+): Promise<ApiExcerptsResponse> {
   const found = new Map<string, ExcerptEntry>();
 
-  const entries = <ExcerptEntry[]> db.prepare(ENTRIES_SQL).all({
-    $uris
-  });
+  const entries = await db.all<ExcerptEntry>(ENTRIES_SQL, [JSON.stringify(uris)]);
 
   for (const entry of entries) {
     found.set(entry.uri, entry);
@@ -100,9 +96,9 @@ export async function getExcerpts(uris: string[]): Promise<ApiExcerptsResponse> 
   const notFound = uris.filter((uri) => !found.has(uri));
 
   if (notFound.length) {
-    const groups = <Required<ExcerptEntry>[]> (
-      db.prepare(GROUPS_SQL).all({ $uris: JSON.stringify(notFound) })
-    );
+    const groups = await db.all<Required<ExcerptEntry>>(GROUPS_SQL, [
+      JSON.stringify(notFound)
+    ]);
 
     for (const { uri, word, homonyms } of groups) {
       found.set(uri, { uri, word, excerpt: "", homonyms });

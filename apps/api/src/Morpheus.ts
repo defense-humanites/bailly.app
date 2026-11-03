@@ -1,17 +1,10 @@
-import {
-  type MorpheusContext,
-  MorpheusLanguage,
-  MorpheusLibrary,
-  MorpheusOption
-} from "@libmorpheus/deno";
 import { convert } from "@humanities/greek-conversion";
 import type { ApiLookupParams } from "./definitions.ts";
 import { SpecialChar } from "./enums.ts";
 import { graveToAcute } from "./helpers.ts";
+import type { Lemmatizer, MorpheusAnalysis } from "./morpheus/lemmatizer.ts";
 import { Settings } from "./Settings.ts";
 
-// `export type { … } from` doesn't bring the type into this module's scope.
-import type { MorpheusAnalysis } from "@libmorpheus/deno";
 export type { MorpheusAnalysis };
 
 type MorpheusLookupOptions = Pick<
@@ -147,85 +140,22 @@ export function capitalize(word: string): string {
   return (nfd.charAt(0).toUpperCase() + nfd.slice(1)).normalize("NFC");
 }
 
+/**
+ * The morphological lookup of the API: the variants of a form submitted to
+ * libmorpheus (breathings, case), the readings dropped, the analyses grouped by
+ * lemma. The analyzer itself is a `Lemmatizer` (cf. `morpheus/`), given at
+ * construction; without one, every lookup silently returns no Morpheus result
+ * (tolerated in development, e.g. to run the tests without the stem data; the
+ * entry points refuse it in production).
+ */
 export class Morpheus {
-  static #wrapper: Morpheus;
-
-  readonly #library?: MorpheusLibrary;
-  readonly #contexts: MorpheusContext[] = [];
-  #nextContext = 0;
+  readonly #lemmatizer?: Lemmatizer;
 
   readonly isAvailable: boolean;
 
-  private constructor(
-    library?: MorpheusLibrary,
-    contexts: MorpheusContext[] = []
-  ) {
-    this.#library = library;
-    this.#contexts = contexts;
-    this.isAvailable = Boolean(library && contexts.length);
-  }
-
-  static async #init(): Promise<Morpheus> {
-    const settings = Settings.getSettings();
-
-    if (!settings.morpheusLibraryPath || !settings.morpheusStemlibPath) {
-      return Morpheus.#unavailable(
-        "MORPHEUS_LIBRARY_PATH and MORPHEUS_STEMLIB_PATH must both be set."
-      );
-    }
-
-    let library: MorpheusLibrary | undefined;
-    const contexts: MorpheusContext[] = [];
-
-    try {
-      library = new MorpheusLibrary(settings.morpheusLibraryPath);
-
-      for (let index = 0; index < settings.morpheusPoolSize; index++) {
-        contexts.push(
-          library.createContext(
-            settings.morpheusStemlibPath,
-            MorpheusLanguage.Greek
-          )
-        );
-      }
-
-      return new Morpheus(library, contexts);
-    } catch (error) {
-      try {
-        await Promise.all(contexts.map((context) => context.close()));
-        library?.close();
-      } catch {
-        // The initialization error is the one worth reporting.
-      }
-
-      return Morpheus.#unavailable(`initialization failed: ${error}`);
-    }
-  }
-
-  /**
-   * Without libmorpheus, the lookups silently lose every Morpheus result. This is
-   * tolerated in development (e.g. to run the API or the tests without the native
-   * library), but not in production, where the startup (and the Heroku release
-   * phase, cf. `scripts/heroku_release.ts`) must fail instead.
-   */
-  static #unavailable(reason: string): Morpheus {
-    if (!Settings.getSettings().isDevEnv) {
-      throw new Error(`libmorpheus is unavailable: ${reason}`);
-    }
-
-    console.warn(`⚠️ libmorpheus is disabled: ${reason}`);
-    return new Morpheus();
-  }
-
-  static async getMorpheus(): Promise<Morpheus> {
-    if (!this.#wrapper) this.#wrapper = await Morpheus.#init();
-    return this.#wrapper;
-  }
-
-  #context(): MorpheusContext {
-    const context = this.#contexts[this.#nextContext];
-    this.#nextContext = (this.#nextContext + 1) % this.#contexts.length;
-    return context;
+  constructor(lemmatizer?: Lemmatizer) {
+    this.#lemmatizer = lemmatizer;
+    this.isAvailable = Boolean(lemmatizer);
   }
 
   #isNeeded(str: string): boolean {
@@ -260,9 +190,10 @@ export class Morpheus {
       diacriticSensitive = false
     } = options;
 
-    let morpheusOptions = 0n;
-    if (caseSensitive) morpheusOptions |= MorpheusOption.StrictCase;
-    if (!diacriticSensitive) morpheusOptions |= MorpheusOption.IgnoreAccents;
+    const analyzeOptions = {
+      strictCase: caseSensitive,
+      ignoreAccents: !diacriticSensitive
+    };
 
     // Morpheus does not recognize contextual grave accents. They are always
     // converted to their lexical acute equivalent for analysis; the original
@@ -302,12 +233,13 @@ export class Morpheus {
 
     // One form at a time: a failure (an internal error of libmorpheus, e.g. more than
     // 25 analyses before its 0.4.2 release) only loses the analyses of this form.
+    // (`isAvailable`, checked by `#isNeeded()`, guarantees the lemmatizer here.)
     for (const form of forms) {
       const betaCode = convert(form, "greek", "beta-code", { preset: "perseus" });
       const dropCrasis = guessedRough && hasInitialRoughBreathing(form);
 
       try {
-        const formAnalyses = await this.#context().analyze(betaCode, morpheusOptions);
+        const formAnalyses = await this.#lemmatizer!.analyze(betaCode, analyzeOptions);
         analyses.push(
           ...(dropCrasis
             ? formAnalyses.filter((analysis) => !analysis.crasis)

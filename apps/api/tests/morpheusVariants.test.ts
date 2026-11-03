@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals } from "./support/assert.ts";
 import {
   buildBreathingVariants,
   capitalize,
@@ -6,6 +6,7 @@ import {
   hasInitialRoughBreathing,
   removeAccents
 } from "../src/Morpheus.ts";
+import { test } from "./support/test.ts";
 
 /*
  * Forms submitted to Morpheus when diacritics and/or case are ignored (cf.
@@ -15,22 +16,22 @@ import {
  * Without `StrictCase`, a capital is lowercased, but never the reverse.
  */
 
-Deno.test("buildBreathingVariants: initial vowel", () => {
+test("buildBreathingVariants: initial vowel", () => {
   assertEquals(buildBreathingVariants("ων"), ["ὠν", "ὡν"]);
   assertEquals(buildBreathingVariants("ης"), ["ἠς", "ἡς"]);
   assertEquals(buildBreathingVariants("Ος"), ["Ὀς", "Ὁς"]);
 });
 
-Deno.test("buildBreathingVariants: the typed breathing is replaced", () => {
+test("buildBreathingVariants: the typed breathing is replaced", () => {
   assertEquals(buildBreathingVariants("ὡν"), ["ὠν", "ὡν"]);
   assertEquals(buildBreathingVariants("ἑων"), ["ἐων", "ἑων"]);
 });
 
-Deno.test("buildBreathingVariants: accents are kept", () => {
+test("buildBreathingVariants: accents are kept", () => {
   assertEquals(buildBreathingVariants("ῶν"), ["ὦν", "ὧν"]);
 });
 
-Deno.test("buildBreathingVariants: diphthongs take the breathing on their 2nd vowel", () => {
+test("buildBreathingVariants: diphthongs take the breathing on their 2nd vowel", () => {
   assertEquals(buildBreathingVariants("ου"), ["οὐ", "οὑ"]);
   assertEquals(buildBreathingVariants("αυτος"), ["αὐτος", "αὑτος"]);
   assertEquals(buildBreathingVariants("Αυτος"), ["Αὐτος", "Αὑτος"]);
@@ -38,25 +39,25 @@ Deno.test("buildBreathingVariants: diphthongs take the breathing on their 2nd vo
   assertEquals(buildBreathingVariants("οὗ"), ["οὖ", "οὗ"]);
 });
 
-Deno.test("buildBreathingVariants: a diaeresis prevents the diphthong", () => {
+test("buildBreathingVariants: a diaeresis prevents the diphthong", () => {
   assertEquals(buildBreathingVariants("αϊδης"), ["ἀϊδης", "ἁϊδης"]);
 });
 
-Deno.test("buildBreathingVariants: initial rho takes a rough breathing only", () => {
+test("buildBreathingVariants: initial rho takes a rough breathing only", () => {
   assertEquals(buildBreathingVariants("ρημα"), ["ῥημα"]);
 });
 
-Deno.test("buildBreathingVariants: initial consonant, unchanged", () => {
+test("buildBreathingVariants: initial consonant, unchanged", () => {
   assertEquals(buildBreathingVariants("λογος"), ["λογος"]);
 });
 
-Deno.test("buildBreathingVariants: NFC output", () => {
+test("buildBreathingVariants: NFC output", () => {
   for (const variant of buildBreathingVariants("ων".normalize("NFD"))) {
     assertEquals(variant, variant.normalize("NFC"));
   }
 });
 
-Deno.test("removeAccents: accents and iota subscripts only", () => {
+test("removeAccents: accents and iota subscripts only", () => {
   assertEquals(removeAccents("ᾧ"), "ὡ");
   assertEquals(removeAccents("λόγῳ"), "λογω");
   assertEquals(removeAccents("Διὸς"), "Διος");
@@ -64,7 +65,7 @@ Deno.test("removeAccents: accents and iota subscripts only", () => {
   assertEquals(removeAccents("ἀΐδιος"), "ἀϊδιος");
 });
 
-Deno.test("capitalize: diacritics stay on the capital", () => {
+test("capitalize: diacritics stay on the capital", () => {
   assertEquals(capitalize("διος"), "Διος");
   assertEquals(capitalize("ὡν"), "Ὡν");
   // `toUpperCase()` alone would give ὯΙ.
@@ -72,7 +73,7 @@ Deno.test("capitalize: diacritics stay on the capital", () => {
   assertEquals(capitalize("Λογος"), "Λογος");
 });
 
-Deno.test("hasInitialRoughBreathing: initial vowel or diphthong", () => {
+test("hasInitialRoughBreathing: initial vowel or diphthong", () => {
   assertEquals(hasInitialRoughBreathing("ἁνα"), true);
   assertEquals(hasInitialRoughBreathing("Ἁνα"), true);
   assertEquals(hasInitialRoughBreathing("οὑμος"), true);
@@ -82,7 +83,7 @@ Deno.test("hasInitialRoughBreathing: initial vowel or diphthong", () => {
   assertEquals(hasInitialRoughBreathing("ἀνὴρ ἁ"), false);
 });
 
-Deno.test("getCrasis: the two words of a crasis reading, in Greek", () => {
+test("getCrasis: the two words of a crasis reading, in Greek", () => {
   assertEquals(getCrasis({ crasis: "w)=", workword: "a)gaqe/" }), {
     first: "ὦ",
     second: "ἀγαθέ"

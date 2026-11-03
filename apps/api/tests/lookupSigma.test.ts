@@ -1,6 +1,8 @@
-import { assertEquals } from "@std/assert";
-import { describe } from "@std/testing/bdd";
-import { app } from "../src/index.ts";
+import { assertEquals } from "./support/assert.ts";
+import { describe } from "vitest";
+import { app } from "#test-app";
+import { json } from "./support/http.ts";
+import { test } from "./support/test.ts";
 
 /*
  * Final sigma folding in `/lookup` (cf. `formatSearchableValue()` in
@@ -16,7 +18,7 @@ const lookup = async (q: string, params = ""): Promise<LookupEntry[]> => {
     `/lookup/${encodeURIComponent(q)}?fields=uri&skipMorpheus=true${params}`
   );
   assertEquals(response.status, 200);
-  return (await response.json()).data.entries;
+  return (await json(response)).data.entries;
 };
 
 const exactURIs = (entries: LookupEntry[]): string[] =>
@@ -34,7 +36,7 @@ describe("GET /lookup: final sigma", () => {
   ];
 
   for (const [q, params, uri] of cases) {
-    Deno.test(`GET /lookup/${q}${params}`, async () => {
+    test(`GET /lookup/${q}${params}`, async () => {
       assertEquals(exactURIs(await lookup(q, params)), [uri]);
     });
   }

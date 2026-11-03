@@ -1,4 +1,4 @@
-import type { Context, Next } from "@hono/hono";
+import type { Context, Next } from "hono";
 
 export const logger = () => async (c: Context, next: Next) => {
   const start = Date.now();

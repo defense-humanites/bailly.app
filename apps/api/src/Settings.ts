@@ -1,91 +1,67 @@
-import { DATABASE, MORPHEUS_VENDOR } from "./defaults.ts";
+import { DATABASE } from "./defaults.ts";
 import type { DatabaseEntry } from "./definitions.ts";
 
+/**
+ * The environment of the API, wherever it runs: `process.env` on Node.js, the `env`
+ * of the Worker on Cloudflare (its `vars`, cf. `wrangler.jsonc`, next to its
+ * bindings). Only the string values are settings.
+ */
+export type Environment = object;
+
 const ENV_KEYS = [
-  "HOST_DB",
+  "API_ENV",
   "DB_FILE_PATH",
   "DB_VERSION",
-  "DENO_ENV",
-  "MORPHEUS_LIBRARY_PATH",
-  "MORPHEUS_POOL_SIZE",
-  "MORPHEUS_STEMLIB_PATH",
+  "MORPHEUS_DATA_PATH",
   "PORT",
   "QUERY_ALLOWED_FIELDS",
   "QUERY_DEFAULT_FIELDS",
   "QUERY_MAX_BATCH_SIZE",
-  "QUERY_MAX_ROWS",
+  "QUERY_MAX_ROWS"
 ] as const;
 
-type EnvKeys = typeof ENV_KEYS[number];
-const ENV_KV = ENV_KEYS.map((key) => ({ key, value: Deno.env.get(key) }));
-
-function getEnv(keyName: EnvKeys): string | undefined {
-  const row = ENV_KV.find(({ key }) => key === keyName);
-  if (!row) throw new Error("Invalid env key");
-  return row.value;
-}
-
-/** Returns an environment override, an empty value meaning no override. */
-function getOverride(keyName: EnvKeys): string | undefined {
-  return getEnv(keyName)?.trim() || undefined;
-}
+type EnvKey = typeof ENV_KEYS[number];
 
 export class Settings {
-  private static settings: Settings;
-  isHostDb = false;
-  hostDbUnderlyingPath = "";
-  readonly hostDbPath = {
-    bindMountedFile: "/host-db/host.db",
-    copyDest: "/runtime-db/host.db",
-  };
-  readonly dbFilePath: string;
-  readonly dbVersion: string;
-  readonly denoEnv: "production" | "development";
+  static #settings: Settings | undefined;
+
+  readonly #env: Environment;
+
+  /** `development` enables the diagnostics and lifts the batch and row limits. */
+  readonly apiEnv: "production" | "development";
   readonly isDevEnv: boolean;
-  readonly morpheusLibraryPath: string;
-  readonly morpheusPoolSize: number;
-  readonly morpheusStemlibPath: string;
+  /** SQLite file of the dictionary (Node.js only; D1 is bound by the Worker). */
+  readonly dbFilePath: string;
+  /** Date of the dictionary data, exposed as `version` in every response. */
+  readonly dbVersion: string;
+  /** Directory of the Morpheus stem data (Node.js only; bundled in the Worker). */
+  readonly morpheusDataPath: string;
   readonly port: number;
   readonly queryAllowedFields: string[];
   readonly queryDefaultFields: string[];
   readonly queryMaxBatchSize: number;
   readonly queryMaxRows: number;
 
-  private constructor() {
-    this.denoEnv = getEnv("DENO_ENV") === "development"
+  private constructor(env: Environment) {
+    this.#env = env;
+
+    this.apiEnv = this.#get("API_ENV") === "development"
       ? "development"
       : "production";
-    this.isDevEnv = this.denoEnv === "development";
-    this.port = Settings.formatNumber(getEnv("PORT"), 3000)!;
+    this.isDevEnv = this.apiEnv === "development";
+    this.port = Settings.formatNumber(this.#get("PORT"), 3000)!;
 
-    const hostDb = getEnv("HOST_DB")?.trim();
-    if (hostDb) {
-      this.isHostDb = true;
-      this.hostDbUnderlyingPath = hostDb;
-    }
     // Defaults versioned with the code (cf. `src/defaults.ts`); the environment
     // variables are overrides only.
-    this.dbFilePath = hostDb
-      ? this.hostDbPath.copyDest
-      : getOverride("DB_FILE_PATH") ?? DATABASE.filePath;
-    this.dbVersion = getOverride("DB_VERSION") ?? DATABASE.version;
-
-    this.morpheusLibraryPath = getOverride("MORPHEUS_LIBRARY_PATH") ??
-      MORPHEUS_VENDOR.libraryPath;
-    this.morpheusStemlibPath = getOverride("MORPHEUS_STEMLIB_PATH") ??
-      MORPHEUS_VENDOR.dataOutput;
+    this.dbFilePath = this.#override("DB_FILE_PATH") ?? DATABASE.filePath;
+    this.dbVersion = this.#override("DB_VERSION") ?? DATABASE.version;
+    this.morpheusDataPath = this.#override("MORPHEUS_DATA_PATH") ?? "morpheus-data";
 
     // An override left in the production config would silently pin the database
-    // (or libmorpheus) and mask the next change of the code: make it visible.
+    // and mask the next change of the code: make it visible.
     if (!this.isDevEnv) {
-      const overrides = (
-        [
-          "DB_FILE_PATH",
-          "DB_VERSION",
-          "MORPHEUS_LIBRARY_PATH",
-          "MORPHEUS_STEMLIB_PATH"
-        ] as const
-      ).filter((key) => getOverride(key));
+      const overrides = (["DB_FILE_PATH", "DB_VERSION"] as const)
+        .filter((key) => this.#override(key));
 
       if (overrides.length) {
         console.warn(
@@ -94,46 +70,86 @@ export class Settings {
         );
       }
     }
-    this.morpheusPoolSize = Settings.formatNumber(getEnv("MORPHEUS_POOL_SIZE"), 4)!;
-    if (!Number.isInteger(this.morpheusPoolSize) || this.morpheusPoolSize < 1) {
-      throw new Error(`Invalid MORPHEUS_POOL_SIZE: ${this.morpheusPoolSize}`);
-    }
 
-    this.queryAllowedFields = getEnv("QUERY_ALLOWED_FIELDS")
-      ? Settings.formatFields(getEnv("QUERY_ALLOWED_FIELDS")!)
+    this.queryAllowedFields = this.#get("QUERY_ALLOWED_FIELDS")
+      ? Settings.formatFields(this.#get("QUERY_ALLOWED_FIELDS")!)
       : [];
-    const defaults = getEnv("QUERY_DEFAULT_FIELDS");
+    const defaults = this.#get("QUERY_DEFAULT_FIELDS");
     this.queryDefaultFields = defaults && this.checkFields(Settings.formatFields(defaults))
       ? Settings.formatFields(defaults)
       : this.queryAllowedFields;
     this.queryMaxBatchSize = Settings.formatNumber(
-      getEnv("QUERY_MAX_BATCH_SIZE"), this.isDevEnv ? Infinity : 5,
+      this.#get("QUERY_MAX_BATCH_SIZE"),
+      this.isDevEnv ? Infinity : 5
     )!;
     this.queryMaxRows = Settings.formatNumber(
-      getEnv("QUERY_MAX_ROWS"), this.isDevEnv ? Infinity : 100,
+      this.#get("QUERY_MAX_ROWS"),
+      this.isDevEnv ? Infinity : 100
     )!;
+  }
 
-    console.info("Current settings:", {
-      denoEnv: this.denoEnv,
-      dbFilePath: this.dbFilePath,
-      dbVersion: this.dbVersion,
-      morpheusLibraryPath: this.morpheusLibraryPath,
-      morpheusStemlibPath: this.morpheusStemlibPath,
-      morpheusPoolSize: this.morpheusPoolSize,
-      port: this.port,
-    });
+  #get(key: EnvKey): string | undefined {
+    const value = (this.#env as Record<string, unknown>)[key];
+    return typeof value === "string" ? value : undefined;
+  }
+
+  /** An environment override, an empty value meaning no override. */
+  #override(key: EnvKey): string | undefined {
+    return this.#get(key)?.trim() || undefined;
+  }
+
+  /**
+   * Reads the settings from `env`, once: the entry point (Node.js server, Worker,
+   * tests) calls it before the first request; `getSettings()` then serves them.
+   * A second call with another environment is an error (the settings are global).
+   */
+  static configure(env: Environment): Settings {
+    if (Settings.#settings) {
+      if (Settings.#settings.#env !== env) {
+        throw new Error("The settings have already been configured.");
+      }
+      return Settings.#settings;
+    }
+
+    Settings.#settings = new Settings(env);
+    return Settings.#settings;
   }
 
   static getSettings(): Settings {
-    if (!Settings.settings) Settings.settings = new Settings();
-    return Settings.settings;
+    if (!Settings.#settings) {
+      throw new Error(
+        "The settings haven't been configured: cf. Settings.configure()."
+      );
+    }
+    return Settings.#settings;
   }
+
+  /** Forgets the settings (tests). */
+  static reset(): void {
+    Settings.#settings = undefined;
+  }
+
+  /** The settings worth logging at startup. */
+  summary(): Record<string, unknown> {
+    return {
+      apiEnv: this.apiEnv,
+      dbFilePath: this.dbFilePath,
+      dbVersion: this.dbVersion,
+      morpheusDataPath: this.morpheusDataPath,
+      port: this.port,
+      queryMaxBatchSize: this.queryMaxBatchSize,
+      queryMaxRows: this.queryMaxRows
+    };
+  }
+
   checkFields(fields: string[]): boolean {
     return fields.every((field) => this.queryAllowedFields.includes(field));
   }
+
   static formatFields(fields: string): (keyof DatabaseEntry)[] {
     return fields.replace(/\s/g, "").split(",") as (keyof DatabaseEntry)[];
   }
+
   static formatNumber(value: string | null | undefined, fallback: number | null = null) {
     return ["-1", "", null, undefined].includes(value) ? fallback : Number(value);
   }

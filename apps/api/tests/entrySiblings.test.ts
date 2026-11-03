@@ -1,5 +1,7 @@
-import { assert, assertEquals } from "@std/assert";
-import { app } from "../src/index.ts";
+import { assert, assertEquals } from "./support/assert.ts";
+import { app } from "#test-app";
+import { json } from "./support/http.ts";
+import { test } from "./support/test.ts";
 
 /*
  * Fields of the siblings returned by `/entry/:uri?siblings=true`: `siblingsFields`
@@ -19,7 +21,7 @@ type EntryData = {
 const getEntry = async (uri: string, params: string): Promise<EntryData> => {
   const response = await app.request(`/entry/${encodeURIComponent(uri)}?${params}`);
   assertEquals(response.status, 200);
-  return (await response.json()).data;
+  return (await json(response)).data;
 };
 
 const postEntries = async (body: Record<string, unknown>): Promise<EntryData[]> => {
@@ -29,7 +31,7 @@ const postEntries = async (body: Record<string, unknown>): Promise<EntryData[]> 
     body: JSON.stringify(body)
   });
   assertEquals(response.status, 200);
-  return (await response.json()).queries.map(
+  return (await json(response)).queries.map(
     (query: { data: EntryData }) => query.data
   );
 };
@@ -44,12 +46,12 @@ const assertSiblingsFields = (data: EntryData, expected: string[]) => {
 
 const PAGE_FIELDS = "word,uri,excerpt,htmlDefinition";
 
-Deno.test("GET /entry/logos?siblings=true: siblings with `fields` by default", async () => {
+test("GET /entry/logos?siblings=true: siblings with `fields` by default", async () => {
   const data = await getEntry("logos", `fields=${PAGE_FIELDS}&siblings=true`);
   assertSiblingsFields(data, PAGE_FIELDS.split(","));
 });
 
-Deno.test("GET /entry/logos?siblingsFields=word,uri,excerpt: siblings narrowed", async () => {
+test("GET /entry/logos?siblingsFields=word,uri,excerpt: siblings narrowed", async () => {
   const data = await getEntry(
     "logos",
     `fields=${PAGE_FIELDS}&siblings=true&siblingsFields=word,uri,excerpt`
@@ -69,7 +71,7 @@ Deno.test("GET /entry/logos?siblingsFields=word,uri,excerpt: siblings narrowed",
   }
 });
 
-Deno.test("GET /entry: `siblingsFields` without `word`, and wider than `fields`", async () => {
+test("GET /entry: `siblingsFields` without `word`, and wider than `fields`", async () => {
   // `word` is not added to the siblings (it is to the entry, which needs it).
   assertSiblingsFields(
     await getEntry("logos", "fields=word,uri&siblings=true&siblingsFields=uri"),
@@ -81,7 +83,7 @@ Deno.test("GET /entry: `siblingsFields` without `word`, and wider than `fields`"
   );
 });
 
-Deno.test("GET /entry: invalid `siblingsFields` fall back to `fields`", async () => {
+test("GET /entry: invalid `siblingsFields` fall back to `fields`", async () => {
   for (const value of ["", "foo", "word,foo"]) {
     const data = await getEntry(
       "logos",
@@ -91,13 +93,13 @@ Deno.test("GET /entry: invalid `siblingsFields` fall back to `fields`", async ()
   }
 });
 
-Deno.test("GET /entry: `siblingsFields` without `siblings=true` returns no siblings", async () => {
+test("GET /entry: `siblingsFields` without `siblings=true` returns no siblings", async () => {
   const data = await getEntry("logos", "fields=word,uri&siblingsFields=uri");
   assertEquals(data.siblings, {});
   assertEquals(keys(data.entry), ["uri", "word"]);
 });
 
-Deno.test("GET /entry/ha_(2): homonyms, siblings around the group", async () => {
+test("GET /entry/ha_(2): homonyms, siblings around the group", async () => {
   // ἅ (2) has two homonyms (ha_(2)#1, ha_(2)#2): the siblings surround the group.
   const data = await getEntry(
     "ha_(2)",
@@ -110,7 +112,7 @@ Deno.test("GET /entry/ha_(2): homonyms, siblings around the group", async () => 
   );
 });
 
-Deno.test("POST /entry: `siblingsFields` in a batch", async () => {
+test("POST /entry: `siblingsFields` in a batch", async () => {
   const [logos, hodos] = await postEntries({
     q: "logos,hodos",
     fields: PAGE_FIELDS,

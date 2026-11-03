@@ -1,29 +1,33 @@
 /**
  * Compresses the current database revision (`DATABASE.filePath`, cf.
- * `src/defaults.ts`) into the `.gz` archive that is committed and deployed (the
- * database itself is ignored by git and decompressed at startup).
+ * `src/defaults.ts`) into the `.gz` archive that is committed (the database itself
+ * is ignored by git and decompressed at startup on Node.js).
  *
- * Usage: `deno task db:pack [--force]`. Without `--force`, an archive more recent than
- * the database is kept as is.
+ * Usage: `npm run db:pack [-- --force]`. Without `--force`, an archive more recent
+ * than the database is kept as is.
  */
 
+import { createHash } from "node:crypto";
+import { createReadStream, createWriteStream } from "node:fs";
+import { rename, rm, stat } from "node:fs/promises";
+import { pipeline } from "node:stream/promises";
+import { createGunzip, createGzip } from "node:zlib";
 import { DATABASE } from "../src/defaults.ts";
 
 const dbPath = DATABASE.filePath;
 const gzPath = `${dbPath}.gz`;
-const force = Deno.args.includes("--force");
+const force = process.argv.includes("--force");
 
-const stat = (path: string) => Deno.stat(path).catch(() => undefined);
+const statOrUndefined = (path: string) => stat(path).catch(() => undefined);
 
-async function sha256(stream: ReadableStream<Uint8Array>): Promise<string> {
-  const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0"))
-    .join("");
+async function sha256(...streams: NodeJS.ReadableStream[]): Promise<string> {
+  const hash = createHash("sha256");
+  await pipeline(...(streams as [NodeJS.ReadableStream]), hash);
+  return hash.digest("hex");
 }
 
-const db = await stat(dbPath);
-const gz = await stat(gzPath);
+const db = await statOrUndefined(dbPath);
+const gz = await statOrUndefined(gzPath);
 
 if (!db) {
   console.error(
@@ -31,43 +35,35 @@ if (!db) {
       ? `${dbPath} not found, but ${gzPath} exists: nothing to compress.`
       : `❌ Neither ${dbPath} nor ${gzPath} exist.`
   );
-  Deno.exit(gz ? 0 : 1);
+  process.exit(gz ? 0 : 1);
 }
 
-if (gz && !force && (gz.mtime?.getTime() ?? 0) >= (db.mtime?.getTime() ?? 0)) {
+if (gz && !force && gz.mtimeMs >= db.mtimeMs) {
   console.info(`${gzPath} is up to date (use --force to recompress).`);
-  Deno.exit(0);
+  process.exit(0);
 }
 
 // Write to a temporary file, then rename: an interrupted run never leaves a
 // truncated archive in place.
 const tmpPath = `${gzPath}.tmp`;
-{
-  const input = await Deno.open(dbPath);
-  const output = await Deno.create(tmpPath);
-  await input.readable
-    .pipeThrough(new CompressionStream("gzip"))
-    .pipeTo(output.writable);
-}
+await pipeline(createReadStream(dbPath), createGzip(), createWriteStream(tmpPath));
 
 // Check the archive against the database before replacing the previous one.
 const [expected, actual] = await Promise.all([
-  Deno.open(dbPath).then((file) => sha256(file.readable)),
-  Deno.open(tmpPath).then((file) =>
-    sha256(file.readable.pipeThrough(new DecompressionStream("gzip")))
-  )
+  sha256(createReadStream(dbPath)),
+  sha256(createReadStream(tmpPath), createGunzip())
 ]);
 
 if (expected !== actual) {
-  await Deno.remove(tmpPath);
+  await rm(tmpPath);
   console.error("❌ The archive doesn't match the database (checksum mismatch).");
-  Deno.exit(1);
+  process.exit(1);
 }
 
-await Deno.rename(tmpPath, gzPath);
+await rename(tmpPath, gzPath);
 
 const size = (bytes: number) => `${(bytes / 1024 ** 2).toFixed(1)} MB`;
 console.info(
-  `✅ ${gzPath} (${size((await Deno.stat(gzPath)).size)}, from ${size(db.size)}).\n` +
+  `✅ ${gzPath} (${size((await stat(gzPath)).size)}, from ${size(db.size)}).\n` +
     `   Don't forget to commit it: git add ${gzPath}`
 );

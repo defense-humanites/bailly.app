@@ -1,6 +1,5 @@
-import { toBaillySearchKey, toSearchKey } from "@humanities/bailly-search-key";
 import { convert } from "@humanities/greek-conversion";
-import { Database } from "../Database.ts";
+import type { Dictionary, SqlValue } from "../db/dictionary.ts";
 import type {
   ApiLookupParams,
   ApiLookupResponse,
@@ -12,18 +11,21 @@ import type {
 import { SpecialChar } from "../enums.ts";
 import {
   getCrasis,
-  Morpheus,
+  type Morpheus,
   type MorpheusAnalysis,
   type MorpheusResponse,
   type Morphology
 } from "../Morpheus.ts";
+import { toBaillySearchKey, toSearchKey } from "../searchKey.ts";
 import { Settings } from "../Settings.ts";
 
-enum LookupMode {
-  exact,
-  startsWith,
-  endsWith
-}
+const LookupMode = {
+  exact: 0,
+  startsWith: 1,
+  endsWith: 2
+} as const;
+
+type LookupMode = typeof LookupMode[keyof typeof LookupMode];
 
 type QueryStringFormat = {
   searchStr: string;
@@ -210,15 +212,31 @@ function canonicalFields(fields: readonly string[]): string[] {
   ];
 }
 
-const MORPHEUS_MATCH =
-  "searchable IN (SELECT value FROM json_each($morpheusSearchableKeys))";
+/**
+ * The three lookup statements take the same positional parameters, in this order
+ * (cf. `LookupParams`), whether they use them all or not: the SQL text of each one
+ * is thus fixed for a given search column, operator and set of fields.
+ *
+ *   ?1 `query`: the pattern (or the exact key) matched against the search column;
+ *   ?2 `exactQuery`: the search key of an exact match (`null`: none possible);
+ *   ?3 `morpheusSearchableKeys`: JSON array of the search keys of the lemmas;
+ *   ?4 `limit`.
+ */
+type LookupParams = readonly [
+  query: string,
+  exactQuery: string | null,
+  morpheusSearchableKeys: string,
+  limit: number
+];
+
+const MORPHEUS_MATCH = "searchable IN (SELECT value FROM json_each(?3))";
 
 function buildWhereClause(
   searchableField: string,
   operator: ComparisonOperator
 ): string {
   return `
-    WHERE ${searchableField} ${operator} $query
+    WHERE ${searchableField} ${operator} ?1
        OR ${MORPHEUS_MATCH}
   `;
 }
@@ -252,7 +270,7 @@ function buildSelectedFields(
  *      order, then limited to what is left of `LIMIT` (cf. `getEntries()`).
  *
  * Every priority row is a match: a Morpheus lemma by definition, and an exact match
- * because `$exactQuery` (no wildcards) always matches the `$query` pattern, which only
+ * because `exactQuery` (no wildcards) always matches the `query` pattern, which only
  * adds wildcards around it. Homonyms share their search keys: they always fall into
  * the same statement, so they stay together (and in the dictionary order).
  *
@@ -268,13 +286,13 @@ function buildPriorityLookupSql(
   return `
     SELECT
       ${buildSelectedFields(fields, searchableField)},
-      ${searchableField} ${operator} $query AS directMatch,
+      ${searchableField} ${operator} ?1 AS directMatch,
       ${MORPHEUS_MATCH} AS morpheusMatch
     FROM bailly
-    WHERE ${searchableField} = $exactQuery
+    WHERE ${searchableField} = ?2
        OR ${MORPHEUS_MATCH}
-    ORDER BY (${searchableField} = $exactQuery) DESC, morpheusMatch DESC, orderedID
-    LIMIT $limit
+    ORDER BY (${searchableField} = ?2) DESC, morpheusMatch DESC, orderedID
+    LIMIT ?4
   `;
 }
 
@@ -297,10 +315,10 @@ function buildOtherLookupSql(
       1 AS directMatch,
       0 AS morpheusMatch
     FROM bailly
-    WHERE ${searchableField} ${operator} $query
-      AND ${searchableField} IS NOT $exactQuery
+    WHERE ${searchableField} ${operator} ?1
+      AND ${searchableField} IS NOT ?2
     ORDER BY orderedID
-    LIMIT $limit
+    LIMIT ?4
   `;
 }
 
@@ -308,7 +326,7 @@ function buildCountSql(
   searchableField: string,
   operator: ComparisonOperator
 ): string {
-  return `SELECT COUNT(*) FROM bailly ${
+  return `SELECT COUNT(*) AS count FROM bailly ${
     buildWhereClause(searchableField, operator)
   }`;
 }
@@ -319,7 +337,7 @@ function buildCountSql(
  * column × operator), so that no request pays for their compilation, even
  * right after a restart. Returns the number of prepared statements.
  */
-export async function preloadLookupStatements(): Promise<number> {
+export function preloadLookupStatements(db: Dictionary): number {
   const optionalFields = Settings.getSettings().queryAllowedFields
     .filter((field) => field !== "word");
 
@@ -335,12 +353,12 @@ export async function preloadLookupStatements(): Promise<number> {
 
   for (const searchableField of SEARCHABLE_FIELDS) {
     for (const operator of COMPARISON_OPERATORS) {
-      await Database.prepare(buildCountSql(searchableField, operator));
+      db.prepare(buildCountSql(searchableField, operator));
       count++;
 
       for (const fields of fieldSets) {
         for (const buildSql of [buildPriorityLookupSql, buildOtherLookupSql]) {
-          await Database.prepare(buildSql(fields, searchableField, operator));
+          db.prepare(buildSql(fields, searchableField, operator));
           count++;
         }
       }
@@ -390,12 +408,11 @@ function getMorpheusAnalysesSearchableKeys(
 }
 
 async function getMorpheusAnalyses(
+  morpheus: Morpheus,
   greekStr: string,
   caseSensitive: boolean,
   diacriticSensitive: boolean
 ): Promise<MorpheusResponse> {
-  const morpheus = await Morpheus.getMorpheus();
-
   // @TODO Add a jokers interpreter in `morpheus.lookup()` to support them.
   if (/[*?]/.test(greekStr)) return {};
 
@@ -552,16 +569,20 @@ function validateQueryStr(greekStr: string): boolean {
   );
 }
 
-export async function getEntries<K extends keyof QueryableFields>({
-  q,
-  inputMode,
-  fields,
-  morphology,
-  caseSensitive,
-  diacriticSensitive,
-  limit,
-  skipMorpheus
-}: ApiLookupParams<K>): Promise<
+export async function getEntries<K extends keyof QueryableFields>(
+  db: Dictionary,
+  morpheus: Morpheus,
+  {
+    q,
+    inputMode,
+    fields,
+    morphology,
+    caseSensitive,
+    diacriticSensitive,
+    limit,
+    skipMorpheus
+  }: ApiLookupParams<K>
+): Promise<
   ApiLookupResponse<K> | ApiLookupResponse<never>
 > {
   const settings = Settings.getSettings();
@@ -594,6 +615,7 @@ export async function getEntries<K extends keyof QueryableFields>({
   );
 
   const morpheusAnalyses = skipMorpheus ? {} : await getMorpheusAnalyses(
+    morpheus,
     surfaceForm,
     caseSensitive,
     diacriticSensitive
@@ -614,7 +636,7 @@ export async function getEntries<K extends keyof QueryableFields>({
   const otherSql = buildOtherLookupSql(fields, searchableField, comparisonOperator);
   const countSql = buildCountSql(searchableField, comparisonOperator);
 
-  const $query = (() => {
+  const query = (() => {
     switch (lookupMode) {
       case LookupMode.exact:
         return searchStr;
@@ -629,55 +651,51 @@ export async function getEntries<K extends keyof QueryableFields>({
   // The query without its leading and trailing `*`, if it has no other wildcard: the
   // search key of an exact match. `null` matches nothing (no exact match possible).
   const exactSearchStr = searchStr.replace(/^\*+|\*+$/g, "");
-  const $exactQuery = /[*?]/.test(exactSearchStr) ? null : exactSearchStr;
+  const exactQuery = /[*?]/.test(exactSearchStr) ? null : exactSearchStr;
 
-  const $morpheusSearchableKeys = JSON.stringify(morpheusSearchableKeys);
-
-  const $limit = limit && limit <= settings.queryMaxRows
+  const limitValue = limit && limit <= settings.queryMaxRows
     ? limit
     : settings.queryMaxRows === Infinity
     ? -1
     : settings.queryMaxRows;
 
+  const params: LookupParams = [
+    query,
+    exactQuery,
+    JSON.stringify(morpheusSearchableKeys),
+    limitValue
+  ];
+
   // The SQL text only varies within a closed set (search column, operator, set of
   // selected fields): the statements are prepared at startup and then reused.
   // Exact matches and Morpheus lemmas first, then the other matches within what is
-  // left of the limit (cf. `buildPriorityLookupSql()`).
-  const priorityData = <MatchedDatabaseEntry[]> (
-    (await Database.prepare(prioritySql)).all({
-      $query,
-      $exactQuery,
-      $morpheusSearchableKeys,
-      $limit
-    })
-  );
+  // left of the limit (cf. `buildPriorityLookupSql()`). Both statements go in one
+  // batch (one round trip on D1): the other rows are limited to `limit` too, and
+  // trimmed below to what the priority rows leave.
+  const [priorityData, otherRows] = await db.batch<MatchedDatabaseEntry>([
+    { sql: prioritySql, params: params as readonly SqlValue[] },
+    { sql: otherSql, params: params as readonly SqlValue[] }
+  ]) as [MatchedDatabaseEntry[], MatchedDatabaseEntry[]];
 
-  const otherLimit = $limit === -1 ? -1 : $limit - priorityData.length;
+  const otherLimit = limitValue === -1 ? -1 : limitValue - priorityData.length;
 
   // The Morpheus lemmas that are also direct matches come back here and are removed
   // (cf. `buildOtherLookupSql()`). They all are among the priority rows (unless those
-  // already fill the limit, in which case this statement is not run): at most
-  // `priorityData.length` rows are removed, so `$limit` rows are enough.
+  // already fill the limit, in which case none is kept): at most
+  // `priorityData.length` rows are removed, so `limit` rows are enough.
   const morpheusKeys = new Set(morpheusSearchableKeys);
 
-  const otherData = otherLimit === 0 ? [] : (
-    <MatchedDatabaseEntry[]> (await Database.prepare(otherSql)).all({
-      $query,
-      $exactQuery,
-      $limit
-    })
-  )
+  const otherData = otherLimit === 0 ? [] : otherRows
     .filter((entry) => !morpheusKeys.has(entry.searchable!))
     .slice(0, otherLimit === -1 ? undefined : otherLimit);
 
   const data = [...priorityData, ...otherData];
 
-  const countAll = $limit === -1 || data.length < $limit
+  const countAll = limitValue === -1 || data.length < limitValue
     ? data.length
-    : (await Database.prepare(countSql)).value<[number]>({
-      $query,
-      $morpheusSearchableKeys
-    })?.[0] ?? data.length;
+    // (D1 wants exactly as many values as the highest parameter number: 3 here.)
+    : (await db.get<{ count: number }>(countSql, params.slice(0, 3)))
+      ?.count ?? data.length;
 
   let internalResponse: LookupResponse = {
     data: {
@@ -711,7 +729,7 @@ export async function getEntries<K extends keyof QueryableFields>({
         ];
 
         const isExact = lookupMode === LookupMode.exact ||
-          ($exactQuery !== null && $exactQuery === searchableFieldValue);
+          (exactQuery !== null && exactQuery === searchableFieldValue);
 
         const isMorpheus = Boolean(entry.morpheusMatch) &&
           !Boolean(entry.directMatch);

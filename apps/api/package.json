@@ -1,0 +1,42 @@
+{
+  "name": "bailly-api",
+  "version": "2.0.0",
+  "private": true,
+  "description": "API of the Bailly application (Greek–French dictionary): dictionary entries, lookups and morphological analysis.",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=.env src/node.ts",
+    "start": "node src/node.ts",
+    "dev:worker": "wrangler dev",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --project node",
+    "test:workers": "vitest run --project workers",
+    "test:all": "vitest run",
+    "db:pack": "node scripts/db_pack.ts",
+    "morpheus:data": "node scripts/morpheus_data.ts",
+    "d1:local": "node scripts/d1_local_import.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.6",
+    "@humanities/greek-conversion": "1.0.0-beta.8",
+    "@libmorpheus/wasm": "^0.1.1",
+    "hono": "^4.13.16"
+  },
+  "devDependencies": {
+    "@libmorpheus/node": "^0.1.1",
+    "@types/node": "^22.19.0",
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.0",
+    "wrangler": "^4.124.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "esbuild@0.28.2": true,
+    "workerd@1.20260815.1": true,
+    "workerd@1.20261102.1": true
+  }
+}

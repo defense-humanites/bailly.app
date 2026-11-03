@@ -1,6 +1,7 @@
-import { assert, assertEquals } from "@std/assert";
-import { app } from "../src/index.ts";
-import { Morpheus } from "../src/Morpheus.ts";
+import { assert, assertEquals } from "./support/assert.ts";
+import { app, morpheusAvailable } from "#test-app";
+import { json } from "./support/http.ts";
+import { test } from "./support/test.ts";
 
 /*
  * Order of the `/lookup` results, *before* the limit is applied: exact matches (the
@@ -12,11 +13,10 @@ import { Morpheus } from "../src/Morpheus.ts";
  * returned 30 compounds, but not λόγος; an inflected form could lose its lemma the
  * same way.
  *
- * The Morpheus tests need libmorpheus (MORPHEUS_LIBRARY_PATH, MORPHEUS_STEMLIB_PATH):
- * they are ignored when it is not available.
+ * The Morpheus tests need the Morpheus stem data (`npm run morpheus:data`): they
+ * are ignored when it is not available.
  */
 
-const morpheusAvailable = (await Morpheus.getMorpheus()).isAvailable;
 
 type LookupEntry = {
   uri: string;
@@ -32,7 +32,7 @@ const lookup = async (q: string, params = ""): Promise<LookupData> => {
     `/lookup/${encodeURIComponent(q)}?fields=uri${params}`
   );
   assertEquals(response.status, 200);
-  return (await response.json()).data;
+  return (await json(response)).data;
 };
 
 const uris = (data: LookupData): string[] => data.entries.map((entry) => entry.uri);
@@ -45,7 +45,7 @@ const rowURIs = (data: LookupData): string[] =>
 
 for (const q of ["λογος$", "*λογος"]) {
   for (const params of ["&skipMorpheus=true", ""]) {
-    Deno.test({
+    test({
       name: `GET /lookup/${q}?limit=30${params}: λόγος first`,
       ignore: params === "" && !morpheusAvailable,
       fn: async () => {
@@ -60,13 +60,13 @@ for (const q of ["λογος$", "*λογος"]) {
   }
 }
 
-Deno.test("GET /lookup/λογος$?limit=1: only λόγος", async () => {
+test("GET /lookup/λογος$?limit=1: only λόγος", async () => {
   const data = await lookup("λογος$", "&limit=1&skipMorpheus=true");
   assertEquals(uris(data), ["logos"]);
   assert(data.countAll > 1);
 });
 
-Deno.test("GET /lookup/ης?limit=2: homonyms stay grouped", async () => {
+test("GET /lookup/ης?limit=2: homonyms stay grouped", async () => {
   // ἦς (1) has two homonyms, both exact: the first row is enough to rank them first.
   const data = await lookup("ης", "&limit=2&skipMorpheus=true");
   assertEquals(uris(data), ["ês_(1)"]);
@@ -74,7 +74,7 @@ Deno.test("GET /lookup/ης?limit=2: homonyms stay grouped", async () => {
   assert(data.entries[0].isExact);
 });
 
-Deno.test({
+test({
   name: "GET /lookup/λογοι?limit=3: the lemma is kept when the limit is reached",
   ignore: !morpheusAvailable,
   fn: async () => {
@@ -86,7 +86,7 @@ Deno.test({
   }
 });
 
-Deno.test({
+test({
   name: "GET /lookup/πολυ?limit=2: exact match, then the lemma, then the prefixes",
   ignore: !morpheusAvailable,
   fn: async () => {
@@ -117,7 +117,7 @@ const prefixCases: [string, string][] = [
 ];
 
 for (const [q, params] of prefixCases) {
-  Deno.test({
+  test({
     name: `GET /lookup/${q}${params}: limited results = beginning of the results`,
     ignore: params === "" && !morpheusAvailable,
     fn: async () => {

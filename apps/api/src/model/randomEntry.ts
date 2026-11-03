@@ -1,4 +1,4 @@
-import { Database } from "../Database.ts";
+import type { Dictionary, SqlValue } from "../db/dictionary.ts";
 import type {
   ApiRandomEntryParams,
   ApiRandomEntryResponse,
@@ -20,13 +20,15 @@ import { getEntry } from "./entry.ts";
 export async function getRandomEntry<
   K extends keyof QueryableFields,
   S extends keyof QueryableFields = K
->({
-  fields,
-  lengthRange,
-  siblings: getSiblings,
-  siblingsFields
-}: ApiRandomEntryParams<K, S>): Promise<ApiRandomEntryResponse<K, S>> {
-  const db = await Database.getConnection();
+>(
+  db: Dictionary,
+  {
+    fields,
+    lengthRange,
+    siblings: getSiblings,
+    siblingsFields
+  }: ApiRandomEntryParams<K, S>
+): Promise<ApiRandomEntryResponse<K, S>> {
   const settings = Settings.getSettings();
   const fieldsStr: string = fields.join(", ");
 
@@ -34,25 +36,25 @@ export async function getRandomEntry<
   const uriRequested = (fields as string[]).includes("uri");
   const selectedFields = getSiblings && !uriRequested ? `${fieldsStr}, uri` : fieldsStr;
 
+  const params: SqlValue[] = lengthRange
+    ? lengthRange[1] ? [lengthRange[0], lengthRange[1]] : [lengthRange[0]]
+    : [];
+
   const sql = `
     SELECT length(definition) as length, ${selectedFields}
     FROM bailly
     ${
     lengthRange
       ? !lengthRange[1]
-        ? `WHERE length(definition) >= ${lengthRange[0]}`
-        : `WHERE length(definition) >= ${lengthRange[0]} AND length(definition) <= ${
-          lengthRange[1]
-        }`
+        ? "WHERE length(definition) >= ?1"
+        : "WHERE length(definition) >= ?1 AND length(definition) <= ?2"
       : ""
   }
     ORDER BY random()
     LIMIT 1
   `;
 
-  const entry = <(Partial<DatabaseEntry> & { length: number }) | null> (
-    db.prepare(sql).get()
-  );
+  const entry = await db.get<Partial<DatabaseEntry> & { length: number }>(sql, params);
 
   if (!entry) {
     return {
@@ -72,7 +74,7 @@ export async function getRandomEntry<
   if (!uriRequested) delete props.uri;
 
   const siblings = getSiblings && uri
-    ? (await getEntry<"uri", S>({
+    ? (await getEntry<"uri", S>(db, {
       q: uri,
       fields: ["uri"],
       siblings: true,

@@ -1,5 +1,7 @@
-import { assert, assertEquals } from "@std/assert";
-import { app } from "../src/index.ts";
+import { assert, assertEquals } from "./support/assert.ts";
+import { app } from "#test-app";
+import { json } from "./support/http.ts";
+import { test } from "./support/test.ts";
 
 /*
  * Siblings of a random entry (`GET /entry/random?siblings=true&siblingsFields=…`):
@@ -22,7 +24,7 @@ type RandomData = {
 const get = async <T>(url: string): Promise<T> => {
   const response = await app.request(url);
   assertEquals(response.status, 200, url);
-  return (await response.json()).data;
+  return (await json(response)).data;
 };
 
 const random = (params: string) => get<RandomData>(`/entry/random?${params}`);
@@ -40,7 +42,7 @@ const HOME_PAGE =
   "fields=word,uri,excerpt,htmlDefinition&lengthRange=400,700&siblings=true" +
   "&siblingsFields=word,uri,excerpt";
 
-Deno.test("GET /entry/random?siblings=true: same siblings as GET /entry/:uri", async () => {
+test("GET /entry/random?siblings=true: same siblings as GET /entry/:uri", async () => {
   for (let i = 0; i < 10; i++) {
     const data = await random(HOME_PAGE);
     const uri = String(data.entry.uri);
@@ -49,7 +51,7 @@ Deno.test("GET /entry/random?siblings=true: same siblings as GET /entry/:uri", a
   }
 });
 
-Deno.test("GET /entry/random: `siblingsFields` respected, the entry keeps `fields`", async () => {
+test("GET /entry/random: `siblingsFields` respected, the entry keeps `fields`", async () => {
   const data = await random(HOME_PAGE);
   assertEquals(keys(data.entry), ["excerpt", "htmlDefinition", "uri", "word"]);
   assert(data.length >= 400 && data.length <= 700);
@@ -58,21 +60,21 @@ Deno.test("GET /entry/random: `siblingsFields` respected, the entry keeps `field
   }
 });
 
-Deno.test("GET /entry/random: siblings with `fields` by default", async () => {
+test("GET /entry/random: siblings with `fields` by default", async () => {
   const data = await random("fields=word,uri&siblings=true");
   for (const side of ["previous", "next"] as const) {
     assertEquals(keys(data.siblings?.[side]), ["uri", "word"], side);
   }
 });
 
-Deno.test("GET /entry/random: siblings without `uri` in `fields`", async () => {
+test("GET /entry/random: siblings without `uri` in `fields`", async () => {
   // The URI is read to find the siblings, but not added to the entry.
   const data = await random("fields=word&siblings=true&siblingsFields=word,uri");
   assertEquals(keys(data.entry), ["word"]);
   assert(data.siblings?.previous?.uri || data.siblings?.next?.uri);
 });
 
-Deno.test("GET /entry/random: group of homonyms, `lengthRange` not applied to the siblings", async () => {
+test("GET /entry/random: group of homonyms, `lengthRange` not applied to the siblings", async () => {
   // ἄνω (2) #2 is the only entry whose definition has 3,960 characters: the draw is
   // forced. Its siblings are those of its group (ἄνω (2) #1, #2), as for
   // `GET /entry/anô_(2)#2`, and their definitions are not of this length.
@@ -85,7 +87,7 @@ Deno.test("GET /entry/random: group of homonyms, `lengthRange` not applied to th
   assertEquals(data.siblings?.next?.uri, "anôga");
 });
 
-Deno.test("GET /entry/:uri at both ends of the dictionary: a single sibling", async () => {
+test("GET /entry/:uri at both ends of the dictionary: a single sibling", async () => {
   // A random draw cannot be forced on them (their lengths are shared by hundreds of
   // entries); `GET /entry/random` uses the same code as `GET /entry/:uri`.
   assertEquals(await entrySiblings("A", "word,uri"), {
@@ -98,7 +100,7 @@ Deno.test("GET /entry/:uri at both ends of the dictionary: a single sibling", as
   });
 });
 
-Deno.test("GET /entry/random without `siblings`: response unchanged", async () => {
+test("GET /entry/random without `siblings`: response unchanged", async () => {
   for (const params of ["fields=word,uri", "fields=word,uri&siblings=false"]) {
     const data = await random(params);
     assertEquals(keys(data), ["$query", "entry", "length", "version"], params);
