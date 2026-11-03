@@ -109,6 +109,28 @@ test.describe("bookmarks page", () => {
     await expect(page.getByRole("menu")).toHaveCount(1);
   });
 
+  test("a menu's button clicked again closes it, as Safari focuses the page meanwhile", async ({ page }) => {
+    // As Safari on macOS: a button pressed isn't focused, the pages'
+    // scroller (focusable) is.
+    await page.evaluate(() => {
+      document.addEventListener("mousedown", (event) => {
+        if (!(event.target instanceof Element) || !event.target.closest("button")) return;
+        event.preventDefault();
+        document.querySelector<HTMLElement>("main#page")?.focus({ preventScroll: true });
+      }, true);
+    });
+    const bar = page.getByRole("group", { name: "Étiquettes" });
+    for (const name of ["Affichage", "Fichiers"]) {
+      const button = bar.getByRole("button", { name });
+      await button.click();
+      await expect(button).toHaveAttribute("aria-expanded", "true");
+      await button.click();
+      await expect(button).toHaveAttribute("aria-expanded", "false");
+      await page.waitForTimeout(200);
+      await expect(button).toHaveAttribute("aria-expanded", "false");
+    }
+  });
+
   test("editing with the keyboard: rename, delete with an undo", async ({ page }) => {
     const edit = page.getByRole("button", { name: "Modifier l'étiquette « Vide »" });
     await edit.focus();

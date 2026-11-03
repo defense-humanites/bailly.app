@@ -31,6 +31,22 @@
     if (!useNuxtApp().isHydrating) focusScroller();
   });
 
+  /**
+   * The focus Safari gives the scroller (focusable, cf. `tabindex`) as a
+   * pointer presses what it doesn't focus itself (a button, text…) is not
+   * told to the document: Reka's layers (menus, popovers, lists) took it for
+   * the focus leaving them, and closed; their button pressed again to close
+   * one, the click then opened it again (it took a third click). A press
+   * outside a layer still closes it (Reka's `pointerDownOutside`).
+   */
+  let pointerDownAt = -Infinity;
+  useEventListener(main, "pointerdown", () => {
+    pointerDownAt = performance.now();
+  }, { capture: true, passive: true });
+  useEventListener(main, "focusin", (event: FocusEvent) => {
+    if (event.target === main.value && performance.now() - pointerDownAt < 100) event.stopPropagation();
+  });
+
   onBeforeUnmount(() => {
     forget?.();
     // (Another layout's may already be there.)
