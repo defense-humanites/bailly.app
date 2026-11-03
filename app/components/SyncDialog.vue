@@ -466,11 +466,6 @@
   const sameKey = computed(() => Boolean(linkKey.value && enabled.value && syncStore.hasKey(linkKey.value)));
 
   /**
-   * Whether joining replaces this device's key (cf. the window's footer).
-   */
-  const replacing = computed((): boolean => enabled.value && !sameKey.value);
-
-  /**
    * Joins with the words typed or the key of the link (which replaces this
    * device's key, if any, once the first synchronization succeeded).
    */
@@ -1255,14 +1250,15 @@
         Replacing this device's key (a link, or words, while it synchronizes
         with another): in gold, as the warning above it (a confirmation, with
         care: its bookmarks join the new key's for good; red is for what
-        deletes), and the buttons apart, as the stop's window.
+        deletes). The buttons apart, as the stop's window: the way back on
+        the left, the action on the right.
       -->
       <template v-if="view === 'join'">
         <UButton
           :label="linkKey ? 'Annuler' : 'Retour'"
           color="neutral"
           variant="outline"
-          :class="{ 'me-auto': replacing }"
+          class="me-auto"
           @click="linkKey ? (open = false) : (view = scopeEnabled ? 'status' : 'intro')"
         />
         <UButton
