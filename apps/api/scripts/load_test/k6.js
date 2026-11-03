@@ -12,11 +12,17 @@
  * take more than 3 s (the production API must not suffer for long).
  *
  * Mix: lookups 75 %, entries 20 %, random entries 3 %, excerpt batches 2 %.
+ *
+ * Against the Worker, its `Server-Timing` header (cf. `src/worker.ts`) sorts the
+ * requests: `cold_starts`, the share that started an isolate (their number is that of
+ * the isolates), and the durations of the requests that started one (`cold`), waited
+ * for one to start (`warming`) or found it ready (`warm`).
  */
 
 import http from "k6/http";
 import { check } from "k6";
 import { SharedArray } from "k6/data";
+import { Rate, Trend } from "k6/metrics";
 
 const TARGET = __ENV.TARGET;
 if (!TARGET) throw new Error("TARGET is required (the API's base URL).");
@@ -28,6 +34,13 @@ const urls = new SharedArray("urls", () => {
   const all = JSON.parse(open("../../database/load-urls.json"));
   return [all];
 })[0];
+
+const coldStarts = new Rate("cold_starts");
+const durations = {
+  cold: new Trend("cold_req_duration", true),
+  warming: new Trend("warming_req_duration", true),
+  warm: new Trend("warm_req_duration", true)
+};
 
 const MIX = [
   ["lookup", 0.75],
@@ -85,4 +98,15 @@ export default function () {
     headers: { "User-Agent": "bailly-load-test" }
   });
   check(response, { "status 200": (r) => r.status === 200 });
+
+  const timing = response.headers["Server-Timing"] ?? "";
+  if (timing.includes("isolate")) {
+    const start = /\bcold\b/.test(timing)
+      ? "cold"
+      : /\bwarming\b/.test(timing)
+      ? "warming"
+      : "warm";
+    coldStarts.add(start === "cold");
+    durations[start].add(response.timings.duration, { kind });
+  }
 }
