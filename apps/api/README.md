@@ -81,10 +81,24 @@ que `src/worker.ts` importe : il doit tourner avant tout build du Worker (comman
 de build de Workers Builds : `npm run morpheus:data`, déploiement par
 `wrangler deploy`). Bundle : ~7 Mio non compressés (1,5 Mio compressés).
 
-Base de production : une base D1 par révision (`bailly-dictionary`, identifiant à
-reporter dans `wrangler.jsonc`), importée par `wrangler d1 import` depuis un export
-SQL de la révision ; la bascule d'une révision à l'autre se fait en changeant le
+Base de production : la base D1 du binding `DB` de `wrangler.jsonc`. D1 n'importe que
+du SQL, sans transaction, et refuse toute instruction de plus de 100 Ko :
+`npm run d1:export` écrit la révision courante en SQL dans ces limites
+(`database/bailly-revN.sql`, ~200 Mo ; les 18 lignes trop longues pour une instruction
+y sont complétées par morceaux), puis :
+
+```sh
+npx wrangler d1 execute DB --remote --file=database/bailly-rev5.sql
+```
+
+L'import supprime d'abord les tables : il peut être rejoué. Pour changer de révision
+sans interruption, importer dans une nouvelle base et changer l'identifiant du
 binding. `npm run types` est à relancer quand `wrangler.jsonc` change.
+
+D1 refuse aussi les motifs `LIKE` et `GLOB` de plus de 50 octets (25 lettres
+grecques) : les recherches par préfixe, suffixe ou sous-chaîne s'en passent (cf.
+`MatchKind` dans `src/model/lookup.ts`), et un motif à jokers plus long (`?`, `*`
+intérieur) donne une réponse vide, sur les deux plateformes.
 
 `@humanities/bailly-search-key`, qui calcule les clés de recherche (partagées avec le
 convertisseur des données), n'est publié que sur JSR : ses sources sont copiées

@@ -33,12 +33,15 @@ export async function getEntry<
   // Remove from the query any trailing substring starting with a hash.
   q = q.replace(/#\d?$/, "");
 
-  // The entry can be either a single word or 2+ words ending with a hash and a number.
+  // The entry can be either a single word or 2+ words ending with a hash and a number
+  // (`λόγος#1`): the URI followed by `#` and one character, a range on the index of
+  // `uri` rather than a `GLOB` (D1 refuses patterns longer than 50 bytes, and the
+  // URI would be read as a pattern).
   const entriesSql = `
     SELECT orderedID, ${!fieldsStr.includes("word") ? `word, ${fieldsStr}` : fieldsStr}
     FROM bailly
     WHERE uri = ?1
-    OR uri GLOB ?2
+    OR (uri > ?1 || '#' AND uri < ?1 || '$' AND length(uri) = length(?1) + 2)
   `;
 
   // The URI as is first, then its normalized form if it matches nothing: both in
@@ -49,7 +52,7 @@ export async function getEntry<
   >(
     [q, ...(normalizedQ !== q ? [normalizedQ] : [])].map((uri) => ({
       sql: entriesSql,
-      params: [uri, `${uri}#?`]
+      params: [uri]
     }))
   );
   const data = asIs!.length ? asIs! : normalized;

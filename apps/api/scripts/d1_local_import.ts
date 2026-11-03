@@ -17,7 +17,8 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { DATABASE } from "../src/defaults.ts";
 
-const DATABASE_NAME = "bailly-dictionary";
+// The binding of `wrangler.jsonc` (Wrangler accepts it in place of the name).
+const DATABASE_BINDING = "DB";
 const PERSIST_PATH = ".wrangler/state/v3/d1/miniflare-D1DatabaseObject";
 
 if (!existsSync(DATABASE.filePath)) {
@@ -32,7 +33,7 @@ if (!existsSync(DATABASE.filePath)) {
 // derived by workerd: it cannot be computed here, only found).
 const created = spawnSync(
   "npx",
-  ["wrangler", "d1", "execute", DATABASE_NAME, "--local", "--command", "SELECT 1"],
+  ["wrangler", "d1", "execute", DATABASE_BINDING, "--local", "--command", "SELECT 1"],
   { stdio: ["ignore", "ignore", "inherit"] }
 );
 

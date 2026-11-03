@@ -118,6 +118,15 @@ describe("GET /entry: malformed URIs", () => {
 
 describe("GET /entry: no false matches", () => {
   runCases([
+    // A URI is not a pattern (`?`, `*`), and only one character follows `#`.
+    ["oudo?", null],
+    ["oudo*", null],
+    // Long URIs (over the 50 bytes of a D1 pattern).
+    ["enneakaieikosikaieptakosioplasiakis", {
+      uri: "enneakaieikosikaieptakosioplasiakis",
+      word: "ἐννεακαιεικοσικαιεπτακοσιοπλασιάκις"
+    }],
+    ["enneakaieikosikaieptakosioplasiakisx", null],
     // The normalization must not add nor remove any rough breathing.
     ["omoios", null],
     ["hhomoios", null]

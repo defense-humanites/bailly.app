@@ -67,3 +67,23 @@ test("GET /lookup/ζζζζζ: invalid query, empty response", async () => {
   const data = await lookup("ζζζζζ");
   assertEquals([data.count, data.countAll, data.entries], [0, 0, []]);
 });
+
+/*
+ * Long search keys: D1 refuses `LIKE` and `GLOB` patterns longer than 50 bytes (25
+ * Greek letters), which a lookup must thus not send for a prefix, a suffix or a
+ * substring (cf. `MatchKind` in `src/model/lookup.ts`).
+ */
+const LONG = "εννεακαιεικοσικαιεπτακοσιοπλασιακις"; // 35 letters, 70 bytes
+
+test("GET /lookup: long key, every kind of match", async () => {
+  const expected = ["enneakaieikosikaieptakosioplasiakis"];
+  assertEquals(uris(await lookup(LONG)), expected);
+  assertEquals(uris(await lookup(`"${LONG}"`)), expected);
+  assertEquals(uris(await lookup(`${LONG}$`)), expected);
+  assertEquals(uris(await lookup(`*${LONG.slice(5)}`)), expected);
+});
+
+test("GET /lookup: a `GLOB` pattern over 50 bytes gives an empty response", async () => {
+  const data = await lookup(`${LONG.slice(0, 20)}?${LONG.slice(21)}`);
+  assertEquals([data.count, data.countAll, data.entries], [0, 0, []]);
+});

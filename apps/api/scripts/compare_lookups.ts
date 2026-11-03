@@ -7,7 +7,9 @@
  *     30 and 100 (`λογ`: prefix lookup, precomputed count, ordered variant);
  *   - every suffix of 2 to 4 letters, limit 30 (`λογος$`: reversed keys);
  *   - every prefix of 1 to 3 letters of the three other columns, limit 30;
- *   - samples of exact lookups (`"λόγος"`) and of lookups with Morpheus.
+ *   - samples of exact lookups (`"λόγος"`), of lookups with Morpheus (full keys:
+ *     prefix lookups), of substrings (`*ογο`) and of `GLOB` patterns (`λ?γος`, at
+ *     most 50 bytes: the longer ones give an empty response, by design).
  *
  * Usage (development only; the database with the derived data, the stem data):
  *   node scripts/compare_lookups.ts [sample size]
@@ -142,6 +144,28 @@ for (const word of words) {
     morpheus,
     label: `${word}$ morpheus limit=30`
   });
+}
+
+// Substrings and patterns, from a sample of the keys.
+for (const word of words.slice(0, Math.ceil(sampleSize / 10))) {
+  const letters = [...word];
+  if (letters.length < 4) continue;
+
+  const middle = letters.slice(1, 4).join("");
+  cases.push({
+    params: { ...baseParams(`*${middle}`), limit: 30 },
+    morpheus: noMorpheus,
+    label: `*${middle}* limit=30`
+  });
+
+  const pattern = [letters[0], "?", ...letters.slice(2)].join("");
+  if (new TextEncoder().encode(pattern).length <= 50) {
+    cases.push({
+      params: { ...baseParams(pattern), limit: 30 },
+      morpheus: noMorpheus,
+      label: `${pattern} limit=30`
+    });
+  }
 }
 
 console.info(`Comparing ${cases.length.toLocaleString("en")} lookups...`);
