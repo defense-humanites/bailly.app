@@ -1,4 +1,5 @@
-import { fileURLToPath } from "node:url";
+// `URL` from Node.js: the global one is typed by the Workers types here.
+import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vitest/config";
 
 /*

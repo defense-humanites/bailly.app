@@ -33,7 +33,7 @@ des `vars` de `wrangler.jsonc`.
 
 ## Mise en route
 
-Prérequis : Node.js 22.18 ou plus récent (les sources TypeScript sont exécutées
+Prérequis : Node.js 24 ou plus récent (les sources TypeScript sont exécutées
 directement, sans compilation) et npm 11.
 
 ```sh

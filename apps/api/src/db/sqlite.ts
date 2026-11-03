@@ -1,5 +1,5 @@
 /**
- * `Dictionary` over a SQLite file, through `node:sqlite` (Node.js 22.13+, built in:
+ * `Dictionary` over a SQLite file, through `node:sqlite` (Node.js 24+, built in:
  * no native build step). Used by the Node.js server and by the tests.
  *
  * The file is opened read-only and immutable (`?immutable=1`: no locking, no journal

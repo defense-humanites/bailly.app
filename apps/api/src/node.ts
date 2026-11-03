@@ -3,7 +3,7 @@
  * SQLite file and Morpheus in WebAssembly, its stem data read from the directory
  * acquired by `npm run morpheus:data`.
  *
- * `node src/node.ts` (Node.js 22.18+ runs the TypeScript sources directly).
+ * `node src/node.ts` (Node.js 24+ runs the TypeScript sources directly).
  */
 
 import { serve } from "@hono/node-server";
