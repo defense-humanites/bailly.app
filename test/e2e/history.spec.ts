@@ -33,6 +33,10 @@ test.describe("history of the viewed entries", () => {
   test("newest first, as wide as the bar, leading to the entries", async ({ page, goto }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await goto("/logos", { waitUntil: "hydration" });
+    // The entry is added to the history once its page is mounted (IndexedDB):
+    // waited for, lest the next page load interrupt the write.
+    await openHistory(page);
+    await expect(historyLinks(page)).toHaveCount(1);
     await goto("/logades", { waitUntil: "hydration" });
 
     await openHistory(page);
