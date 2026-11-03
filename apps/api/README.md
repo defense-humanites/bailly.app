@@ -116,6 +116,18 @@ Les deux projets Vitest (`vitest.config.ts`) font tourner les mêmes fichiers de
 `#test-app` désigne l'application sous test de la plateforme (`tests/support/`). Les
 tests de Morpheus sont ignorés sans les données (`npm run morpheus:data`).
 
+### Test de charge
+
+`scripts/load_test/` rejoue les requêtes du front (frappe lettre à lettre avec
+Morpheus, pages d'entrée, entrées au hasard, extraits), tirées de la base, contre un
+déploiement de l'API, avec [k6](https://k6.io) :
+
+```sh
+node scripts/load_test/urls.ts            # database/load-urls.json
+node scripts/load_test/compare.ts <URL A> <URL B>   # mêmes réponses ?
+k6 run -e TARGET=<URL> scripts/load_test/k6.js       # paliers de 5, 10, 20, 40 req/s
+```
+
 `scripts/compare_lemmatizers.ts` compare les résultats de Morpheus (module
 WebAssembly contre bibliothèque native, par `@libmorpheus/node`) sur toutes les
 vedettes du dictionnaire.
