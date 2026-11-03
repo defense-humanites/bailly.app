@@ -1,4 +1,3 @@
-import { convert } from "@humanities/greek-conversion";
 import type { Dictionary, SqlStatement } from "../db/dictionary.ts";
 import type {
   ApiLookupParams,
@@ -16,6 +15,7 @@ import {
   type MorpheusResponse,
   type Morphology
 } from "../Morpheus.ts";
+import { queryToGreek } from "../greek.ts";
 import { toBaillySearchKey, toSearchKey } from "../searchKey.ts";
 import { Settings } from "../Settings.ts";
 import {
@@ -772,8 +772,8 @@ export async function getEntries<K extends keyof QueryableFields>(
 > {
   const settings = Settings.getSettings();
 
-  if (["beta-code", "transliteration"].includes(inputMode)) {
-    q = convert(q, inputMode, "greek");
+  if (inputMode === "beta-code" || inputMode === "transliteration") {
+    q = queryToGreek(q, inputMode);
   }
 
   const {

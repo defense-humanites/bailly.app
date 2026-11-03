@@ -1,4 +1,4 @@
-import type { Format as GreekConversionFormat } from "@humanities/greek-conversion";
+import type { Format as GreekConversionFormat } from "./greek.ts";
 import type { MorpheusResponse, Morphology } from "./Morpheus.ts";
 
 export type NonEmptyArray<T> = [T, ...T[]];

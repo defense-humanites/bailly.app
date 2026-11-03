@@ -1,4 +1,3 @@
-import { reencode } from "@humanities/greek-conversion";
 import type { Dictionary } from "../db/dictionary.ts";
 import type {
   ApiEntryParams,
@@ -8,20 +7,8 @@ import type {
   PartialExcept,
   QueryableFields
 } from "../definitions.ts";
+import { normalizeUri } from "../greek.ts";
 import { Settings } from "../Settings.ts";
-
-/**
- * Normalize a malformed URI (e.g. "hódos" or "hēmera" for "hodos" and "hêmera").
- * @param q A query string.
- */
-function normalizeUri(q: string): string {
-  return reencode(q, "transliteration", {
-    removeDiacritics: true,
-    orthography: {
-      longVowels: "circumflex"
-    }
-  });
-}
 
 /**
  * @param siblingsFields The fields of the siblings (with `siblings`), `fields` by

@@ -1,6 +1,10 @@
-import { convert } from "@humanities/greek-conversion";
 import type { ApiLookupParams } from "./definitions.ts";
 import { SpecialChar } from "./enums.ts";
+import {
+  fromMorpheusBetaCode,
+  lemmaToGreek,
+  toMorpheusBetaCode
+} from "./greek.ts";
 import { graveToAcute } from "./helpers.ts";
 import type { Lemmatizer, MorpheusAnalysis } from "./morpheus/lemmatizer.ts";
 import { Settings } from "./Settings.ts";
@@ -94,15 +98,6 @@ export function buildBreathingVariants(word: string): string[] {
   return [word];
 }
 
-/**
- * Converts a Beta Code word of Morpheus to Greek, without its quantity marks, in NFC
- * (as the dictionary data): `convert()` gives the acute as an oxia (e.g. U+1F73),
- * which NFC turns into a tonos (U+03AD).
- */
-function betaCodeToGreek(betaCode: string): string {
-  return convert(betaCode.replace(/[_^]/g, ""), "beta-code", "greek").normalize("NFC");
-}
-
 /** The two words of a crasis reading, in Greek; `undefined` for another reading. */
 export function getCrasis(
   { crasis, workword }: Pick<MorpheusAnalysis, "crasis" | "workword">
@@ -110,8 +105,8 @@ export function getCrasis(
   if (!crasis) return undefined;
 
   return {
-    first: betaCodeToGreek(crasis),
-    second: betaCodeToGreek(workword)
+    first: fromMorpheusBetaCode(crasis),
+    second: fromMorpheusBetaCode(workword)
   };
 }
 
@@ -235,7 +230,7 @@ export class Morpheus {
     // 25 analyses before its 0.4.2 release) only loses the analyses of this form.
     // (`isAvailable`, checked by `#isNeeded()`, guarantees the lemmatizer here.)
     for (const form of forms) {
-      const betaCode = convert(form, "greek", "beta-code", { preset: "perseus" });
+      const betaCode = toMorpheusBetaCode(form);
       const dropCrasis = guessedRough && hasInitialRoughBreathing(form);
 
       try {
@@ -295,11 +290,7 @@ export class Morpheus {
 
     return Object.fromEntries(
       Object.entries(grouped).map(([lemma, values]) => {
-        const greekLemma = convert(
-          lemma.replace(/\d+$/, ""),
-          "beta-code",
-          "greek"
-        );
+        const greekLemma = lemmaToGreek(lemma.replace(/\d+$/, ""));
 
         return [`${greekLemma}|${surfaceForm}`, values ?? []];
       })
