@@ -77,9 +77,14 @@
   });
 
   /**
+   * The Greek query to look up (cf. `toLookupQuery`).
+   */
+  const lookupQuery = computed((): string => toLookupQuery(query.value, inputMode.value));
+
+  /**
    * Whether the query has wildcards (cf. `hasWildcards`).
    */
-  const wildcards = computed((): boolean => hasWildcards(toLookupQuery(query.value, inputMode.value)));
+  const wildcards = computed((): boolean => hasWildcards(lookupQuery.value));
 
   /**
    * A reminder of the search options that aren't the default ones, and of the
@@ -145,7 +150,7 @@
     query.value = converted;
 
     if (converted !== value) {
-      syncInputText(converted, convert(value.slice(0, caret)).length);
+      syncInputText(converted, caret === value.length ? converted.length : convert(value.slice(0, caret)).length);
     }
   };
 
@@ -333,7 +338,7 @@
    * empty input, nor a lone pending diacritic or capital mark).
    */
   const open = ref(false);
-  const searchable = computed((): boolean => toLookupQuery(query.value, inputMode.value) !== "");
+  const searchable = computed((): boolean => lookupQuery.value !== "");
 
   /**
    * Whether Enter was pressed before the results of the query came.
