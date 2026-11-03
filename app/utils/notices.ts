@@ -22,6 +22,11 @@ export const NOTICES = {
    * preferences pages (`InstalledOnIosNotice`).
    */
   installedOnIos: "Application installée : des données à part",
+  /**
+   * The bookmarks introduced at the first star, in a bubble on the star
+   * (`TagButtonGroup`): shown once (marked as dismissed as it opens).
+   */
+  starIntro: "Premier favori : présentation des signets",
 } as const;
 
 export type NoticeId = keyof typeof NOTICES;

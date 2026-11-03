@@ -323,11 +323,48 @@
     }
   };
 
+  /**
+   * Whether the bookmarks were introduced at a first star (a bubble on the
+   * star, `starIntroOpen`): once, to a user who has neither favorites nor
+   * tags yet (who has them has found the bookmarks page). Marked as such as
+   * it opens, synchronized as a dismissed notice (cf. `useDismissed`).
+   */
+  const starIntroShown = useDismissed("starIntro");
+  const starIntroOpen = ref(false);
+  const starIntroDismiss = usePageScrollDismiss(starIntroOpen);
+  const starButton = useTemplateRef<ComponentPublicInstance>("starButton");
+  const starIntroTitle = useId();
+
+  const starIntroContent = computed((): PopoverProps["content"] => ({
+    align: "start",
+    side: "bottom",
+    positionStrategy: "absolute",
+    collisionBoundary: pageScroller.value,
+    collisionPadding: COLLISION_PADDING,
+    // The focus back on the star, unless the user went elsewhere (a click):
+    // still in the bubble (closing, it is animated out), or on nothing.
+    onCloseAutoFocus: (event: Event) => {
+      event.preventDefault();
+      const active = document.activeElement;
+      if (active && active !== document.body && !active.closest("[role=dialog]")) return;
+      (starButton.value?.$el as HTMLElement | undefined)?.focus({ preventScroll: true });
+    },
+  }));
+
   const toggleStar = async (): Promise<void> => {
     if (starred.value) {
+      starIntroOpen.value = false;
       await bookmarksStore.unstarEntry(props.entry.uri);
-    } else {
-      await bookmarksStore.starEntry(props.entry);
+      return;
+    }
+
+    const introduce = initialized.value && !starIntroShown.value
+      && !tags.value.length && !bookmarksStore.starredEntries.length;
+    const result = await bookmarksStore.starEntry(props.entry);
+    if (introduce && result.state === "success") {
+      starIntroShown.value = true;
+      starIntroOpen.value = true;
+      starIntroDismiss.opened();
     }
   };
 </script>
@@ -517,17 +554,65 @@
       </template>
     </UPopover>
 
-    <!-- Toggle star -->
-    <UTooltip :text="starred ? 'Retirer des favoris' : 'Ajouter aux favoris'">
-      <UButton
-        :icon="starred ? 'i-bailly-star-filled' : 'i-lucide-star'"
-        aria-label="Favori"
-        :aria-pressed="starred"
-        color="neutral"
-        variant="ghost"
-        :class="[TOOLBAR_HOVER, starred ? 'text-favorite' : 'hover:text-favorite']"
-        @click="toggleStar"
-      />
-    </UTooltip>
+    <!--
+      Toggle star; at the first one, the bookmarks introduced in a bubble on
+      it (cf. `starIntroOpen`), raised above the interface as the tags' panel.
+    -->
+    <UPopover
+      v-model:open="starIntroOpen"
+      :content="starIntroContent"
+      :portal="pageScroller ?? true"
+      arrow
+      :ui="{ content: 'z-30 bg-(--app-panel-bg)', arrow: 'fill-(--app-panel-bg)' }"
+    >
+      <template #anchor>
+        <UTooltip :text="starred ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+          <UButton
+            ref="starButton"
+            :icon="starred ? 'i-bailly-star-filled' : 'i-lucide-star'"
+            aria-label="Favori"
+            :aria-pressed="starred"
+            color="neutral"
+            variant="ghost"
+            :class="[TOOLBAR_HOVER, starred ? 'text-favorite' : 'hover:text-favorite']"
+            @click="toggleStar"
+          />
+        </UTooltip>
+      </template>
+
+      <template #content>
+        <div
+          role="group"
+          :aria-labelledby="starIntroTitle"
+          class="w-72 max-w-[calc(var(--app-width)-2rem)] p-3 text-sm"
+        >
+          <p
+            :id="starIntroTitle"
+            class="font-medium text-highlighted"
+          >
+            Entrée ajoutée aux favoris
+          </p>
+          <p class="mt-1 text-muted">
+            Retrouvez-la dans vos signets, où vous pourrez aussi ranger vos entrées sous des étiquettes.
+          </p>
+          <div class="mt-3 flex justify-end gap-2">
+            <UButton
+              label="Compris"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              @click="starIntroOpen = false"
+            />
+            <UButton
+              label="Voir les signets"
+              icon="i-lucide-bookmark"
+              to="/signets"
+              size="sm"
+              @click="starIntroOpen = false"
+            />
+          </div>
+        </div>
+      </template>
+    </UPopover>
   </div>
 </template>
