@@ -338,6 +338,7 @@
   const starIntroContent = computed((): PopoverProps["content"] => ({
     align: "start",
     side: "bottom",
+    sideOffset: 3,
     positionStrategy: "absolute",
     collisionBoundary: pageScroller.value,
     collisionPadding: COLLISION_PADDING,
