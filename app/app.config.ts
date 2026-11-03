@@ -99,6 +99,11 @@ export default defineAppConfig({
         },
       },
     },
+    popover: {
+      slots: {
+        arrow: "w-3 h-1.5",
+      },
+    },
     /*
      * The selects open a list, as the bars' buttons open a menu: their
      * states (`--app-button-hover`, `--app-button-active`, cf. `root.css`),
