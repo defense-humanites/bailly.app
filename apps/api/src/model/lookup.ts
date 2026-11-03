@@ -1,5 +1,5 @@
 import { convert } from "@humanities/greek-conversion";
-import type { Dictionary, SqlValue } from "../db/dictionary.ts";
+import type { Dictionary, SqlStatement } from "../db/dictionary.ts";
 import type {
   ApiLookupParams,
   ApiLookupResponse,
@@ -18,6 +18,15 @@ import {
 } from "../Morpheus.ts";
 import { toBaillySearchKey, toSearchKey } from "../searchKey.ts";
 import { Settings } from "../Settings.ts";
+import {
+  type DerivedData,
+  getDerivedData,
+  PREFIX_COUNT_MAX_LENGTH,
+  reverseKey,
+  reversedColumn,
+  SEARCH_COLUMNS,
+  type SearchColumn
+} from "./derived.ts";
 
 const LookupMode = {
   exact: 0,
@@ -181,21 +190,15 @@ function formatQueryStr(
 function formatSearchableField(
   caseSensitive: boolean,
   diacriticSensitive: boolean
-): string {
+): SearchColumn {
   return `searchable${diacriticSensitive ? "" : "Atonic"}${
     caseSensitive ? "" : "CaseInsensitive"
-  }`;
+  }` as SearchColumn;
 }
 
 type ComparisonOperator = "=" | "GLOB";
 
 const COMPARISON_OPERATORS: readonly ComparisonOperator[] = ["=", "GLOB"];
-
-const SEARCHABLE_FIELDS: readonly string[] = [false, true].flatMap((caseSensitive) =>
-  [false, true].map((diacriticSensitive) =>
-    formatSearchableField(caseSensitive, diacriticSensitive)
-  )
-);
 
 /**
  * The selected fields in a canonical order (that of `QUERY_ALLOWED_FIELDS`), `word`
@@ -222,24 +225,34 @@ function canonicalFields(fields: readonly string[]): string[] {
  *   ?3 `morpheusSearchableKeys`: JSON array of the search keys of the lemmas;
  *   ?4 `limit`.
  */
-type LookupParams = readonly [
-  query: string,
-  exactQuery: string | null,
-  morpheusSearchableKeys: string,
-  limit: number
-];
+/**
+ * The pieces of a lookup the statements are built from. The SQL text of a statement
+ * only depends on the search column, the operator, the set of fields and the variant
+ * (a closed set): the values go through positional parameters, numbered from `?1`
+ * in each statement (D1 wants exactly as many values as the highest number).
+ */
+type LookupContext = {
+  /** The search column of the request (`formatSearchableField()`). */
+  searchableField: SearchColumn;
+  operator: ComparisonOperator;
+  /** The pattern matched against the search column (or the exact key). */
+  query: string;
+  /** The search key of an exact match; `null` when none is possible. */
+  exactQuery: string | null;
+  /** JSON array of the search keys (`searchable`) of the Morpheus lemmas. */
+  morpheusSearchableKeys: string;
+  /** `-1`: no limit. */
+  limit: number;
+  /** Which variants the data allows (cf. `derived.ts`). */
+  derived: DerivedData;
+  /** The pattern on the reversed keys, for a lookup by the end of the word. */
+  reversedQuery?: string;
+  /** The prefix whose count is precomputed, for a prefix lookup. */
+  countedPrefix?: string;
+};
 
-const MORPHEUS_MATCH = "searchable IN (SELECT value FROM json_each(?3))";
-
-function buildWhereClause(
-  searchableField: string,
-  operator: ComparisonOperator
-): string {
-  return `
-    WHERE ${searchableField} ${operator} ?1
-       OR ${MORPHEUS_MATCH}
-  `;
-}
+const MORPHEUS_MATCH = (keys: string) =>
+  `searchable IN (SELECT value FROM json_each(${keys}))`;
 
 function buildSelectedFields(
   fields: readonly string[],
@@ -266,8 +279,9 @@ function buildSelectedFields(
  *
  *   1. the "priority" rows (`buildPriorityLookupSql()`), found through the indexes
  *      and few, sorted by rank;
- *   2. the other direct matches (`buildOtherLookupSql()`), read in the dictionary
- *      order, then limited to what is left of `LIMIT` (cf. `getEntries()`).
+ *   2. the other direct matches (`buildOtherLookupStatements()`), read in the
+ *      dictionary order, then limited to what is left of `LIMIT` (cf.
+ *      `getEntries()`).
  *
  * Every priority row is a match: a Morpheus lemma by definition, and an exact match
  * because `exactQuery` (no wildcards) always matches the `query` pattern, which only
@@ -276,7 +290,7 @@ function buildSelectedFields(
  *
  * No `COUNT(*) OVER ()` here: the window function would force SQLite to read every
  * match (and every selected column) before applying `LIMIT`. The total is counted
- * separately (`buildCountSql()`), and only when the limit has been reached.
+ * separately (`buildCountStatements()`), and only when the limit has been reached.
  */
 function buildPriorityLookupSql(
   fields: readonly string[],
@@ -287,10 +301,10 @@ function buildPriorityLookupSql(
     SELECT
       ${buildSelectedFields(fields, searchableField)},
       ${searchableField} ${operator} ?1 AS directMatch,
-      ${MORPHEUS_MATCH} AS morpheusMatch
+      ${MORPHEUS_MATCH("?3")} AS morpheusMatch
     FROM bailly
     WHERE ${searchableField} = ?2
-       OR ${MORPHEUS_MATCH}
+       OR ${MORPHEUS_MATCH("?3")}
     ORDER BY (${searchableField} = ?2) DESC, morpheusMatch DESC, orderedID
     LIMIT ?4
   `;
@@ -303,41 +317,190 @@ function buildPriorityLookupSql(
  * excluding them in SQL would force SQLite to read the row of every match (4× slower
  * for `α`), whereas it only reads those that make it into the `LIMIT` (`orderedID`,
  * the sort key, is the rowid, which the index holds).
+ *
+ * Three variants, by what the data allows (`scripts/db_derive.ts`):
+ *
+ *   - `plain`: every match is read through the index of the search column and sorted
+ *     by `orderedID` (`USE TEMP B-TREE`), the rows beyond `LIMIT` being discarded:
+ *     36 000 index entries for `α`;
+ *   - `ordered`: the matches are read *in the order of the index* (the key, then
+ *     `orderedID`), which is the dictionary order except for a few dozen rows
+ *     (`bailly_unordered`), excluded here and fetched by a second statement: SQLite
+ *     stops at `LIMIT` (a few dozen rows read for `α`), and the caller merges the
+ *     two sets in `orderedID` order. Only for the columns whose list is small;
+ *   - `reversed`: a lookup by the end of the word (`*λογος`) matches the reversed
+ *     keys (`σογολ*`), through their index, instead of scanning the whole table;
+ *     the matches are read and sorted as in `plain` (their index order is unrelated
+ *     to the dictionary's).
  */
+type OtherLookupVariant = "plain" | "ordered" | "reversed";
+
 function buildOtherLookupSql(
   fields: readonly string[],
-  searchableField: string,
+  searchableField: SearchColumn,
+  operator: ComparisonOperator,
+  variant: OtherLookupVariant
+): string {
+  const selected = `
+    SELECT
+      ${buildSelectedFields(fields, searchableField)},
+      1 AS directMatch,
+      0 AS morpheusMatch
+    FROM bailly`;
+
+  switch (variant) {
+    case "plain":
+      return `${selected}
+    WHERE ${searchableField} ${operator} ?1
+      AND ${searchableField} IS NOT ?2
+    ORDER BY orderedID
+    LIMIT ?4
+  `;
+    case "ordered":
+      // `orderedID` for the merge with the unordered rows (removed from the output).
+      return `${selected.replace("FROM bailly", ", orderedID\n    FROM bailly")}
+    WHERE ${searchableField} ${operator} ?1
+      AND ${searchableField} IS NOT ?2
+      AND orderedID NOT IN (SELECT value FROM json_each(?5))
+    ORDER BY ${searchableField}, orderedID
+    LIMIT ?4
+  `;
+    case "reversed":
+      return `${selected}
+    WHERE ${reversedColumn(searchableField)} ${operator} ?5
+      AND ${searchableField} IS NOT ?2
+    ORDER BY orderedID
+    LIMIT ?4
+  `;
+  }
+}
+
+/** The matches among the rows out of index order (`ordered` variant). */
+function buildUnorderedLookupSql(
+  fields: readonly string[],
+  searchableField: SearchColumn,
   operator: ComparisonOperator
 ): string {
   return `
     SELECT
       ${buildSelectedFields(fields, searchableField)},
       1 AS directMatch,
-      0 AS morpheusMatch
+      0 AS morpheusMatch,
+      orderedID
     FROM bailly
-    WHERE ${searchableField} ${operator} ?1
+    WHERE orderedID IN (SELECT value FROM json_each(?3))
+      AND ${searchableField} ${operator} ?1
       AND ${searchableField} IS NOT ?2
-    ORDER BY orderedID
-    LIMIT ?4
   `;
 }
 
+/**
+ * The total number of matches (direct and Morpheus). `plain` counts them through
+ * the index (every match read: 54 536 rows for `α`); `reversed` does the same on
+ * the reversed keys; `prefix` reads the precomputed count of the prefix
+ * (`bailly_prefix_count`) and only counts the Morpheus lemmas that the prefix does
+ * not match.
+ */
+type CountVariant = "plain" | "reversed" | "prefix";
+
 function buildCountSql(
-  searchableField: string,
-  operator: ComparisonOperator
+  searchableField: SearchColumn,
+  operator: ComparisonOperator,
+  variant: CountVariant
 ): string {
-  return `SELECT COUNT(*) AS count FROM bailly ${
-    buildWhereClause(searchableField, operator)
-  }`;
+  switch (variant) {
+    case "plain":
+      return `
+    SELECT COUNT(*) AS count FROM bailly
+    WHERE ${searchableField} ${operator} ?1
+       OR ${MORPHEUS_MATCH("?2")}
+  `;
+    case "reversed":
+      return `
+    SELECT COUNT(*) AS count FROM bailly
+    WHERE ${reversedColumn(searchableField)} ${operator} ?1
+       OR ${MORPHEUS_MATCH("?2")}
+  `;
+    case "prefix":
+      return `
+    SELECT COUNT(*) AS count FROM bailly
+    WHERE ${MORPHEUS_MATCH("?2")}
+      AND NOT ${searchableField} ${operator} ?1
+  `;
+  }
+}
+
+const PREFIX_COUNT_SQL =
+  "SELECT count FROM bailly_prefix_count WHERE column = ?1 AND prefix = ?2";
+
+function buildOtherLookupStatements(
+  fields: readonly string[],
+  context: LookupContext
+): SqlStatement[] {
+  const { searchableField, operator, query, exactQuery, limit } = context;
+  const unordered = context.derived.unordered.get(searchableField);
+
+  if (context.reversedQuery !== undefined) {
+    return [{
+      sql: buildOtherLookupSql(fields, searchableField, operator, "reversed"),
+      params: [query, exactQuery, null, limit, context.reversedQuery]
+    }];
+  }
+
+  if (unordered && operator === "GLOB") {
+    const ids = JSON.stringify(unordered);
+    return [
+      {
+        sql: buildOtherLookupSql(fields, searchableField, operator, "ordered"),
+        params: [query, exactQuery, null, limit, ids]
+      },
+      {
+        sql: buildUnorderedLookupSql(fields, searchableField, operator),
+        params: [query, exactQuery, ids]
+      }
+    ];
+  }
+
+  return [{
+    sql: buildOtherLookupSql(fields, searchableField, operator, "plain"),
+    params: [query, exactQuery, null, limit]
+  }];
+}
+
+/** The statements whose `count` columns add up to the total. */
+function buildCountStatements(context: LookupContext): SqlStatement[] {
+  const { searchableField, operator, query, morpheusSearchableKeys } = context;
+
+  if (context.countedPrefix !== undefined) {
+    return [
+      { sql: PREFIX_COUNT_SQL, params: [searchableField, context.countedPrefix] },
+      {
+        sql: buildCountSql(searchableField, operator, "prefix"),
+        params: [query, morpheusSearchableKeys]
+      }
+    ];
+  }
+
+  if (context.reversedQuery !== undefined) {
+    return [{
+      sql: buildCountSql(searchableField, operator, "reversed"),
+      params: [context.reversedQuery, morpheusSearchableKeys]
+    }];
+  }
+
+  return [{
+    sql: buildCountSql(searchableField, operator, "plain"),
+    params: [query, morpheusSearchableKeys]
+  }];
 }
 
 /**
- * Prepares every variant of the lookup statements (search column × operator ×
- * set of allowed fields × priority/other rows, plus the count statement per search
- * column × operator), so that no request pays for their compilation, even
- * right after a restart. Returns the number of prepared statements.
+ * Prepares every variant of the lookup statements that the data allows (search
+ * column × operator × set of allowed fields × priority/other rows, plus the count
+ * statements), so that no request pays for their compilation, even right after a
+ * restart. Returns the number of prepared statements.
  */
-export function preloadLookupStatements(db: Dictionary): number {
+export function preloadLookupStatements(db: Dictionary, derived: DerivedData): number {
   const optionalFields = Settings.getSettings().queryAllowedFields
     .filter((field) => field !== "word");
 
@@ -350,16 +513,38 @@ export function preloadLookupStatements(db: Dictionary): number {
   );
 
   let count = 0;
+  const prepare = (sql: string) => {
+    db.prepare(sql);
+    count++;
+  };
 
-  for (const searchableField of SEARCHABLE_FIELDS) {
+  if (derived.prefixCounts) prepare(PREFIX_COUNT_SQL);
+
+  for (const searchableField of SEARCH_COLUMNS) {
     for (const operator of COMPARISON_OPERATORS) {
-      db.prepare(buildCountSql(searchableField, operator));
-      count++;
+      const otherVariants: OtherLookupVariant[] = ["plain"];
+      const countVariants: CountVariant[] = ["plain"];
+
+      if (operator === "GLOB") {
+        if (derived.unordered.has(searchableField)) otherVariants.push("ordered");
+        if (derived.reversedKeys) {
+          otherVariants.push("reversed");
+          countVariants.push("reversed");
+        }
+        if (derived.prefixCounts) countVariants.push("prefix");
+      }
+
+      for (const variant of countVariants) {
+        prepare(buildCountSql(searchableField, operator, variant));
+      }
 
       for (const fields of fieldSets) {
-        for (const buildSql of [buildPriorityLookupSql, buildOtherLookupSql]) {
-          db.prepare(buildSql(fields, searchableField, operator));
-          count++;
+        prepare(buildPriorityLookupSql(fields, searchableField, operator));
+        for (const variant of otherVariants) {
+          prepare(buildOtherLookupSql(fields, searchableField, operator, variant));
+        }
+        if (otherVariants.includes("ordered")) {
+          prepare(buildUnorderedLookupSql(fields, searchableField, operator));
         }
       }
     }
@@ -628,14 +813,6 @@ export async function getEntries<K extends keyof QueryableFields>(
   const comparisonOperator: ComparisonOperator =
     lookupMode === LookupMode.exact && !/[*?]/.test(searchStr) ? "=" : "GLOB";
 
-  const prioritySql = buildPriorityLookupSql(
-    fields,
-    searchableField,
-    comparisonOperator
-  );
-  const otherSql = buildOtherLookupSql(fields, searchableField, comparisonOperator);
-  const countSql = buildCountSql(searchableField, comparisonOperator);
-
   const query = (() => {
     switch (lookupMode) {
       case LookupMode.exact:
@@ -659,31 +836,62 @@ export async function getEntries<K extends keyof QueryableFields>(
     ? -1
     : settings.queryMaxRows;
 
-  const params: LookupParams = [
+  const derived = await getDerivedData(db);
+
+  // A lookup by the end of the word (`*λογος`, nothing else before): on the
+  // reversed keys, when the data has them (cf. `buildOtherLookupSql()`).
+  const reversedQuery = derived.reversedKeys && comparisonOperator === "GLOB" &&
+      /^\*[^*]+$/.test(query)
+    ? `${reverseKey(query.slice(1))}*`
+    : undefined;
+
+  // A lookup by a short prefix (`λογ*`, nothing else after): its count is
+  // precomputed (cf. `buildCountSql()`).
+  const prefix = /^[^*?]+\*$/.test(query) ? query.slice(0, -1) : undefined;
+  const countedPrefix = derived.prefixCounts && comparisonOperator === "GLOB" &&
+      prefix !== undefined && [...prefix].length <= PREFIX_COUNT_MAX_LENGTH
+    ? prefix
+    : undefined;
+
+  const context: LookupContext = {
+    searchableField,
+    operator: comparisonOperator,
     query,
     exactQuery,
-    JSON.stringify(morpheusSearchableKeys),
-    limitValue
-  ];
+    morpheusSearchableKeys: JSON.stringify(morpheusSearchableKeys),
+    limit: limitValue,
+    derived,
+    reversedQuery,
+    countedPrefix
+  };
 
   // The SQL text only varies within a closed set (search column, operator, set of
-  // selected fields): the statements are prepared at startup and then reused.
-  // Exact matches and Morpheus lemmas first, then the other matches within what is
-  // left of the limit (cf. `buildPriorityLookupSql()`). Both statements go in one
-  // batch (one round trip on D1): the other rows are limited to `limit` too, and
-  // trimmed below to what the priority rows leave.
-  const [priorityData, otherRows] = await db.batch<MatchedDatabaseEntry>([
-    { sql: prioritySql, params: params as readonly SqlValue[] },
-    { sql: otherSql, params: params as readonly SqlValue[] }
-  ]) as [MatchedDatabaseEntry[], MatchedDatabaseEntry[]];
+  // selected fields, variant): the statements are prepared at startup and then
+  // reused. Exact matches and Morpheus lemmas first, then the other matches within
+  // what is left of the limit (cf. `buildPriorityLookupSql()`). Every statement goes
+  // in one batch (one round trip on D1): the other rows are limited to `limit` too,
+  // and trimmed below to what the priority rows leave.
+  const [priorityData, ...otherSets] = await db.batch<MatchedDatabaseEntry>([
+    {
+      sql: buildPriorityLookupSql(fields, searchableField, comparisonOperator),
+      params: [query, exactQuery, context.morpheusSearchableKeys, limitValue]
+    },
+    ...buildOtherLookupStatements(fields, context)
+  ]) as [MatchedDatabaseEntry[], ...MatchedDatabaseEntry[][]];
 
   const otherLimit = limitValue === -1 ? -1 : limitValue - priorityData.length;
 
   // The Morpheus lemmas that are also direct matches come back here and are removed
   // (cf. `buildOtherLookupSql()`). They all are among the priority rows (unless those
   // already fill the limit, in which case none is kept): at most
-  // `priorityData.length` rows are removed, so `limit` rows are enough.
+  // `priorityData.length` rows are removed, so `limit` rows are enough. The `ordered`
+  // variant gives two sets (the rows in index order, the rows out of it), merged in
+  // the dictionary order: the first `limit` rows of the merge are all there.
   const morpheusKeys = new Set(morpheusSearchableKeys);
+
+  const otherRows = otherSets.length > 1
+    ? otherSets.flat().sort((a, b) => a.orderedID! - b.orderedID!)
+    : otherSets[0];
 
   const otherData = otherLimit === 0 ? [] : otherRows
     .filter((entry) => !morpheusKeys.has(entry.searchable!))
@@ -693,9 +901,8 @@ export async function getEntries<K extends keyof QueryableFields>(
 
   const countAll = limitValue === -1 || data.length < limitValue
     ? data.length
-    // (D1 wants exactly as many values as the highest parameter number: 3 here.)
-    : (await db.get<{ count: number }>(countSql, params.slice(0, 3)))
-      ?.count ?? data.length;
+    : (await db.batch<{ count: number | null }>(buildCountStatements(context)))
+      .reduce((total, rows) => total + (rows[0]?.count ?? 0), 0);
 
   let internalResponse: LookupResponse = {
     data: {
@@ -736,6 +943,7 @@ export async function getEntries<K extends keyof QueryableFields>(
 
         const removeExtraFields = (entry: Partial<LookupEntry>): void => {
           if (!wordRequested) delete entry.word;
+          delete entry.orderedID;
           delete entry.searchable;
           delete entry.searchableCaseInsensitive;
           delete entry.searchableAtonic;

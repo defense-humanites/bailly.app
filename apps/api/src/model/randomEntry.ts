@@ -1,4 +1,5 @@
 import type { Dictionary, SqlValue } from "../db/dictionary.ts";
+import { getDerivedData } from "./derived.ts";
 import type {
   ApiRandomEntryParams,
   ApiRandomEntryResponse,
@@ -9,6 +10,90 @@ import type {
 } from "../definitions.ts";
 import { Settings } from "../Settings.ts";
 import { getEntry } from "./entry.ts";
+
+type DrawnEntry = Partial<DatabaseEntry> & { length: number };
+
+/** Candidates drawn per attempt with a `lengthRange` (one statement, as many rows). */
+const CANDIDATES = 32;
+
+/**
+ * Draws an entry at random, reading as few rows as possible: `ORDER BY random()`
+ * over the table would read every row (107 808, which D1 bills) for each draw.
+ *
+ *   - Without `lengthRange`: a random `orderedID` (the rows are numbered without
+ *     gaps, but `>=` tolerates some), one row read.
+ *   - With `lengthRange`, when the data has `definitionLength` (cf.
+ *     `scripts/db_derive.ts`): random `orderedID`s, kept if their length fits, a few
+ *     dozen rows read by primary key; a range that none of them fits (a narrow one)
+ *     falls back to a draw over the index of `definitionLength`, which reads only the
+ *     index entries of the range.
+ *   - Otherwise (no derived data): the draw over the table, as before.
+ */
+async function drawEntry(
+  db: Dictionary,
+  selectedFields: string,
+  lengthRange: [number, number?] | null
+): Promise<DrawnEntry | undefined> {
+  const derived = await getDerivedData(db);
+
+  if (!lengthRange) {
+    return db.get<DrawnEntry>(`
+      SELECT length(definition) AS length, ${selectedFields}
+      FROM bailly
+      WHERE orderedID >=
+        (SELECT abs(random()) % (SELECT MAX(orderedID) FROM bailly) + 1)
+      ORDER BY orderedID
+      LIMIT 1
+    `);
+  }
+
+  const [min, max] = lengthRange;
+  const rangeSql = max === undefined
+    ? "definitionLength >= ?1"
+    : "definitionLength >= ?1 AND definitionLength <= ?2";
+  const rangeParams: SqlValue[] = max === undefined ? [min] : [min, max];
+
+  if (!derived.definitionLength) {
+    return db.get<DrawnEntry>(
+      `
+      SELECT length(definition) AS length, ${selectedFields}
+      FROM bailly
+      WHERE ${rangeSql.replaceAll("definitionLength", "length(definition)")}
+      ORDER BY random()
+      LIMIT 1
+    `,
+      rangeParams
+    );
+  }
+
+  const candidates = Array.from(
+    { length: CANDIDATES },
+    () => 1 + Math.floor(Math.random() * derived.maxOrderedID)
+  );
+
+  const drawn = await db.get<DrawnEntry>(
+    `
+    SELECT definitionLength AS length, ${selectedFields}
+    FROM bailly
+    WHERE orderedID IN (SELECT value FROM json_each(?${rangeParams.length + 1}))
+      AND ${rangeSql}
+    ORDER BY random()
+    LIMIT 1
+  `,
+    [...rangeParams, JSON.stringify(candidates)]
+  );
+
+  return drawn ?? db.get<DrawnEntry>(
+    `
+    SELECT definitionLength AS length, ${selectedFields}
+    FROM bailly
+    WHERE orderedID = (
+      SELECT orderedID FROM bailly WHERE ${rangeSql} ORDER BY random() LIMIT 1
+    )
+  `,
+    rangeParams
+  );
+}
 
 /**
  * @param siblings Adds the siblings of the drawn entry, exactly as `GET /entry/:uri`
@@ -36,25 +121,7 @@ export async function getRandomEntry<
   const uriRequested = (fields as string[]).includes("uri");
   const selectedFields = getSiblings && !uriRequested ? `${fieldsStr}, uri` : fieldsStr;
 
-  const params: SqlValue[] = lengthRange
-    ? lengthRange[1] ? [lengthRange[0], lengthRange[1]] : [lengthRange[0]]
-    : [];
-
-  const sql = `
-    SELECT length(definition) as length, ${selectedFields}
-    FROM bailly
-    ${
-    lengthRange
-      ? !lengthRange[1]
-        ? "WHERE length(definition) >= ?1"
-        : "WHERE length(definition) >= ?1 AND length(definition) <= ?2"
-      : ""
-  }
-    ORDER BY random()
-    LIMIT 1
-  `;
-
-  const entry = await db.get<Partial<DatabaseEntry> & { length: number }>(sql, params);
+  const entry = await drawEntry(db, selectedFields, lengthRange);
 
   if (!entry) {
     return {

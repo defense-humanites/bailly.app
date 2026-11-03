@@ -17,7 +17,7 @@
  * this constant the Worker uses.
  */
 export const DATABASE = {
-  filePath: "database/bailly-rev4.db",
+  filePath: "database/bailly-rev5.db",
   /** Date of the source data (not of the revision). */
   version: "2023-02-28"
 } as const;

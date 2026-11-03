@@ -53,6 +53,15 @@ révisions), puis placer `database/bailly-revN.db` — ou son archive `.gz`, que
 serveur Node.js décompresse au premier démarrage. La révision attendue est fixée dans
 `src/defaults.ts` (`DATABASE`), avec la date des données exposée comme `version`.
 
+Les recherches lisent le moins de lignes possible (D1 les facture) grâce à des données
+dérivées de la base : `node scripts/db_derive.ts database/bailly-rev4.db
+database/bailly-rev5.db` les ajoute à une révision (tables `bailly_unordered` et
+`bailly_prefix_count`, colonnes `reversedSearchable*` et `definitionLength`, indexées ;
+cf. l'en-tête du script). Sans elles, l'API fonctionne, mais chaque recherche lit et trie
+toutes ses correspondances (54 536 lignes pour `α`). `scripts/compare_lookups.ts`
+vérifie que les réponses sont identiques avec et sans (implémentation de référence
+figée dans `scripts/reference/`).
+
 ### Serveur Node.js
 
 ```sh

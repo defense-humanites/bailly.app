@@ -6,6 +6,7 @@
 import { existsSync } from "node:fs";
 import type { AppDependencies } from "../app.ts";
 import { SqliteDictionary } from "../db/sqlite.ts";
+import { getDerivedData } from "../model/derived.ts";
 import { preloadLookupStatements } from "../model/lookup.ts";
 import { Morpheus } from "../Morpheus.ts";
 import { loadStemlib } from "../morpheus/stemlib.ts";
@@ -16,10 +17,11 @@ export async function createNodeDependencies(
   settings: Settings
 ): Promise<AppDependencies & { dictionary: SqliteDictionary }> {
   const dictionary = await SqliteDictionary.open(settings.dbFilePath);
+  const derived = await getDerivedData(dictionary);
 
   {
     const start = performance.now();
-    const count = preloadLookupStatements(dictionary);
+    const count = preloadLookupStatements(dictionary, derived);
     console.info(
       `${count ? "✅" : "🟠"} Prepared ${count} lookup statements in ${
         (performance.now() - start).toFixed(1)

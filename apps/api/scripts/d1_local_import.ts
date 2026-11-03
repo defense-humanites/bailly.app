@@ -58,31 +58,37 @@ const db = new DatabaseSync(localPath);
 console.info(`⏳ Copying ${DATABASE.filePath} into ${localPath}...`);
 const start = performance.now();
 
+// One big transaction, in rollback-journal mode (a WAL would hold the whole copy);
+// set before attaching the read-only source, which the pragma would otherwise reach.
+db.exec("PRAGMA journal_mode = DELETE");
 db.exec(
   `ATTACH DATABASE 'file:${encodeURI(DATABASE.filePath)}?mode=ro' AS src`
 );
 
-// The table and its indexes, as the source defines them.
+// The tables (`bailly` and the derived ones, cf. `scripts/db_derive.ts`) and their
+// indexes, as the source defines them.
 const schema = db.prepare(
-  `SELECT type, name, sql FROM src.sqlite_master
-   WHERE sql IS NOT NULL AND (name = 'bailly' OR tbl_name = 'bailly')
-   ORDER BY CASE type WHEN 'table' THEN 0 ELSE 1 END`
-).all() as { type: string; name: string; sql: string }[];
+  `SELECT type, name, tbl_name AS table_name, sql FROM src.sqlite_master
+   WHERE sql IS NOT NULL AND tbl_name LIKE 'bailly%'
+   ORDER BY CASE type WHEN 'table' THEN 0 ELSE 1 END, name`
+).all() as { type: string; name: string; table_name: string; sql: string }[];
 
-if (!schema.some(({ type }) => type === "table")) {
+const tables = schema.filter(({ type }) => type === "table");
+
+if (!tables.some(({ name }) => name === "bailly")) {
   console.error("❌ No `bailly` table in the source database.");
   process.exit(1);
 }
 
-// One big transaction, in rollback-journal mode (a WAL would hold the whole copy).
-db.exec("PRAGMA journal_mode = DELETE");
 db.exec("BEGIN");
-db.exec("DROP TABLE IF EXISTS main.bailly");
+for (const { name } of tables) db.exec(`DROP TABLE IF EXISTS main.${name}`);
 for (const { sql } of schema) db.exec(sql);
-db.exec("INSERT INTO main.bailly SELECT * FROM src.bailly");
+for (const { name } of tables) {
+  db.exec(`INSERT INTO main.${name} SELECT * FROM src.${name}`);
+}
 db.exec("COMMIT");
-db.exec("PRAGMA journal_mode = WAL");
 db.exec("DETACH DATABASE src");
+db.exec("PRAGMA journal_mode = WAL");
 
 const { count } = db.prepare("SELECT COUNT(*) AS count FROM bailly").get() as {
   count: number;
@@ -90,7 +96,7 @@ const { count } = db.prepare("SELECT COUNT(*) AS count FROM bailly").get() as {
 db.close();
 
 console.info(
-  `✅ ${count.toLocaleString("en")} rows and ${schema.length - 1} indexes copied in ${
-    ((performance.now() - start) / 1000).toFixed(1)
-  } s.`
+  `✅ ${count.toLocaleString("en")} rows, ${tables.length} tables and ${
+    schema.length - tables.length
+  } indexes copied in ${((performance.now() - start) / 1000).toFixed(1)} s.`
 );

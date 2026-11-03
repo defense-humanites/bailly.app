@@ -54,18 +54,18 @@ export async function getEntry<
     OR uri GLOB ?2
   `;
 
-  const fetchEntries = (q: string) =>
-    db.all<PartialExcept<DatabaseEntry, "orderedID" | "word">>(entriesSql, [
-      q,
-      `${q}#?`
-    ]);
-
-  // Try the URI as is first, then its normalized form if it matches nothing.
-  let data = await fetchEntries(q);
-  if (!data.length) {
-    const normalizedQ = normalizeUri(q);
-    if (normalizedQ !== q) data = await fetchEntries(normalizedQ);
-  }
+  // The URI as is first, then its normalized form if it matches nothing: both in
+  // one batch (one round trip on D1), the second read being a few rows at most.
+  const normalizedQ = normalizeUri(q);
+  const [asIs, normalized = []] = await db.batch<
+    PartialExcept<DatabaseEntry, "orderedID" | "word">
+  >(
+    [q, ...(normalizedQ !== q ? [normalizedQ] : [])].map((uri) => ({
+      sql: entriesSql,
+      params: [uri, `${uri}#?`]
+    }))
+  );
+  const data = asIs!.length ? asIs! : normalized;
 
   if (!data.length) {
     return {

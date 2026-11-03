@@ -1,0 +1,123 @@
+/**
+ * The data derived from the dictionary by `scripts/db_derive.ts` (cf. its header),
+ * as the lookups use it. A database without it (revision 4 and before) still works:
+ * every optimization falls back to the plain statements, with a warning at startup.
+ *
+ * The derived data is read once per `Dictionary` (per process, or per isolate on
+ * Workers): the list of the rows out of index order, and which structures exist.
+ */
+
+import type { Dictionary } from "../db/dictionary.ts";
+
+/** The search columns, in the order of `formatSearchableField()`'s combinations. */
+export const SEARCH_COLUMNS = [
+  "searchableAtonicCaseInsensitive",
+  "searchableCaseInsensitive",
+  "searchableAtonic",
+  "searchable"
+] as const;
+
+export type SearchColumn = typeof SEARCH_COLUMNS[number];
+
+/**
+ * Beyond this many rows out of index order, a column keeps the sorting statement:
+ * the exclusion list would cost more than it saves.
+ */
+export const UNORDERED_MAX_ROWS = 500;
+
+/** Longest prefix counted by `bailly_prefix_count` (cf. `scripts/db_derive.ts`). */
+export const PREFIX_COUNT_MAX_LENGTH = 4;
+
+/** The key reversed, by code point (the keys are NFC, without combining marks). */
+export function reverseKey(key: string): string {
+  return [...key].reverse().join("");
+}
+
+/** The column holding the reversed keys of a search column. */
+export function reversedColumn(column: SearchColumn): string {
+  return `reversed${column.charAt(0).toUpperCase()}${column.slice(1)}`;
+}
+
+export type DerivedData = {
+  /** The largest `orderedID` (the rows are numbered from 1, without gaps so far). */
+  maxOrderedID: number;
+  /** Per column with a stored list: the `orderedID`s out of index order. */
+  unordered: ReadonlyMap<SearchColumn, readonly number[]>;
+  prefixCounts: boolean;
+  reversedKeys: boolean;
+  definitionLength: boolean;
+};
+
+const cache = new WeakMap<Dictionary, Promise<DerivedData>>();
+
+/** The derived data of a dictionary, read on the first call. */
+export function getDerivedData(db: Dictionary): Promise<DerivedData> {
+  let data = cache.get(db);
+
+  if (!data) {
+    data = loadDerivedData(db).catch((error) => {
+      cache.delete(db);
+      throw error;
+    });
+    cache.set(db, data);
+  }
+
+  return data;
+}
+
+async function loadDerivedData(db: Dictionary): Promise<DerivedData> {
+  const [names, [{ maxOrderedID } = { maxOrderedID: 0 }]] = await db.batch<
+    { name: string } & { maxOrderedID: number }
+  >([
+    {
+      sql: `SELECT name FROM sqlite_master
+            WHERE name IN ('bailly_unordered', 'bailly_prefix_count',
+                           'ix_bailly_definitionLength', ${
+        SEARCH_COLUMNS.map((column) => `'ix_bailly_${reversedColumn(column)}'`)
+          .join(", ")
+      })`
+    },
+    { sql: "SELECT MAX(orderedID) AS maxOrderedID FROM bailly" }
+  ]) as unknown as [{ name: string }[], { maxOrderedID: number }[]];
+
+  const objects = new Set(names.map(({ name }) => name));
+
+  if (!objects.size) {
+    console.warn(
+      "⚠️ No derived data in the database (cf. scripts/db_derive.ts): the " +
+        "lookups read every match."
+    );
+    return {
+      maxOrderedID,
+      unordered: new Map(),
+      prefixCounts: false,
+      reversedKeys: false,
+      definitionLength: false
+    };
+  }
+
+  const unordered = new Map<SearchColumn, number[]>();
+
+  if (objects.has("bailly_unordered")) {
+    for (
+      const { column, orderedID } of await db.all<{
+        column: SearchColumn;
+        orderedID: number;
+      }>("SELECT column, orderedID FROM bailly_unordered ORDER BY column, orderedID")
+    ) {
+      let ids = unordered.get(column);
+      if (!ids) unordered.set(column, ids = []);
+      ids.push(orderedID);
+    }
+  }
+
+  return {
+    maxOrderedID,
+    unordered,
+    prefixCounts: objects.has("bailly_prefix_count"),
+    reversedKeys: SEARCH_COLUMNS.every((column) =>
+      objects.has(`ix_bailly_${reversedColumn(column)}`)
+    ),
+    definitionLength: objects.has("ix_bailly_definitionLength")
+  };
+}
