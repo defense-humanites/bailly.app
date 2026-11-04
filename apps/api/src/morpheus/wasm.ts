@@ -62,6 +62,9 @@ export class WasmLemmatizer implements Lemmatizer {
   readonly #options: WasmLemmatizerOptions;
   #instance: Promise<Instance> | undefined;
 
+  /** How many times the module was instantiated (diagnostics, cf. `worker.ts`). */
+  instantiations = 0;
+
   private constructor(options: WasmLemmatizerOptions) {
     this.#options = options;
   }
@@ -76,6 +79,15 @@ export class WasmLemmatizer implements Lemmatizer {
     return lemmatizer;
   }
 
+  /**
+   * Creates the lemmatizer without instantiating the module: the first analysis
+   * does. For a Worker, whose isolates start often and whose requests mostly need
+   * no analysis (entries, random entries, excerpts): they no longer pay for it.
+   */
+  static lazy(options: WasmLemmatizerOptions): WasmLemmatizer {
+    return new WasmLemmatizer(options);
+  }
+
   #ready(): Promise<Instance> {
     this.#instance ??= this.#instantiate().catch((error) => {
       // A failed instantiation is retried by the next call.
@@ -87,6 +99,7 @@ export class WasmLemmatizer implements Lemmatizer {
   }
 
   async #instantiate(): Promise<Instance> {
+    this.instantiations++;
     const morpheus = await createMorpheus(this.#options.module);
     const root = morpheus.writeStemlib(await this.#options.stemlib());
     const context = morpheus.open({ stemlib: root, language: MorpheusLanguage.Greek });

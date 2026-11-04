@@ -16,7 +16,9 @@
  * Against the Worker, its `Server-Timing` header (cf. `src/worker.ts`) sorts the
  * requests: `cold_starts`, the share that started an isolate (their number is that of
  * the isolates), and the durations of the requests that started one (`cold`), waited
- * for one to start (`warming`) or found it ready (`warm`).
+ * for one to start (`warming`) or found it ready (`warm`), by kind of request;
+ * `morpheus_starts` and `morpheus_req_duration`, the requests that instantiated
+ * Morpheus (on their isolate's first analysis).
  */
 
 import http from "k6/http";
@@ -36,6 +38,8 @@ const urls = new SharedArray("urls", () => {
 })[0];
 
 const coldStarts = new Rate("cold_starts");
+const morpheusStarts = new Rate("morpheus_starts");
+const morpheusDuration = new Trend("morpheus_req_duration", true);
 const durations = {
   cold: new Trend("cold_req_duration", true),
   warming: new Trend("warming_req_duration", true),
@@ -73,7 +77,10 @@ export const options = {
     // Reported by kind (no limit).
     "http_req_duration{kind:entry}": ["max>=0"],
     "http_req_duration{kind:random}": ["max>=0"],
-    "http_req_duration{kind:excerpts}": ["max>=0"]
+    "http_req_duration{kind:excerpts}": ["max>=0"],
+    // The cold starts by kind (Morpheus is only instantiated by a lookup).
+    "cold_req_duration{kind:lookup}": ["max>=0"],
+    "cold_req_duration{kind:entry}": ["max>=0"]
   },
   summaryTrendStats: ["avg", "med", "p(90)", "p(95)", "p(99)", "max"]
 };
@@ -108,5 +115,8 @@ export default function () {
       : "warm";
     coldStarts.add(start === "cold");
     durations[start].add(response.timings.duration, { kind });
+    const morpheus = /\bmorpheus\b/.test(timing);
+    morpheusStarts.add(morpheus);
+    if (morpheus) morpheusDuration.add(response.timings.duration, { kind });
   }
 }
