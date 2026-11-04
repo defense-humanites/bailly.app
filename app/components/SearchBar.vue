@@ -78,9 +78,14 @@
   });
 
   /**
+   * The Greek query to look up (cf. `toLookupQuery`).
+   */
+  const lookupQuery = computed((): string => toLookupQuery(query.value, inputMode.value));
+
+  /**
    * Whether the query has wildcards (cf. `hasWildcards`).
    */
-  const wildcards = computed((): boolean => hasWildcards(toLookupQuery(query.value, inputMode.value)));
+  const wildcards = computed((): boolean => hasWildcards(lookupQuery.value));
 
   /**
    * A reminder of the search options that aren't the default ones, and of the
@@ -146,7 +151,7 @@
     query.value = converted;
 
     if (converted !== value) {
-      syncInputText(converted, convert(value.slice(0, caret)).length);
+      syncInputText(converted, caret === value.length ? converted.length : convert(value.slice(0, caret)).length);
     }
   };
 
@@ -285,8 +290,31 @@
       : [toItem(entry)];
 
   /**
+   * How many results are rendered while typing: about as many as the
+   * results panel shows (above the keyboard on mobile, and 32rem high).
+   * The input menu renders all its results again at each letter typed
+   * (twice: Nuxt UI renders its whole list again with any change, and each
+   * of Reka's items depends on the input text), the 30 results costing
+   * most of the interaction on mobile.
+   */
+  const TYPING_RESULTS = 12;
+
+  /**
+   * Delay (in ms) without typing after which all the results are rendered:
+   * longer than the time between two letters typed on a phone.
+   */
+  const TYPING_PAUSE = 600;
+
+  /**
+   * Whether all the results are rendered (cf. `TYPING_RESULTS`): once typing
+   * pauses, or the user chooses a result (arrow keys, pointer).
+   */
+  const allRendered = ref(false);
+
+  /**
    * Two groups: exact matches (the API sorts those found through their
-   * inflected form last), then the other entries.
+   * inflected form last), then the other entries; only the first results
+   * while typing (cf. `allRendered`).
    */
   const items = computed((): ResultItem[][] => {
     // (No stale results for an empty input; an item value can't be empty either.)
@@ -296,10 +324,17 @@
     const exact = entries.filter(entry => entry.isExact);
     const others = entries.filter(entry => !entry.isExact);
 
-    return [
+    const groups = [
       exact.length ? [{ type: "label", label: "Correspondances exactes" }, ...exact.flatMap(toItems)] : [],
       others.length ? [{ type: "label", label: exact.length ? "Autres entrées" : "Entrées" }, ...others.flatMap(toItems)] : [],
     ].filter(group => group.length) as ResultItem[][];
+    if (allRendered.value) return groups;
+
+    // (The results have a URI, the group labels don't.)
+    let left = TYPING_RESULTS;
+    return groups
+      .map(group => group.filter(item => item.uri === undefined || left-- > 0))
+      .filter(group => group.some(item => item.uri !== undefined));
   });
 
   /**
@@ -328,13 +363,25 @@
    */
   const highlightChosen = ref(false);
 
+  watch(query, () => {
+    allRendered.value = false;
+  });
+
+  watchDebounced(query, () => {
+    allRendered.value = true;
+  }, { debounce: TYPING_PAUSE });
+
+  watch(highlightChosen, (chosen) => {
+    if (chosen) allRendered.value = true;
+  });
+
   /**
    * Whether the results are shown: as requested by the input menu (typing,
    * focus, Escape…), as long as there is something to look up (not for an
    * empty input, nor a lone pending diacritic or capital mark).
    */
   const open = ref(false);
-  const searchable = computed((): boolean => toLookupQuery(query.value, inputMode.value) !== "");
+  const searchable = computed((): boolean => lookupQuery.value !== "");
 
   /**
    * Whether Enter was pressed before the results of the query came.

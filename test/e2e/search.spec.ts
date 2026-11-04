@@ -88,6 +88,19 @@ test.describe("search bar", () => {
     await expect(page.locator("header [data-slot=trailing]")).toHaveText(/\d+/);
   });
 
+  test("renders the first results while typing, all of them once typing pauses", async ({ page }) => {
+    // « λογο »: 30 results, 12 rendered until typing pauses (600 ms).
+    const options = searchResults(page).getByRole("option");
+    await searchInput(page).fill("logo");
+    await expect(options).toHaveCount(12);
+    await expect.poll(() => options.count(), { timeout: 3000 }).toBeGreaterThanOrEqual(30);
+    // A letter typed: the first results again.
+    await searchInput(page).press("Backspace");
+    await expect(searchInput(page)).toHaveValue("λογ");
+    await expect(options).toHaveCount(12);
+    await expect.poll(() => options.count(), { timeout: 3000 }).toBeGreaterThan(12);
+  });
+
   test("lists the results exactly as wide as the bar", async ({ page }) => {
     await searchInput(page).fill("log");
     await expect(searchResults(page)).toBeVisible();
