@@ -92,6 +92,13 @@ Le Worker `bailly-api` se déploie depuis `main` par Workers Builds :
 Le front (`bailly.app`) appelle l'API par un service binding (`API`) pour les pages
 qu'il rend ; il doit donc toujours trouver le Worker `bailly-api` déployé.
 
+`api.bailly.app` est servi par une route du Worker (`routes` de `wrangler.jsonc`) :
+l'enregistrement DNS reste celui de l'ancienne origine (Heroku), à laquelle le Worker
+répond à la place. Retour arrière immédiat : supprimer la route dans le tableau de bord
+(Settings > Domains & Routes), puis la retirer de `wrangler.jsonc`, sans quoi le
+déploiement suivant la recréerait. L'adresse `workers.dev` reste active tant que
+Heroku sert de repli, pour comparer les deux (`scripts/load_test/compare.ts`).
+
 Chaque réponse du Worker porte un en-tête `Server-Timing` de diagnostic : l'isolat qui
 l'a servie (`isolate`, `requests`), et s'il a dû démarrer (`cold`), attendre un
 démarrage (`warming`) ou instancier Morpheus (`morpheus`). `scripts/load_test/k6.js`

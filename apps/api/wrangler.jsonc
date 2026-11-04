@@ -9,6 +9,17 @@
       "invocation_logs": false
     }
   },
+  // `api.bailly.app`: the Worker answers in place of the origin (the DNS record, still
+  // proxied to Heroku, stays as it is). Removing the route gives the origin back.
+  "routes": [
+    {
+      "pattern": "api.bailly.app/*",
+      "zone_name": "bailly.app"
+    }
+  ],
+  // Kept while Heroku is still the fallback (to compare both); to turn off afterwards,
+  // so that the API is only reached behind the rules of the zone.
+  "workers_dev": true,
   // The dictionary (cf. `src/defaults.ts` for the revision and `README.md` for the
   // import). The scripts address it by its binding (`wrangler d1 execute DB`).
   "d1_databases": [
