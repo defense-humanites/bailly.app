@@ -9,9 +9,9 @@
     version: string;
   };
 
-  const { $api } = useNuxtApp();
+  const nuxtApp = useNuxtApp();
+  const { $api } = nuxtApp;
   const greek = useGreek();
-  const { apiHost } = useRuntimeConfig().public;
 
   /**
    * The query of a random entry with its neighbors.
@@ -23,44 +23,51 @@
     siblingsFields: ["word", "uri", "excerpt"],
   } satisfies RandomEntryParams<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">);
 
+  type RandomEntryResponse = ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>;
+
   /**
-   * The preloaded request, as an absolute URL: the very same for the preload
-   * link and the first fetch, which takes the preloaded response only if
-   * their URLs are identical. A browser may keep serving a preloaded
-   * response to the requests of its URL, even after the page is reloaded
-   * (Safari, its memory cache: the same entry again on reloading the page,
-   * or on coming back to it within the application). So the URL is the
-   * page's own: a draw's number, given by the server with the page (in its
-   * payload, for the browser to fetch the same URL; the API ignores it); and
-   * only the first draw of the page served takes it, the next ones (another
-   * draw, a return to the page) are requested at another URL.
+   * How long the server waits for the API before sending the page without
+   * the entry, which the browser then draws (cf. `draw`): the API answers a
+   * random entry in ~65 ms from Western Europe (through the service binding
+   * on Cloudflare, cf. `apiBinding`), ~170 ms on a cold start.
    */
-  const drawNumber = useState("random-opening-draw", () => Math.random().toString(36).slice(2, 10));
-  const url = new URL("entry/random", apiHost.endsWith("/") ? apiHost : `${apiHost}/`);
-  url.search = new URLSearchParams({ ...RANDOM_QUERY, draw: drawNumber.value }).toString();
-  const RANDOM_ENTRY = url.href;
-  // The page served (hydrated): its first draw takes the preloaded response.
-  const served = useNuxtApp().isHydrating;
+  const SERVER_TIMEOUT = 300;
 
-  /*
-   * The page served preloads it: the browser fetches the entry while it
-   * loads the scripts, rather than once the page is interactive. Not on a
-   * navigation within the application, where the fetch starts at once (the
-   * link would only add a request).
+  /** A group of homonyms: its first entry. */
+  const toShown = (data: RandomEntryResponse["data"]): Shown => ({
+    entry: data.entry.children?.[0] ?? data.entry,
+    siblings: data.siblings ?? {},
+    version: data.version,
+  });
+
+  /**
+   * The entry drawn by the server, for the page it renders: the entry comes
+   * with the page (the page's largest content, its LCP, without waiting for
+   * the scripts). Sent in the payload for the hydration only: a return to
+   * the page within the application draws another entry, in the browser.
    */
-  if (import.meta.server) {
-    useHead({ link: [{ rel: "preload", as: "fetch", href: RANDOM_ENTRY, crossorigin: "anonymous" }] });
-  }
+  const served = useState<Shown | null>("random-opening", () => null);
+  const shown = ref<Shown | null>(import.meta.client && nuxtApp.isHydrating ? served.value : null);
+  if (import.meta.client) served.value = null;
 
-  const shown = ref<Shown | null>(null);
+  onServerPrefetch(async () => {
+    try {
+      const { data } = await $api<RandomEntryResponse>("entry/random", { query: RANDOM_QUERY, timeout: SERVER_TIMEOUT });
+      shown.value = served.value = toShown(data);
+    } catch (error) {
+      // The browser draws it (a slow or failing API delays the page no more).
+      console.warn("RandomOpening: the entry is left to the browser:", error instanceof Error ? error.message : error);
+    }
+  });
+
   const loading = ref(false);
   const failed = ref(false);
 
   /*
    * Its links (the entry, its neighbors) are `nofollow`: drawn at random,
    * they shouldn't weigh as the home page's links do for the search engines
-   * (which run the page's script, and would see them), nor show under the
-   * site in their results.
+   * (which see them in the page served), nor show under the site in their
+   * results.
    */
 
   /**
@@ -80,25 +87,20 @@
 
   /**
    * Opens the dictionary at random: a random entry with its neighbors, in a
-   * single request. Fetched once the page is mounted, so that each visit
-   * draws a new entry; the frame keeps its place meanwhile, until the entry
-   * and its faces have come.
-   * @param preloaded Whether to take the preloaded response (the first draw):
-   *   the next ones are requested at another URL (the same query, its commas
-   *   not encoded), bypassing the browser's caches.
+   * single request, bypassing the browser's caches. In the browser: on a
+   * return to the page within the application, if the server could not draw
+   * it, and at each new draw. The frame keeps its place meanwhile, until the
+   * entry and its faces have come.
    */
-  async function draw(preloaded = false): Promise<void> {
+  async function draw(): Promise<void> {
     loading.value = true;
     failed.value = false;
     try {
       const [{ data }] = await Promise.all([
-        preloaded
-          ? $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>(RANDOM_ENTRY)
-          : $api<ApiResponse<ApiRandomEntryData<"word" | "uri" | "excerpt" | "htmlDefinition", "word" | "uri" | "excerpt">>>("entry/random", { query: RANDOM_QUERY, cache: "no-store" }),
+        $api<RandomEntryResponse>("entry/random", { query: RANDOM_QUERY, cache: "no-store" }),
         loadFaces(),
       ]);
-      // A group of homonyms: its first entry.
-      shown.value = { entry: data.entry.children?.[0] ?? data.entry, siblings: data.siblings ?? {}, version: data.version };
+      shown.value = toShown(data);
     } catch {
       failed.value = true;
     } finally {
@@ -106,7 +108,9 @@
     }
   }
 
-  onMounted(() => draw(served));
+  onMounted(() => {
+    if (!shown.value) void draw();
+  });
 
   /**
    * A neighbor's excerpt without its word, which it starts with, possibly with

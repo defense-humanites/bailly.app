@@ -30,34 +30,36 @@ test.describe("home page", () => {
     await expect(page).toHaveURL(new RegExp(`${href}$`));
   });
 
-  test("fetches the random entry once, preloaded with the page", async ({ page, goto }) => {
+  test("serves the random entry with the page, draws the next ones in the browser", async ({ page, goto }) => {
+    // Rendered by the server: in the page's HTML.
+    const html = await page.request.get("/").then(response => response.text());
+    expect(html).toMatch(/data-random-opening[^]*class="definition/);
+
     const requests: string[] = [];
     page.on("request", request => request.url().includes("/entry/random") && requests.push(request.url()));
     await goto("/", { waitUntil: "hydration" });
-    await expect(page.getByRole("region", { name: "Le Bailly ouvert au hasard" }).getByRole("status")).toHaveText(/^Entrée ouverte\s: /);
-    // The preload's request, which the fetch took.
-    expect(requests).toHaveLength(1);
-    await expect(page.locator("link[rel=preload][as=fetch]")).toHaveAttribute("href", requests[0]!);
+    const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });
+    await expect(opening.locator(".definition")).toBeVisible();
+    await expect(opening.getByRole("status")).toHaveText(/^Entrée ouverte\s: /);
+    // Neither a preload nor a request of the browser.
+    await expect(page.locator("link[rel=preload][as=fetch]")).toHaveCount(0);
+    expect(requests).toHaveLength(0);
 
-    // Another draw: not at the preloaded URL (a browser may serve the
-    // preloaded response again).
-    await page.getByRole("button", { name: "Ouvrir à une autre page" }).click();
-    await expect.poll(() => requests.length).toBe(2);
-    expect(requests[1]).not.toBe(requests[0]);
+    // Another draw: in the browser.
+    await opening.getByRole("button", { name: "Ouvrir à une autre page" }).click();
+    await expect.poll(() => requests.length).toBe(1);
 
-    // Back to the page within the application: neither (Safari served the
-    // first entry again).
+    // Back to the page within the application: another one, in the browser.
     await page.getByRole("link", { name: "Signets" }).first().click();
     await expect(page).toHaveURL(/signets$/);
     await page.goBack();
-    await expect.poll(() => requests.length).toBe(3);
-    expect(requests[2]).not.toBe(requests[0]);
+    await expect.poll(() => requests.length).toBe(2);
+    await expect(opening.locator(".definition")).toBeVisible();
 
-    // Reloaded, another preloaded URL (Safari served the same entry again).
+    // Reloaded: served again with the page.
     await page.reload();
-    await expect.poll(() => requests.length).toBe(4);
-    expect(requests[3]).not.toBe(requests[0]);
-    await expect(page.locator("link[rel=preload][as=fetch]")).toHaveAttribute("href", requests[3]!);
+    await expect(opening.locator(".definition")).toBeVisible();
+    expect(requests).toHaveLength(2);
   });
 
   test("gives the focus to the search field on opening, but not on a touch screen", async ({ page, goto, browser }) => {
