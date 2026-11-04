@@ -1,6 +1,6 @@
 import { expect, test } from "@nuxt/test-utils/playwright";
 import type { Locator, Page } from "@playwright/test";
-import { searchInput, searchResults, seedBookmarks } from "./helpers";
+import { searchInput, searchResults, seedBookmarks, waitForHistory } from "./helpers";
 
 // Real entries (from the recorded API responses).
 const logos = { word: "λόγος", uri: "logos", excerpt: "λόγος, ου (ὁ) A parole : I la parole, en gén. : ἔργα λόγου μέζω, Hdt. 2, 35, actions au-dessus de ce qu’on en pourrait dire ; λόγου κρεῖσσον, Thc. 2,…" };
@@ -49,8 +49,11 @@ async function indicator(container: Locator): Promise<{ starred: boolean; color:
 test.describe("favorites and tags of the entries, in the history and the results", () => {
   test("the current tag first, then the first one in their order, and a count of the others", async ({ page, goto }) => {
     await goto("/logotechnês", { waitUntil: "hydration" });
+    await waitForHistory(page, 1);
     await goto("/logades", { waitUntil: "hydration" });
+    await waitForHistory(page, 2);
     await goto("/logos", { waitUntil: "hydration" });
+    await waitForHistory(page, 3);
     await seed(page);
 
     await page.getByRole("button", { name: "Entrées consultées récemment" }).click();
@@ -63,7 +66,7 @@ test.describe("favorites and tags of the entries, in the history and the results
     // λογοτέχνης: a single tag.
     expect(await indicator(links.nth(2))).toEqual({ starred: true, color: "Green", others: null });
     // For screen readers, the star comes before the tags' names (the chip is hidden).
-    await expect(links.nth(0).getByRole("link")).toHaveAccessibleName(/\(favori\)\s*\(étiquettes : Ciel, Rouge, Vert\)$/);
+    await expect(links.nth(0).getByRole("link")).toHaveAccessibleName(/\(favori\)\s*\(étiquettes\s: Ciel, Rouge, Vert\)$/);
   });
 
   test("in the results", async ({ page, goto }) => {

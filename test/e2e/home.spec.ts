@@ -8,10 +8,10 @@ test.describe("home page", () => {
     await goto("/", { waitUntil: "hydration" });
     const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });
     // The fake API always draws the same (recorded) entry.
-    await expect(opening.getByRole("status")).toHaveText(/^Entrée ouverte : /);
+    await expect(opening.getByRole("status")).toHaveText(/^Entrée ouverte\s: /);
     await expect(opening.locator(".definition")).toBeVisible();
-    const previous = opening.getByRole("link", { name: /^Entrée précédente : / });
-    const next = opening.getByRole("link", { name: /^Entrée suivante : / });
+    const previous = opening.getByRole("link", { name: /^Entrée précédente\s: / });
+    const next = opening.getByRole("link", { name: /^Entrée suivante\s: / });
     await expect(previous).toBeVisible();
     await expect(next).toBeVisible();
 
@@ -22,7 +22,7 @@ test.describe("home page", () => {
     await opening.getByRole("button", { name: "Ouvrir à une autre page" }).click();
     await expect.poll(() => requests.length).toBe(1);
     expect(requests[0]).toContain("/entry/random");
-    await expect(opening.getByRole("status")).toHaveText(/^Entrée ouverte : /);
+    await expect(opening.getByRole("status")).toHaveText(/^Entrée ouverte\s: /);
 
     // A neighbor leads to its page.
     const href = await next.getAttribute("href");
@@ -34,7 +34,7 @@ test.describe("home page", () => {
     const requests: string[] = [];
     page.on("request", request => request.url().includes("/entry/random") && requests.push(request.url()));
     await goto("/", { waitUntil: "hydration" });
-    await expect(page.getByRole("region", { name: "Le Bailly ouvert au hasard" }).getByRole("status")).toHaveText(/^Entrée ouverte : /);
+    await expect(page.getByRole("region", { name: "Le Bailly ouvert au hasard" }).getByRole("status")).toHaveText(/^Entrée ouverte\s: /);
     // The preload's request, which the fetch took.
     expect(requests).toHaveLength(1);
     await expect(page.locator("link[rel=preload][as=fetch]")).toHaveAttribute("href", requests[0]!);
@@ -67,7 +67,7 @@ test.describe("home page", () => {
     const touch = await browser.newContext({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 }, baseURL: page.url() });
     const mobile = await touch.newPage();
     await mobile.goto("/");
-    await expect(mobile.getByRole("region", { name: "Le Bailly ouvert au hasard" }).getByRole("status")).toHaveText(/^Entrée ouverte : /);
+    await expect(mobile.getByRole("region", { name: "Le Bailly ouvert au hasard" }).getByRole("status")).toHaveText(/^Entrée ouverte\s: /);
     await expect(searchInput(mobile)).not.toBeFocused();
     await touch.close();
   });
@@ -93,7 +93,7 @@ test.describe("home page", () => {
   test("offers the transliteration to those who don't read Greek, saved at once", async ({ page, goto }) => {
     await goto("/", { waitUntil: "hydration" });
     const opening = page.getByRole("region", { name: "Le Bailly ouvert au hasard" });
-    await expect(opening.getByRole("status")).toHaveText(/^Entrée ouverte : /);
+    await expect(opening.getByRole("status")).toHaveText(/^Entrée ouverte\s: /);
     const word = opening.locator(".definition").first();
     await expect(word).toContainText(/\p{Script=Greek}/u);
 

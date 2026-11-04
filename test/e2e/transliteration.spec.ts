@@ -19,7 +19,7 @@ test.describe("transliterated Greek", () => {
     await expect(page.locator("main h1")).toHaveText("logos");
     const article = await page.locator("main article").textContent();
     expect(article).not.toMatch(GREEK);
-    await expect(page.getByRole("link", { name: /^Entrée suivante : / }).first()).toHaveAccessibleName(/^Entrée suivante : [a-zāēōū·]+$/);
+    await expect(page.getByRole("link", { name: /^Entrée suivante\s: / }).first()).toHaveAccessibleName(/^Entrée suivante\s: [a-zāēōū·]+$/);
   });
 
   test("the results and the reader", async ({ page, goto }) => {

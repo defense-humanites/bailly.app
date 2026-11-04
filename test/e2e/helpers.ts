@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 /**
@@ -144,3 +145,19 @@ export const pageCenter = (page: Page): Promise<number> => page.evaluate(() => {
   const scroller = document.getElementById("page")!;
   return scroller.getBoundingClientRect().left + scroller.clientWidth / 2;
 });
+
+/**
+ * Waits for the history of the viewed entries to hold `count` entries: an
+ * entry is added once its page is mounted (IndexedDB), and the next page
+ * load could interrupt the write.
+ */
+export async function waitForHistory(page: Page, count: number): Promise<void> {
+  await expect.poll(() => page.evaluate(async () => {
+    const root = document.querySelector("#__nuxt") as AppRoot;
+    const stores = root.__vue_app__.config.globalProperties.$pinia._s as unknown as Map<string, { load: () => Promise<void>; entries: unknown[] }>;
+    const store = stores.get("history");
+    if (!store) return 0;
+    await store.load();
+    return store.entries.length;
+  })).toBe(count);
+}

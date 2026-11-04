@@ -101,7 +101,7 @@ test.describe("about page", () => {
 
   test("the contributors to the Bailly 2020, behind its « et al. »", async ({ page, goto }) => {
     await goto(encodeURI("/à-propos"), { waitUntil: "hydration" });
-    await page.getByRole("button", { name: /^Et al\. : les 37 contributeurs/ }).click();
+    await page.getByRole("button", { name: /^Et al\.\s: les 37 contributeurs/ }).click();
     const list = page.getByRole("dialog").getByRole("listitem");
     await expect(list).toHaveCount(37);
     await expect(list.first()).toHaveText("José Antonio Artés");

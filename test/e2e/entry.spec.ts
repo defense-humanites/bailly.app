@@ -10,8 +10,8 @@ test.describe("entry page", () => {
   });
 
   test.describe("links to the neighbouring entries", () => {
-    const previous = (page: import("@playwright/test").Page) => page.locator("article > header").getByRole("link", { name: /^Entrée précédente : / });
-    const next = (page: import("@playwright/test").Page) => page.locator("article > header").getByRole("link", { name: /^Entrée suivante : / });
+    const previous = (page: import("@playwright/test").Page) => page.locator("article > header").getByRole("link", { name: /^Entrée précédente\s: / });
+    const next = (page: import("@playwright/test").Page) => page.locator("article > header").getByRole("link", { name: /^Entrée suivante\s: / });
 
     test("arrows only below sm", async ({ page, goto }) => {
       await page.setViewportSize({ width: 390, height: 800 });
@@ -30,7 +30,7 @@ test.describe("entry page", () => {
     test("one tooltip, ours, with the whole word", async ({ page, goto }) => {
       await page.setViewportSize({ width: 1024, height: 800 });
       await goto("/logos", { waitUntil: "hydration" });
-      const word = (await next(page).getAttribute("aria-label"))!.replace("Entrée suivante : ", "");
+      const word = (await next(page).getAttribute("aria-label"))!.replace(/^Entrée suivante\s:\s/, "");
       await next(page).hover();
       await expect(page.getByRole("tooltip")).toHaveText(`Entrée suivante : ${word}`);
       const shown = page.locator("[data-slot=content] > span:not([role=tooltip])");
@@ -45,7 +45,7 @@ test.describe("entry page", () => {
       await goto("/logos", { waitUntil: "hydration" });
       const surround = page.getByRole("navigation", { name: "Entrées voisines" });
       await expect(surround.getByRole("link")).toHaveCount(2);
-      const nextWord = (await next(page).getAttribute("aria-label"))!.replace("Entrée suivante : ", "");
+      const nextWord = (await next(page).getAttribute("aria-label"))!.replace(/^Entrée suivante\s:\s/, "");
       await surround.getByRole("link").last().click();
       await expect(page.locator("main h1")).toHaveText(nextWord);
     });
@@ -237,7 +237,7 @@ test.describe("entry page", () => {
 
   test("keyboard: the arrows lead to the neighbouring entries", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
-    const nextWord = (await page.locator("article > header").getByRole("link", { name: /^Entrée suivante : / }).getAttribute("aria-label"))!.replace("Entrée suivante : ", "");
+    const nextWord = (await page.locator("article > header").getByRole("link", { name: /^Entrée suivante\s: / }).getAttribute("aria-label"))!.replace(/^Entrée suivante\s:\s/, "");
     // Not while typing in the search bar.
     await page.locator("header input[role=combobox]").focus();
     await page.keyboard.press("ArrowRight");

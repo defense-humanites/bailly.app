@@ -389,7 +389,7 @@ test.describe("bookmarks page", () => {
     const field = page.getByRole("textbox", { name: "Intitulé de la nouvelle étiquette" });
     await field.fill("vidé");
     await expect(field).toHaveAttribute("aria-invalid", "true");
-    await expect(field).toHaveAccessibleDescription(/L'étiquette « Vide » existe déjà\./);
+    await expect(field).toHaveAccessibleDescription(/L'étiquette «\sVide\s» existe déjà\./);
     await expect(page.locator("[data-slot=content]").getByText("L'étiquette « Vide » existe déjà.")).toBeVisible();
     await field.press("Enter");
     await expect(field).toHaveValue("vidé");
@@ -456,7 +456,7 @@ test.describe("bookmarks page", () => {
       await expect(entries.getByRole("link")).toHaveCount(2);
       const before = await boxes();
       await edit.click();
-      await expect(homer.getByRole("button", { name: /^Retirer « ἄναξ »/ })).toBeVisible();
+      await expect(homer.getByRole("button", { name: /^Retirer «\sἄναξ\s»/ })).toBeVisible();
       await expect(entries.getByRole("link")).toHaveCount(0);
       await expect(entries.filter({ hasText: "ἄναξ" })).toHaveCount(1);
       expect(await boxes()).toEqual(before);
@@ -477,7 +477,7 @@ test.describe("bookmarks page", () => {
   });
 
   test("edit buttons: on hover or focus, not at rest", async ({ page }) => {
-    const actions = card(page, "Vide").getByRole("button", { name: /^(Épingler|Rendre active|Modifier) l'étiquette « Vide »$/ });
+    const actions = card(page, "Vide").getByRole("button", { name: /^(Épingler|Rendre active|Modifier) l'étiquette «\sVide\s»$/ });
     await page.mouse.move(0, 0);
     await expect(actions).toHaveCount(3);
     for (const action of await actions.all()) await expect(action).toHaveCSS("opacity", "0");
