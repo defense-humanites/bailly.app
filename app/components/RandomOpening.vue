@@ -45,6 +45,9 @@
    * with the page (the page's largest content, its LCP, without waiting for
    * the scripts). Sent in the payload for the hydration only: a return to
    * the page within the application draws another entry, in the browser.
+   * Its italic face is not preloaded (its bold is, cf. `index.vue`):
+   * measured, it delayed the first paint (~0.15 s, slow mobile network)
+   * without lessening any layout shift, the frame having a fixed height.
    */
   const served = useState<Shown | null>("random-opening", () => null);
   const shown = ref<Shown | null>(import.meta.client && nuxtApp.isHydrating ? served.value : null);

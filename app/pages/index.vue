@@ -4,10 +4,8 @@
 
   const searchFocus = useSearchFocus();
 
-  // Its title is bold, as the headwords of the entry drawn at random; the
-  // entry, rendered by the server, has italics.
+  // Its title is bold, as the headwords of the entry drawn at random.
   usePreloadBoldFace();
-  usePreloadItalicFace();
 
   /**
    * The home page: the site's title (the template's, without a page title)
