@@ -430,8 +430,19 @@
   --ui-border-muted: var(--ui-color-neutral-800);
   --ui-border-accented: var(--ui-color-neutral-700);
   --ui-border-inverted: var(--ui-color-neutral-100);
+
+  /* Its buttons hovered and pressed (« Annuler »: neutral, outline), as on
+     the dark theme's cards (redefined here: computed where they are). */
+  --app-card-hover: color-mix(in oklab, var(--ui-bg-accented) 50%, transparent);
+  --app-card-active: color-mix(in oklab, var(--ui-bg-accented) 65%, transparent);
+  --app-button-hover: var(--app-card-hover);
+  --app-button-active: var(--app-card-active);
 }
 
+/*
+ * Light on the dark theme, a shade darker than the light theme's marble
+ * (200 rather than 100): on a page, among the dark surfaces, it seemed white.
+ */
 .dark .app-toast {
   --ui-primary: var(--ui-color-primary-600);
   --ui-secondary: var(--ui-color-secondary-700);
@@ -446,16 +457,22 @@
   --ui-text-highlighted: var(--ui-color-neutral-950);
   --ui-text-inverted: var(--ui-color-neutral-50);
 
-  --ui-bg: var(--ui-color-neutral-100);
-  --ui-bg-muted: var(--ui-color-neutral-200);
-  --ui-bg-elevated: var(--ui-color-neutral-200);
-  --ui-bg-accented: var(--ui-color-neutral-300);
+  --ui-bg: var(--ui-color-neutral-200);
+  --ui-bg-muted: var(--ui-color-neutral-300);
+  --ui-bg-elevated: var(--ui-color-neutral-300);
+  --ui-bg-accented: var(--ui-color-neutral-400);
   --ui-bg-inverted: var(--ui-color-neutral-900);
 
-  --ui-border: var(--ui-color-neutral-200);
-  --ui-border-muted: var(--ui-color-neutral-200);
-  --ui-border-accented: var(--ui-color-neutral-300);
+  --ui-border: var(--ui-color-neutral-300);
+  --ui-border-muted: var(--ui-color-neutral-300);
+  --ui-border-accented: var(--ui-color-neutral-400);
   --ui-border-inverted: var(--ui-color-neutral-900);
+
+  /* Its buttons hovered and pressed, a shade then two darker. */
+  --app-card-hover: color-mix(in oklab, var(--ui-color-neutral-200) 50%, var(--ui-color-neutral-300));
+  --app-card-active: var(--ui-color-neutral-300);
+  --app-button-hover: var(--app-card-hover);
+  --app-button-active: var(--app-card-active);
 }
 
 .dark .search-panel {
