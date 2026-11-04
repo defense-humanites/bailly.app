@@ -399,6 +399,65 @@
   box-shadow: 0 18px 40px -12px rgb(60 45 30 / 0.28), 0 4px 12px -4px rgb(60 45 30 / 0.1);
 }
 
+/*
+ * The toasts, inverted (« vernis noir »): dark on the light theme, light on
+ * the dark one, as black figures on the clay; they stand out from the page
+ * at once. Their text, borders, buttons (e.g. « Annuler ») and icons take
+ * the other theme's colors (cf. `:root`, `.dark`): its tokens, redefined
+ * in them (cf. `app.config.ts`, `toast`).
+ */
+.app-toast {
+  --ui-primary: var(--ui-color-primary-400);
+  --ui-secondary: var(--ui-color-secondary-300);
+  --ui-success: var(--ui-color-success-400);
+  --ui-error: var(--ui-color-error-400);
+  --ui-warning: var(--ui-color-warning-400);
+
+  --ui-text-dimmed: var(--ui-color-neutral-500);
+  --ui-text-muted: var(--ui-color-neutral-400);
+  --ui-text-toned: var(--ui-color-neutral-300);
+  --ui-text: var(--ui-color-neutral-200);
+  --ui-text-highlighted: var(--ui-color-neutral-50);
+  --ui-text-inverted: var(--ui-color-neutral-900);
+
+  --ui-bg: var(--ui-color-neutral-900);
+  --ui-bg-muted: var(--ui-color-neutral-800);
+  --ui-bg-elevated: var(--ui-color-neutral-800);
+  --ui-bg-accented: var(--ui-color-neutral-700);
+  --ui-bg-inverted: var(--ui-color-neutral-100);
+
+  --ui-border: var(--ui-color-neutral-800);
+  --ui-border-muted: var(--ui-color-neutral-800);
+  --ui-border-accented: var(--ui-color-neutral-700);
+  --ui-border-inverted: var(--ui-color-neutral-100);
+}
+
+.dark .app-toast {
+  --ui-primary: var(--ui-color-primary-600);
+  --ui-secondary: var(--ui-color-secondary-700);
+  --ui-success: var(--ui-color-success-600);
+  --ui-error: var(--ui-color-error-700);
+  --ui-warning: var(--ui-color-warning-600);
+
+  --ui-text-dimmed: var(--ui-color-neutral-600);
+  --ui-text-muted: var(--ui-color-neutral-700);
+  --ui-text-toned: var(--ui-color-neutral-800);
+  --ui-text: var(--ui-color-neutral-900);
+  --ui-text-highlighted: var(--ui-color-neutral-950);
+  --ui-text-inverted: var(--ui-color-neutral-50);
+
+  --ui-bg: var(--ui-color-neutral-100);
+  --ui-bg-muted: var(--ui-color-neutral-200);
+  --ui-bg-elevated: var(--ui-color-neutral-200);
+  --ui-bg-accented: var(--ui-color-neutral-300);
+  --ui-bg-inverted: var(--ui-color-neutral-900);
+
+  --ui-border: var(--ui-color-neutral-200);
+  --ui-border-muted: var(--ui-color-neutral-200);
+  --ui-border-accented: var(--ui-color-neutral-300);
+  --ui-border-inverted: var(--ui-color-neutral-900);
+}
+
 .dark .search-panel {
   box-shadow: 0 18px 40px -10px rgb(0 0 0 / 0.7), 0 4px 12px -4px rgb(0 0 0 / 0.4);
 }

@@ -230,14 +230,14 @@ export default defineAppConfig({
       },
     },
     /*
-     * The toasts stand out from the page: the background of the search bar
-     * in use (`--app-surface-raised`, cf. `root.css`), and, on a phone, as
-     * wide as the header's items (its side margins, `px-safe-2`, also
-     * under them).
+     * The toasts, inverted (« vernis noir »): dark on the light theme, light
+     * on the dark one, their colors the other theme's (`app-toast`, cf.
+     * `root.css`); a deeper shadow, warm. On a phone, as wide as the
+     * header's items (cf. `toaster` below).
      */
     toast: {
       slots: {
-        root: "bg-(--app-surface-raised)",
+        root: "app-toast rounded-xl shadow-[0_12px_32px_-12px_rgb(30_22_14/0.5),0_4px_10px_-4px_rgb(30_22_14/0.25)] dark:shadow-[0_12px_32px_-12px_rgb(0_0_0/0.7),0_4px_10px_-4px_rgb(0_0_0/0.4)]",
         close: CLOSE,
       },
     },
