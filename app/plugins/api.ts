@@ -1,3 +1,5 @@
+import { apiBinding, createApiFetch } from "#shared/utils/apiBinding";
+
 /**
  * Whether a string is an absolute http(s) URL. Not with `URL.canParse`, of
  * Safari 17 only: on iOS 16, the plugin failed, and the application with it
@@ -12,7 +14,9 @@ const isHttpUrl = (value: string): boolean => {
 };
 
 /**
- * Provides `$api`, a `$fetch` instance bound to the Bailly API.
+ * Provides `$api`, a `$fetch` instance bound to the Bailly API. On the
+ * server, on Cloudflare, its requests go through the API Worker's service
+ * binding (cf. `apiBinding`); in the browser, over the network.
  * @see https://nuxt.com/docs/4.x/guide/recipes/custom-usefetch
  */
 export default defineNuxtPlugin(() => {
@@ -27,9 +31,7 @@ export default defineNuxtPlugin(() => {
     );
   }
 
-  const api = $fetch.create({
-    baseURL: apiHost,
-  });
+  const api = createApiFetch(apiHost, import.meta.server ? apiBinding(useRequestEvent()) : undefined);
 
   return {
     provide: {

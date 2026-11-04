@@ -10,6 +10,16 @@
 	],
 	"workers_dev": false,
 	"preview_urls": false,
+	// The API Worker (`bailly-api`, repository `bailly-api-next`): the requests
+	// the server makes to the API (rendered pages, search redirects) go through
+	// this binding, without leaving Cloudflare's network (cf.
+	// `shared/utils/apiBinding.ts`); the browser's go to `apiHost`.
+	"services": [
+		{
+			"binding": "API",
+			"service": "bailly-api"
+		}
+	],
 	"d1_databases": [
 		{
 			"binding": "SYNC_DB",
