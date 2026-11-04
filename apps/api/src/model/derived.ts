@@ -8,6 +8,7 @@
  */
 
 import type { Dictionary } from "../db/dictionary.ts";
+import { Shared } from "../shared.ts";
 
 /** The search columns, in the order of `formatSearchableField()`'s combinations. */
 export const SEARCH_COLUMNS = [
@@ -53,21 +54,21 @@ export type DerivedData = {
   definitionLength: boolean;
 };
 
-const cache = new WeakMap<Dictionary, Promise<DerivedData>>();
+const cache = new WeakMap<Dictionary, Shared<DerivedData>>();
 
-/** The derived data of a dictionary, read on the first call. */
+/**
+ * The derived data of a dictionary, read on the first call and shared by the
+ * following ones (cf. `Shared`: never a pending read of another, canceled request).
+ */
 export function getDerivedData(db: Dictionary): Promise<DerivedData> {
   let data = cache.get(db);
 
   if (!data) {
-    data = loadDerivedData(db).catch((error) => {
-      cache.delete(db);
-      throw error;
-    });
+    data = new Shared(() => loadDerivedData(db));
     cache.set(db, data);
   }
 
-  return data;
+  return data.get();
 }
 
 async function loadDerivedData(db: Dictionary): Promise<DerivedData> {

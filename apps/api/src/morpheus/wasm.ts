@@ -27,6 +27,7 @@ import {
   MorpheusOption,
   type StemlibEntries
 } from "@libmorpheus/wasm";
+import { Shared } from "../shared.ts";
 import { decodeAnalysis } from "./decode.ts";
 import {
   type AnalyzeOptions,
@@ -60,7 +61,9 @@ type Instance = {
 
 export class WasmLemmatizer implements Lemmatizer {
   readonly #options: WasmLemmatizerOptions;
-  #instance: Promise<Instance> | undefined;
+  // Shared by the requests (cf. `Shared`: on Workers, never a pending instantiation
+  // of another, canceled request).
+  readonly #instance = new Shared(() => this.#instantiate());
 
   /** How many times the module was instantiated (diagnostics, cf. `worker.ts`). */
   instantiations = 0;
@@ -89,13 +92,7 @@ export class WasmLemmatizer implements Lemmatizer {
   }
 
   #ready(): Promise<Instance> {
-    this.#instance ??= this.#instantiate().catch((error) => {
-      // A failed instantiation is retried by the next call.
-      this.#instance = undefined;
-      throw error;
-    });
-
-    return this.#instance;
+    return this.#instance.get();
   }
 
   async #instantiate(): Promise<Instance> {
@@ -128,7 +125,7 @@ export class WasmLemmatizer implements Lemmatizer {
 
       // Anything else (an abort of the C runtime, a trap) leaves the instance in an
       // unknown state: discard it, the next call starts afresh.
-      this.#instance = undefined;
+      this.#instance.reset();
       throw error;
     }
   }
