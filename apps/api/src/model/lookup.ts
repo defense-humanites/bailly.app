@@ -25,7 +25,8 @@ import {
   reverseKey,
   reversedColumn,
   SEARCH_COLUMNS,
-  type SearchColumn
+  type SearchColumn,
+  type UnorderedRow
 } from "./derived.ts";
 
 const LookupMode = {
@@ -256,7 +257,8 @@ function getMatchKind(query: string, exact: boolean): MatchKind {
  *   ?2 the search key of an exact match (`null`: none possible);
  *   ?3 the search keys (`searchable`) of the Morpheus lemmas, as a JSON array;
  *   ?4 the limit (`-1`: none);
- *   ?5 the rows out of index order (`ordered` variant), as a JSON array;
+ *   ?5 the rows out of index order that the query matches (`ordered` variant, cf.
+ *      `unorderedMatches()`), as a JSON array;
  *   ?6 the end of a prefix range: the text with its last character incremented;
  *   ?7, ?8 the same range on the reversed keys (`suffix`).
  */
@@ -292,6 +294,37 @@ function rangeEnd(text: string): string {
   // (Skipping the surrogates, which no string holds alone.)
   const next = last === 0xd7ff ? 0xe000 : last + 1;
   return characters.join("") + String.fromCodePoint(next);
+}
+
+/**
+ * The rows out of index order (`ordered` variant) that the query matches, filtered
+ * here on their key rather than in SQL: the companion statement then reads only these
+ * (none, most of the time, and the statement is left out) instead of the whole list
+ * (49 rows, which D1 bills on every lookup), and the main statement excludes only
+ * these (the others do not match anyway). A pattern (`?`, inner `*`) keeps the whole
+ * list, `GLOB` deciding.
+ */
+function unorderedMatches(
+  rows: readonly UnorderedRow[],
+  kind: MatchKind,
+  text: string
+): number[] {
+  const matches = (key: string): boolean => {
+    switch (kind) {
+      case "equals":
+        return key === text;
+      case "prefix":
+        return key.startsWith(text);
+      case "suffix":
+        return key.endsWith(text);
+      case "contains":
+        return key.includes(text);
+      case "pattern":
+        return true;
+    }
+  };
+
+  return rows.filter(({ key }) => matches(key)).map(({ orderedID }) => orderedID);
 }
 
 /** The condition of a match on the search column (cf. `MatchKind`). */
@@ -833,18 +866,38 @@ export async function getEntries<K extends keyof QueryableFields>(
   const variant = getOtherVariant(searchableField, kind, derived);
   const reversedText = kind === "suffix" ? reverseKey(text) : null;
 
+  // The rows out of index order that the query matches (cf. `unorderedMatches()`):
+  // usually none, which spares their statement.
+  const unordered = variant === "ordered"
+    ? unorderedMatches(derived.unordered.get(searchableField)!, kind, text)
+    : [];
+
   const params: LookupParams = [
     text,
     exactQuery,
     JSON.stringify(morpheusSearchableKeys),
     limitValue,
-    variant === "ordered"
-      ? JSON.stringify(derived.unordered.get(searchableField))
-      : null,
+    variant === "ordered" ? JSON.stringify(unordered) : null,
     kind === "prefix" ? rangeEnd(text) : null,
     reversedText,
     reversedText && rangeEnd(reversedText)
   ];
+
+  // A prefix of a few letters: its count is precomputed (cf. `buildCountSql()`), and
+  // cheap enough (a row, and the Morpheus lemmas out of the prefix) to be read with
+  // the lookup, in the same round trip, even when it turns out to be useless (the
+  // limit not reached: these short prefixes almost always reach it). The other
+  // counts may read every match: they are read afterwards, only if needed.
+  const precounted = kind === "prefix" && derived.prefixCounts &&
+    [...text].length <= PREFIX_COUNT_MAX_LENGTH;
+
+  const countStatements = (): SqlStatement[] => [
+    ...(precounted ? [bind(PREFIX_COUNT_SQL, [searchableField, text])] : []),
+    bind(buildCountSql(searchableField, kind, reversedKeys, precounted), params)
+  ];
+
+  const sumCounts = (sets: { count: number | null }[][]): number =>
+    sets.reduce((total, rows) => total + (rows[0]?.count ?? 0), 0);
 
   // The SQL text only varies within a closed set (search column, kind of match, set
   // of selected fields, variant): the statements are prepared at startup and then
@@ -852,13 +905,13 @@ export async function getEntries<K extends keyof QueryableFields>(
   // what is left of the limit (cf. `buildPriorityLookupSql()`). Every statement goes
   // in one batch (one round trip on D1): the other rows are limited to `limit` too,
   // and trimmed below to what the priority rows leave.
-  const [priorityData, ...otherSets] = await db.batch<MatchedDatabaseEntry>([
+  const lookupStatements = [
     bind(buildPriorityLookupSql(fields, searchableField, kind, reversedKeys), params),
     bind(
       buildOtherLookupSql(fields, searchableField, kind, reversedKeys, variant),
       params
     ),
-    ...(variant === "ordered"
+    ...(unordered.length
       ? [
         bind(
           buildUnorderedLookupSql(fields, searchableField, kind, reversedKeys),
@@ -866,7 +919,17 @@ export async function getEntries<K extends keyof QueryableFields>(
         )
       ]
       : [])
-  ]) as [MatchedDatabaseEntry[], ...MatchedDatabaseEntry[][]];
+  ];
+
+  const results = await db.batch<MatchedDatabaseEntry & { count: number | null }>([
+    ...lookupStatements,
+    ...(precounted ? countStatements() : [])
+  ]);
+
+  const [priorityData, ...otherSets] = results.slice(
+    0,
+    lookupStatements.length
+  ) as unknown as [MatchedDatabaseEntry[], ...MatchedDatabaseEntry[][]];
 
   const otherLimit = limitValue === -1 ? -1 : limitValue - priorityData.length;
 
@@ -874,8 +937,8 @@ export async function getEntries<K extends keyof QueryableFields>(
   // (cf. `buildOtherLookupSql()`). They all are among the priority rows (unless those
   // already fill the limit, in which case none is kept): at most
   // `priorityData.length` rows are removed, so `limit` rows are enough. The `ordered`
-  // variant gives two sets (the rows in index order, the rows out of it), merged in
-  // the dictionary order: the first `limit` rows of the merge are all there.
+  // variant may give two sets (the rows in index order, the rows out of it), merged
+  // in the dictionary order: the first `limit` rows of the merge are all there.
   const morpheusKeys = new Set(morpheusSearchableKeys);
 
   const otherRows = otherSets.length > 1
@@ -888,18 +951,13 @@ export async function getEntries<K extends keyof QueryableFields>(
 
   const data = [...priorityData, ...otherData];
 
-  // A prefix of a few letters: its count is precomputed (cf. `buildCountSql()`).
-  const precounted = kind === "prefix" && derived.prefixCounts &&
-    [...text].length <= PREFIX_COUNT_MAX_LENGTH;
-
   const countAll = limitValue === -1 || data.length < limitValue
     ? data.length
-    : (await db.batch<{ count: number | null }>([
-      ...(precounted
-        ? [bind(PREFIX_COUNT_SQL, [searchableField, text])]
-        : []),
-      bind(buildCountSql(searchableField, kind, reversedKeys, precounted), params)
-    ])).reduce((total, rows) => total + (rows[0]?.count ?? 0), 0);
+    : precounted
+    ? sumCounts(
+      results.slice(lookupStatements.length) as unknown as { count: number | null }[][]
+    )
+    : sumCounts(await db.batch<{ count: number | null }>(countStatements()));
 
   let internalResponse: LookupResponse = {
     data: {

@@ -16,7 +16,8 @@
     "test:all": "vitest run",
     "morpheus:data": "node scripts/morpheus_data.ts",
     "d1:local": "node scripts/d1_local_import.ts",
-    "d1:export": "node scripts/d1_export_sql.ts"
+    "d1:export": "node scripts/d1_export_sql.ts",
+    "d1:measure": "node scripts/measure_d1.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.6",

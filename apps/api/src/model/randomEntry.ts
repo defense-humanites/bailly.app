@@ -13,8 +13,14 @@ import { getEntry } from "./entry.ts";
 
 type DrawnEntry = Partial<DatabaseEntry> & { length: number };
 
-/** Candidates drawn per attempt with a `lengthRange` (one statement, as many rows). */
-const CANDIDATES = 32;
+/**
+ * Candidates drawn per attempt with a `lengthRange` (one statement, as many rows).
+ * The home page asks for 400 to 700 characters, which 3.4 % of the entries have:
+ * with 32 candidates, a third of the draws found none and fell back to the index
+ * (~7 000 rows read, and a second round trip); with 128, 1.2 % of them (~260 rows
+ * read on average).
+ */
+const CANDIDATES = 128;
 
 /**
  * Draws an entry at random, reading as few rows as possible: `ORDER BY random()`

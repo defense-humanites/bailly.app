@@ -37,25 +37,44 @@ export async function getEntry<
   // (`λόγος#1`): the URI followed by `#` and one character, a range on the index of
   // `uri` rather than a `GLOB` (D1 refuses patterns longer than 50 bytes, and the
   // URI would be read as a pattern).
+  const uriMatch =
+    "uri = ?1 OR (uri > ?1 || '#' AND uri < ?1 || '$' AND length(uri) = length(?1) + 2)";
+
   const entriesSql = `
     SELECT orderedID, ${!fieldsStr.includes("word") ? `word, ${fieldsStr}` : fieldsStr}
     FROM bailly
-    WHERE uri = ?1
-    OR (uri > ?1 || '#' AND uri < ?1 || '$' AND length(uri) = length(?1) + 2)
+    WHERE ${uriMatch}
+    ORDER BY orderedID
   `;
 
-  // The URI as is first, then its normalized form if it matches nothing: both in
-  // one batch (one round trip on D1), the second read being a few rows at most.
+  // The siblings, found from the URI in the same round trip: the entries before the
+  // first one of the group and after its last one (the group's first entry plus its
+  // size), in that order.
+  const siblingsSql = `
+    SELECT orderedID, ${(siblingsFields ?? fields).join(", ")}
+    FROM bailly
+    WHERE orderedID IN (
+      (SELECT min(orderedID) - 1 FROM bailly WHERE ${uriMatch}),
+      (SELECT min(orderedID) + count(*) FROM bailly WHERE ${uriMatch})
+    )
+    ORDER BY orderedID
+  `;
+
+  // The URI as is first, then its normalized form if it matches nothing: all in one
+  // batch (one round trip on D1), the second form costing a few rows at most.
   const normalizedQ = normalizeUri(q);
-  const [asIs, normalized = []] = await db.batch<
-    PartialExcept<DatabaseEntry, "orderedID" | "word">
-  >(
-    [q, ...(normalizedQ !== q ? [normalizedQ] : [])].map((uri) => ({
-      sql: entriesSql,
-      params: [uri]
-    }))
-  );
+  const uris = [q, ...(normalizedQ !== q ? [normalizedQ] : [])];
+  const results = await db.batch<PartialExcept<DatabaseEntry, "orderedID">>([
+    ...uris.map((uri) => ({ sql: entriesSql, params: [uri] })),
+    ...(getSiblings ? uris.map((uri) => ({ sql: siblingsSql, params: [uri] })) : [])
+  ]);
+  const [asIs, normalized = []] = results as PartialExcept<
+    DatabaseEntry,
+    "orderedID" | "word"
+  >[][];
+  const siblingsOf = (index: number) => results[uris.length + index] ?? [];
   const data = asIs!.length ? asIs! : normalized;
+  const siblings = asIs!.length ? siblingsOf(0) : siblingsOf(1);
 
   if (!data.length) {
     return {
@@ -104,21 +123,9 @@ export async function getEntry<
     };
   }
 
-  const siblingsSql = `
-    SELECT orderedID, ${(siblingsFields ?? fields).join(", ")}
-    FROM bailly
-    WHERE orderedID = ?1
-    OR orderedID = ?2
-  `;
-
   const nextSiblingID = Array.isArray(entry.children)
     ? entry.orderedID + entry.children.length
     : entry.orderedID + 1;
-
-  const siblings = await db.all<PartialExcept<DatabaseEntry, "orderedID">>(
-    siblingsSql,
-    [entry.orderedID - 1, nextSiblingID]
-  );
 
   let previousEntry: Partial<Entry> = {};
   let nextEntry: Partial<Entry> = {};

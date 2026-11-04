@@ -38,11 +38,16 @@ export function reversedColumn(column: SearchColumn): string {
   return `reversed${column.charAt(0).toUpperCase()}${column.slice(1)}`;
 }
 
+export type UnorderedRow = { orderedID: number; key: string };
+
 export type DerivedData = {
   /** The largest `orderedID` (the rows are numbered from 1, without gaps so far). */
   maxOrderedID: number;
-  /** Per column with a stored list: the `orderedID`s out of index order. */
-  unordered: ReadonlyMap<SearchColumn, readonly number[]>;
+  /**
+   * Per column with a stored list: the rows out of index order, with their key in
+   * that column (the lookups keep those the query matches, cf. `lookup.ts`).
+   */
+  unordered: ReadonlyMap<SearchColumn, readonly UnorderedRow[]>;
   prefixCounts: boolean;
   reversedKeys: boolean;
   definitionLength: boolean;
@@ -96,18 +101,26 @@ async function loadDerivedData(db: Dictionary): Promise<DerivedData> {
     };
   }
 
-  const unordered = new Map<SearchColumn, number[]>();
+  const unordered = new Map<SearchColumn, UnorderedRow[]>();
 
   if (objects.has("bailly_unordered")) {
     for (
-      const { column, orderedID } of await db.all<{
+      const { column, orderedID, key } of await db.all<{
         column: SearchColumn;
         orderedID: number;
-      }>("SELECT column, orderedID FROM bailly_unordered ORDER BY column, orderedID")
+        key: string;
+      }>(
+        `SELECT u.column, u.orderedID,
+                CASE u.column ${
+          SEARCH_COLUMNS.map((column) => `WHEN '${column}' THEN b.${column}`).join(" ")
+        } END AS key
+         FROM bailly_unordered AS u JOIN bailly AS b ON b.orderedID = u.orderedID
+         ORDER BY u.column, u.orderedID`
+      )
     ) {
-      let ids = unordered.get(column);
-      if (!ids) unordered.set(column, ids = []);
-      ids.push(orderedID);
+      let rows = unordered.get(column);
+      if (!rows) unordered.set(column, rows = []);
+      rows.push({ orderedID, key });
     }
   }
 

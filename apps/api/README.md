@@ -128,6 +128,9 @@ node scripts/load_test/compare.ts <URL A> <URL B>   # mêmes réponses ?
 k6 run -e TARGET=<URL> scripts/load_test/k6.js       # paliers de 5, 10, 20, 40 req/s
 ```
 
+`npm run d1:measure` rejoue ces requêtes contre le D1 local et donne, par type, les
+allers-retours vers D1 et les lignes lues (ce que D1 facture).
+
 `scripts/compare_lemmatizers.ts` compare les résultats de Morpheus (module
 WebAssembly contre bibliothèque native, par `@libmorpheus/node`) sur toutes les
 vedettes du dictionnaire.
