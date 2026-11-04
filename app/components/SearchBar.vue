@@ -303,7 +303,7 @@
    * Delay (in ms) without typing after which all the results are rendered:
    * longer than the time between two letters typed on a phone.
    */
-  const TYPING_PAUSE = 600;
+  const TYPING_PAUSE = 500;
 
   /**
    * Whether all the results are rendered (cf. `TYPING_RESULTS`): once typing

@@ -89,7 +89,7 @@ test.describe("search bar", () => {
   });
 
   test("renders the first results while typing, all of them once typing pauses", async ({ page }) => {
-    // « λογο »: 30 results, 12 rendered until typing pauses (600 ms).
+    // « λογο »: 30 results, 12 rendered until typing pauses (500 ms).
     const options = searchResults(page).getByRole("option");
     await searchInput(page).fill("logo");
     await expect(options).toHaveCount(12);
