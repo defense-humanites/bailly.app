@@ -19,7 +19,7 @@ test("an active reader with several tabs makes few requests of synchronization",
   await page.getByRole("button", { name: /^Synchronisation/ }).click();
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
   await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
-  await expect(page.getByText("Synchronisation activée sur cet appareil.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Synchronisation activée sur cet appareil", { exact: true })).toBeVisible();
 
   const context = page.context();
   const requests: { time: number; method: string }[] = [];

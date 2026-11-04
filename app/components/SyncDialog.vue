@@ -3,6 +3,7 @@
   import type { SyncActionResult, SyncSections } from "~/stores/sync";
   import { SYNC_BUSY_MESSAGE } from "~/sync/lockerClient";
   import { DEFAULT_SYNCED_PREFERENCES, SYNCABLE_PREFERENCES, type SyncablePreference } from "~/utils/preferences";
+  import { toastTitle } from "~/utils/toastTitle";
 
   const open = defineModel<boolean>("open", { default: false });
 
@@ -213,7 +214,7 @@
     preferencesPending.value = false;
     const keys = [...chosenPreferences.value];
     void syncStore.setSections({ bookmarks: syncedBookmarks.value, preferences: keys }).then((result) => {
-      if (result.state === "error") toast.add({ title: result.message, icon: "i-lucide-cloud-off", color: "warning" });
+      if (result.state === "error") toast.add({ title: toastTitle(result.message), icon: "i-lucide-cloud-off", color: "warning" });
     }).catch((e: unknown) => {
       console.error(e);
     });
@@ -553,7 +554,7 @@
       toast.add({ title: "Clé copiée", icon: "i-lucide-circle-check", color: "success" });
       return true;
     } catch {
-      toast.add({ title: "La clé n'a pas pu être copiée.", icon: "i-lucide-circle-alert", color: "error" });
+      toast.add({ title: "La clé n'a pas pu être copiée", icon: "i-lucide-circle-alert", color: "error" });
       return false;
     }
   };
@@ -605,7 +606,7 @@
    */
   const keyKept = (): void => {
     if (!scopeError.value && !clockWrong.value) {
-      toast.add({ title: "Synchronisation activée sur cet appareil.", icon: "i-lucide-circle-check", color: "success" });
+      toast.add({ title: "Synchronisation activée sur cet appareil", icon: "i-lucide-circle-check", color: "success" });
     }
     afterEnabling();
   };
@@ -711,7 +712,7 @@
       const result = await syncStore.deleteRemote();
       if (result.state === "error") {
         const isBusy = result.message === SYNC_BUSY_MESSAGE;
-        toast.add({ title: explain(result.message), icon: isBusy ? "i-lucide-cloud-off" : "i-lucide-circle-alert", color: isBusy ? "warning" : "error" });
+        toast.add({ title: toastTitle(explain(result.message)), icon: isBusy ? "i-lucide-cloud-off" : "i-lucide-circle-alert", color: isBusy ? "warning" : "error" });
         return;
       }
       toast.add({ title: "Données supprimées du serveur", icon: "i-lucide-circle-check", color: "success" });

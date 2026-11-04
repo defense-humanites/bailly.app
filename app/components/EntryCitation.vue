@@ -197,7 +197,7 @@
       toast.add({ title: "Référence copiée", icon: "i-lucide-circle-check", color: "success" });
       return true;
     } catch {
-      toast.add({ title: "La référence n'a pas pu être copiée.", icon: "i-lucide-circle-alert", color: "error" });
+      toast.add({ title: "La référence n'a pas pu être copiée", icon: "i-lucide-circle-alert", color: "error" });
       return false;
     }
   };

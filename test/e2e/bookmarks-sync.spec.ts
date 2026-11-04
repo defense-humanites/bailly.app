@@ -72,7 +72,7 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(words.join(" "));
   // The key kept: the window closes, a toast confirming the synchronization.
   await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
-  await expect(page.getByText("Synchronisation activée sur cet appareil.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Synchronisation activée sur cet appareil", { exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(syncButton.getByText("Synchronisé", { exact: true })).toBeVisible();
   await expect(syncButton.getByText("Synchroniser", { exact: true })).toBeHidden();
@@ -120,7 +120,7 @@ test("synchronizing the bookmarks of three devices, then deleting them online", 
   await expect(tablet.getByText("Cet appareil est déjà synchronisé avec la clé de ce lien.")).toBeVisible();
   await expect(tablet.getByRole("button", { name: "Remplacer la clé" })).toHaveCount(0);
   await tablet.getByRole("button", { name: "Voir la synchronisation" }).click();
-  await expect(tablet.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(tablet.getByText("Synchronisation activée sur cet appareil")).toBeVisible();
 
   // A change on the tablet reaches the laptop.
   await tablet.keyboard.press("Escape");
@@ -365,7 +365,7 @@ test("a device keeps the key once the online bookmarks are merged, even if sendi
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
   // The key kept: the window closes, a toast confirming the synchronization.
   await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
-  await expect(page.getByText("Synchronisation activée sur cet appareil.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Synchronisation activée sur cet appareil", { exact: true })).toBeVisible();
   const link = await syncLink(page);
 
   // The phone reads the online bookmarks, but cannot send its own.
@@ -383,7 +383,7 @@ test("a device keeps the key once the online bookmarks are merged, even if sendi
   // favorite.
   await phone.unroute("**/api/sync/**", failPut);
   await expect(phone.getByText(/^Vos signets en ligne ont été ajoutés à cet appareil/)).toHaveCount(0, { timeout: 25_000 });
-  await expect(phone.getByText("Synchronisation activée sur cet appareil.")).toBeVisible();
+  await expect(phone.getByText("Synchronisation activée sur cet appareil")).toBeVisible();
   await syncNow(page);
   await expect.poll(() => bookmarksState(page)).toEqual({ tags: [], tagged: 0, starred: 2 });
 });
@@ -398,7 +398,7 @@ test("joining beyond the limits is refused until the device makes room", async (
   await page.getByRole("button", { name: "Activer la synchronisation" }).click();
   // The key kept: the window closes, a toast confirming the synchronization.
   await page.getByRole("button", { name: "J'ai conservé ma clé" }).click();
-  await expect(page.getByText("Synchronisation activée sur cet appareil.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Synchronisation activée sur cet appareil", { exact: true })).toBeVisible();
   const link = await syncLink(page);
 
   // The phone has a favorite of its own: 101 once brought together.
@@ -406,7 +406,7 @@ test("joining beyond the limits is refused until the device makes room", async (
   await seedBookmarks(phone, { starred: [psuche] });
   await phone.goto(link!);
   await phone.getByRole("button", { name: "Activer", exact: true }).click();
-  await expect(phone.getByText(/les favoris compteraient 101 entrées \(100 au plus\) : retirez-en au moins 1 parmi celles qui ne sont que sur cet appareil \(« ψυχή »\)\. Réessayez ensuite\./)).toBeVisible();
+  await expect(phone.getByText(/les favoris compteraient 101 entrées \(100 au plus\)\s: retirez-en au moins 1 parmi celles qui ne sont que sur cet appareil \(«\sψυχή\s»\)\. Réessayez ensuite\./)).toBeVisible();
   expect(await bookmarksState(phone)).toEqual({ tags: [], tagged: 0, starred: 1 });
 
   // Nothing changed online either; once the phone makes room, it joins.
@@ -462,7 +462,7 @@ test("a synchronization beyond the limits waits until the device makes room", as
   expect(await syncNow(phone)).toBe(false);
   await expect(phone.getByRole("button", { name: /demande votre attention/ })).toBeVisible();
   await openSync(phone);
-  await expect(phone.getByText(/les favoris compteraient 101 entrées \(100 au plus\) : retirez-en au moins 1 parmi celles qui ne sont que sur cet appareil \(« λόγος »\)\. La synchronisation reprendra ensuite\.$/)).toBeVisible();
+  await expect(phone.getByText(/les favoris compteraient 101 entrées \(100 au plus\)\s: retirez-en au moins 1 parmi celles qui ne sont que sur cet appareil \(«\sλόγος\s»\)\. La synchronisation reprendra ensuite\.$/)).toBeVisible();
   expect((await bookmarksState(phone)).starred).toBe(100);
   await phone.keyboard.press("Escape");
 

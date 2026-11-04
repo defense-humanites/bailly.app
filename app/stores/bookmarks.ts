@@ -22,6 +22,7 @@ import { comparableTagName, type RemovedRecords } from "~/idb/merge";
 import { parseBookmarksFile, toBookmarksFile, type BookmarksFile } from "~/idb/transfer";
 import type { ApiExcerptsData, ApiResponse } from "#shared/types/api";
 import { MAX_EXCERPTS_URIS, toApiQuery } from "#shared/utils/api";
+import { toastTitle } from "~/utils/toastTitle";
 
 /**
  * A store for bookmarks-related data (favorites, tags and tagged entries).
@@ -108,7 +109,7 @@ export const useBookmarksStore = defineStore("bookmarks", () => {
   const report = <T>(result: IdbResult<T>): IdbResult<T> => {
     if (result.state === "error") {
       toast.add({
-        title: result.message,
+        title: toastTitle(result.message),
         icon: "i-lucide-circle-alert",
         color: "error",
       });

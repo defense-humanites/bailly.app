@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { DEFAULT_SYNCED_PREFERENCES, SYNCABLE_PREFERENCES } from "~/utils/preferences";
+  import { toastTitle } from "~/utils/toastTitle";
 
   /**
    * The synchronization on the preferences page: a switch per type of data
@@ -108,7 +109,7 @@
         ? { bookmarks: true, preferences: [...syncedPreferences.value] }
         : { bookmarks: syncedBookmarks.value, preferences: [...DEFAULT_SYNCED_PREFERENCES] });
       if (result.state === "error") {
-        toast.add({ title: result.message, icon: "i-lucide-circle-alert", color: "error" });
+        toast.add({ title: toastTitle(result.message), icon: "i-lucide-circle-alert", color: "error" });
         return;
       }
       toast.add({

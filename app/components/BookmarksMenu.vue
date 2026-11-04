@@ -90,7 +90,7 @@
     if (!file) return;
 
     if (file.size > MAX_IMPORT_SIZE) {
-      toast.add({ title: "Ce fichier est trop volumineux.", icon: "i-lucide-circle-alert", color: "error" });
+      toast.add({ title: "Ce fichier est trop volumineux", icon: "i-lucide-circle-alert", color: "error" });
       return;
     }
 
