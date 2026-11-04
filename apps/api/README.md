@@ -77,9 +77,26 @@ npm run dev:worker      # wrangler dev, port 8787
 ```
 
 `npm run morpheus:data` génère aussi `src/morpheus/stemlib-manifest.mjs` (hors git),
-que `src/worker.ts` importe : il doit tourner avant tout build du Worker (commande
-de build de Workers Builds : `npm run morpheus:data`, déploiement par
-`wrangler deploy`). Bundle : ~7 Mio non compressés (1,5 Mio compressés).
+que `src/worker.ts` importe : il doit tourner avant tout build du Worker. Bundle :
+~7 Mio non compressés (1,5 Mio compressés).
+
+### Production (Cloudflare)
+
+Le Worker `bailly-api` se déploie depuis `main` par Workers Builds :
+
+- commande de build : `npm run morpheus:data` (données de Morpheus téléchargées à
+  chaque build, révision épinglée et empreintes vérifiées) ;
+- commande de déploiement : `npx wrangler deploy` ;
+- Node.js 24 (`.node-version`) ; placement par défaut (au plus près du visiteur).
+
+Le front (`bailly.app`) appelle l'API par un service binding (`API`) pour les pages
+qu'il rend ; il doit donc toujours trouver le Worker `bailly-api` déployé.
+
+Chaque réponse du Worker porte un en-tête `Server-Timing` de diagnostic : l'isolat qui
+l'a servie (`isolate`, `requests`), et s'il a dû démarrer (`cold`), attendre un
+démarrage (`warming`) ou instancier Morpheus (`morpheus`). `scripts/load_test/k6.js`
+s'en sert pour mesurer les démarrages à froid. Le journal du Worker (`npx wrangler
+tail bailly-api`) donne une ligne par requête.
 
 Base de production : la base D1 du binding `DB` de `wrangler.jsonc`. D1 n'importe que
 du SQL, sans transaction, et refuse toute instruction de plus de 100 Ko :

@@ -1,5 +1,13 @@
 import type { Context, Next } from "hono";
 
+/**
+ * Colors for a terminal only (the Node.js server run by hand): Workers Logs, Docker
+ * and journald would show the escape codes as they are.
+ */
+const colors = (globalThis as { process?: { stdout?: { isTTY?: boolean } } })
+  .process?.stdout?.isTTY === true;
+
+/** One line per request: `GET /entry/logos 200 - 12ms`. */
 export const logger = () => async (c: Context, next: Next) => {
   const start = Date.now();
   await next();
@@ -10,7 +18,7 @@ export const logger = () => async (c: Context, next: Next) => {
   const method = c.req.method;
 
   const colorize = (value: string, color: string, bold = false) =>
-    `\x1b[${bold ? "1;" : ""}${color}m${value}\x1b[0m`;
+    colors ? `\x1b[${bold ? "1;" : ""}${color}m${value}\x1b[0m` : value;
   const statusColor = status >= 500
     ? "31"
     : status >= 400
