@@ -124,7 +124,7 @@
     if (!name) return undefined;
     if (name === "favoris") return "Ce nom est réservé à la liste des favoris.";
     const homonym = bookmarksStore.tags.find(tag => tag.key !== props.tag.key && comparableTagName(tag.name) === name);
-    return homonym && `L'étiquette « ${homonym.name} » existe déjà.`;
+    return homonym && `L'étiquette «\u00a0${homonym.name}\u00a0» existe déjà.`;
   });
 
   /**
@@ -287,7 +287,7 @@
     const wasActive = isActive.value;
     const response = await bookmarksStore.removeTag(key);
     if (response.state !== "success") return;
-    toastUndo(`Étiquette « ${name} » supprimée`, response.data, count
+    toastUndo(`Étiquette «\u00a0${name}\u00a0» supprimée`, response.data, count
       ? `${count === 1 ? "L'entrée qu'elle référençait n'est" : `Les ${count} entrées qu'elle référençait ne sont`} plus étiquetée${count === 1 ? "" : "s"} ainsi.`
       : undefined, wasActive ? key : undefined);
   };
@@ -302,7 +302,7 @@
       ? await bookmarksStore.unstarEntry(entry.uri)
       : await bookmarksStore.untagEntry(entry.uri, props.tag.key);
     if (response.state !== "success") return;
-    toastUndo(`« ${word} » retirée ${props.favorites ? "des favoris" : `de l'étiquette « ${props.tag.name} »`}`, response.data);
+    toastUndo(`«\u00a0${word}\u00a0» retirée ${props.favorites ? "des favoris" : `de l'étiquette «\u00a0${props.tag.name}\u00a0»`}`, response.data);
   };
 
   const onPickColor = (colorKey: ColorKey | undefined): void => {
@@ -365,7 +365,7 @@
    * The group's name, for accessible names.
    */
   const groupName = computed(
-    (): string => props.favorites ? "les favoris" : `l'étiquette « ${props.tag.name} »`,
+    (): string => props.favorites ? "les favoris" : `l'étiquette «\u00a0${props.tag.name}\u00a0»`,
   );
 
   /**
@@ -517,7 +517,7 @@
   const showsQuota = computed((): boolean => quotaShown(props.entries.length, tagMaxItems, "entries"));
   const nearQuota = computed((): boolean => quotaNear(props.entries.length, tagMaxItems));
   const quotaText = computed((): string => (props.entries.length >= tagMaxItems
-    ? `Liste pleine : ${tagMaxItems} entrées au plus.`
+    ? `Liste pleine\u00a0: ${tagMaxItems} entrées au plus.`
     : `${props.entries.length} entrées sur ${tagMaxItems} au plus.`));
 
   const entryList = useTemplateRef<HTMLElement>("entry-list");
@@ -881,7 +881,7 @@
         <span
           :id="descriptionHintId"
           class="sr-only"
-        >Entrée pour enregistrer, Maj+Entrée pour aller à la ligne ; {{ descriptionLength }} caractères sur {{ IdbTags.descriptionMaxLength }} au plus.</span>
+        >Entrée pour enregistrer, Maj+Entrée pour aller à la ligne&#8239;; {{ descriptionLength }} caractères sur {{ IdbTags.descriptionMaxLength }} au plus.</span>
       </div>
     </template>
 
@@ -944,7 +944,7 @@
               size="xs"
               color="error"
               variant="ghost"
-              :aria-label="`Retirer « ${greek.text(entry.word)} » ${favorites ? 'des favoris' : `de l'étiquette « ${tag.name} »`}`"
+              :aria-label="`Retirer «\u00a0${greek.text(entry.word)}\u00a0» ${favorites ? 'des favoris' : `de l'étiquette «\u00a0${tag.name}\u00a0»`}`"
               @click="onDeleteEntry(entry)"
             />
           </UTooltip>
@@ -981,7 +981,7 @@
               size="xs"
               color="error"
               variant="ghost"
-              :aria-label="`Retirer « ${greek.text(entry.word)} » ${favorites ? 'des favoris' : `de l'étiquette « ${tag.name} »`}`"
+              :aria-label="`Retirer «\u00a0${greek.text(entry.word)}\u00a0» ${favorites ? 'des favoris' : `de l'étiquette «\u00a0${tag.name}\u00a0»`}`"
               @click="onDeleteEntry(entry)"
             />
           </UTooltip>

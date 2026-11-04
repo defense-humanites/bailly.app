@@ -32,7 +32,7 @@
 
     toast.add({
       title: "Signets exportés",
-      description: `Fichier « ${name} ».`,
+      description: `Fichier «\u00a0${name}\u00a0».`,
       icon: "i-lucide-circle-check",
       color: "success",
     });
@@ -147,7 +147,7 @@
 
     toast.add({
       title: "Signets importés",
-      description: added.length ? `Ajout : ${added.join(" et ")}.${synchronized}` : "Tous les signets de ce fichier étaient déjà là.",
+      description: added.length ? `Ajout\u00a0: ${added.join(" et ")}.${synchronized}` : "Tous les signets de ce fichier étaient déjà là.",
       icon: "i-lucide-circle-check",
       color: "success",
     });
@@ -241,7 +241,7 @@
       <template #body>
         <p class="text-sm">
           {{ skippedText }} de ce fichier ne {{ skippedPlural ? "tiennent" : "tient" }} pas dans les limites
-          (au plus {{ maxTags }} étiquettes, {{ tagMaxItems }} entrées par étiquette et {{ tagMaxItems }} favoris) :
+          (au plus {{ maxTags }} étiquettes, {{ tagMaxItems }} entrées par étiquette et {{ tagMaxItems }} favoris)&nbsp;:
           {{ skippedPlural ? "elles ne seront pas importées" : "elle ne sera pas importée" }}. Vos signets actuels restent tous.
         </p>
       </template>

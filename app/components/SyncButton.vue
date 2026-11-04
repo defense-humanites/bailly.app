@@ -97,7 +97,7 @@
 
   const tooltip = computed((): string => {
     if (!stateText.value) return label;
-    return needsAttention.value ? `${label} : ${stateText.value}` : `${label} ${stateText.value}`;
+    return needsAttention.value ? `${label}\u00a0: ${stateText.value}` : `${label} ${stateText.value}`;
   });
 
   const isSyncOpen = ref(false);

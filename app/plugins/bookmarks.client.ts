@@ -54,7 +54,7 @@ export default defineNuxtPlugin({
     Idb.onBlocked(() => {
       blockedToast = toast.add({
         title: "Fermez les autres onglets de Bailly.app",
-        description: "Vos signets passent à une nouvelle version : ils s'afficheront une fois les autres onglets fermés.",
+        description: "Vos signets passent à une nouvelle version\u00a0: ils s'afficheront une fois les autres onglets fermés.",
         icon: "i-lucide-circle-alert",
         color: "warning",
         duration: 0,

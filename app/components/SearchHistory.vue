@@ -149,7 +149,7 @@
           class="mt-1 flex min-h-9 items-center justify-end gap-2 border-t border-default px-1 pt-1"
         >
           <template v-if="confirmingClear">
-            <span class="me-auto ps-1 text-sm text-muted">Effacer tout l'historique ?</span>
+            <span class="me-auto ps-1 text-sm text-muted">Effacer tout l'historique&#8239;?</span>
             <UButton
               label="Annuler"
               color="neutral"

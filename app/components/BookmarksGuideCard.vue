@@ -91,7 +91,7 @@
             size="sm"
             variant="subtle"
             color="neutral"
-            :aria-label="`Masquer « ${title} »`"
+            :aria-label="`Masquer «\u00a0${title}\u00a0»`"
             :ui="{ base: `bg-default/50 hover:bg-default/90 active:bg-default/75 ${CLOSE[tint ?? 'neutral']}` }"
             @click="$emit('dismiss')"
           />

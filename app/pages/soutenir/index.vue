@@ -35,17 +35,17 @@
     <UCard :ui="{ body: 'space-y-4 font-serif text-sm/7' }">
       <p>
         Bailly.app est gratuit, sans publicité, et le restera. L'application est
-        développée bénévolement ; ses frais, eux, sont bien réels.
+        développée bénévolement&#8239;; ses frais, eux, sont bien réels.
       </p>
-      <p>Vos dons, reçus par l'association qui porte le projet, financent :</p>
+      <p>Vos dons, reçus par l'association qui porte le projet, financent&nbsp;:</p>
       <ul class="list-disc space-y-1 ps-6">
-        <li>l'hébergement de l'application et de son interface de programmation (serveurs, nom de domaine) ;</li>
-        <li>le travail sur les données du dictionnaire : intégration des révisions, corrections, analyse morphologique ;</li>
-        <li>les nouvelles fonctionnalités : synchronisation des signets, outils de lecture…</li>
+        <li>l'hébergement de l'application et de son interface de programmation (serveurs, nom de domaine)&#8239;;</li>
+        <li>le travail sur les données du dictionnaire&nbsp;: intégration des révisions, corrections, analyse morphologique&#8239;;</li>
+        <li>les nouvelles fonctionnalités&nbsp;: synchronisation des signets, outils de lecture…</li>
       </ul>
       <p>
         Le don se fait par PayPal, avec un compte PayPal ou une carte bancaire,
-        dans une fenêtre sécurisée : vos coordonnées bancaires ne nous sont
+        dans une fenêtre sécurisée&nbsp;: vos coordonnées bancaires ne nous sont
         jamais communiquées (voir <NuxtLink
           :to="encodeURI('/confidentialité')"
           class="link"

@@ -20,10 +20,10 @@ export type DonationResult = {
  */
 export function donationThanks({ st, amt, cc }: DonationResult): string {
   if (st && st.toLowerCase() !== "completed") {
-    return "Merci ! Votre don est en cours de traitement par PayPal.";
+    return "Merci\u202f! Votre don est en cours de traitement par PayPal.";
   }
   const amount = Number(amt);
-  if (!amt || !Number.isFinite(amount) || !cc || !/^[A-Z]{3}$/.test(cc)) return "Merci pour votre don !";
+  if (!amt || !Number.isFinite(amount) || !cc || !/^[A-Z]{3}$/.test(cc)) return "Merci pour votre don\u202f!";
   const formatted = new Intl.NumberFormat("fr-FR", { style: "currency", currency: cc }).format(amount);
-  return `Merci pour votre don de ${formatted} !`;
+  return `Merci pour votre don de ${formatted}\u202f!`;
 }

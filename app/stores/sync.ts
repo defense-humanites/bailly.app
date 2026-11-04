@@ -991,7 +991,7 @@ export const useSyncStore = defineStore("sync", () => {
       if (failure instanceof SyncQuotaError) waitForQuota(failure);
     } else if (failure) {
       status.value = "error";
-      error.value = `${received} : nouvel essai dans quelques secondes. (${describe(failure)})`;
+      error.value = `${received}\u00a0: nouvel essai dans quelques secondes. (${describe(failure)})`;
       schedule(BUSY_DELAY);
     } else {
       status.value = "idle";
@@ -1054,11 +1054,11 @@ export const useSyncStore = defineStore("sync", () => {
     // created by `enable`; an emptied one still exists).
     try {
       if (!(await fetchLocker(await deriveCredentials(secret), { signal: AbortSignal.timeout(ATTEMPT_TIMEOUT) }))) {
-        return { state: "error", message: "Cette clé n'est utilisée par aucun appareil : vérifiez-la.", cause: "key" };
+        return { state: "error", message: "Cette clé n'est utilisée par aucun appareil\u00a0: vérifiez-la.", cause: "key" };
       }
     } catch (e: unknown) {
       if (e instanceof LockerDeletedError) {
-        return { state: "error", message: "Cette clé a été désactivée : activez la synchronisation avec une nouvelle clé.", cause: "key" };
+        return { state: "error", message: "Cette clé a été désactivée\u00a0: activez la synchronisation avec une nouvelle clé.", cause: "key" };
       }
       return actionFailure(e);
     }

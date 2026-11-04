@@ -64,12 +64,12 @@ export class IdbBookmarks {
         for (const tag of removed.tags) {
           if (liveKeys.has(tag.key)) continue;
           if (live.some(other => comparableTagName(other.name) === comparableTagName(tag.name))) {
-            throw new IdbError(`Impossible d'annuler : une autre étiquette s'appelle désormais « ${tag.name} ».`);
+            throw new IdbError(`Impossible d'annuler\u00a0: une autre étiquette s'appelle désormais «\u00a0${tag.name}\u00a0».`);
           }
           revivedTags.push(tag);
         }
         if (live.length + revivedTags.length > maxTags) {
-          throw new IdbError(`Impossible d'annuler : vous ne pouvez pas avoir plus de ${maxTags} étiquettes.`);
+          throw new IdbError(`Impossible d'annuler\u00a0: vous ne pouvez pas avoir plus de ${maxTags} étiquettes.`);
         }
         for (const tag of revivedTags) {
           const { deleted: _deleted, ...record } = tag;
@@ -86,7 +86,7 @@ export class IdbBookmarks {
           if (stored && !stored.deleted) continue;
           const count = revivedEntries.get(entry.tagKey) ?? (await tagged.index("tagKey").getAll(entry.tagKey)).filter(record => !record.deleted).length;
           if (count >= tagMaxItems) {
-            throw new IdbError(`Impossible d'annuler : une étiquette ne peut contenir plus de ${tagMaxItems} entrées.`);
+            throw new IdbError(`Impossible d'annuler\u00a0: une étiquette ne peut contenir plus de ${tagMaxItems} entrées.`);
           }
           revivedEntries.set(entry.tagKey, count + 1);
           const { deleted: _deleted, ...record } = entry;
@@ -100,7 +100,7 @@ export class IdbBookmarks {
           if (stored && !stored.deleted) continue;
           starredCount ??= (await starred.getAll()).filter(record => !record.deleted).length;
           if (starredCount >= tagMaxItems) {
-            throw new IdbError(`Impossible d'annuler : les favoris ne peuvent contenir plus de ${tagMaxItems} entrées.`);
+            throw new IdbError(`Impossible d'annuler\u00a0: les favoris ne peuvent contenir plus de ${tagMaxItems} entrées.`);
           }
           starredCount++;
           const { deleted: _deleted, ...record } = entry;

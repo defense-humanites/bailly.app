@@ -78,8 +78,8 @@ export class SyncOutdatedError extends Error {
 }
 
 const OUTDATED_MESSAGES: Record<SyncSection, string> = {
-  bookmarks: "Cette version de Bailly.app ne peut plus synchroniser vos signets : rechargez la page.",
-  preferences: "Cette version de Bailly.app ne peut plus synchroniser vos préférences : rechargez la page.",
+  bookmarks: "Cette version de Bailly.app ne peut plus synchroniser vos signets\u00a0: rechargez la page.",
+  preferences: "Cette version de Bailly.app ne peut plus synchroniser vos préférences\u00a0: rechargez la page.",
 };
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -121,7 +121,7 @@ export function parseLocker(text: string): LockerSections {
     throw new SyncFormatError();
   }
   if ((data.version as number) > LOCKER_VERSION) {
-    throw new SyncFormatError("Vos données en ligne ont été enregistrées par une version plus récente de Bailly.app : rechargez la page.");
+    throw new SyncFormatError("Vos données en ligne ont été enregistrées par une version plus récente de Bailly.app\u00a0: rechargez la page.");
   }
 
   const sections = Object.entries(data.sections).filter((entry): entry is [string, RawSection] => isSection(entry[1]));

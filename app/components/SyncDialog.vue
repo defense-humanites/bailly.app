@@ -39,13 +39,13 @@
       intro: "Retrouvez vos signets sur tous vos appareils (ordinateur, téléphone…), sans créer de compte.",
       joined: "Vos signets de cet appareil et ceux de vos autres appareils seront réunis.",
       add: "Synchroniser aussi vos signets",
-      addDescription: "Avec la clé de vos préférences : vos signets de cet appareil et ceux de vos autres appareils seront réunis.",
+      addDescription: "Avec la clé de vos préférences\u00a0: vos signets de cet appareil et ceux de vos autres appareils seront réunis.",
       disabled: "Synchronisation des signets désactivée sur cet appareil",
-      stopDevice: "Vos signets restent sur cet appareil, et en ligne pour vos autres appareils. Pour réactiver la synchronisation, il faudra la clé : les signets en ligne seront alors rétablis sur cet appareil, même ceux que vous y auriez supprimés entre-temps.",
-      stopDeviceKept: "Vos signets restent sur cet appareil, et en ligne pour vos autres appareils. Pour les synchroniser de nouveau : « Synchroniser aussi vos signets » ; les signets en ligne seront alors rétablis sur cet appareil, même ceux que vous y auriez supprimés entre-temps.",
+      stopDevice: "Vos signets restent sur cet appareil, et en ligne pour vos autres appareils. Pour réactiver la synchronisation, il faudra la clé\u00a0: les signets en ligne seront alors rétablis sur cet appareil, même ceux que vous y auriez supprimés entre-temps.",
+      stopDeviceKept: "Vos signets restent sur cet appareil, et en ligne pour vos autres appareils. Pour les synchroniser de nouveau\u00a0: «\u00a0Synchroniser aussi vos signets\u00a0»\u202f; les signets en ligne seront alors rétablis sur cet appareil, même ceux que vous y auriez supprimés entre-temps.",
       otherStays: "Vos préférences restent synchronisées.",
       status: "Pour retrouver vos signets sur un autre appareil (téléphone, tablette…), ajoutez-le avec votre clé. Pensez aussi à la sauvegarder hors du navigateur.",
-      emptied: "Faute d'activité, le serveur avait effacé vos signets en ligne : ceux de cet appareil les remplacent. Vos autres appareils y ajouteront les leurs à leur prochaine synchronisation.",
+      emptied: "Faute d'activité, le serveur avait effacé vos signets en ligne\u00a0: ceux de cet appareil les remplacent. Vos autres appareils y ajouteront les leurs à leur prochaine synchronisation.",
     }
     : {
       data: "vos préférences",
@@ -55,13 +55,13 @@
       intro: "Retrouvez vos préférences sur tous vos appareils (ordinateur, téléphone…), sans créer de compte.",
       joined: "Cet appareil synchronisera les mêmes préférences que vos autres appareils, chacune avec son réglage le plus récent.",
       add: "Synchroniser aussi vos préférences",
-      addDescription: "Avec la clé de vos signets : les mêmes préférences que vos autres appareils, s'ils en synchronisent, chacune avec son réglage le plus récent.",
+      addDescription: "Avec la clé de vos signets\u00a0: les mêmes préférences que vos autres appareils, s'ils en synchronisent, chacune avec son réglage le plus récent.",
       disabled: "Synchronisation des préférences désactivée sur cet appareil",
       stopDevice: "Vos préférences restent réglées sur cet appareil, et en ligne pour vos autres appareils.",
       stopDeviceKept: "Vos préférences restent réglées sur cet appareil, et en ligne pour vos autres appareils.",
       otherStays: "Vos signets restent synchronisés.",
       status: "Pour retrouver vos préférences sur un autre appareil (téléphone, tablette…), ajoutez-le avec votre clé. Pensez aussi à la sauvegarder hors du navigateur.",
-      emptied: "Faute d'activité, le serveur avait effacé vos préférences en ligne : celles de cet appareil les remplacent.",
+      emptied: "Faute d'activité, le serveur avait effacé vos préférences en ligne\u00a0: celles de cet appareil les remplacent.",
     });
 
   /**
@@ -74,8 +74,8 @@
     readingSize: { label: "Taille du texte" },
     readingWeight: { label: "Graisse du texte" },
     inflectedForms: { label: "Formes fléchies" },
-    inputMode: { label: "Saisie", description: "Beta code ou translittération : selon le clavier de chaque appareil." },
-    bookmarksDisplay: { label: "Affichage des signets", description: "Extraits ou vedettes : selon l'écran de chaque appareil." },
+    inputMode: { label: "Saisie", description: "Beta code ou translittération\u00a0: selon le clavier de chaque appareil." },
+    bookmarksDisplay: { label: "Affichage des signets", description: "Extraits ou vedettes\u00a0: selon l'écran de chaque appareil." },
     tagSort: { label: "Tri des étiquettes" },
   };
 
@@ -137,7 +137,7 @@
     return {
       value,
       ...preferenceLabels[value],
-      ...(last ? { description: "Au moins une préférence reste cochée : pour n'en synchroniser aucune, arrêtez la synchronisation." } : {}),
+      ...(last ? { description: "Au moins une préférence reste cochée\u00a0: pour n'en synchroniser aucune, arrêtez la synchronisation." } : {}),
       disabled: last,
     };
   }));
@@ -302,8 +302,8 @@
     join: "Rejoindre la synchronisation",
     key: "Votre clé de synchronisation",
     status: props.scope === "bookmarks" ? "Synchronisation des signets" : "Synchronisation des préférences",
-    stop: "Arrêter la synchronisation ?",
-    delete: "Révoquer cette clé ?",
+    stop: "Arrêter la synchronisation\u202f?",
+    delete: "Révoquer cette clé\u202f?",
     preferences: "Préférences synchronisées",
   }));
 
@@ -325,7 +325,7 @@
    * A busy server (Cloudflare's rate limiting): its message, which promises
    * a retry, asks to try again here.
    */
-  const BUSY_RETRY = "Le serveur de synchronisation est très sollicité : réessayez dans quelques secondes.";
+  const BUSY_RETRY = "Le serveur de synchronisation est très sollicité\u00a0: réessayez dans quelques secondes.";
   const explain = (message: string): string => (message === SYNC_BUSY_MESSAGE ? BUSY_RETRY : message);
 
   /**
@@ -509,13 +509,13 @@
       "",
       numberedWords(),
       "",
-      "Pour retrouver vos signets ou vos préférences sur un autre appareil :",
-      "ouvrez Bailly.app, page « Signets » ou « Préférences », bouton",
-      "« Synchronisation » > « J'ai déjà une clé », puis saisissez ces douze",
+      "Pour retrouver vos signets ou vos préférences sur un autre appareil\u00a0:",
+      "ouvrez Bailly.app, page «\u00a0Signets\u00a0» ou «\u00a0Préférences\u00a0», bouton",
+      "«\u00a0Synchronisation\u00a0» > «\u00a0J'ai déjà une clé\u00a0», puis saisissez ces douze",
       "mots dans l'ordre.",
-      ...(link.value ? ["", "Ou ouvrez ce lien sur l'autre appareil :", link.value] : []),
+      ...(link.value ? ["", "Ou ouvrez ce lien sur l'autre appareil\u00a0:", link.value] : []),
       "",
-      "Gardez ce document en lieu sûr : qui possède ces mots peut lire et",
+      "Gardez ce document en lieu sûr\u00a0: qui possède ces mots peut lire et",
       "modifier vos signets et vos préférences.",
       "",
       "La copie en ligne est effacée après 18 mois sans aucune synchronisation",
@@ -770,10 +770,10 @@
           -->
           <p v-if="scope === 'preferences'">
             <template v-if="enabled">
-              Les mêmes que vos autres appareils, s'ils en synchronisent ; sinon : {{ chosenSummary }}.
+              Les mêmes que vos autres appareils, s'ils en synchronisent&#8239;; sinon&nbsp;: {{ chosenSummary }}.
             </template>
             <template v-else>
-              Avec une nouvelle clé, seront synchronisées : {{ chosenSummary }} ; avec une clé déjà utilisée,
+              Avec une nouvelle clé, seront synchronisées&nbsp;: {{ chosenSummary }}&#8239;; avec une clé déjà utilisée,
               celles de vos autres appareils.
             </template>
             Vous pourrez modifier ce choix ensuite, pour tous vos appareils. Les indications que vous masquez le
@@ -849,7 +849,7 @@
                   The text's color drawn towards the blue (not the warm grey
                   of the neutral tile, dull on the blue).
                 -->
-                <span class="mt-1 block font-semibold text-[color-mix(in_oklab,var(--ui-text)_60%,var(--ui-secondary))]">Première fois : une clé est créée pour cet appareil et vos
+                <span class="mt-1 block font-semibold text-[color-mix(in_oklab,var(--ui-text)_60%,var(--ui-secondary))]">Première fois&nbsp;: une clé est créée pour cet appareil et vos
                   autres appareils.</span>
               </span>
             </button>
@@ -867,7 +867,7 @@
               </span>
               <span>
                 <span class="block font-bold text-highlighted">J'ai déjà une clé</span>
-                <span class="mt-1 block font-semibold text-muted">Déjà activée sur un autre appareil : saisissez sa clé ou
+                <span class="mt-1 block font-semibold text-muted">Déjà activée sur un autre appareil&nbsp;: saisissez sa clé ou
                   scannez son QR code.</span>
               </span>
             </button>
@@ -902,7 +902,7 @@
             lien. {{ texts.addDescription }}
           </p>
           <p v-else-if="linkKey">
-            Activer la synchronisation sur cet appareil avec la clé de ce lien ? {{ texts.joined }}
+            Activer la synchronisation sur cet appareil avec la clé de ce lien&#8239;? {{ texts.joined }}
           </p>
           <p v-else>
             {{ texts.joined }}
@@ -923,8 +923,8 @@
           >
             <UFormField
               label="Les douze mots de votre clé"
-              help="Dans l'ordre, séparés par des espaces. Accents et majuscules sont facultatifs ; les 4 premières lettres de chaque mot suffisent."
-              :error="joinError ?? (unknownWord ? `« ${unknownWord} » n'est pas un mot de la liste.` : undefined)"
+              help="Dans l'ordre, séparés par des espaces. Accents et majuscules sont facultatifs&#8239;; les 4 premières lettres de chaque mot suffisent."
+              :error="joinError ?? (unknownWord ? `«\u00a0${unknownWord}\u00a0» n'est pas un mot de la liste.` : undefined)"
             >
               <!--
                 Once the key is ready, the key drawn at the bottom right says
@@ -964,7 +964,7 @@
             <span
               role="status"
               class="sr-only"
-            >{{ keyReady ? "Clé complète : appuyez sur Entrée pour rejoindre." : "" }}</span>
+            >{{ keyReady ? "Clé complète\u00a0: appuyez sur Entrée pour rejoindre." : "" }}</span>
           </form>
           <!-- The key's error (from a link: no field), or the server's. -->
           <UAlert
@@ -1058,7 +1058,7 @@
           <template v-else>
             <p>
               Votre clé est une suite de <strong>douze mots</strong>, à garder dans l'ordre. Conservez-la
-              <strong>hors du navigateur</strong> : elle permet de retrouver {{ texts.data }} si ce navigateur
+              <strong>hors du navigateur</strong>&nbsp;: elle permet de retrouver {{ texts.data }} si ce navigateur
               les efface, et d'activer la synchronisation sur vos autres appareils.
             </p>
             <div class="flex flex-col gap-2">
@@ -1096,8 +1096,8 @@
               class="mt-0.5 size-4 shrink-0"
             />
             <span>
-              Quelqu'un a pu voir votre clé ? Arrêtez la synchronisation sur tous vos appareils, puis
-              réactivez-la : une nouvelle clé sera créée.
+              Quelqu'un a pu voir votre clé&#8239;? Arrêtez la synchronisation sur tous vos appareils, puis
+              réactivez-la&nbsp;: une nouvelle clé sera créée.
             </span>
           </p>
         </template>
@@ -1128,7 +1128,7 @@
                   Synchronisation activée sur cet appareil.
                 </template>
                 <template v-if="lastSync">
-                  Dernière synchronisation : {{ lastSync }}.
+                  Dernière synchronisation&nbsp;: {{ lastSync }}.
                 </template>
               </p>
             </div>
@@ -1162,7 +1162,7 @@
             variant="subtle"
             icon="i-lucide-clock-alert"
             :title="`L'horloge de cet appareil semble ${clockSkew > 0 ? 'en retard' : 'en avance'} de ${clockGap}.`"
-            description="Réglez sa date et son heure : sinon, ses changements ou ceux de vos autres appareils pourraient être ignorés."
+            description="Réglez sa date et son heure&nbsp;: sinon, ses changements ou ceux de vos autres appareils pourraient être ignorés."
           />
           <UAlert
             v-if="actionError"
@@ -1209,7 +1209,7 @@
             @update:model-value="(keys) => setPreferences(keys as SyncablePreference[])"
           />
           <p class="text-muted">
-            Ce choix vaut pour tous vos appareils synchronisés, comme les indications que vous masquez ; il
+            Ce choix vaut pour tous vos appareils synchronisés, comme les indications que vous masquez&#8239;; il
             s'applique à la fermeture de cette fenêtre. Les préférences synchronisées sont marquées d'un nuage
             sur cette page.
           </p>

@@ -82,13 +82,13 @@ export function wordsToSecret(words: string[]): Uint8Array<ArrayBuffer> {
 
   const resolved = words.map((word, i) => {
     const match = resolveWord(word);
-    if (!match) throw new SyncKeyError(`Le mot n° ${i + 1} (« ${word} ») n'est pas dans la liste.`);
+    if (!match) throw new SyncKeyError(`Le mot n° ${i + 1} («\u00a0${word}\u00a0») n'est pas dans la liste.`);
     return match;
   });
 
   try {
     return new Uint8Array(mnemonicToEntropy(resolved.join(" "), wordlist));
   } catch {
-    throw new SyncKeyError("Ces douze mots ne forment pas une clé valide : vérifiez-les.");
+    throw new SyncKeyError("Ces douze mots ne forment pas une clé valide\u00a0: vérifiez-les.");
   }
 }

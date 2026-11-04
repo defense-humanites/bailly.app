@@ -12,7 +12,7 @@
    * and a description of its own, after the page's text (the search engines
    * rewrite a description farther from it).
    */
-  const DESCRIPTION = "Le dictionnaire grec-français d'Anatole Bailly, dans le texte révisé par Gérard Gréco et son équipe : une application libre et gratuite, sans compte ni publicité.";
+  const DESCRIPTION = "Le dictionnaire grec-français d'Anatole Bailly, dans le texte révisé par Gérard Gréco et son équipe\u00a0: une application libre et gratuite, sans compte ni publicité.";
   useSeoMeta({
     description: DESCRIPTION,
     ogTitle: "Bailly.app — Dictionnaire grec-français en ligne",
@@ -140,7 +140,7 @@
             id="translitteration"
             class="block font-medium"
           >
-            Vous ne lisez pas le grec ?
+            Vous ne lisez pas le grec&#8239;?
           </span>
           <span
             id="translitteration-help"

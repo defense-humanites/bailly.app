@@ -53,7 +53,7 @@
     { id: "zotero", text: ["Enregistrez une entrée d'un clic avec Zotero."] },
     {
       id: "betacode",
-      text: ["Tapez le grec en beta code : ", { search: "lo/gos" }, " donne λόγος."],
+      text: ["Tapez le grec en beta code\u00a0: ", { search: "lo/gos" }, " donne λόγος."],
       when: () => inputMode.value !== InputMode.Transliteration,
     },
     {
@@ -64,7 +64,7 @@
     },
     {
       id: "wildcards",
-      text: ["Jokers : ", { kbd: "?" }, " remplace une lettre, ", { kbd: "*" }, " plusieurs."],
+      text: ["Jokers\u00a0: ", { kbd: "?" }, " remplace une lettre, ", { kbd: "*" }, " plusieurs."],
       action: { label: "λ?γος", icon: SEARCH_ICON, search: "λ?γος" },
     },
     {
@@ -191,7 +191,7 @@
             v-else
             type="button"
             :class="INLINE_BUTTON_GOLD"
-            :aria-label="`Rechercher « ${part.search} »`"
+            :aria-label="`Rechercher «\u00a0${part.search}\u00a0»`"
             @click="search(part.search)"
           >
             <UIcon
@@ -218,7 +218,7 @@
             v-else
             type="button"
             :class="INLINE_BUTTON_GOLD"
-            :aria-label="tip.action.search ? `Rechercher « ${tip.action.search} »` : undefined"
+            :aria-label="tip.action.search ? `Rechercher «\u00a0${tip.action.search}\u00a0»` : undefined"
             @click="act(tip.action)"
           >
             <UIcon

@@ -233,7 +233,7 @@ export function parseBookmarksFile(text: string, now: number = Date.now()): Book
     throw new IdbError("Ce fichier n'est pas un export de signets de Bailly.");
   }
   if (typeof data.version !== "number" || data.version > BOOKMARKS_FILE_VERSION) {
-    throw new IdbError("Ce fichier provient d'une version plus récente de Bailly : mettez l'application à jour.");
+    throw new IdbError("Ce fichier provient d'une version plus récente de Bailly\u00a0: mettez l'application à jour.");
   }
 
   return validateState(data.state, now);

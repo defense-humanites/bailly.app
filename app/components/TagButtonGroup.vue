@@ -401,11 +401,11 @@
     -->
     <UTooltip
       v-if="currentTag"
-      :text="taggedAsCurrent ? `Retirer de « ${currentTag.name} »` : `Ajouter à « ${currentTag.name} »`"
+      :text="taggedAsCurrent ? `Retirer de «\u00a0${currentTag.name}\u00a0»` : `Ajouter à «\u00a0${currentTag.name}\u00a0»`"
     >
       <UButton
         :label="currentTag.name"
-        :aria-label="`Étiquette active : ${currentTag.name}`"
+        :aria-label="`Étiquette active\u00a0: ${currentTag.name}`"
         :aria-pressed="taggedAsCurrent"
         :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
         :data-tag-color="currentTag.color"

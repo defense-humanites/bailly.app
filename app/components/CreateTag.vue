@@ -40,7 +40,7 @@
     if (tags.value.length >= maxTags) return `Vous avez atteint le nombre maximal d'étiquettes (${maxTags}).`;
     if (name === "favoris") return "Ce nom est réservé à la liste des favoris.";
     const homonym = tags.value.find(tag => comparableTagName(tag.name) === name);
-    return homonym && `L'étiquette « ${homonym.name} » existe déjà.`;
+    return homonym && `L'étiquette «\u00a0${homonym.name}\u00a0» existe déjà.`;
   });
 
   /**

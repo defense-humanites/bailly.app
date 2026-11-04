@@ -375,7 +375,7 @@
                 name="i-lucide-circle-dot"
                 class="size-4 shrink-0"
               />active
-            </button> : elle est alors accessible en un clic depuis la barre d'outils de chaque
+            </button>&nbsp;: elle est alors accessible en un clic depuis la barre d'outils de chaque
             entrée. Vous pouvez en activer une autre depuis cette page.
           </p>
           <p>
@@ -408,7 +408,7 @@
         >
           <p class="mb-2">
             Vos signets sont enregistrés dans ce navigateur,
-            <strong class="font-semibold">sur cet appareil seulement</strong> : effacer les données de
+            <strong class="font-semibold">sur cet appareil seulement</strong>&nbsp;: effacer les données de
             navigation les supprime, et le navigateur peut aussi les effacer de lui-même si son
             espace de stockage vient à manquer.
           </p>
@@ -422,7 +422,7 @@
                 name="i-lucide-cloud-upload"
                 class="size-4 shrink-0"
               />Synchroniser
-            </button> : ils seront sauvegardés en ligne, en privé, et vous les retrouverez sur vos
+            </button>&nbsp;: ils seront sauvegardés en ligne, en privé, et vous les retrouverez sur vos
             autres appareils et navigateurs.
           </p>
           <p>

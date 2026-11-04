@@ -14,17 +14,17 @@ export function describeLimitExcesses(
   { lead, ending }: { lead: string; ending: string },
 ): string {
   const among = (names: string[]): string => {
-    const shown = names.slice(0, 5).map(name => `« ${name} »`).join(", ");
+    const shown = names.slice(0, 5).map(name => `«\u00a0${name}\u00a0»`).join(", ");
     return names.length ? ` parmi celles qui ne sont que sur cet appareil (${shown}${names.length > 5 ? "…" : ""})` : "";
   };
   const parts = excesses.slice(0, 3).map((excess) => {
     if (excess.kind === "tags") {
-      return `vous auriez ${excess.count} étiquettes (${maxTags} au plus) : supprimez-en au moins ${excess.count - maxTags}${among(excess.local)}`;
+      return `vous auriez ${excess.count} étiquettes (${maxTags} au plus)\u00a0: supprimez-en au moins ${excess.count - maxTags}${among(excess.local)}`;
     }
     const over = excess.count - tagMaxItems;
     return excess.tag === null
-      ? `les favoris compteraient ${excess.count} entrées (${tagMaxItems} au plus) : retirez-en au moins ${over}${among(excess.local)}`
-      : `l'étiquette « ${excess.tag} » compterait ${excess.count} entrées (${tagMaxItems} au plus) : retirez-en au moins ${over}${among(excess.local)}`;
+      ? `les favoris compteraient ${excess.count} entrées (${tagMaxItems} au plus)\u00a0: retirez-en au moins ${over}${among(excess.local)}`
+      : `l'étiquette «\u00a0${excess.tag}\u00a0» compterait ${excess.count} entrées (${tagMaxItems} au plus)\u00a0: retirez-en au moins ${over}${among(excess.local)}`;
   });
   if (excesses.length > parts.length) parts.push("d'autres limites sont aussi dépassées");
   return `${lead} Sur cet appareil, ${parts.join(" ; ")}. ${ending}`;

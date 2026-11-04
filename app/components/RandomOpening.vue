@@ -199,7 +199,7 @@
             v-if="shown?.siblings[position]"
             :to="entryRoute(shown.siblings[position].uri)"
             rel="nofollow"
-            :aria-label="`${position === 'previous' ? 'Entrée précédente' : 'Entrée suivante'} : ${greek.text(shown.siblings[position].word)}`"
+            :aria-label="`${position === 'previous' ? 'Entrée précédente' : 'Entrée suivante'}\u00a0: ${greek.text(shown.siblings[position].word)}`"
             class="block rounded-md px-4 py-1 opacity-60 transition-opacity hover:opacity-100 focus-visible:opacity-100"
           >
             <span class="line-clamp-1 font-serif text-sm/6"><strong>{{ greek.text(shown.siblings[position].word) }}</strong> <span class="text-muted">{{ greek.text(rest(shown.siblings[position])) }}</span></span>
@@ -227,7 +227,7 @@
       class="sr-only"
       role="status"
     >
-      {{ failed ? "L'entrée n'a pas pu être chargée." : shown ? `Entrée ouverte : ${greek.text(shown.entry.word)}` : "" }}
+      {{ failed ? "L'entrée n'a pas pu être chargée." : shown ? `Entrée ouverte\u00a0: ${greek.text(shown.entry.word)}` : "" }}
     </p>
   </section>
 </template>

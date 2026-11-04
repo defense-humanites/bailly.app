@@ -8,7 +8,7 @@
 
   useSeoMeta({
     title: "À propos",
-    description: "Le dictionnaire grec-français d'Anatole Bailly, révisé par Gérard Gréco et son équipe : une application libre et gratuite pour le consulter.",
+    description: "Le dictionnaire grec-français d'Anatole Bailly, révisé par Gérard Gréco et son équipe\u00a0: une application libre et gratuite pour le consulter.",
   });
 
   const searchFocus = useSearchFocus();
@@ -48,7 +48,7 @@
   const features = {
     search: {
       title: "Cherchez comme vous écrivez",
-      text: "En grec, en beta code ou en translittération : les résultats s'affichent dès la première lettre.",
+      text: "En grec, en beta code ou en translittération\u00a0: les résultats s'affichent dès la première lettre.",
     },
     inflected: {
       title: "Partez d'une forme fléchie",
@@ -77,7 +77,7 @@
    * The errors of the text go to the team of the 2020 edition, with the entry
    * and the version (as its notice asks).
    */
-  const reportTextError = `mailto:numerisation.gaffiot@hotmail.fr?subject=${encodeURIComponent("Bailly 2020 Chávez : erreur dans l'entrée …")}`;
+  const reportTextError = `mailto:numerisation.gaffiot@hotmail.fr?subject=${encodeURIComponent("Bailly 2020 Chávez\u00a0: erreur dans l'entrée …")}`;
 
   /**
    * The documents of `public/documents/`, with their number of pages and their
@@ -196,7 +196,7 @@
         { label: "Licence", href: "https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" },
         { label: "Source", href: "http://gerardgreco.free.fr/spip.php?article24" },
       ],
-      note: "Version des données : 28 février 2023",
+      note: "Version des données\u00a0: 28 février 2023",
     },
     {
       title: "Analyseur morphologique libmorpheus",
@@ -512,7 +512,7 @@
               </h3>
               <p class="mt-2 text-muted">
                 L'ouvrage de référence des hellénistes francophones, paru en 1895 et maintes fois
-                réédité. Le texte de sa quatrième édition (1935) est passé dans le domaine public ; son
+                réédité. Le texte de sa quatrième édition (1935) est passé dans le domaine public&#8239;; son
                 <a
                   href="https://archive.org/details/BaillyDictionnaireGrecFrancais"
                   target="_blank"
@@ -542,7 +542,7 @@
               <p class="mt-2 text-muted">
                 Gérard Gréco et son équipe ont numérisé le texte, l'ont corrigé à la main d'après les
                 ouvrages de référence, puis ont mis à jour les étymologies et la toponymie, et finalement normalisé
-                les références ; ils l'ont intitulée <em>Bailly 2020 Hugo&nbsp;Chávez</em>. C'est leur texte que vous lisez ici. Une
+                les références&#8239;; ils l'ont intitulée <em>Bailly 2020 Hugo&nbsp;Chávez</em>. C'est leur texte que vous lisez ici. Une
                 <a
                   href="http://gerardgreco.free.fr/spip.php?article24"
                   target="_blank"
@@ -811,7 +811,7 @@
                 <button
                   type="button"
                   class="link inline-flex items-baseline gap-1 italic"
-                  :aria-label="`Et al. : les ${credit.contributors.length} contributeurs au ${credit.title}`"
+                  :aria-label="`Et al.\u00a0: les ${credit.contributors.length} contributeurs au ${credit.title}`"
                 >
                   <span>et al.</span>
                   <UIcon
@@ -866,7 +866,7 @@
           a link's underline.
         -->
         <p class="mx-auto mt-8 max-w-3xl text-center text-sm text-muted before:mx-auto before:mb-6 before:block before:h-[6px] before:w-10 before:border-t-2 before:border-b before:border-(--rule-color)">
-          Ce que l'application garde de vos données, où et pour combien de temps :
+          Ce que l'application garde de vos données, où et pour combien de temps&nbsp;:
           <NuxtLink
             :to="encodeURI('/confidentialité')"
             class="link"
@@ -898,7 +898,7 @@
         </h2>
         <p class="mx-auto mt-3 max-w-2xl text-pretty">
           L'application Bailly est gratuite, comme le veut la licence de son texte, et libre par
-          choix. Vos dons couvrent ses frais d'entretien : nom de domaine, hébergement et outils de
+          choix. Vos dons couvrent ses frais d'entretien&nbsp;: nom de domaine, hébergement et outils de
           développement.
         </p>
         <div class="mt-8 flex flex-wrap justify-center gap-3">

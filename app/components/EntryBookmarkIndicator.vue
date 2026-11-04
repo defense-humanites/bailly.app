@@ -71,7 +71,7 @@
           />
         </UChip>
       </span>
-      <span class="sr-only">(étiquettes : {{ names }})</span>
+      <span class="sr-only">(étiquettes&nbsp;: {{ names }})</span>
     </span>
   </span>
 </template>

@@ -168,7 +168,7 @@ export class IdbTags {
     const comparableName = comparableTagName(name);
     const homonym = tags.find(tag => tag.key !== exceptKey && comparableTagName(tag.name) === comparableName);
     if (homonym) {
-      throw new IdbError(`L'étiquette « ${homonym.name} » existe déjà.`);
+      throw new IdbError(`L'étiquette «\u00a0${homonym.name}\u00a0» existe déjà.`);
     }
   }
 

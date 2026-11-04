@@ -21,7 +21,7 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
   {
     word: "ὀζόστομος",
     uri: "ozostomos",
-    html: "<span class=\"entreea\"><span class=\"grec\">ὀζό·στομος,</span></span> <span class=\"des\">ος, ον,</span>\ndont la bouche sent mauvais, <span class=\"aut\">Anth.</span>\n<span class=\"refch\">11, 427 ;</span> <span class=\"aut\">M.\nAnt.</span> <span class=\"refch\">5, 28</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><span data-linked-entries=\"ozos,ozô\">ὄζω</span>, <a href=\"/stoma\">στόμα</a></span>.</div>\n",
+    html: "<span class=\"entreea\"><span class=\"grec\">ὀζό·στομος,</span></span> <span class=\"des\">ος, ον,</span>\ndont la bouche sent mauvais, <span class=\"aut\">Anth.</span>\n<span class=\"refch\">11, 427\u202f;</span> <span class=\"aut\">M.\nAnt.</span> <span class=\"refch\">5, 28</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><span data-linked-entries=\"ozos,ozô\">ὄζω</span>, <a href=\"/stoma\">στόμα</a></span>.</div>\n",
   },
   {
     word: "ἰσοφέριστος",
@@ -46,7 +46,7 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
   {
     word: "ἀντιθέω",
     uri: "antitheô",
-    html: "<span class=\"entreea\"><span class=\"grec\">ἀντι·θέω</span></span> :\n<div class=\"pp\"><span class=\"ppa\">1</span> lutter à la course avec,\n<span class=\"ital\">dat.</span> <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">5, 22</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> courir à l’encontre,\n<span class=\"aut\">Anth.</span> <span class=\"refch\">9,\n822</span>.</div>\n",
+    html: "<span class=\"entreea\"><span class=\"grec\">ἀντι·θέω</span></span>\u00a0:\n<div class=\"pp\"><span class=\"ppa\">1</span> lutter à la course avec,\n<span class=\"ital\">dat.</span> <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">5, 22</span>\u202f||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> courir à l’encontre,\n<span class=\"aut\">Anth.</span> <span class=\"refch\">9,\n822</span>.</div>\n",
   },
   {
     word: "ὑπερδεκατάλαντος",
@@ -61,7 +61,7 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
   {
     word: "ὀρσολοπεύω",
     uri: "orsolopeuô",
-    html: "<span class=\"entreea\"><span class=\"grec\">ὀρσολοπεύω,</span></span> assaillir, harceler, tourmenter,\n<span class=\"ital\">acc.</span> <span class=\"aut\">Hh.</span>\n<span class=\"oeuv\">Merc.</span> <span class=\"refch\">308 ;</span>\n<span class=\"aut\">Max.</span> <span class=\"oeuv\"><span class=\"grec\">π. κατ.</span></span> <span class=\"refch\">107</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/orsolopos\">ὀρσολόπος</a></span>.</div>\n",
+    html: "<span class=\"entreea\"><span class=\"grec\">ὀρσολοπεύω,</span></span> assaillir, harceler, tourmenter,\n<span class=\"ital\">acc.</span> <span class=\"aut\">Hh.</span>\n<span class=\"oeuv\">Merc.</span> <span class=\"refch\">308\u202f;</span>\n<span class=\"aut\">Max.</span> <span class=\"oeuv\"><span class=\"grec\">π. κατ.</span></span> <span class=\"refch\">107</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/orsolopos\">ὀρσολόπος</a></span>.</div>\n",
   },
   {
     word: "βουλευτήριος",
@@ -76,7 +76,7 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
   {
     word: "ἀϋλία",
     uri: "aulia",
-    html: "<span class=\"entreea\"><span class=\"grec\">ἀϋλία,</span></span> <span class=\"gens\">ας</span>\n(<span class=\"grec\"><span data-linked-entries=\"hê_(1),ho_(1)\">ἡ</span></span>) [<span class=\"grec\">ᾰῡ</span>] nature\nimmatérielle <span class=\"ital\">ou</span> incorporelle,\n<span class=\"aut\">Hiérocl.</span> <span class=\"oeuv\">C. aur.</span>\n<span class=\"refch\">p. 479 Mullach</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/aulos_(2)\">ἄϋλος</a></span>.</div>\n",
+    html: "<span class=\"entreea\"><span class=\"grec\">ἀϋλία,</span></span> <span class=\"gens\">ας</span>\n(<span class=\"grec\"><span data-linked-entries=\"hê_(1),ho_(1)\">ἡ</span></span>) [<span class=\"grec\">ᾰῡ</span>] nature\nimmatérielle <span class=\"ital\">ou</span> incorporelle,\n<span class=\"aut\">Hiérocl.</span> <span class=\"oeuv\">C. aur.</span>\n<span class=\"refch\">p.\u00a0479 Mullach</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><a href=\"/aulos_(2)\">ἄϋλος</a></span>.</div>\n",
   },
   {
     word: "ὀκτάτονος",
@@ -86,16 +86,16 @@ export const PREVIEW_ENTRIES: readonly { word: string; uri: string; html: string
   {
     word: "οὐδέπη",
     uri: "oudepê",
-    html: "<span class=\"entreea\"><span class=\"grec\">οὐδέ·πη</span></span> <span class=\"ital\">ou</span>\n<span class=\"es\">οὐδέ πη,</span> <span class=\"ital\">adv.</span> en\naucune façon, <span class=\"aut\">Il.</span> <span class=\"refch\">6,\n267,</span> <span class=\"ital\">etc. ;</span> <span class=\"aut\">Od.</span> <span class=\"refch\">12, 232 ;</span> <span class=\"aut\">Hh.</span> <span class=\"refch\">6, 58</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><span data-linked-entries=\"oude,oudos\">οὐδέ</span>, πῆ</span>.</div>\n",
+    html: "<span class=\"entreea\"><span class=\"grec\">οὐδέ·πη</span></span> <span class=\"ital\">ou</span>\n<span class=\"es\">οὐδέ πη,</span> <span class=\"ital\">adv.</span> en\naucune façon, <span class=\"aut\">Il.</span> <span class=\"refch\">6,\n267,</span> <span class=\"ital\">etc.\u202f;</span> <span class=\"aut\">Od.</span> <span class=\"refch\">12, 232\u202f;</span> <span class=\"aut\">Hh.</span> <span class=\"refch\">6, 58</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"grec\"><span data-linked-entries=\"oude,oudos\">οὐδέ</span>, πῆ</span>.</div>\n",
   },
   {
     word: "Δαμοίτας",
     uri: "Damoitas",
-    html: "<span class=\"entreea\"><span class=\"grec\">Δαμοίτας,</span></span> <span class=\"gens\">α</span>\n<span class=\"art\">(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)</span>\n[<span class=\"grec-longueur\">ᾱᾱ</span>] Damœtas :\n<div class=\"pp\"><span class=\"ppa\">1</span> berger, <span class=\"aut\">Thcr.</span> <span class=\"oeuv\">Idyl.</span> <span class=\"refch\">6, 1</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> pêcheur, <span class=\"aut\">Anth.</span> <span class=\"refch\">6, 193</span>.</div>\n",
+    html: "<span class=\"entreea\"><span class=\"grec\">Δαμοίτας,</span></span> <span class=\"gens\">α</span>\n<span class=\"art\">(<span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a></span>)</span>\n[<span class=\"grec-longueur\">ᾱᾱ</span>] Damœtas\u00a0:\n<div class=\"pp\"><span class=\"ppa\">1</span> berger, <span class=\"aut\">Thcr.</span> <span class=\"oeuv\">Idyl.</span> <span class=\"refch\">6, 1</span>\u202f||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> pêcheur, <span class=\"aut\">Anth.</span> <span class=\"refch\">6, 193</span>.</div>\n",
   },
   {
     word: "ἀναλακτίζω",
     uri: "analaktizô",
-    html: "<span class=\"entreea\"><span class=\"grec\">ἀνα·λακτίζω</span></span> :\n<div class=\"pp\"><span class=\"ppa\">1</span> ruer, <span class=\"aut\">Antyll.</span> (<span class=\"aut\">Orib.</span> <span class=\"refch\">121 Matthäi</span>) ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> repousser du pied,\n<span class=\"ital\">acc.</span> <span class=\"aut\">Clém.</span>\n<span class=\"refch\">890</span>.</div>\n",
+    html: "<span class=\"entreea\"><span class=\"grec\">ἀνα·λακτίζω</span></span>\u00a0:\n<div class=\"pp\"><span class=\"ppa\">1</span> ruer, <span class=\"aut\">Antyll.</span> (<span class=\"aut\">Orib.</span> <span class=\"refch\">121 Matthäi</span>)\u202f||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> repousser du pied,\n<span class=\"ital\">acc.</span> <span class=\"aut\">Clém.</span>\n<span class=\"refch\">890</span>.</div>\n",
   },
 ];

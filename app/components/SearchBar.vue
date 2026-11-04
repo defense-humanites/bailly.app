@@ -93,7 +93,7 @@
    * diacritiques respectés »).
    */
   const optionsSummary = computed((): string => {
-    const term = `« ${toSearchQuery(query.value)} »`;
+    const term = `«\u00a0${toSearchQuery(query.value)}\u00a0»`;
     const parts = [
       {
         start: wildcards.value ? `Entrées commençant par ${term}` : "",
@@ -101,7 +101,7 @@
         end: `Entrées finissant par ${term}`,
         exact: wildcards.value ? `Entrées correspondant à ${term}` : `Entrée identique à ${term}`,
       }[position.value],
-      wildcards.value ? "? : une lettre, * : plusieurs" : "",
+      wildcards.value ? "?\u00a0: une lettre, *\u00a0: plusieurs" : "",
       diacriticSensitive.value ? "diacritiques respectés" : "",
     ].filter(Boolean);
     const summary = parts.join(" · ");
@@ -651,7 +651,7 @@
       <template #empty="{ searchTerm }">
         <span v-if="pending">Recherche…</span>
         <span v-else-if="status === 'error'">La recherche a échoué. Veuillez réessayer.</span>
-        <span v-else>Aucun résultat pour « {{ searchTerm }} ».</span>
+        <span v-else>Aucun résultat pour «&nbsp;{{ searchTerm }}&nbsp;».</span>
       </template>
 
       <!--

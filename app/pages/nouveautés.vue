@@ -14,7 +14,7 @@
 
   useSeoMeta({
     title: "Nouveautés",
-    description: "Une nouvelle application Bailly : des fonctions repensées, et quelques nouveautés attendues.",
+    description: "Une nouvelle application Bailly\u00a0: des fonctions repensées, et quelques nouveautés attendues.",
   });
 
   const searchOptionsPanel = useSearchOptionsPanel();
@@ -39,28 +39,28 @@
     {
       icon: "i-lucide-cloud",
       title: "Vos signets et vos préférences sur tous vos appareils.",
-      text: "Activez la synchronisation sur un premier appareil, puis ajoutez les autres avec votre clé : un QR code à scanner, ou douze mots à saisir. Vos signets et vos réglages vous suivent alors de l'ordinateur au téléphone. Aucun compte à créer, et tout reste privé : vos données sont chiffrées avant même de quitter votre appareil.",
+      text: "Activez la synchronisation sur un premier appareil, puis ajoutez les autres avec votre clé\u00a0: un QR code à scanner, ou douze mots à saisir. Vos signets et vos réglages vous suivent alors de l'ordinateur au téléphone. Aucun compte à créer, et tout reste privé\u00a0: vos données sont chiffrées avant même de quitter votre appareil.",
     },
     {
       icon: "i-lucide-list-tree",
       title: "Des entrées longues faciles à parcourir.",
-      text: "Une entrée qui ne tient pas à l'écran dispose désormais d'un sommaire de ses parties, sections et sens, qui mène d'un clic à chacun d'eux : à droite du texte sur les grands écrans, sinon depuis la barre qui accompagne votre lecture, en haut de l'écran, et indique le sens que vous lisez.",
+      text: "Une entrée qui ne tient pas à l'écran dispose désormais d'un sommaire de ses parties, sections et sens, qui mène d'un clic à chacun d'eux\u00a0: à droite du texte sur les grands écrans, sinon depuis la barre qui accompagne votre lecture, en haut de l'écran, et indique le sens que vous lisez.",
     },
     {
       icon: "i-lucide-link",
       title: "Des définitions reliées entre elles.",
-      text: "Les mots grecs cités dans les définitions mènent à leurs entrées ; une forme qui peut relever de plusieurs entrées ouvre une page qui les propose toutes.",
+      text: "Les mots grecs cités dans les définitions mènent à leurs entrées\u202f; une forme qui peut relever de plusieurs entrées ouvre une page qui les propose toutes.",
     },
     {
       icon: "i-lucide-quote",
       title: "Des entrées faciles à citer.",
-      text: "Le bouton aux guillemets, en tête de chaque entrée, propose une référence prête à copier, à placer dans le texte ou en note (forme complète, abrégée ou auteur-date), et une notice pour la bibliographie, selon la norme de votre choix (APA, MLA, ISO 690 ou Chicago). La référence indique la version consultée du dictionnaire, et l'italique est conservé au collage dans votre traitement de texte. Pour LaTeX ou un gestionnaire de références, l'entrée est aussi proposée au format BibLaTeX, à copier ou à télécharger ; et le connecteur de Zotero l'enregistre d'un clic, comme article de dictionnaire.",
+      text: "Le bouton aux guillemets, en tête de chaque entrée, propose une référence prête à copier, à placer dans le texte ou en note (forme complète, abrégée ou auteur-date), et une notice pour la bibliographie, selon la norme de votre choix (APA, MLA, ISO 690 ou Chicago). La référence indique la version consultée du dictionnaire, et l'italique est conservé au collage dans votre traitement de texte. Pour LaTeX ou un gestionnaire de références, l'entrée est aussi proposée au format BibLaTeX, à copier ou à télécharger\u202f; et le connecteur de Zotero l'enregistre d'un clic, comme article de dictionnaire.",
     },
     {
       icon: "i-lucide-search",
       title: "Une recherche plus souple.",
       text: [
-        "Les résultats distinguent mieux les correspondances exactes des autres entrées, et les options de recherche (position dans l'entrée, diacritiques, caractères jokers « ? » et « * ») sont désormais réunies dans un panneau, qui s'ouvre d'un clic sur le bouton des ",
+        "Les résultats distinguent mieux les correspondances exactes des autres entrées, et les options de recherche (position dans l'entrée, diacritiques, caractères jokers «\u00a0?\u00a0» et «\u00a0*\u00a0») sont désormais réunies dans un panneau, qui s'ouvre d'un clic sur le bouton des ",
         { key: "filtres", icon: "i-lucide-list-filter", action: searchOptionsPanel.open },
         ", au bout de la barre de recherche.",
       ],
@@ -68,7 +68,7 @@
     {
       icon: "i-lucide-book-open",
       title: "Une lecture sur mesure.",
-      text: "Choisissez parmi cinq polices grecques, et réglez la taille et la graisse du texte selon votre convenance. Vous ne lisez pas le grec ? Affichez-le en caractères latins dans des préférences.",
+      text: "Choisissez parmi cinq polices grecques, et réglez la taille et la graisse du texte selon votre convenance. Vous ne lisez pas le grec\u202f? Affichez-le en caractères latins dans des préférences.",
     },
     {
       icon: "i-lucide-palette",
@@ -144,7 +144,7 @@
         <div class="space-y-6 xl:sticky xl:top-[calc(var(--header-bottom)+1.5rem)]">
           <aside class="space-y-4 rounded-lg bg-secondary/5 p-4 ring-1 ring-secondary/20 md:p-6 xl:p-5">
             <p>
-              <strong>Et ensuite&nbsp;?</strong> Aidez-nous à choisir les prochaines fonctions de
+              <strong>Et ensuite&#8239;?</strong> Aidez-nous à choisir les prochaines fonctions de
               l'application&nbsp;: le questionnaire est anonyme et ne vous prendra qu'environ deux minutes.
             </p>
             <UButton

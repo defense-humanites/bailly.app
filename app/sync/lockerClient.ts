@@ -32,7 +32,7 @@ export class SyncNetworkError extends Error {
  * The message of a busy server (cf. `SyncBusyError`): the dialog of the
  * synchronization tells it apart (a warning, not an error).
  */
-export const SYNC_BUSY_MESSAGE = "Le serveur de synchronisation est très sollicité : nouvel essai dans quelques secondes.";
+export const SYNC_BUSY_MESSAGE = "Le serveur de synchronisation est très sollicité\u00a0: nouvel essai dans quelques secondes.";
 
 export class SyncBusyError extends SyncNetworkError {
   /**
@@ -61,8 +61,8 @@ export class SyncQuotaError extends SyncNetworkError {
 
   constructor(scope: "address" | "server", retryAfter: number) {
     super(scope === "server"
-      ? "Le serveur de synchronisation a reçu trop de signets aujourd'hui : la synchronisation reprendra demain."
-      : "Trop de signets ont été envoyés depuis ce réseau aujourd'hui : la synchronisation reprendra demain, ou depuis un autre réseau (les données mobiles, par exemple).");
+      ? "Le serveur de synchronisation a reçu trop de signets aujourd'hui\u00a0: la synchronisation reprendra demain."
+      : "Trop de signets ont été envoyés depuis ce réseau aujourd'hui\u00a0: la synchronisation reprendra demain, ou depuis un autre réseau (les données mobiles, par exemple).");
     this.name = "SyncQuotaError";
     this.retryAfter = retryAfter;
   }

@@ -81,7 +81,7 @@
         color="neutral"
         variant="ghost"
         size="sm"
-        :aria-label="`Entrée précédente : ${greek.text(siblings.previous.word)}`"
+        :aria-label="`Entrée précédente\u00a0: ${greek.text(siblings.previous.word)}`"
         class="rounded-md hover:bg-(--app-nav-hover) active:bg-(--app-nav-active)"
       />
       <span
@@ -140,7 +140,7 @@
         color="neutral"
         variant="ghost"
         size="sm"
-        :aria-label="`Entrée suivante : ${greek.text(siblings.next.word)}`"
+        :aria-label="`Entrée suivante\u00a0: ${greek.text(siblings.next.word)}`"
         class="rounded-md hover:bg-(--app-nav-hover) active:bg-(--app-nav-active)"
       />
       <span

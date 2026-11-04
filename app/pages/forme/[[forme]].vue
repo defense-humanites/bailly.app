@@ -163,7 +163,7 @@
           variant="subtle"
           icon="i-lucide-circle-alert"
           role="status"
-          :description="`${missing.length > 1 ? 'Entrées introuvables' : 'Entrée introuvable'} : ${missing.join(', ')}.`"
+          :description="`${missing.length > 1 ? 'Entrées introuvables' : 'Entrée introuvable'}\u00a0: ${missing.join(', ')}.`"
         />
         <p
           v-else-if="!entries.length"

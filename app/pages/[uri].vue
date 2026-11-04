@@ -347,7 +347,7 @@
                     The word after the direction, set apart as a key would be
                     (`SEPARATED`); named in full for screen readers.
                   -->
-                  <UTooltip :content="{ ariaLabel: `${neighbour.label} : ${greek.text(neighbour.sibling.word)}` }">
+                  <UTooltip :content="{ ariaLabel: `${neighbour.label}\u00a0: ${greek.text(neighbour.sibling.word)}` }">
                     <template #content="{ ui }">
                       <span class="shrink-0">{{ neighbour.label }}</span>
                       <span

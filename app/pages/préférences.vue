@@ -438,7 +438,7 @@
         -->
         <UModal
           v-model:open="isResetConfirmationOpen"
-          title="Rétablir les réglages par défaut ?"
+          title="Rétablir les réglages par défaut&#8239;?"
           :description="syncStore.syncedPreferences.length
             ? 'Le thème, la lecture, la recherche et les signets retrouveront leurs réglages par défaut, aussi sur vos autres appareils pour les préférences synchronisées. La synchronisation reste telle quelle.'
             : 'Le thème, la lecture, la recherche et les signets retrouveront leurs réglages par défaut. La synchronisation reste telle quelle.'"

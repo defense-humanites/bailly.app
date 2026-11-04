@@ -119,7 +119,7 @@ const MAX_ATTEMPTS = 5;
  */
 export class SyncTooLargeError extends Error {
   constructor() {
-    super("Vos signets sont trop volumineux pour être synchronisés : supprimez-en quelques-uns.");
+    super("Vos signets sont trop volumineux pour être synchronisés\u00a0: supprimez-en quelques-uns.");
     this.name = "SyncTooLargeError";
   }
 }
@@ -346,5 +346,5 @@ export async function synchronize(
     }
   }
 
-  throw new Error("La synchronisation n'a pas abouti : trop de modifications simultanées.");
+  throw new Error("La synchronisation n'a pas abouti\u00a0: trop de modifications simultanées.");
 }

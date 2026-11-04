@@ -135,7 +135,7 @@
    * style and the entry, as the reports of the text's errors (`à-propos.vue`).
    */
   const reportUrl = computed(() =>
-    `mailto:contact@bailly.app?subject=${encodeURIComponent(`Citation ${CITATION_STYLE_LABELS[style.value]} : ${citedLemma(props.entry)}`)}`);
+    `mailto:contact@bailly.app?subject=${encodeURIComponent(`Citation ${CITATION_STYLE_LABELS[style.value]}\u00a0: ${citedLemma(props.entry)}`)}`);
 
   /**
    * The entry, or the dictionary, as a BibLaTeX record (cf. `biblatexEntry`,
@@ -347,7 +347,7 @@
           class="mt-0.5 size-4 shrink-0"
         />
         <span>
-          Un format vous paraît inexact&nbsp;?
+          Un format vous paraît inexact&#8239;?
           <a
             :href="reportUrl"
             class="link"

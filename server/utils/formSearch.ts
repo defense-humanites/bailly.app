@@ -12,7 +12,7 @@ export function formNotFound(form: string | null) {
   return createError({
     statusCode: 404,
     statusMessage: "Not Found",
-    message: form ? `Aucune entrée ne correspond à « ${form} ».` : "La page demandée n'existe pas.",
+    message: form ? `Aucune entrée ne correspond à «\u00a0${form}\u00a0».` : "La page demandée n'existe pas.",
   });
 }
 

@@ -14,7 +14,7 @@
 <template>
   <article class="space-y-6">
     <h1 class="text-3xl leading-normal font-bold">
-      Merci pour votre don !
+      Merci pour votre don&#8239;!
     </h1>
     <p class="font-serif text-sm/7">
       Votre soutien fait vivre le Bailly en ligne. PayPal vous a envoyé un reçu

@@ -35,7 +35,7 @@
    * slot) binds them with `v-bind`.
    */
   const triggerAttrs = computed(() => ({
-    "aria-label": `${label.value} : ${colorNames[current.value]}`,
+    "aria-label": `${label.value}\u00a0: ${colorNames[current.value]}`,
     "data-tag-color": current.value,
     "class": "text-tag-text",
   }));

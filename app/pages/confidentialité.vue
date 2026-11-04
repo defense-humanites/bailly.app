@@ -16,7 +16,7 @@
   const summary = [
     "Vos signets et votre historique sont enregistrés sur votre appareil.",
     "Aucun compte, aucun cookie de suivi, aucune publicité.",
-    "Si vous synchronisez vos signets ou vos préférences, ils sont chiffrés sur votre appareil : nous ne pouvons pas les lire.",
+    "Si vous synchronisez vos signets ou vos préférences, ils sont chiffrés sur votre appareil\u00a0: nous ne pouvons pas les lire.",
     "La mesure d'audience ne dépose aucun cookie et ne conserve pas votre adresse IP.",
   ];
 
@@ -167,7 +167,7 @@
         </p>
         <p>
           La date de chaque modification de vos préférences est aussi gardée dans votre
-          navigateur, pour leur synchronisation si vous l'activez&nbsp;; le cookie peut alors être
+          navigateur, pour leur synchronisation si vous l'activez&#8239;; le cookie peut alors être
           déposé ou modifié pour appliquer un réglage fait sur un autre de vos appareils.
         </p>
       </section>
@@ -202,7 +202,7 @@
           <li>
             Par mesure de protection contre les abus, un casier créé parmi de nombreux autres
             depuis une même adresse, le même jour, et jamais relu est effacé après trente
-            jours&nbsp;; un usage ordinaire n'est pas concerné.
+            jours&#8239;; un usage ordinaire n'est pas concerné.
           </li>
           <li>
             Vous pouvez aussi effacer vos données en ligne à tout moment, depuis la fenêtre de
@@ -211,7 +211,7 @@
         </ul>
         <p>
           Un cookie, sans identifiant, retient seulement que la synchronisation est activée sur
-          cet appareil (et pour quelles données), afin d'afficher d'emblée le bon bouton&nbsp;; il
+          cet appareil (et pour quelles données), afin d'afficher d'emblée le bon bouton&#8239;; il
           est déposé quand vous l'activez et retiré quand vous la désactivez.
         </p>
       </section>
@@ -236,7 +236,7 @@
           empreinte renouvelée chaque jour), effacé après deux jours. Les journaux techniques de
           l'application ne contiennent pas votre adresse IP. Pour distinguer les visites des
           robots, ils notent, pour une partie des pages vues, la page demandée (sans vos
-          recherches), le navigateur et le réseau d'origine&nbsp;; ils sont effacés au bout de
+          recherches), le navigateur et le réseau d'origine&#8239;; ils sont effacés au bout de
           sept jours.
         </p>
       </section>
@@ -314,7 +314,7 @@
         </h2>
         <p>
           L'application est hébergée par Cloudflare, qui achemine les requêtes et protège le site
-          contre les abus&nbsp;; à ce titre, Cloudflare traite votre adresse IP, selon sa
+          contre les abus&#8239;; à ce titre, Cloudflare traite votre adresse IP, selon sa
           <a
             target="_blank"
             rel="noopener"
