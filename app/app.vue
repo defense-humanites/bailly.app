@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import type { ToasterProps } from "@nuxt/ui";
+  import { fr } from "@nuxt/ui/locale";
   import { SITE_URL } from "#shared/utils/site";
 
   /**
@@ -45,7 +46,14 @@
 
 <template>
   <NuxtRouteAnnouncer />
-  <UApp :toaster="toaster">
+  <!--
+    Nuxt UI's own labels in French (e.g. the close buttons of the toasts,
+    windows and alerts, « Fermer », read by screen readers).
+  -->
+  <UApp
+    :toaster="toaster"
+    :locale="fr"
+  >
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
