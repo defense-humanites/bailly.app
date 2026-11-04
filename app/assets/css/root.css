@@ -11,6 +11,7 @@
   --ui-secondary: var(--ui-color-secondary-700); /* 7.7:1 */
   /* A frank red, darkened (Nuxt UI's 500 jarred, at 3:1 on the bubbles):
      5.1:1 on them (marble 200), more on the cards. */
+  --ui-success: var(--ui-color-success-600); /* 5:1 */
   --ui-error: var(--ui-color-error-700);
   --ui-warning: var(--ui-color-warning-600); /* 4:1 */
 
@@ -122,6 +123,7 @@
 .dark {
   --ui-primary: var(--ui-color-primary-400); /* 5.8:1 */
   --ui-secondary: var(--ui-color-secondary-300); /* 8.4:1 */
+  --ui-success: var(--ui-color-success-400); /* 5.7:1 */
   --ui-error: var(--ui-color-error-400);
   --ui-warning: var(--ui-color-warning-400);
 

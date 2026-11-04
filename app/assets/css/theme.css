@@ -6,9 +6,10 @@
    * Greek identity: links, main actions, focus), the blue of the Aegean and
    * of the Egyptian blue of the pediments (a color of differentiation, e.g.
    * the etymologies, the ways into the synchronization), the gold of the
-   * offerings (favorites, highlights, warnings), and the black glaze of the
-   * vases (the dark theme's background). Roles: cf. `app.config.ts`
-   * (`ui.colors`) and `root.css`.
+   * offerings (favorites, highlights, warnings), the green of the myrtle
+   * (the successes), and the black glaze of the vases (the dark theme's
+   * background). Roles: cf. `app.config.ts` (`ui.colors`) and
+   * `root.css`.
    */
   --color-marble-50: #fbfaf6;
   --color-marble-100: #f5f2ea;
@@ -57,6 +58,26 @@
   --color-gold-800: #60441b;
   --color-gold-900: #52391b;
   --color-gold-950: #2f1e0c;
+
+  /*
+   * The myrtle (hue 160°): each step has the luminance of the terracotta's,
+   * hence the same contrasts and roles (`root.css`). Bluer than an olive, it
+   * stays apart from the gold of the warnings, even for the color-blind
+   * (protanopia: OKLab distance 6 on the light theme, 11 on the dark one,
+   * against 3 for an olive), where the two alternate (the synchronization's
+   * state).
+   */
+  --color-myrtle-50: #eff6f2;
+  --color-myrtle-100: #d6eadf;
+  --color-myrtle-200: #aad3bc;
+  --color-myrtle-300: #77ba96;
+  --color-myrtle-400: #42a275;
+  --color-myrtle-500: #148b5c;
+  --color-myrtle-600: #00774c;
+  --color-myrtle-700: #01613d;
+  --color-myrtle-800: #025133;
+  --color-myrtle-900: #0d442c;
+  --color-myrtle-950: #042314;
 
   --color-vernis: #1a1613;
 

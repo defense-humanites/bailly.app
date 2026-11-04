@@ -12,6 +12,7 @@ export default defineAppConfig({
       primary: "terracotta",
       secondary: "aegean",
       info: "aegean",
+      success: "myrtle",
       warning: "gold",
       neutral: "marble",
     },
