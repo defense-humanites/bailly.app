@@ -45,7 +45,7 @@
     { betaCode: "ci/fos", greek: "ξίφος", transliteration: "xiphos" },
     { betaCode: "yuxh/", greek: "ψυχή", transliteration: "psychê" },
     { betaCode: "o(do/s", greek: "ὁδός", transliteration: "hodos" },
-    { betaCode: "*(h/ra", greek: "Ἥρα", transliteration: "Hêra" },
+    { betaCode: "*(/hra", greek: "Ἥρα", transliteration: "Hêra" },
   ];
 </script>
 
