@@ -402,6 +402,23 @@
 }
 
 /*
+ * The windows (`UModal`, cf. `app.config.ts`) within the screen's safe area
+ * (cf. `viewport-fit` in `nuxt.config.ts`): a tall one reached the status
+ * bar and, below, the rounded corners of the screen, which cut off its
+ * bottom (iPhone, Safari). Centered between the insets, its height capped
+ * as Nuxt UI caps it, the insets taken off.
+ */
+.app-modal {
+  --app-safe-block: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
+  top: calc(50% + (env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) / 2);
+  max-height: calc(100dvh - 2rem - var(--app-safe-block));
+
+  @variant sm {
+    max-height: calc(100dvh - 4rem - var(--app-safe-block));
+  }
+}
+
+/*
  * The toasts, inverted (« vernis noir »): dark on the light theme, light on
  * the dark one, as black figures on the clay; they stand out from the page
  * at once. Their text, borders, buttons (e.g. « Annuler ») and icons take

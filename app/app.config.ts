@@ -185,7 +185,8 @@ export default defineAppConfig({
         },
         fullscreen: {
           false: {
-            content: "w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)]",
+            // Within the screen's safe area (cf. `.app-modal`, `root.css`).
+            content: "app-modal w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)]",
           },
         },
         scrollable: {
