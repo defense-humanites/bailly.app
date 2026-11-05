@@ -31,7 +31,10 @@ export default defineNuxtPlugin(() => {
     );
   }
 
-  const api = createApiFetch(apiHost, import.meta.server ? apiBinding(useRequestEvent()) : undefined);
+  // In development, from another device: an API on `localhost` at the page's
+  // host name (cf. `apiHostFor`).
+  const host = import.meta.dev && import.meta.client ? apiHostFor(apiHost, location.hostname) : apiHost;
+  const api = createApiFetch(host, import.meta.server ? apiBinding(useRequestEvent()) : undefined);
 
   return {
     provide: {
