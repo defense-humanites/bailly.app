@@ -196,6 +196,28 @@ export default defineNuxtConfig({
       ? { "/_api": { target: process.env.DEV_API_PROXY, changeOrigin: true } }
       : {},
   },
+  vite: {
+    plugins: [
+      /*
+       * Nuxt Icon's client bundle (the data of the icons found in the
+       * sources), emptied in the browser's build: every icon's CSS is in
+       * the style sheet (`icons.css`, written from this bundle by
+       * `scripts/icon-css.mjs`, which reads `.nuxt/`), and Nuxt Icon,
+       * which loads its runtime once the page is hydrated, needs none of
+       * it there: ~7 KB (brotli) fewer on every page. An icon missing from
+       * the style sheet would be fetched from the app's server (its server
+       * bundle); a unit test checks that none is missing.
+       */
+      {
+        name: "bailly:empty-icon-client-bundle",
+        applyToEnvironment: environment => environment.name === "client",
+        transform(_code, id) {
+          if (!/nuxt-icon-client-bundle\.mjs$/.test(id.split("?")[0]!)) return;
+          return { code: "export function init() {}", map: null };
+        },
+      },
+    ],
+  },
   typescript: {
     // Type-check the Playwright config with the other tooling configs.
     nodeTsConfig: {
