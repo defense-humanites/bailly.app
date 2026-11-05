@@ -62,6 +62,14 @@ test.describe("home page", () => {
     expect(requests).toHaveLength(2);
   });
 
+  // The style sheet and the fonts first (cf. `server/plugins/modulePreloads.ts`).
+  test("preloads its scripts at a low priority", async ({ page }) => {
+    const html = await page.request.get("/").then(response => response.text());
+    const preloads = html.match(/<link rel="modulepreload"[^>]*>/g) ?? [];
+    expect(preloads.length).toBeGreaterThan(0);
+    expect(preloads.every(link => link.includes("fetchpriority=\"low\""))).toBe(true);
+  });
+
   test("gives the focus to the search field on opening, but not on a touch screen", async ({ page, goto, browser }) => {
     await goto("/", { waitUntil: "hydration" });
     await expect(searchInput(page)).toBeFocused();
