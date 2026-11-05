@@ -406,15 +406,19 @@
  * (cf. `viewport-fit` in `nuxt.config.ts`): a tall one reached the status
  * bar and, below, the rounded corners of the screen, which cut off its
  * bottom (iPhone, Safari). Centered between the insets, its height capped
- * as Nuxt UI caps it, the insets taken off.
+ * as Nuxt UI caps it, the insets taken off. The insets as
+ * `tailwind-safe-insets` reads them (its `safe-none`… apply), whose
+ * utilities cover the paddings, margins and offsets, not a height nor a
+ * centering between two insets.
  */
 .app-modal {
-  --app-safe-block: calc(env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px));
-  top: calc(50% + (env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) / 2);
-  max-height: calc(100dvh - 2rem - var(--app-safe-block));
+  --app-safe-top: var(--safe-inset-top, env(safe-area-inset-top, 0px));
+  --app-safe-bottom: var(--safe-inset-bottom, env(safe-area-inset-bottom, 0px));
+  top: calc(50% + (var(--app-safe-top) - var(--app-safe-bottom)) / 2);
+  max-height: calc(100dvh - 2rem - var(--app-safe-top) - var(--app-safe-bottom));
 
   @variant sm {
-    max-height: calc(100dvh - 4rem - var(--app-safe-block));
+    max-height: calc(100dvh - 4rem - var(--app-safe-top) - var(--app-safe-bottom));
   }
 }
 
