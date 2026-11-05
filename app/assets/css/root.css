@@ -405,26 +405,20 @@
  * The windows (`UModal`, cf. `app.config.ts`) within the screen's safe area
  * (cf. `viewport-fit` in `nuxt.config.ts`): a tall one reached the status
  * bar and, below, the rounded corners of the screen, which cut off its
- * bottom (iPhone, Safari). Centered between the insets and the gaps, its
- * height capped as Nuxt UI caps it, the insets taken off. On mobile, a
- * wider gap above: a tall window leaves the header's first row (title,
- * menu) in sight, which tells where the window opens. The insets as
- * `tailwind-safe-insets` reads them (its `safe-none`… apply), whose
- * utilities cover the paddings, margins and offsets, not a height nor a
- * centering between two insets.
+ * bottom (iPhone, Safari). Centered between the insets, with a gap above
+ * and below: 4rem from a viewport ~800px high, so that a tall window leaves
+ * the header's first row (title, menu) in sight, which tells where it
+ * opens; less on a lower viewport (2rem or so on a phone held sideways),
+ * where the window needs the height. The insets as `tailwind-safe-insets`
+ * reads them (its `safe-none`… apply), whose utilities cover the paddings,
+ * margins and offsets, not a height nor a centering between two insets.
  */
 .app-modal {
   --app-safe-top: var(--safe-inset-top, env(safe-area-inset-top, 0px));
   --app-safe-bottom: var(--safe-inset-bottom, env(safe-area-inset-bottom, 0px));
-  --app-modal-gap-top: 4rem;
-  --app-modal-gap-bottom: 1rem;
-  top: calc(50% + (var(--app-safe-top) + var(--app-modal-gap-top) - var(--app-safe-bottom) - var(--app-modal-gap-bottom)) / 2);
-  max-height: calc(100dvh - var(--app-safe-top) - var(--app-modal-gap-top) - var(--app-safe-bottom) - var(--app-modal-gap-bottom));
-
-  @variant sm {
-    --app-modal-gap-top: 2rem;
-    --app-modal-gap-bottom: 2rem;
-  }
+  --app-modal-gap: clamp(1rem, 8dvh, 4rem);
+  top: calc(50% + (var(--app-safe-top) - var(--app-safe-bottom)) / 2);
+  max-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 2 * var(--app-modal-gap));
 }
 
 /*
