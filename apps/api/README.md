@@ -5,7 +5,7 @@
 
 ## Architecture
 
-L'API (Hono, TypeScript) est écrite pour deux plateformes, derrière deux interfaces :
+L'API (Hono) est écrite pour deux plateformes, derrière deux interfaces :
 
 - **le dictionnaire** (`src/db/dictionary.ts`) : une base SQLite en lecture seule,
   servie par `node:sqlite` sur Node.js (`src/db/sqlite.ts`) ou par Cloudflare D1
