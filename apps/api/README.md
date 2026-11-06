@@ -1,15 +1,7 @@
 # API de l'application Bailly
 
 > [!NOTE]
-> L'API de l'application Bailly, dans le dépôt qu'elle partage avec le client
-> (`apps/web`) ; cf. le [README du dépôt](../../README.md). Son historique jusqu'au
-> 6 novembre 2026 vient du dépôt `bailly-api-next` (archivé).
-
-Veuillez noter que la base de données utilisée par l'API n'est PAS distribuée avec le
-code. Si vous cherchez à faire fonctionner cette API par vous-même, vous devrez au
-préalable convertir les données
-du [Bailly 2020 Hugo Chávez](http://gerardgreco.free.fr/spip.php?article24) dans le
-format spécifié au sein du code source.
+> La base de données du dictionnaire n'est PAS distribuée avec le code. Si vous cherchez à faire fonctionner cette API par vous-même, vous devrez au préalable convertir les données du [Bailly 2020 Hugo Chávez](http://gerardgreco.free.fr/spip.php?article24) dans le format spécifié au sein du code source.
 
 ## Architecture
 
@@ -47,15 +39,14 @@ cp .env.example .env    # puis ajuster
 
 ### La base de données
 
-Elle n'est pas distribuée avec le code (`database/` est ignoré par git) : les données
-du Bailly 2020 sont sous licence CC BY-NC-ND, et l'API ne les a jamais publiées. Pour
+Elle n'est pas distribuée avec le code (`database/` est ignoré par git). Pour
 la produire, convertir le fichier HTML source avec le convertisseur de l'application
 (table `bailly` et ses index, cf. `docs/database-revisions.md` pour l'historique des
 révisions), puis placer `database/bailly-revN.db` — ou son archive `.gz`, que le
 serveur Node.js décompresse au premier démarrage. La révision attendue est fixée dans
 `src/defaults.ts` (`DATABASE`), avec la date des données exposée comme `version`.
 
-Les recherches lisent le moins de lignes possible (D1 les facture) grâce à des données
+Les recherches lisent le moins de lignes possible grâce à des données
 dérivées de la base : `node scripts/db_derive.ts database/bailly-rev4.db
 database/bailly-rev5.db` les ajoute à une révision (tables `bailly_unordered` et
 `bailly_prefix_count`, colonnes `reversedSearchable*` et `definitionLength`, indexées ;
@@ -165,39 +156,3 @@ allers-retours vers D1 et les lignes lues (ce que D1 facture).
 `scripts/compare_lemmatizers.ts` compare les résultats de Morpheus (module
 WebAssembly contre bibliothèque native, par `@libmorpheus/node`) sur toutes les
 vedettes du dictionnaire.
-
-## Licence
-
-Copyright (C) 2021-2026 Antoine Boquet, Benjamin Georges
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published by
-the Free Software Foundation, either version 3 of the License, or (at your option) any
-later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see https://www.gnu.org/licenses/agpl-3.0.fr.html.
-
-### Données
-
-Cette application utilise les données
-du [Bailly 2020 Hugo Chávez](http://gerardgreco.free.fr/spip.php?article24) (Gérard
-Gréco, André Charbonnet, Mark De Wilde, Bernard Maréchal _et al._), distribuées sous
-licence _Creative Commons Attribution - Pas d'Utilisation Commerciale - Pas de
-Modification_ (CC&nbsp;BY-NC-ND&nbsp;4.0).
-
-### Analyse morphologique
-
-Cette application
-utilise [libmorpheus](https://github.com/defense-humanites/libmorpheus),
-qui modernise et étend les capacités de l'analyseur morphologique Morpheus, lequel a
-initialement été développé dans le cadre de la Perseus Digital Library (Gregory Crane
-_et al._ pour le compte de l'université Tufts). `libmorpheus` est distribuée sous
-licence mixte, MPL-2.0 et AGPL-3.0-or-later. Les données morphologiques (stemlib
-Alpheios) ne sont pas distribuées avec le code : elles sont acquises à l'installation
-(`pnpm run morpheus:data`).

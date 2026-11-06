@@ -17,10 +17,6 @@ chacune déployée sur Cloudflare Workers :
   [son README](apps/api/README.md) ;
 - `packages/` : le code partagé par les deux (à venir).
 
-La base de données du dictionnaire n'est PAS distribuée avec le code (cf. la
-licence des données, ci-dessous) : pour faire fonctionner l'API, il faut d'abord
-convertir les données du Bailly 2020 dans le format qu'elle attend.
-
 ## Mise en route
 
 Prérequis : Node.js 24 (`.node-version`) et [pnpm](https://pnpm.io), dont la
