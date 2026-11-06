@@ -8,7 +8,7 @@
  * `bailly` table and its indexes into that file directly (`ATTACH`), in a few
  * seconds. The production database is imported differently (cf. `README.md`).
  *
- * Usage: `npm run d1:local`. Idempotent: the table is replaced.
+ * Usage: `pnpm run d1:local`. Idempotent: the table is replaced.
  */
 
 import { spawnSync } from "node:child_process";
@@ -32,8 +32,8 @@ if (!existsSync(DATABASE.filePath)) {
 // Let Wrangler create the local database (the file is named after an identifier
 // derived by workerd: it cannot be computed here, only found).
 const created = spawnSync(
-  "npx",
-  ["wrangler", "d1", "execute", DATABASE_BINDING, "--local", "--command", "SELECT 1"],
+  "pnpm",
+  ["exec", "wrangler", "d1", "execute", DATABASE_BINDING, "--local", "--command", "SELECT 1"],
   { stdio: ["ignore", "ignore", "inherit"] }
 );
 

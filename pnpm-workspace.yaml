@@ -1,0 +1,17 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Versions shared by the applications (`"catalog:"` in their package.json).
+catalog:
+  "@humanities/greek-conversion": 1.0.0-rc.6
+  "@types/node": ^24.19.2
+  typescript: ~6.0.3
+  vitest: ^5.1.0
+  wrangler: ^4.157.0
+
+# The dependencies allowed to run their install scripts (the others are skipped).
+allowBuilds:
+  esbuild: true
+  vue-demi: true
+  workerd: true

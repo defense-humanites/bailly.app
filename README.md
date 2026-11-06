@@ -1,16 +1,43 @@
-> [!NOTE]
-> Ce dépôt contient uniquement le client de l'application Bailly. L'API se
-> trouve dans le dépôt
-> [bailly-api](https://github.com/defense-humanites/bailly-api).
-
 <p align="center">
-  <br><br><img width="192" height="192" src="app/assets/icons/bailly.svg" alt="Logo de l'application Bailly">
+  <br><br><img width="192" height="192" src="apps/web/app/assets/icons/bailly.svg" alt="Logo de l'application Bailly">
 </p>
 
 <p align="center">
   <strong>Uɴᴇ ᴀᴘᴘʟɪᴄᴀᴛɪᴏɴ ᴡᴇʙ ᴘᴏᴜʀ ʀᴇɴᴅʀᴇ ᴀᴄᴄᴇssɪʙʟᴇ ᴀ̀ ᴛᴏᴜs<br>
   ʟᴇ ᴅɪᴄᴛɪᴏɴɴᴀɪʀᴇ ɢʀᴇᴄ-ꜰʀᴀɴᴄ̧ᴀɪs ᴅᴇ ʀᴇ́ꜰᴇ́ʀᴇɴᴄᴇ ᴅ'Aɴᴀᴛᴏʟᴇ Bᴀɪʟʟʏ.</strong><br><br>
 </p>
+
+## Organisation du dépôt
+
+Ce dépôt réunit les deux applications de [bailly.app](https://bailly.app),
+chacune déployée sur Cloudflare Workers :
+
+- `apps/web` : le client (Nuxt), qui sert `bailly.app` (Worker `bailly-app-nuxt`) ;
+- `apps/api` : l'API (Hono), qui sert `api.bailly.app` (Worker `bailly-api`), cf.
+  [son README](apps/api/README.md) ;
+- `packages/` : le code partagé par les deux (à venir).
+
+La base de données du dictionnaire n'est PAS distribuée avec le code (cf. la
+licence des données, ci-dessous) : pour faire fonctionner l'API, il faut d'abord
+convertir les données du Bailly 2020 dans le format qu'elle attend.
+
+## Mise en route
+
+Prérequis : Node.js 24 (`.node-version`) et [pnpm](https://pnpm.io), dont la
+version est fixée par `packageManager` (`package.json`).
+
+```sh
+pnpm install            # les dépendances des deux applications
+pnpm dev                # le client, port 4321
+pnpm dev:api            # l'API (Node.js), port 3000 (cf. apps/api/README.md)
+pnpm lint
+pnpm typecheck
+```
+
+Les commandes de chaque application se lancent depuis son dossier (`pnpm test`
+dans `apps/web`), ou depuis la racine avec `--filter` (`pnpm --filter bailly-api
+test`). Les versions partagées (TypeScript, Vitest, Wrangler…) sont fixées dans
+le catalogue de `pnpm-workspace.yaml`.
 
 ## Licence
 
@@ -39,12 +66,12 @@ que la fonte
 droits, pour rendre les caractères les plus spécifiques. 
 
 Gentium et
-Inter sont servies en sous-ensembles (`scripts/subset-fonts.sh`) ; « Gentium »
+Inter sont servies en sous-ensembles (`apps/web/scripts/subset-fonts.sh`) ; « Gentium »
 étant un nom réservé de sa licence, le sous-ensemble de Gentium porte
 le nom « Bailly Book ».
 
 Les fichiers des fontes, accompagnés de leurs licences, se trouvent dans
-`app/assets/fonts/`.
+`apps/web/app/assets/fonts/`.
 
 ### Analyse morphologique
 

@@ -1,4 +1,4 @@
-import type { RouterConfig } from "@nuxt/schema";
+import type { RouterConfig } from "nuxt/schema";
 import type { RouteLocationNormalized } from "vue-router";
 import { START_LOCATION } from "vue-router";
 import { takeQuietAnchor } from "~/utils/quietAnchor";

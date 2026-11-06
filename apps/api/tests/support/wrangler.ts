@@ -1,6 +1,6 @@
 /**
  * Global setup of the `workers` Vitest project: starts the Worker with
- * `wrangler dev` (local D1 of `.wrangler/state/v3/`, cf. `npm run d1:local`), waits
+ * `wrangler dev` (local D1 of `.wrangler/state/v3/`, cf. `pnpm run d1:local`), waits
  * for it to answer, and provides its address to the tests (`inject("workerUrl")`).
  */
 

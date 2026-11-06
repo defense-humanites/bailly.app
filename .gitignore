@@ -1,0 +1,5 @@
+# Each application has its own (apps/*/.gitignore).
+node_modules
+.DS_Store
+.idea
+.vscode

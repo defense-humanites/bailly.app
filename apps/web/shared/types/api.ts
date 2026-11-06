@@ -1,5 +1,5 @@
 /**
- * Types of the Bailly API (cf. `src/definitions.ts` in the bailly-api repository).
+ * Types of the Bailly API (cf. `apps/api/src/definitions.ts`).
  */
 
 /**

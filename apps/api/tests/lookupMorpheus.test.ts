@@ -14,7 +14,7 @@ import { test as denoTest } from "./support/test.ts";
  *   - A Morpheus result is always an exact match: `isExact` is true (the front end
  *     relies on it to highlight, sort and filter the results).
  *
- * These tests need the Morpheus stem data (`npm run morpheus:data`): they are
+ * These tests need the Morpheus stem data (`pnpm run morpheus:data`): they are
  * ignored when it is not available.
  */
 

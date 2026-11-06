@@ -5,9 +5,9 @@
 # yesterday's daily budgets (all addresses together; they are kept as
 # pseudonyms only, cf. `server/lib/syncBudget.ts`).
 #
-# Usage: npm run sync:stats, or npm run sync:stats:preview (the preview).
+# Usage: pnpm run sync:stats, or pnpm run sync:stats:preview (the preview).
 # (Or: sh scripts/sync-stats.sh [production|preview].)
-# Needs wrangler to be logged in (`npx wrangler login`).
+# Needs wrangler to be logged in (`pnpm exec wrangler login`).
 set -eu
 
 case "${1:-production}" in
@@ -19,7 +19,7 @@ esac
 query() {
   echo
   echo "== $1"
-  npx wrangler d1 execute "$DATABASE" --remote --command "$2"
+  pnpm exec wrangler d1 execute "$DATABASE" --remote --command "$2"
 }
 
 # Today, in days since 1970 (as the columns of the days).

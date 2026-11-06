@@ -12,9 +12,9 @@
  * refused: hence a configuration of its own.
  *
  * - `node scripts/wrangler-preview.mjs`: written beside the generated one
- *   (`wrangler.preview.json`), deployed with `--config` (cf. `npm run
+ *   (`wrangler.preview.json`), deployed with `--config` (cf. `pnpm run
  *   deploy:preview`).
- * - `--from-build` (cf. `npm run build`): a safeguard. Built by Workers
+ * - `--from-build` (cf. `pnpm run build`): a safeguard. Built by Workers
  *   Builds from another branch than `main` (`WORKERS_CI_BRANCH`), the
  *   generated configuration itself becomes the preview's: whatever the
  *   deploy command (Workers Builds' default `npx wrangler deploy` included),

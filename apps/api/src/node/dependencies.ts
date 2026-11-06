@@ -44,7 +44,7 @@ export async function createNodeMorpheus(settings: Settings): Promise<Morpheus> 
   const dataPath = settings.morpheusDataPath;
 
   if (!existsSync(dataPath)) {
-    const reason = `no stem data in '${dataPath}' (run \`npm run morpheus:data\`)`;
+    const reason = `no stem data in '${dataPath}' (run \`pnpm run morpheus:data\`)`;
 
     if (!settings.isDevEnv) {
       throw new Error(`libmorpheus is unavailable: ${reason}`);

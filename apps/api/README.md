@@ -1,9 +1,9 @@
-# bailly-api-next
+# API de l'application Bailly
 
 > [!NOTE]
-> Ce dépôt contient uniquement l'API de l'application Bailly. Le client se trouve quant
-à lui dans le dépôt principal
-([bailly.app](https://github.com/defense-humanites/bailly.app)).
+> L'API de l'application Bailly, dans le dépôt qu'elle partage avec le client
+> (`apps/web`) ; cf. le [README du dépôt](../../README.md). Son historique jusqu'au
+> 6 novembre 2026 vient du dépôt `bailly-api-next` (archivé).
 
 Veuillez noter que la base de données utilisée par l'API n'est PAS distribuée avec le
 code. Si vous cherchez à faire fonctionner cette API par vous-même, vous devrez au
@@ -35,12 +35,13 @@ des `vars` de `wrangler.jsonc`.
 
 Prérequis : Node.js 24 ou plus récent, qui exécute directement les sources TypeScript,
 sans compilation (version indiquée dans `.node-version`, que lisent Workers Builds et
-les gestionnaires de versions comme nvm, fnm ou Volta), et npm 11.
+les gestionnaires de versions comme nvm, fnm ou Volta), et pnpm (version fixée à la
+racine du dépôt). Les commandes ci-dessous se lancent depuis `apps/api`.
 
 ```sh
-npm ci
-npm run morpheus:data   # données de Morpheus (Alpheios) dans morpheus-data/, hors git
-npm run types           # worker-configuration.d.ts (types du Worker, hors git)
+pnpm install
+pnpm run morpheus:data   # données de Morpheus (Alpheios) dans morpheus-data/, hors git
+pnpm run types           # worker-configuration.d.ts (types du Worker, hors git)
 cp .env.example .env    # puis ajuster
 ```
 
@@ -66,27 +67,33 @@ figée dans `scripts/reference/`).
 ### Serveur Node.js
 
 ```sh
-npm run dev             # port 3000 (`npm start` sans rechargement)
+pnpm run dev             # port 3000 (`pnpm start` sans rechargement)
 ```
 
 ### Worker (Cloudflare)
 
 ```sh
-npm run d1:local        # charge la base dans le D1 local de Wrangler (.wrangler/state)
-npm run dev:worker      # wrangler dev, port 8787
+pnpm run d1:local        # charge la base dans le D1 local de Wrangler (.wrangler/state)
+pnpm run dev:worker      # wrangler dev, port 8787
 ```
 
-`npm run morpheus:data` génère aussi `src/morpheus/stemlib-manifest.mjs` (hors git),
+`pnpm run morpheus:data` génère aussi `src/morpheus/stemlib-manifest.mjs` (hors git),
 que `src/worker.ts` importe : il doit tourner avant tout build du Worker. Bundle :
 ~7 Mio non compressés (1,5 Mio compressés).
 
 ### Production (Cloudflare)
 
-Le Worker `bailly-api` se déploie depuis `main` par Workers Builds :
+Le Worker `bailly-api` se déploie depuis `main` par Workers Builds, qui construit
+le dépôt (les deux applications) dans ce dossier :
 
-- commande de build : `npm run morpheus:data` (données de Morpheus téléchargées à
-  chaque build, révision épinglée et empreintes vérifiées) ;
-- commande de déploiement : `npx wrangler deploy` ;
+- dossier racine : `apps/api` ; chemins surveillés : `apps/api/*`, `packages/*`,
+  `pnpm-lock.yaml`, `pnpm-workspace.yaml` ;
+- variable de build `SKIP_DEPENDENCY_INSTALL=true`, l'installation étant faite par
+  la commande de build, pour cette seule application ;
+- commande de build : `pnpm install --frozen-lockfile --filter bailly-api && pnpm
+  run morpheus:data` (données de Morpheus téléchargées à chaque build, révision
+  épinglée et empreintes vérifiées) ;
+- commande de déploiement : `pnpm exec wrangler deploy` ;
 - Node.js 24 (`.node-version`) ; placement par défaut (au plus près du visiteur).
 
 Le front (`bailly.app`) appelle l'API par un service binding (`API`) pour les pages
@@ -102,22 +109,22 @@ Heroku sert de repli, pour comparer les deux (`scripts/load_test/compare.ts`).
 Chaque réponse du Worker porte un en-tête `Server-Timing` de diagnostic : l'isolat qui
 l'a servie (`isolate`, `requests`), et s'il a dû démarrer (`cold`), attendre un
 démarrage (`warming`) ou instancier Morpheus (`morpheus`). `scripts/load_test/k6.js`
-s'en sert pour mesurer les démarrages à froid. Le journal du Worker (`npx wrangler
+s'en sert pour mesurer les démarrages à froid. Le journal du Worker (`pnpm exec wrangler
 tail bailly-api`) donne une ligne par requête.
 
 Base de production : la base D1 du binding `DB` de `wrangler.jsonc`. D1 n'importe que
 du SQL, sans transaction, et refuse toute instruction de plus de 100 Ko :
-`npm run d1:export` écrit la révision courante en SQL dans ces limites
+`pnpm run d1:export` écrit la révision courante en SQL dans ces limites
 (`database/bailly-revN.sql`, ~200 Mo ; les 18 lignes trop longues pour une instruction
 y sont complétées par morceaux), puis :
 
 ```sh
-npx wrangler d1 execute DB --remote --file=database/bailly-rev5.sql
+pnpm exec wrangler d1 execute DB --remote --file=database/bailly-rev5.sql
 ```
 
 L'import supprime d'abord les tables : il peut être rejoué. Pour changer de révision
 sans interruption, importer dans une nouvelle base et changer l'identifiant du
-binding. `npm run types` est à relancer quand `wrangler.jsonc` change.
+binding. `pnpm run types` est à relancer quand `wrangler.jsonc` change.
 
 D1 refuse aussi les motifs `LIKE` et `GLOB` de plus de 50 octets (25 lettres
 grecques) : les recherches par préfixe, suffixe ou sous-chaîne s'en passent (cf.
@@ -131,14 +138,14 @@ provisoirement dans `src/vendor/` (cf. `src/searchKey.ts`).
 ## Tests
 
 ```sh
-npm test                # suite sous Node.js (SQLite + Wasm), ~10 s
-npm run test:workers    # la même suite contre le Worker servi par wrangler dev (D1 local)
-npm run typecheck       # génère les types du Worker, puis tsc
+pnpm test                # suite sous Node.js (SQLite + Wasm), ~10 s
+pnpm run test:workers    # la même suite contre le Worker servi par wrangler dev (D1 local)
+pnpm run typecheck       # génère les types du Worker, puis tsc
 ```
 
 Les deux projets Vitest (`vitest.config.ts`) font tourner les mêmes fichiers de test ;
 `#test-app` désigne l'application sous test de la plateforme (`tests/support/`). Les
-tests de Morpheus sont ignorés sans les données (`npm run morpheus:data`).
+tests de Morpheus sont ignorés sans les données (`pnpm run morpheus:data`).
 
 ### Test de charge
 
@@ -152,7 +159,7 @@ node scripts/load_test/compare.ts <URL A> <URL B>   # mêmes réponses ?
 k6 run -e TARGET=<URL> scripts/load_test/k6.js       # paliers de 5, 10, 20, 40 req/s
 ```
 
-`npm run d1:measure` rejoue ces requêtes contre le D1 local et donne, par type, les
+`pnpm run d1:measure` rejoue ces requêtes contre le D1 local et donne, par type, les
 allers-retours vers D1 et les lignes lues (ce que D1 facture).
 
 `scripts/compare_lemmatizers.ts` compare les résultats de Morpheus (module
@@ -193,4 +200,4 @@ initialement été développé dans le cadre de la Perseus Digital Library (Greg
 _et al._ pour le compte de l'université Tufts). `libmorpheus` est distribuée sous
 licence mixte, MPL-2.0 et AGPL-3.0-or-later. Les données morphologiques (stemlib
 Alpheios) ne sont pas distribuées avec le code : elles sont acquises à l'installation
-(`npm run morpheus:data`).
+(`pnpm run morpheus:data`).

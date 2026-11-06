@@ -13,7 +13,7 @@ import { test } from "./support/test.ts";
  * returned 30 compounds, but not λόγος; an inflected form could lose its lemma the
  * same way.
  *
- * The Morpheus tests need the Morpheus stem data (`npm run morpheus:data`): they
+ * The Morpheus tests need the Morpheus stem data (`pnpm run morpheus:data`): they
  * are ignored when it is not available.
  */
 

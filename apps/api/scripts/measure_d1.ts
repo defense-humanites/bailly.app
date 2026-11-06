@@ -2,7 +2,7 @@
  * Measures what the requests of the load test (`database/load-urls.json`, cf.
  * `scripts/load_test/urls.ts`) cost on D1: round trips (one per `batch()`, `all()` or
  * `get()`) and rows read (`meta.rows_read`, what D1 bills), by kind of request. Runs
- * the models against the *local* D1 database (`npm run d1:local`), through
+ * the models against the *local* D1 database (`pnpm run d1:local`), through
  * Wrangler's platform proxy: the same engine as the hosted one, without the network.
  *
  * Usage: node scripts/measure_d1.ts

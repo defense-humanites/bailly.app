@@ -2,7 +2,7 @@
  * Exports the current database revision (`DATABASE.filePath`, cf. `src/defaults.ts`)
  * as a SQL file for the import into the hosted D1 database:
  *
- *   npx wrangler d1 execute DB --remote --file=database/bailly-revN.sql
+ *   pnpm exec wrangler d1 execute DB --remote --file=database/bailly-revN.sql
  *
  * D1 imports plain SQL only (no SQLite file), without `BEGIN`/`COMMIT`, and refuses
  * any statement over 100 KB. The rows are thus inserted by batches under
@@ -11,7 +11,7 @@
  * `UPDATE … SET column = column || '…'`. The indexes are created after the data
  * (faster), and the tables are dropped first, so that the import can be replayed.
  *
- * Usage: `npm run d1:export [-- output.sql]` (default: the database path, `.sql`).
+ * Usage: `pnpm run d1:export [output.sql]` (default: the database path, `.sql`).
  */
 
 import { createWriteStream } from "node:fs";

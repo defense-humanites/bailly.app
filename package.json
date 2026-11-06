@@ -1,0 +1,15 @@
+{
+  "name": "bailly",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --filter bailly-app dev",
+    "dev:api": "pnpm --filter bailly-api dev",
+    "lint": "pnpm --recursive --if-present lint",
+    "typecheck": "pnpm --recursive typecheck"
+  }
+}

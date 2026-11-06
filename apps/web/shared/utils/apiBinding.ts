@@ -13,7 +13,7 @@ export type ServiceBinding = { fetch: typeof fetch };
  * server, the tests, or a deployment without the binding; the API is then
  * reached over the network, at `apiHost`.
  * @remarks Not in development even with the Cloudflare emulation
- * (`NITRO_PRESET=cloudflare_module npm run dev`): the binding would only
+ * (`NITRO_PRESET=cloudflare_module pnpm run dev`): the binding would only
  * answer if the API ran locally under `wrangler dev`.
  */
 export function apiBinding(event: H3Event | undefined): ServiceBinding | undefined {

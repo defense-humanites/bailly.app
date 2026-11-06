@@ -4,7 +4,7 @@ import { FEATURES } from "./shared/utils/features";
 /**
  * Whether the app is built for Cloudflare: a Cloudflare preset, or a build
  * by Cloudflare (Workers Builds, Pages), where Nitro picks the preset itself.
- * @remarks `NITRO_PRESET=cloudflare_module npm run dev` also emulates the
+ * @remarks `NITRO_PRESET=cloudflare_module pnpm run dev` also emulates the
  * Cloudflare bindings locally (D1 included), with Wrangler.
  */
 const cloudflare = Boolean(
@@ -169,7 +169,7 @@ export default defineNuxtConfig({
     /**
      * Cloudflare builds: `.output/server/wrangler.json` is generated from
      * `wrangler.jsonc` (Worker's name, D1 binding), with the entry point, the
-     * static files and the Node.js compatibility, so that `npx wrangler --cwd
+     * static files and the Node.js compatibility, so that `pnpm exec wrangler --cwd
      * .output deploy` works however the build was started.
      */
     cloudflare: {

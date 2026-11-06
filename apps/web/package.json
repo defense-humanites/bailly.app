@@ -21,7 +21,7 @@
     "sync:stats:preview": "sh scripts/sync-stats.sh preview"
   },
   "dependencies": {
-    "@humanities/greek-conversion": "^1.0.0-rc.6",
+    "@humanities/greek-conversion": "catalog:",
     "@nuxt/ui": "^4.12.0",
     "@pinia/nuxt": "^1.0.3",
     "@scure/bip39": "^2.4.0",
@@ -38,27 +38,25 @@
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.150",
+    "@iconify/utils": "^3.1.7",
     "@mdn/browser-compat-data": "^8.1.8",
     "@nuxt/eslint": "^1.17.0",
     "@nuxt/test-utils": "^4.3.4",
     "@playwright/test": "^1.64.1",
-    "@types/node": "^24.19.2",
+    "@types/node": "catalog:",
     "@vue/test-utils": "^2.5.1",
+    "db0": "^0.3.4",
     "eslint": "^10.14.0",
     "fake-indexeddb": "^6.2.7",
     "fast-check": "^4.10.2",
     "happy-dom": "^21.0.4",
-    "typescript": "~6.0.3",
-    "vitest": "^5.1.0",
+    "typescript": "catalog:",
+    "ufo": "^1.6.4",
+    "vitest": "catalog:",
     "vue-tsc": "3.3.13",
-    "wrangler": "^4.157.0"
+    "wrangler": "catalog:"
   },
-  "allowScripts": {
-    "vue-demi@0.14.10": true,
-    "esbuild@0.28.2": true,
-    "esbuild@0.27.7": true,
-    "fsevents@2.3.3": true,
-    "unrs-resolver@1.13.0": true,
-    "workerd@1.20261104.1": true
+  "engines": {
+    "node": ">=24"
   }
 }

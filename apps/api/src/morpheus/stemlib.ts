@@ -6,7 +6,7 @@
  * binding's README): the Alpheios tree also carries the sources of the stem
  * indexes and various working files, which would double the data for nothing.
  *
- * Node.js reads the directory acquired by `npm run morpheus:data` (`loadStemlib()`);
+ * Node.js reads the directory acquired by `pnpm run morpheus:data` (`loadStemlib()`);
  * the Worker bundles the same files as Data modules (cf. `scripts/morpheus_data.ts`,
  * which generates `src/morpheus/stemlib-manifest.ts`).
  */
@@ -33,7 +33,7 @@ export function isRuntimeFile(relativePath: string): boolean {
 
 /**
  * Reads the runtime subset of the stem data from `directory` (the output of
- * `npm run morpheus:data`, which contains `Greek/`). Node.js only.
+ * `pnpm run morpheus:data`, which contains `Greek/`). Node.js only.
  */
 export async function loadStemlib(directory: string): Promise<StemlibEntries> {
   const { readdir, readFile } = await import("node:fs/promises");
@@ -60,7 +60,7 @@ export async function loadStemlib(directory: string): Promise<StemlibEntries> {
 
   if (!entries.length) {
     throw new Error(
-      `No Morpheus stem data in '${languageDirectory}': run \`npm run morpheus:data\`.`
+      `No Morpheus stem data in '${languageDirectory}': run \`pnpm run morpheus:data\`.`
     );
   }
 

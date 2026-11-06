@@ -1,7 +1,7 @@
 /**
  * Node.js entry point: the API on a plain HTTP server, with the dictionary in a
  * SQLite file and Morpheus in WebAssembly, its stem data read from the directory
- * acquired by `npm run morpheus:data`.
+ * acquired by `pnpm run morpheus:data`.
  *
  * `node src/node.ts` (Node.js 24+ runs the TypeScript sources directly).
  */

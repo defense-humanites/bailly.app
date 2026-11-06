@@ -6,11 +6,11 @@ import { defineConfig } from "vitest/config";
  * The same suite runs on two platforms (`#test-app` resolves to one application or
  * the other, cf. `tests/support/`):
  *
- *   - `node` (`npm test`): the application in-process on Node.js, with the SQLite
+ *   - `node` (`pnpm test`): the application in-process on Node.js, with the SQLite
  *     file and Morpheus reading the stem data from `morpheus-data/`;
- *   - `workers` (`npm run test:workers`): the Worker (`src/worker.ts`) served by
+ *   - `workers` (`pnpm run test:workers`): the Worker (`src/worker.ts`) served by
  *     `wrangler dev` in the Workers runtime, with the local D1 database (cf.
- *     `npm run d1:local`) and the bundled stem data, reached over HTTP. Not run by
+ *     `pnpm run d1:local`) and the bundled stem data, reached over HTTP. Not run by
  *     default: it needs the local D1 import.
  */
 
