@@ -1,10 +1,13 @@
 /**
  * `Lemmatizer` over the WebAssembly build of libmorpheus (`@libmorpheus/wasm`).
  *
- * One module instance holds its own copy of the stem data in memory (MEMFS: the
- * fastest placement, cf. the binding's README) and one Greek context, created once
- * and reused: a context is single-threaded and `analyze()` never yields, so the
- * calls of one event loop cannot interleave inside it.
+ * One module instance holds the stem data in memory (MEMFS: the fastest placement,
+ * cf. the binding's README) and one Greek context, created once and reused: a
+ * context is single-threaded and `analyze()` never yields, so the calls of one event
+ * loop cannot interleave inside it. Since 0.1.2, the module adopts the arrays it is
+ * given instead of copying them: in the Worker, views of the `Data` modules, shared
+ * by the instances of the isolate; nothing may write into them afterwards (nothing
+ * does: the module only reads them).
  *
  * Where the module comes from depends on the platform (cf. `MorpheusModuleSource`):
  *   - Node.js: the facade loads `morpheus.mjs` and compiles `morpheus.wasm` itself;
