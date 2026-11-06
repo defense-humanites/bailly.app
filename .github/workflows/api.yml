@@ -1,0 +1,52 @@
+name: API
+
+# The API (apps/api), when it or what it depends on changes. Its test suites need
+# the dictionary's database, which is not distributed: they run locally only (cf.
+# apps/api/README.md); here, the types and the Worker's build.
+on:
+  push:
+    branches: [main, dev]
+    paths: &paths
+      - apps/api/**
+      - packages/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .node-version
+      - .github/workflows/api.yml
+  pull_request:
+    paths: *paths
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: apps/api
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # The version of `packageManager` (package.json).
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile --filter bailly-api
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      # The stem data is bundled into the Worker: needed by its build, not kept.
+      - name: Morpheus stem data
+        run: pnpm run morpheus:data
+
+      - name: Build the Worker
+        run: pnpm exec wrangler deploy --dry-run --outdir dist

@@ -1,0 +1,82 @@
+name: Web
+
+# The front end (apps/web), when it or what it depends on changes.
+on:
+  push:
+    branches: [main, dev]
+    paths: &paths
+      - apps/web/**
+      - packages/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .node-version
+      - .github/workflows/web.yml
+  pull_request:
+    paths: *paths
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: apps/web
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # The version of `packageManager` (package.json).
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      # Also runs `nuxt prepare` (postinstall).
+      - run: pnpm install --frozen-lockfile --filter bailly-app
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile --filter bailly-app
+
+      - name: Install the browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Builds the app and serves it with the stand-in API (cf. `playwright.config.ts`).
+      - name: End-to-end tests
+        run: pnpm run test:e2e
+
+      - name: Upload the report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 14
