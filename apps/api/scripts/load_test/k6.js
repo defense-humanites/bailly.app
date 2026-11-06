@@ -1,10 +1,9 @@
 /**
- * Load test of the API (k6, https://k6.io: `brew install k6`), the same for Heroku
- * and the Worker: the front end's requests (`scripts/load_test/urls.ts`), at a
- * rising rate, in steps.
+ * Load test of the API (k6, https://k6.io: `brew install k6`), for any deployment of
+ * it: the front end's requests (`scripts/load_test/urls.ts`), at a rising rate, in
+ * steps. Only against a deployment one is responsible for.
  *
- *   k6 run -e TARGET=https://bailly-api.antoine-boquet.workers.dev scripts/load_test/k6.js
- *   k6 run -e TARGET=https://api.bailly.app scripts/load_test/k6.js
+ *   k6 run -e TARGET=<URL> scripts/load_test/k6.js
  *
  * Options (`-e NAME=value`): `RATES` (requests per second, one step each; default
  * `5,10,20,40`), `STEP` (the length of a step; default `1m`). The test stops by
@@ -15,8 +14,8 @@
  *
  * Against the Worker, its `Server-Timing` header (cf. `src/worker.ts`) sorts the
  * requests: `cold_starts`, the share that started an isolate (their number is that of
- * the isolates), and the durations of the requests that started one (`cold`), waited
- * for one to start (`warming`) or found it ready (`warm`), by kind of request;
+ * the isolates), and the durations of the requests that started one (`cold`) or found
+ * it ready (`warm`), by kind of request;
  * `morpheus_starts` and `morpheus_req_duration`, the requests that instantiated
  * Morpheus (on their isolate's first analysis).
  */
@@ -42,7 +41,6 @@ const morpheusStarts = new Rate("morpheus_starts");
 const morpheusDuration = new Trend("morpheus_req_duration", true);
 const durations = {
   cold: new Trend("cold_req_duration", true),
-  warming: new Trend("warming_req_duration", true),
   warm: new Trend("warm_req_duration", true)
 };
 
@@ -108,11 +106,7 @@ export default function () {
 
   const timing = response.headers["Server-Timing"] ?? "";
   if (timing.includes("isolate")) {
-    const start = /\bcold\b/.test(timing)
-      ? "cold"
-      : /\bwarming\b/.test(timing)
-      ? "warming"
-      : "warm";
+    const start = /\bcold\b/.test(timing) ? "cold" : "warm";
     coldStarts.add(start === "cold");
     durations[start].add(response.timings.duration, { kind });
     const morpheus = /\bmorpheus\b/.test(timing);

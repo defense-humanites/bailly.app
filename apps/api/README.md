@@ -94,12 +94,14 @@ qu'il rend ; il doit donc toujours trouver le Worker `bailly-api` déployé.
 l'enregistrement DNS reste celui de l'ancienne origine (Heroku), à laquelle le Worker
 répond à la place. Retour arrière immédiat : supprimer la route dans le tableau de bord
 (Settings > Domains & Routes), puis la retirer de `wrangler.jsonc`, sans quoi le
-déploiement suivant la recréerait. L'adresse `workers.dev` reste active tant que
-Heroku sert de repli, pour comparer les deux (`scripts/load_test/compare.ts`).
+déploiement suivant la recréerait. Le Worker n'a pas d'adresse `workers.dev`
+(`workers_dev: false`) : l'API n'est joignable que par `api.bailly.app`, derrière les
+règles de la zone (Bot Fight Mode, règles personnalisées), et par le service binding
+du front.
 
 Chaque réponse du Worker porte un en-tête `Server-Timing` de diagnostic : l'isolat qui
-l'a servie (`isolate`, `requests`), et s'il a dû démarrer (`cold`), attendre un
-démarrage (`warming`) ou instancier Morpheus (`morpheus`). `scripts/load_test/k6.js`
+l'a servie (`isolate`, `requests`), et s'il a dû démarrer (`cold`) ou instancier
+Morpheus (`morpheus`). `scripts/load_test/k6.js`
 s'en sert pour mesurer les démarrages à froid. Le journal du Worker (`pnpm exec wrangler
 tail bailly-api`) donne une ligne par requête.
 
@@ -142,7 +144,9 @@ tests de Morpheus sont ignorés sans les données (`pnpm run morpheus:data`).
 
 `scripts/load_test/` rejoue les requêtes du front (frappe lettre à lettre avec
 Morpheus, pages d'entrée, entrées au hasard, extraits), tirées de la base, contre un
-déploiement de l'API, avec [k6](https://k6.io) :
+déploiement de l'API, avec [k6](https://k6.io). Ils ne visent que l'adresse qu'on
+leur donne (`<URL>`) : un déploiement dont on a la charge, local (`pnpm run
+dev:worker`) ou le sien.
 
 ```sh
 node scripts/load_test/urls.ts            # database/load-urls.json

@@ -17,9 +17,11 @@
       "zone_name": "bailly.app"
     }
   ],
-  // Kept while Heroku is still the fallback (to compare both); to turn off afterwards,
-  // so that the API is only reached behind the rules of the zone.
-  "workers_dev": true,
+  // No `workers.dev` address nor version URLs: the API is only reached through
+  // `api.bailly.app`, behind the rules of the zone, and by the front end's service
+  // binding.
+  "workers_dev": false,
+  "preview_urls": false,
   // The dictionary (cf. `src/defaults.ts` for the revision and `README.md` for the
   // import). The scripts address it by its binding (`wrangler d1 execute DB`).
   "d1_databases": [
