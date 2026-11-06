@@ -1,0 +1,24 @@
+.vscode/
+.idea/
+
+**/.DS_Store
+
+node_modules/
+
+.env
+.env.*
+!.env.example
+
+# The dictionary database is not distributed with the code (cf. README.md).
+database/
+
+# Morpheus stem data, acquired by `npm run morpheus:data`, and the manifest of its
+# runtime subset, generated from it for the Worker.
+morpheus-data/
+src/morpheus/stemlib-manifest.mjs
+
+# Wrangler: the runtime types (`npm run types`), the local state (the local D1
+# database, cf. `npm run d1:local`), the build output.
+worker-configuration.d.ts
+.wrangler/
+dist/

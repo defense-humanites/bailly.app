@@ -1,0 +1,41 @@
+{
+  "name": "bailly-api",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=.env src/node.ts",
+    "start": "node src/node.ts",
+    "dev:worker": "wrangler dev",
+    "types": "wrangler types",
+    "typecheck": "npm run types && tsc --noEmit",
+    "test": "vitest run --project node",
+    "test:workers": "vitest run --project workers",
+    "test:all": "vitest run",
+    "morpheus:data": "node scripts/morpheus_data.ts",
+    "d1:local": "node scripts/d1_local_import.ts",
+    "d1:export": "node scripts/d1_export_sql.ts",
+    "d1:measure": "node scripts/measure_d1.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.6",
+    "@humanities/greek-conversion": "1.0.0-rc.6",
+    "@libmorpheus/wasm": "^0.1.1",
+    "hono": "^4.13.16"
+  },
+  "devDependencies": {
+    "@libmorpheus/node": "^0.1.1",
+    "@types/node": "^24.19.2",
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.0",
+    "wrangler": "^4.124.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "esbuild@0.28.2": true,
+    "workerd@1.20261103.1": true,
+    "fsevents@2.3.3": true
+  }
+}

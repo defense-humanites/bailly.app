@@ -1,0 +1,60 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bailly-api",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "invocation_logs": false
+    }
+  },
+  // `api.bailly.app`: the Worker answers in place of the origin (the DNS record, still
+  // proxied to Heroku, stays as it is). Removing the route gives the origin back.
+  "routes": [
+    {
+      "pattern": "api.bailly.app/*",
+      "zone_name": "bailly.app"
+    }
+  ],
+  // Kept while Heroku is still the fallback (to compare both); to turn off afterwards,
+  // so that the API is only reached behind the rules of the zone.
+  "workers_dev": true,
+  // The dictionary (cf. `src/defaults.ts` for the revision and `README.md` for the
+  // import). The scripts address it by its binding (`wrangler d1 execute DB`).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bailly-dict",
+      "database_id": "64c12c9d-3624-438c-8e79-5f23ba32c329"
+    }
+  ],
+  // The stem data of Morpheus, bundled as Data modules (`ArrayBuffer`): cf.
+  // `scripts/morpheus_data.ts`, which generates the imports.
+  "rules": [
+    {
+      "type": "Data",
+      "globs": [
+        "**/morpheus-data/**/*.table",
+        "**/morpheus-data/**/*.out",
+        "**/morpheus-data/**/*.lindex",
+        "**/morpheus-data/**/*.ml",
+        "**/morpheus-data/**/nomind",
+        "**/morpheus-data/**/vbind",
+        "**/morpheus-data/**/nendind",
+        "**/morpheus-data/**/vbendind",
+        "**/morpheus-data/**/derivind",
+        "**/morpheus-data/**/lemlist"
+      ],
+      "fallthrough": true
+    }
+  ],
+  // Cf. `src/Settings.ts` (`.env.example` documents them for Node.js).
+  "vars": {
+    "API_ENV": "production",
+    "QUERY_ALLOWED_FIELDS": "word,uri,htmlDefinition,definition,htmlExcerpt,excerpt",
+    "QUERY_DEFAULT_FIELDS": "word,uri,excerpt",
+    "QUERY_MAX_BATCH_SIZE": "5",
+    "QUERY_MAX_ROWS": "100"
+  }
+}
