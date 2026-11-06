@@ -9,12 +9,10 @@
 
 ## Organisation du dépôt
 
-Ce dépôt réunit les deux applications de [bailly.app](https://bailly.app),
-chacune déployée sur Cloudflare Workers :
+Ce dépôt réunit les deux applications qui, combinées, animent [bailly.app](https://bailly.app) :
 
-- `apps/web` : le client (Nuxt), qui sert `bailly.app` (Worker `bailly-app-nuxt`) ;
-- `apps/api` : l'API (Hono), qui sert `api.bailly.app` (Worker `bailly-api`), cf.
-  [son README](apps/api/README.md) ;
+- `apps/web` : le client (Nuxt), qui sert `bailly.app` ;
+- `apps/api` : l'API (Hono), qui sert `api.bailly.app`, cf. [son README](apps/api/README.md) ;
 - `packages/` : le code partagé par les deux (à venir).
 
 ## Mise en route
