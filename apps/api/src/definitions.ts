@@ -1,3 +1,4 @@
+import type * as Contract from "@bailly/api-types";
 import type { Format as GreekConversionFormat } from "./greek.ts";
 import type { MorpheusResponse, Morphology } from "./Morpheus.ts";
 
@@ -52,63 +53,29 @@ export type ApiRandomEntryParams<
   & Partial<Pick<ApiParams<K>, "siblings">>
   & { siblingsFields?: NonEmptyArray<keyof Pick<QueryableFields, S>> };
 
-export type ApiResponse = {
-  data: {
-    version: string;
-  };
-};
+/*
+ * The responses, as they go over the network: the contract shared with the front
+ * end (`@bailly/api-types`), which they must satisfy.
+ */
+export type ApiResponse = { data: { version: string } };
 
-export interface ApiEntryResponse<
+export type ApiEntryResponse<
   K extends keyof QueryableFields,
   S extends keyof QueryableFields = K
-> extends ApiResponse {
-  data: {
-    version: string;
-    entry: PartialExcept<Entry<K>, K | "children">;
-    siblings: Siblings<S>;
-  };
-}
+> = Contract.ApiResponse<Contract.ApiEntryData<K, S>>;
 
-export interface ApiRandomEntryResponse<
+export type ApiRandomEntryResponse<
   K extends keyof QueryableFields,
   S extends keyof QueryableFields = K
-> extends ApiResponse {
-  data: {
-    version: string;
-    length: number;
-    entry: PartialExcept<Entry<K>, K | "children">;
-    /** Only with `siblings=true`: those of `GET /entry/:uri` for the drawn entry. */
-    siblings?: Siblings<S>;
-  };
-}
+> = Contract.ApiResponse<Contract.ApiRandomEntryData<K, S>>;
 
-export interface ApiLookupResponse<
-  K extends keyof QueryableFields
-> extends ApiResponse {
-  data: {
-    version: string;
-    count: number;
-    countAll: number;
-    orphanMorphology?: MorpheusResponse<Morphology>;
-    entries: PartialExcept<
-      Entry<K>,
-      K | "children" | "isExact" | "isMorpheus" | "morphology"
-    >[];
-  };
-}
+export type ApiLookupResponse<K extends keyof QueryableFields> = Contract.ApiResponse<
+  Contract.ApiLookupData<K>
+>;
 
-/** An entry of `GET /entries/excerpts`; `homonyms` only for a group of homonyms. */
-export type ExcerptEntry = Pick<Entry, "uri" | "word" | "excerpt"> & {
-  homonyms?: number;
-};
+export type ExcerptEntry = Contract.ExcerptEntry;
 
-export interface ApiExcerptsResponse extends ApiResponse {
-  data: {
-    version: string;
-    entries: ExcerptEntry[];
-    missing: string[];
-  };
-}
+export type ApiExcerptsResponse = Contract.ApiResponse<Contract.ApiExcerptsData>;
 
 export type DatabaseEntry = {
   orderedID: number;
@@ -138,10 +105,8 @@ export type Entry<K extends keyof Entry = never> = {
   children?: PartialExcept<Entry, K>[];
 };
 
-export type QueryableFields = Pick<
-  Entry,
-  "word" | "uri" | "htmlDefinition" | "definition" | "htmlExcerpt" | "excerpt"
->;
+/** The fields a request may ask for (`ENTRY_FIELDS` of the contract). */
+export type QueryableFields = Pick<Entry, Contract.EntryField>;
 
 export type Siblings<K extends keyof QueryableFields> = {
   previous?: PartialExcept<Entry<K>, K>;

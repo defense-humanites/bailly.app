@@ -1,3 +1,4 @@
+import { MAX_EXCERPTS_URI_LENGTH, MAX_EXCERPTS_URIS } from "@bailly/api-types";
 import type { Dictionary } from "../db/dictionary.ts";
 import type { ApiExcerptsResponse, ExcerptEntry } from "../definitions.ts";
 import { Settings } from "../Settings.ts";
@@ -10,11 +11,11 @@ import { Settings } from "../Settings.ts";
  * generic batch (`POST /entry`).
  */
 
-/** Maximum number of distinct URIs per request. */
-export const EXCERPTS_MAX_URIS = 100;
+/** Maximum number of distinct URIs per request (shared with the front end). */
+export const EXCERPTS_MAX_URIS = MAX_EXCERPTS_URIS;
 
 /** Maximum length of a URI (the longest in the dictionary has 36 characters). */
-export const EXCERPTS_MAX_URI_LENGTH = 200;
+export const EXCERPTS_MAX_URI_LENGTH = MAX_EXCERPTS_URI_LENGTH;
 
 /** An invalid `uris` parameter (answered with a 400). */
 export class ExcerptsParamError extends Error {}

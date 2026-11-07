@@ -15,7 +15,7 @@ services:
     read_only: true
     volumes:
       # The dictionary (not distributed): data/database/bailly-revN.db.
-      - ./data/database:/app/database:ro
+      - ./data/database:/repo/apps/api/database:ro
 
   web:
     build:

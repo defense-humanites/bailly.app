@@ -186,6 +186,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@bailly/api-types':
+        specifier: workspace:*
+        version: link:../../packages/api-types
       '@hono/node-server':
         specifier: ^2.1.6
         version: 2.1.6(hono@4.13.16)
@@ -217,6 +220,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@bailly/api-types':
+        specifier: workspace:*
+        version: link:../../packages/api-types
       '@humanities/greek-conversion':
         specifier: 'catalog:'
         version: 1.0.0-rc.6
@@ -314,6 +320,12 @@ importers:
       wrangler:
         specifier: 'catalog:'
         version: 4.157.0(@types/node@24.19.2)
+
+  packages/api-types:
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
 
 packages:
 

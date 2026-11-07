@@ -1,3 +1,5 @@
+import { DEFAULT_ENTRY_FIELDS, ENTRY_FIELDS } from "@bailly/api-types";
+
 /**
  * Defaults tied to the code, versioned with it.
  *
@@ -28,6 +30,6 @@ export const DATABASE = {
  * `QUERY_DEFAULT_FIELDS` override them (comma-separated).
  */
 export const QUERY_FIELDS = {
-  allowed: "word,uri,htmlDefinition,definition,htmlExcerpt,excerpt",
-  default: "word,uri,excerpt"
+  allowed: ENTRY_FIELDS.join(","),
+  default: DEFAULT_ENTRY_FIELDS.join(",")
 } as const;

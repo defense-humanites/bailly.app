@@ -7,7 +7,7 @@ ouvrir de port. La production tourne sur Cloudflare Workers ; ce déploiement es
 celui d'un repli, à répéter de temps en temps pour vérifier qu'il fonctionne.
 
 - `api` : l'API (Node.js), construite par `apps/api/Dockerfile` ; la base du
-  dictionnaire est montée en lecture seule.
+  dictionnaire est montée en lecture seule (`deploy/data/database`).
 - `web` : le client Nuxt (Node.js), construit par `apps/web/Dockerfile` ; hors de
   Cloudflare, les casiers de la synchronisation sont gardés en SQLite, sur un volume.
 - `tunnel` : `cloudflared`, qui relie les deux noms publics aux conteneurs.

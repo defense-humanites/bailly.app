@@ -20,6 +20,7 @@
     "d1:measure": "node scripts/measure_d1.ts"
   },
   "dependencies": {
+    "@bailly/api-types": "workspace:*",
     "@hono/node-server": "^2.1.6",
     "@humanities/greek-conversion": "catalog:",
     "@libmorpheus/wasm": "^0.1.2",

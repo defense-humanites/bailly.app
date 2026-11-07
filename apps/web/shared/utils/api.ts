@@ -1,7 +1,8 @@
 /**
- * The most URIs of a request for excerpts (`GET /entries/excerpts`).
+ * The most URIs of a request for excerpts (`GET /entries/excerpts`): the
+ * contract's, shared with the API.
  */
-export const MAX_EXCERPTS_URIS = 100;
+export { MAX_EXCERPTS_URIS } from "@bailly/api-types";
 
 /**
  * A value of an API parameter.

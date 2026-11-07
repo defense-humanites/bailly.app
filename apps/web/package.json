@@ -22,6 +22,7 @@
     "sync:stats:preview": "sh scripts/sync-stats.sh preview"
   },
   "dependencies": {
+    "@bailly/api-types": "workspace:*",
     "@humanities/greek-conversion": "catalog:",
     "@nuxt/ui": "^4.12.0",
     "@pinia/nuxt": "^1.0.3",

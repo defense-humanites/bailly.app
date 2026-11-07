@@ -1,0 +1,20 @@
+{
+  "name": "@bailly/api-types",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The contract of the Bailly API, shared by the API and the front end: the types of its requests and responses, and the constants both sides must agree on.",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

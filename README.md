@@ -13,7 +13,9 @@ Ce dépôt réunit les deux applications qui, combinées, animent [bailly.app](h
 
 - `apps/web` : le client (Nuxt), qui sert `bailly.app` ;
 - `apps/api` : l'API (Hono), qui sert `api.bailly.app`, cf. [son README](apps/api/README.md) ;
-- `packages/` : le code partagé par les deux (à venir).
+- `packages/api-types` : le contrat de l'API (types des requêtes et des réponses,
+  constantes communes), partagé par les deux applications, cf. [son
+  README](packages/api-types/README.md).
 
 ## Mise en route
 
