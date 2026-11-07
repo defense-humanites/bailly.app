@@ -32,7 +32,8 @@ export class SqliteDictionary implements Dictionary {
     if (!existsSync(filePath)) {
       if (!existsSync(gzippedFilePath)) {
         throw new Error(
-          `Database file not found: '${filePath}' (nor its '.gz' archive).`
+          `Database file not found: '${filePath}' (nor its '.gz' archive). The database is " +
+            "not distributed with the code: place it there (cf. apps/api/README.md).`
         );
       }
 

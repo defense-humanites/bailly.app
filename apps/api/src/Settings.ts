@@ -1,4 +1,4 @@
-import { DATABASE } from "./defaults.ts";
+import { DATABASE, QUERY_FIELDS } from "./defaults.ts";
 import type { DatabaseEntry } from "./definitions.ts";
 
 /**
@@ -71,13 +71,13 @@ export class Settings {
       }
     }
 
-    this.queryAllowedFields = this.#get("QUERY_ALLOWED_FIELDS")
-      ? Settings.formatFields(this.#get("QUERY_ALLOWED_FIELDS")!)
-      : [];
-    const defaults = this.#get("QUERY_DEFAULT_FIELDS");
-    this.queryDefaultFields = defaults && this.checkFields(Settings.formatFields(defaults))
-      ? Settings.formatFields(defaults)
-      : this.queryAllowedFields;
+    this.queryAllowedFields = Settings.formatFields(
+      this.#override("QUERY_ALLOWED_FIELDS") ?? QUERY_FIELDS.allowed
+    );
+    const defaults = Settings.formatFields(
+      this.#override("QUERY_DEFAULT_FIELDS") ?? QUERY_FIELDS.default
+    );
+    this.queryDefaultFields = this.checkFields(defaults) ? defaults : this.queryAllowedFields;
     this.queryMaxBatchSize = Settings.formatNumber(
       this.#get("QUERY_MAX_BATCH_SIZE"),
       this.isDevEnv ? Infinity : 5

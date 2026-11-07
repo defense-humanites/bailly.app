@@ -60,10 +60,6 @@
   ],
   // Cf. `src/Settings.ts` (`.env.example` documents them for Node.js).
   "vars": {
-    "API_ENV": "production",
-    "QUERY_ALLOWED_FIELDS": "word,uri,htmlDefinition,definition,htmlExcerpt,excerpt",
-    "QUERY_DEFAULT_FIELDS": "word,uri,excerpt",
-    "QUERY_MAX_BATCH_SIZE": "5",
-    "QUERY_MAX_ROWS": "100"
+    "API_ENV": "production"
   }
 }

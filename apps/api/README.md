@@ -20,8 +20,10 @@ L'API (Hono) est écrite pour deux plateformes, derrière deux interfaces :
 
 `src/app.ts` assemble les routes à partir de ces deux dépendances ; `src/node.ts` et
 `src/worker.ts` sont les points d'entrée des deux plateformes. Les réglages
-(`src/Settings.ts`) viennent de `process.env` (fichier `.env`, cf. `.env.example`) ou
-des `vars` de `wrangler.jsonc`.
+(`src/Settings.ts`) ont tous une valeur par défaut, celle de la production (révision de
+la base et champs servis : `src/defaults.ts`) ; `process.env` (fichier `.env`
+facultatif, cf. `.env.example`) ou les `vars` de `wrangler.jsonc` ne servent qu'à s'en
+écarter.
 
 ## Mise en route
 
@@ -34,7 +36,7 @@ racine du dépôt). Les commandes ci-dessous se lancent depuis `apps/api`.
 pnpm install
 pnpm run morpheus:data   # données de Morpheus (Alpheios) dans morpheus-data/, hors git
 pnpm run types           # worker-configuration.d.ts (types du Worker, hors git)
-cp .env.example .env    # puis ajuster
+cp .env.example .env    # facultatif : seulement pour s'écarter des valeurs par défaut
 ```
 
 ### La base de données

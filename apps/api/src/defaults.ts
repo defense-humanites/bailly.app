@@ -21,3 +21,13 @@ export const DATABASE = {
   /** Date of the source data (not of the revision). */
   version: "2023-02-28"
 } as const;
+
+/**
+ * The fields a request may ask for (`fields`), and those it gets without asking: the
+ * columns of the database revision that the API serves. `QUERY_ALLOWED_FIELDS` and
+ * `QUERY_DEFAULT_FIELDS` override them (comma-separated).
+ */
+export const QUERY_FIELDS = {
+  allowed: "word,uri,htmlDefinition,definition,htmlExcerpt,excerpt",
+  default: "word,uri,excerpt"
+} as const;
