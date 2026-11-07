@@ -124,6 +124,14 @@ export default defineNuxtConfig({
    */
   runtimeConfig: {
     /**
+     * The API's address for the requests of the server only
+     * (`NUXT_API_SERVER_HOST`, cf. `serverApiHost`): on a server that hosts
+     * the API too, its address on the private network (e.g.
+     * `http://api:3000`). Empty: the public `apiHost`. Unused on Cloudflare,
+     * where the service binding takes its place.
+     */
+    apiServerHost: "",
+    /**
      * The daily budgets of an address and of the server for the
      * synchronization lockers (cf. `server/lib/syncBudget.ts`; 0: no limit,
      * e.g. `NUXT_SYNC_DAILY_BYTES=0`);

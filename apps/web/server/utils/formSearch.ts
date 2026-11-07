@@ -2,7 +2,7 @@ import type { H3Event } from "h3";
 import { createError, sendRedirect } from "h3";
 import type { ApiLookupData, ApiResponse, LookupParams } from "#shared/types/api";
 import { toApiQuery } from "#shared/utils/api";
-import { apiBinding, createApiFetch } from "#shared/utils/apiBinding";
+import { apiBinding, createApiFetch, serverApiHost } from "#shared/utils/apiBinding";
 import { legacySearchLocation, resolveLegacySearch, type LegacyLookup } from "../lib/legacySearch";
 
 /**
@@ -24,7 +24,7 @@ export function formNotFound(form: string | null) {
  * dictionary's data and on the search.
  */
 export async function redirectToForm(event: H3Event, form: string) {
-  const { apiHost } = useRuntimeConfig(event).public;
+  const apiHost = serverApiHost(useRuntimeConfig(event));
   // Through the API Worker's service binding on Cloudflare (cf. `apiBinding`).
   const api = createApiFetch(apiHost, apiBinding(event));
   const lookup: LegacyLookup = async (query, options) => {

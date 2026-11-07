@@ -25,6 +25,16 @@ export function apiBinding(event: H3Event | undefined): ServiceBinding | undefin
 }
 
 /**
+ * The base URL of the API for the requests the server makes, without a
+ * binding: `apiServerHost` (`NUXT_API_SERVER_HOST`, server only) when set,
+ * e.g. the API's address on the private network of a server that hosts both
+ * (`http://api:3000`); the public `apiHost` otherwise.
+ */
+export function serverApiHost(config: { apiServerHost?: string; public: { apiHost: string } }): string {
+  return config.apiServerHost || config.public.apiHost;
+}
+
+/**
  * The global options of a `$fetch` instance bound to the API (cf.
  * `createApiFetch`): its requests go through the binding when there is one.
  */

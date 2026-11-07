@@ -1,4 +1,4 @@
-import { apiBinding, createApiFetch } from "#shared/utils/apiBinding";
+import { apiBinding, createApiFetch, serverApiHost } from "#shared/utils/apiBinding";
 
 /**
  * Whether a string is an absolute http(s) URL. Not with `URL.canParse`, of
@@ -20,7 +20,8 @@ const isHttpUrl = (value: string): boolean => {
  * @see https://nuxt.com/docs/4.x/guide/recipes/custom-usefetch
  */
 export default defineNuxtPlugin(() => {
-  const { apiHost } = useRuntimeConfig().public;
+  const config = useRuntimeConfig();
+  const { apiHost } = config.public;
 
   // Without a scheme (e.g. `localhost:3000`), `localhost:` would be read as
   // the scheme and requests would fail with an obscure cross-origin error.
@@ -32,8 +33,11 @@ export default defineNuxtPlugin(() => {
   }
 
   // In development, from another device: an API on `localhost` at the page's
-  // host name (cf. `apiHostFor`).
-  const host = import.meta.dev && import.meta.client ? apiHostFor(apiHost, location.hostname) : apiHost;
+  // host name (cf. `apiHostFor`). On the server, its own address of the API
+  // when it has one (cf. `serverApiHost`).
+  const host = import.meta.server
+    ? serverApiHost(config)
+    : import.meta.dev ? apiHostFor(apiHost, location.hostname) : apiHost;
   const api = createApiFetch(host, import.meta.server ? apiBinding(useRequestEvent()) : undefined);
 
   return {

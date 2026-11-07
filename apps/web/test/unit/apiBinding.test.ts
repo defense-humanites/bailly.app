@@ -1,6 +1,6 @@
 import type { H3Event } from "h3";
 import { describe, expect, it, vi } from "vitest";
-import { apiBinding, apiFetchOptions, type ServiceBinding } from "../../shared/utils/apiBinding";
+import { apiBinding, apiFetchOptions, serverApiHost, type ServiceBinding } from "../../shared/utils/apiBinding";
 
 const eventWith = (context: Record<string, unknown>) => ({ context }) as unknown as H3Event;
 
@@ -29,5 +29,18 @@ describe("apiFetchOptions", () => {
 
   it("keeps the network without a binding", () => {
     expect(apiFetchOptions(undefined)).toEqual({});
+  });
+});
+
+describe("serverApiHost", () => {
+  const apiHost = "https://api.bailly.app";
+
+  it("prefers the server's own address of the API", () => {
+    expect(serverApiHost({ apiServerHost: "http://api:3000", public: { apiHost } })).toBe("http://api:3000");
+  });
+
+  it("falls back on the public address", () => {
+    expect(serverApiHost({ apiServerHost: "", public: { apiHost } })).toBe(apiHost);
+    expect(serverApiHost({ public: { apiHost } })).toBe(apiHost);
   });
 });
