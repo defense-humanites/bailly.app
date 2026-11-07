@@ -1,0 +1,42 @@
+name: Containers
+
+# The images of a deployment on a server of one's own (deploy/README.md), built
+# once a month and when they change, so that the fallback does not decay unseen.
+# Built only: never pushed (the API's image holds Morpheus's stem data, whose
+# licence is unclear), and never run here (the dictionary is not distributed).
+on:
+  schedule:
+    - cron: "23 4 3 * *"
+  workflow_dispatch:
+  push:
+    branches: [main, dev]
+    paths:
+      - apps/*/Dockerfile
+      - .dockerignore
+      - deploy/**
+      - .github/workflows/containers.yml
+  pull_request:
+    paths:
+      - apps/*/Dockerfile
+      - .dockerignore
+      - deploy/**
+      - .github/workflows/containers.yml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [api, web]
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build the ${{ matrix.app }} image
+        run: docker build -f apps/${{ matrix.app }}/Dockerfile -t bailly-${{ matrix.app }} .
+
+      - name: Validate compose.yaml
+        if: matrix.app == 'api'
+        run: |
+          cp deploy/.env.example deploy/.env
+          docker compose -f deploy/compose.yaml config --quiet

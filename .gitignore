@@ -3,3 +3,7 @@ node_modules
 .DS_Store
 .idea
 .vscode
+
+# Deployment on a server of one's own (deploy/README.md): settings and data.
+deploy/.env
+deploy/data/

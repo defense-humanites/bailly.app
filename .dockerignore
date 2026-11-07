@@ -1,0 +1,22 @@
+# The images are built from the repository's root (cf. deploy/README.md), from
+# the versioned sources only: no dependencies, builds, databases nor local data.
+**/node_modules
+**/.nuxt
+**/.output
+**/.data
+**/.wrangler
+**/.env
+**/.dev.vars*
+**/dist
+**/test-results
+**/playwright-report
+apps/api/database
+apps/api/morpheus-data
+apps/api/src/morpheus/stemlib-manifest.mjs
+apps/api/worker-configuration.d.ts
+deploy/.env
+deploy/data
+.git
+.github
+.idea
+.vscode

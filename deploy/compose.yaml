@@ -1,0 +1,51 @@
+# Bailly on a server of one's own: the API, the front end, and a Cloudflare tunnel
+# that exposes them without opening any port (cf. README.md). From this folder:
+#
+#   docker compose up -d --build
+#
+# Settings: `.env` next to this file (cf. `.env.example`).
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    image: bailly-api
+    restart: unless-stopped
+    read_only: true
+    volumes:
+      # The dictionary (not distributed): data/database/bailly-revN.db.
+      - ./data/database:/app/database:ro
+
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    image: bailly-web
+    restart: unless-stopped
+    environment:
+      # The browsers call the API at its public address; the server, on the
+      # private network.
+      NUXT_PUBLIC_API_HOST: https://${API_HOSTNAME}
+      NUXT_API_SERVER_HOST: http://api:3000
+      # Behind the tunnel, every request comes from cloudflared: the visitor's
+      # address, for the daily budgets of the synchronization, is in this header.
+      NUXT_SYNC_ADDRESS_HEADER: cf-connecting-ip
+      NUXT_SYNC_ADDRESS_SECRET: ${SYNC_ADDRESS_SECRET:-}
+    volumes:
+      # The synchronization lockers (SQLite): data/sync/sync.sqlite.
+      - ./data/sync:/app/.data
+    depends_on:
+      - api
+
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.2
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      # The tunnel's public hostnames are set in Cloudflare's dashboard:
+      # ${APP_HOSTNAME} → http://web:3000, ${API_HOSTNAME} → http://api:3000.
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    depends_on:
+      - web
+      - api
