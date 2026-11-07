@@ -22,6 +22,15 @@ import type {
   QueryableFields
 } from "./definitions.ts";
 
+/**
+ * The `Cache-Control` of the responses that depend only on the request and on the
+ * dictionary (lookups, entries, excerpts): a day, then a week served while revalidated.
+ * Browsers keep them, and so does the Worker's cache (Workers Cache, cf. `cache` in
+ * `wrangler.jsonc`), whose entries also belong to a version of the Worker: a new
+ * revision of the dictionary, which comes with a deployment, starts from an empty one.
+ */
+export const CACHEABLE = "public, max-age=86400, stale-while-revalidate=604800";
+
 /** What the routes need, given by the entry point (Node.js server, Worker, tests). */
 export type AppDependencies = {
   dictionary: Dictionary;
@@ -40,6 +49,14 @@ export function createApp({ dictionary: db, morpheus }: AppDependencies): Hono {
   app.use(cors());
   app.use(logger());
   app.use(secureHeaders());
+
+  // Nothing else is kept by a cache: random draws, errors (thrown before a route sets
+  // its header), unknown paths. Explicit, since a cache may otherwise give a response
+  // without `Cache-Control` a heuristic freshness.
+  app.use(async (c, next) => {
+    await next();
+    if (!c.res.headers.has("Cache-Control")) c.header("Cache-Control", "no-store");
+  });
 
   app.get("/", (c) => {
     return c.json("OK");
@@ -72,6 +89,8 @@ export function createApp({ dictionary: db, morpheus }: AppDependencies): Hono {
       q
     });
     const entry = await getEntry(db, params);
+
+    c.header("Cache-Control", CACHEABLE);
 
     return c.json({
       data: {
@@ -126,8 +145,7 @@ export function createApp({ dictionary: db, morpheus }: AppDependencies): Hono {
 
     const excerpts = await getExcerpts(db, uris);
 
-    // The dictionary rarely changes: the same batch can be served by a cache.
-    c.header("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
+    c.header("Cache-Control", CACHEABLE);
 
     return c.json(excerpts);
   });
@@ -139,6 +157,8 @@ export function createApp({ dictionary: db, morpheus }: AppDependencies): Hono {
       q
     });
     const entries = await getEntries(db, morpheus, params);
+
+    c.header("Cache-Control", CACHEABLE);
 
     return c.json({
       data: {

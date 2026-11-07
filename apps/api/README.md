@@ -99,11 +99,25 @@ déploiement suivant la recréerait. Le Worker n'a pas d'adresse `workers.dev`
 règles de la zone (Bot Fight Mode, règles personnalisées), et par le service binding
 du front.
 
-Chaque réponse du Worker porte un en-tête `Server-Timing` de diagnostic : l'isolat qui
-l'a servie (`isolate`, `requests`), et s'il a dû démarrer (`cold`) ou instancier
-Morpheus (`morpheus`). `scripts/load_test/k6.js`
-s'en sert pour mesurer les démarrages à froid. Le journal du Worker (`pnpm exec wrangler
-tail bailly-api`) donne une ligne par requête.
+**Cache** : les recherches, les entrées et les extraits ne dépendent que de la requête
+et de la base ; leurs réponses portent `Cache-Control: public, max-age=86400,
+stale-while-revalidate=604800` (`CACHEABLE`, `src/app.ts`), toutes les autres
+`no-store` (entrées au hasard, erreurs, chemins inconnus). Les navigateurs les gardent,
+et le cache du Worker aussi (Workers Cache, `"cache": { "enabled": true }` dans
+`wrangler.jsonc`) : deux niveaux devant le Worker (le centre de données le plus proche,
+puis un niveau commun), clé = chemin et chaîne de requête (ordre des paramètres
+compris), sans le nom d'hôte, et la version du Worker : chaque déploiement, donc chaque
+nouvelle révision de la base, repart d'un cache vide. Les appels du front par le
+service binding le partagent avec les navigateurs. Une réponse servie par le cache ne
+fait tourner ni le Worker ni D1 (pas de CPU, mais une requête facturée) et n'apparaît
+pas dans le journal du Worker. Retour arrière : `"enabled": false`, puis déployer.
+
+Une requête qui porte l'en-tête `Bailly-Diagnostics` reçoit un en-tête `Server-Timing`
+de diagnostic : l'isolat qui l'a servie (`isolate`, `requests`), et s'il a dû démarrer
+(`cold`) ou instancier Morpheus (`morpheus`) ; sa réponse n'est jamais gardée par le
+cache (`no-store`). `scripts/load_test/k6.js` s'en sert pour mesurer les démarrages à
+froid. Le journal du Worker (`pnpm exec wrangler tail bailly-api`) donne une ligne par
+requête qui le fait tourner.
 
 Base de production : la base D1 du binding `DB` de `wrangler.jsonc`. D1 n'importe que
 du SQL, sans transaction, et refuse toute instruction de plus de 100 Ko :
@@ -153,6 +167,11 @@ node scripts/load_test/urls.ts            # database/load-urls.json
 node scripts/load_test/compare.ts <URL A> <URL B>   # mêmes réponses ?
 k6 run -e TARGET=<URL> scripts/load_test/k6.js       # paliers de 5, 10, 20, 40 req/s
 ```
+
+Par défaut, k6 mesure le Worker lui-même : chaque requête porte un paramètre tiré au
+hasard (`k6`), qui la rend unique et l'empêche d'être servie par le cache. Avec
+`-e CACHE=1`, il envoie les requêtes telles quelles et mesure ce que voit un lecteur,
+cache compris (`cache_hits` : la part servie par le cache).
 
 `pnpm run d1:measure` rejoue ces requêtes contre le D1 local et donne, par type, les
 allers-retours vers D1 et les lignes lues (ce que D1 facture).

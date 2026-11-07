@@ -10,14 +10,17 @@
  * Morpheus is only instantiated by the first request that analyzes a form (a
  * lookup): the others (entries, random entries, excerpts) never wait for it.
  *
- * Every response says, in a `Server-Timing` header, which isolate served it, whether
- * it was the isolate's first request (`cold`), and whether it instantiated Morpheus
- * (`morpheus`), to tell the cost of the cold starts
+ * A request with a `Bailly-Diagnostics` header learns, in a `Server-Timing` header,
+ * which isolate served it, whether it was the isolate's first request (`cold`), and
+ * whether it instantiated Morpheus (`morpheus`), to tell the cost of the cold starts
  * in a load test (cf. `scripts/load_test/k6.js`):
  *
  *   Server-Timing: isolate;desc="1f2e3d4c", requests;desc="1", cold, morpheus
  *
- * (No durations: the clock of a Worker does not advance while it computes.)
+ * (No durations: the clock of a Worker does not advance while it computes.) Such a
+ * response is never stored by the Worker's cache (`Cache-Control: no-store`): the
+ * others must not be given its diagnostics. A response served by the cache does not
+ * run the Worker, and has none.
  */
 
 import createMorpheusModule from "@libmorpheus/wasm/module";
@@ -63,9 +66,11 @@ export default {
     app ??= createWorkerApp(env);
 
     const response = await app.fetch(request, env, ctx);
+    if (!request.headers.has("Bailly-Diagnostics")) return response;
 
     // A copy: the headers of a response may be immutable.
     const timed = new Response(response.body, response);
+    timed.headers.set("Cache-Control", "no-store");
     // (Approximate if concurrent requests of the isolate overlap the instantiation.)
     const morpheus = (lemmatizer?.instantiations ?? 0) > instantiations;
     timed.headers.append(

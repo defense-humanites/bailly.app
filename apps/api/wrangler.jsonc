@@ -22,6 +22,13 @@
   // binding.
   "workers_dev": false,
   "preview_urls": false,
+  // Workers Cache: a cache in front of the Worker (nearest data center, then an upper
+  // tier), for the responses whose `Cache-Control` allows it (cf. `CACHEABLE` in
+  // `src/app.ts`), whatever the caller (browsers, the front end's service binding).
+  // A response served by it runs neither the Worker nor D1. Its entries belong to a
+  // version of the Worker: each deployment starts from an empty cache. Rollback:
+  // `"enabled": false`, then deploy.
+  "cache": { "enabled": true },
   // The dictionary (cf. `src/defaults.ts` for the revision and `README.md` for the
   // import). The scripts address it by its binding (`wrangler d1 execute DB`).
   "d1_databases": [
