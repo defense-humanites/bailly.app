@@ -81,8 +81,9 @@
 
   --color-vernis: #1a1613;
 
-  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", IFAOGrec;
+  --font-sans: Inter, "Inter Fallback", "Inter Fallback Roboto", ui-sans-serif, system-ui,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji",
+    IFAOGrec;
   --font-serif: "Bailly Book", "IFAOGrec", ui-serif, Georgia, Cambria,
     "Times New Roman", Times, serif;
 

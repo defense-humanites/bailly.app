@@ -76,6 +76,61 @@
 }
 
 /*
+ * Inter's fallbacks, while it loads (`font-display: swap`): a font of the
+ * system, Arial (Liberation Sans, Arimo: the same widths) or else Roboto
+ * (Android), scaled (`size-adjust`) to Inter's widths and given its
+ * vertical metrics, so that the text keeps its lines once Inter arrives.
+ * Otherwise a paragraph laid out in a wider fallback could lose a line then,
+ * and move what follows: on the home page, the entry drawn at random (layout
+ * shift 0.48 measured in the field, Cloudflare Web Analytics, November 2026;
+ * 0.18 → 0 in the lab, Inter delayed by 3 s, 412 px wide).
+ *   The widths were measured on the interface's French text (home, about
+ * and preferences pages), with Inter at its 16 px optical size (fontTools):
+ * Inter 400 against Arial and Roboto Regular, Inter 600 against their Bold.
+ * The overrides: Inter's ascent and descent (0.96875 and 0.24121 em) divided
+ * by the scale, which also scales them.
+ */
+@font-face {
+  font-family: "Inter Fallback";
+  font-weight: 100 500;
+  size-adjust: 105.4%;
+  ascent-override: 91.9%;
+  descent-override: 22.9%;
+  line-gap-override: 0%;
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans"), local("Arimo");
+}
+
+@font-face {
+  font-family: "Inter Fallback";
+  font-weight: 600 900;
+  size-adjust: 100.8%;
+  ascent-override: 96.1%;
+  descent-override: 23.9%;
+  line-gap-override: 0%;
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("LiberationSans-Bold"), local("Arimo Bold");
+}
+
+@font-face {
+  font-family: "Inter Fallback Roboto";
+  font-weight: 100 500;
+  size-adjust: 106.4%;
+  ascent-override: 91%;
+  descent-override: 22.7%;
+  line-gap-override: 0%;
+  src: local("Roboto"), local("Roboto-Regular"), local("Roboto Regular");
+}
+
+@font-face {
+  font-family: "Inter Fallback Roboto";
+  font-weight: 600 900;
+  size-adjust: 107.4%;
+  ascent-override: 90.2%;
+  descent-override: 22.5%;
+  line-gap-override: 0%;
+  src: local("Roboto Bold"), local("Roboto-Bold");
+}
+
+/*
  * Bailly Book, the default reading font: a subset of Gentium 7 (SIL), renamed
  * as its license requires (cf. `scripts/subset-fonts.sh`). It has every
  * space, U+202F included. Three weights: Regular (400), the text; Medium
