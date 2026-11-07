@@ -22,11 +22,19 @@ version est fixée par `packageManager` (`package.json`).
 
 ```sh
 pnpm install            # les dépendances des deux applications
-pnpm dev                # le client, port 4321
-pnpm dev:api            # l'API (Node.js), port 3000 (cf. apps/api/README.md)
+pnpm dev                # l'API (port 3000) et le client (port 4321), ensemble
+pnpm dev:web            # le client seul, avec l'API de production
+pnpm dev:api            # l'API seule (Node.js)
 pnpm lint
 pnpm typecheck
 ```
+
+`pnpm dev` demande la base du dictionnaire, qui n'est pas distribuée (placer
+`apps/api/database/bailly-revN.db`, cf. [le README de l'API](apps/api/README.md)), et
+les données de Morpheus (`pnpm --filter bailly-api run morpheus:data`, une fois) ;
+sans la base, `pnpm dev:web` fait tourner le client avec l'API de production. Les
+réglages ont des valeurs par défaut : aucun fichier `.env` n'est nécessaire, il ne
+sert qu'à s'en écarter (`apps/web/.env.example`, `apps/api/.env.example`).
 
 Les commandes de chaque application se lancent depuis son dossier (`pnpm test`
 dans `apps/web`), ou depuis la racine avec `--filter` (`pnpm --filter bailly-api

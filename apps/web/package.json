@@ -6,6 +6,7 @@
     "build": "nuxt build && node scripts/wrangler-preview.mjs --from-build",
     "deploy:preview": "node scripts/wrangler-preview.mjs && wrangler deploy --config .output/server/wrangler.preview.json",
     "dev": "nuxt dev",
+    "dev:prod-api": "NUXT_PUBLIC_API_HOST=https://api.bailly.app nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",

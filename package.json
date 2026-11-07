@@ -7,7 +7,8 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "pnpm --filter bailly-app dev",
+    "dev": "pnpm --parallel --filter bailly-api --filter bailly-app run dev",
+    "dev:web": "pnpm --filter bailly-app run dev:prod-api",
     "dev:api": "pnpm --filter bailly-api dev",
     "lint": "pnpm --recursive --if-present lint",
     "typecheck": "pnpm --recursive typecheck"

@@ -56,6 +56,9 @@ const hiddenPages = [
   ...(FEATURES.donations ? [] : ["/soutenir"]),
 ];
 
+/** Port of the development server (`nuxt dev`). */
+const DEV_PORT = 4321;
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: [
@@ -65,6 +68,19 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@nuxt/test-utils/module",
   ],
+
+  /*
+   * Development (`nuxt dev`): the local API (`apps/api`, `pnpm dev` at the root
+   * starts both), through the `/_api` relay of the development server (cf.
+   * `nitro.devProxy`). Without the database, which is not distributed, `pnpm
+   * dev:web` uses the production API instead. `NUXT_PUBLIC_API_HOST` (`.env`)
+   * overrides both.
+   */
+  $development: {
+    runtimeConfig: {
+      public: { apiHost: `http://localhost:${DEV_PORT}/_api` },
+    },
+  },
 
   $production: {
     app: { buildAssetsDir: `/_nuxt/${buildFolder}/` },
@@ -145,7 +161,7 @@ export default defineNuxtConfig({
   routeRules: {
     "/paramètres": { redirect: { to: encodeURI("/préférences"), statusCode: 301 } },
   },
-  devServer: { port: 4321 },
+  devServer: { port: DEV_PORT },
   experimental: {
     defaults: {
       nuxtLink: {
@@ -186,15 +202,18 @@ export default defineNuxtConfig({
       sync: syncDatabase,
     },
     /**
-     * Development only: relays `/_api/**` to `DEV_API_PROXY` (e.g. a local
-     * API on `http://localhost:3000`), so that the browser calls the API on
-     * the app's own origin (some browsers, e.g. embedded ones, block pages
-     * from calling another local port). Point `NUXT_PUBLIC_API_HOST` to
-     * `http://localhost:4321/_api` to use it (cf. `.env.example`).
+     * Development only: relays `/_api/**` to the local API
+     * (`http://localhost:3000`, or `DEV_API_PROXY`), so that the browser calls
+     * the API on the app's own origin (some browsers, e.g. embedded ones,
+     * block pages from calling another local port). The default API of
+     * `nuxt dev` (cf. `$development`).
      */
-    devProxy: process.env.DEV_API_PROXY
-      ? { "/_api": { target: process.env.DEV_API_PROXY, changeOrigin: true } }
-      : {},
+    devProxy: {
+      "/_api": {
+        target: process.env.DEV_API_PROXY ?? "http://localhost:3000",
+        changeOrigin: true,
+      },
+    },
   },
   vite: {
     plugins: [
