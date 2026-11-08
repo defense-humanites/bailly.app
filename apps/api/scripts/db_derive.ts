@@ -30,7 +30,7 @@
  * untouched; `bailly` keeps its rows and its columns. The same derivation belongs,
  * eventually, to the data converter.
  *
- * Usage: node scripts/db_derive.ts database/bailly-rev4.db database/bailly-rev5.db
+ * Usage: node scripts/db_derive.ts database/bailly-rev5.db database/bailly-rev6.db
  */
 
 import { copyFileSync, existsSync, rmSync } from "node:fs";

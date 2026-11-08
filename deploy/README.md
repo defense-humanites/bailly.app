@@ -40,14 +40,14 @@ celui d'un repli, à répéter de temps en temps pour vérifier qu'il fonctionne
 ## 2. La base du dictionnaire
 
 La révision attendue est celle de `apps/api/src/defaults.ts` (`DATABASE`, par
-exemple `bailly-rev5.db`).
+exemple `bailly-rev6.db`).
 
 ```sh
 mkdir -p deploy/data/database
 # depuis le poste qui détient la base, par un canal privé :
-rsync -av bailly-rev5.db bailly-rev5.db.sha256 serveur:bailly.app/deploy/data/database/
+rsync -av bailly-rev6.db bailly-rev6.db.sha256 serveur:bailly.app/deploy/data/database/
 # sur le serveur :
-cd deploy/data/database && sha256sum -c bailly-rev5.db.sha256
+cd deploy/data/database && sha256sum -c bailly-rev6.db.sha256
 ```
 
 La base doit être décompressée (le volume est en lecture seule : l'API ne peut pas
