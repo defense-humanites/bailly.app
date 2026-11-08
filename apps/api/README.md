@@ -37,6 +37,7 @@ est refusée (400), jamais remplacée ; les paramètres inconnus sont ignorés.
 | `GET /entry/:uri` | `fields`, `siblings`, `siblingsFields` |
 | `GET /entry/random` | `fields`, `lengthRange` (`400,700`, ou une borne), `siblings`, `siblingsFields` |
 | `GET /entries/excerpts` | `uris` (1 à 100 URI, séparées par des virgules) |
+| `GET /form/:form` | `fields` : les entrées auxquelles une forme peut appartenir, d'après les données (cf. `src/model/form.ts`) : celles de ses liens dans les définitions (table `bailly_form`), sinon celles qu'elle désigne comme mot entier |
 | `POST /entry`, `POST /lookup` | **en développement seulement** (`API_ENV=development` : le convertisseur des données, contre un serveur local) ; un corps JSON avec les mêmes paramètres, `q` une liste ou une chaîne séparée par des virgules |
 
 - `fields`, `siblingsFields` : des champs séparés par des virgules, parmi `word`,
@@ -75,10 +76,11 @@ serveur Node.js décompresse au premier démarrage. La révision attendue est fi
 `src/defaults.ts` (`DATABASE`), avec la date des données exposée comme `version`.
 
 Les recherches lisent le moins de lignes possible grâce à des données
-dérivées de la base : `node scripts/db_derive.ts database/bailly-rev4.db
-database/bailly-rev5.db` les ajoute à une révision (tables `bailly_unordered` et
-`bailly_prefix_count`, colonnes `reversedSearchable*` et `definitionLength`, indexées ;
-cf. l'en-tête du script). Sans elles, l'API fonctionne, mais chaque recherche lit et trie
+dérivées de la base : `node scripts/db_derive.ts database/bailly-rev5.db
+database/bailly-rev6.db` les ajoute à une révision (tables `bailly_unordered`,
+`bailly_prefix_count` et `bailly_form`, colonnes `reversedSearchable*` et
+`definitionLength`, indexées ; cf. l'en-tête du script ; il peut être rejoué sur une
+révision qui les a déjà). Sans elles, l'API fonctionne, mais chaque recherche lit et trie
 toutes ses correspondances (54 536 lignes pour `α`). `scripts/compare_lookups.ts`
 vérifie que les réponses sont identiques avec et sans (implémentation de référence
 figée dans `scripts/reference/`).
@@ -155,10 +157,13 @@ du SQL, sans transaction, et refuse toute instruction de plus de 100 Ko :
 y sont complétées par morceaux), puis :
 
 ```sh
-pnpm exec wrangler d1 execute DB --remote --file=database/bailly-rev5.sql
+pnpm exec wrangler d1 execute DB --remote --file=database/bailly-rev6.sql
 ```
 
-L'import supprime d'abord les tables : il peut être rejoué. Pour changer de révision
+L'import supprime d'abord les tables : il peut être rejoué. Une révision qui n'ajoute
+qu'une table s'importe seule dans la base en place : `pnpm run d1:export
+--tables=bailly_form` (révision 6), puis `wrangler d1 execute` sur
+`database/bailly-rev6-bailly_form.sql`. Pour changer de révision
 sans interruption, importer dans une nouvelle base et changer l'identifiant du
 binding. `pnpm run types` est à relancer quand `wrangler.jsonc` change.
 

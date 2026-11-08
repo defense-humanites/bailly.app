@@ -19,7 +19,7 @@ import { DEFAULT_ENTRY_FIELDS, ENTRY_FIELDS } from "@bailly/api-types";
  * this constant the Worker uses.
  */
 export const DATABASE = {
-  filePath: "database/bailly-rev5.db",
+  filePath: "database/bailly-rev6.db",
   /** Date of the source data (not of the revision). */
   version: "2023-02-28"
 } as const;

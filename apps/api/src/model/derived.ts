@@ -39,6 +39,48 @@ export function reversedColumn(column: SearchColumn): string {
   return `reversed${column.charAt(0).toUpperCase()}${column.slice(1)}`;
 }
 
+/** A form linked to several entries, as the derived table lists it. */
+export type LinkedForm = { form: string; uris: string[] };
+
+const LINKED_ENTRIES_SPAN = /<span\b[^>]*?\sdata-linked-entries="([^"]*)"[^>]*>/g;
+const SPAN_TAG = /<(\/?)span\b[^>]*>/g;
+
+/**
+ * The forms linked to several entries in a definition's HTML: the text of each
+ * `span[data-linked-entries]` (its tags removed, trimmed), and its URIs. The text is
+ * the form of the link the front end makes of the span (cf. `linkDefinition` in
+ * `apps/web/app/utils/linkedEntries.ts`), hence the key of `bailly_form` (cf.
+ * `model/form.ts`).
+ */
+export function linkedForms(html: string): LinkedForm[] {
+  const forms: LinkedForm[] = [];
+  const opening = new RegExp(LINKED_ENTRIES_SPAN);
+  const tags = new RegExp(SPAN_TAG);
+
+  for (let match = opening.exec(html); match; match = opening.exec(html)) {
+    const contentStart = match.index + match[0].length;
+
+    // The `</span>` closing this span (spans may be nested).
+    tags.lastIndex = contentStart;
+    let depth = 1;
+    let end = -1;
+    for (let tag = tags.exec(html); tag; tag = tags.exec(html)) {
+      depth += tag[1] ? -1 : 1;
+      if (depth === 0) {
+        end = tag.index;
+        break;
+      }
+    }
+    if (end < 0) break;
+
+    const form = html.slice(contentStart, end).replace(/<[^>]*>/g, "").trim();
+    const uris = (match[1] ?? "").split(",").filter(Boolean);
+    if (form && uris.length) forms.push({ form, uris });
+  }
+
+  return forms;
+}
+
 export type UnorderedRow = { orderedID: number; key: string };
 
 export type DerivedData = {
@@ -52,6 +94,8 @@ export type DerivedData = {
   prefixCounts: boolean;
   reversedKeys: boolean;
   definitionLength: boolean;
+  /** Whether the linked forms are listed (`bailly_form`, cf. `model/form.ts`). */
+  forms: boolean;
 };
 
 const cache = new WeakMap<Dictionary, Shared<DerivedData>>();
@@ -77,7 +121,7 @@ async function loadDerivedData(db: Dictionary): Promise<DerivedData> {
   >([
     {
       sql: `SELECT name FROM sqlite_master
-            WHERE name IN ('bailly_unordered', 'bailly_prefix_count',
+            WHERE name IN ('bailly_unordered', 'bailly_prefix_count', 'bailly_form',
                            'ix_bailly_definitionLength', ${
         SEARCH_COLUMNS.map((column) => `'ix_bailly_${reversedColumn(column)}'`)
           .join(", ")
@@ -98,7 +142,8 @@ async function loadDerivedData(db: Dictionary): Promise<DerivedData> {
       unordered: new Map(),
       prefixCounts: false,
       reversedKeys: false,
-      definitionLength: false
+      definitionLength: false,
+      forms: false
     };
   }
 
@@ -132,6 +177,7 @@ async function loadDerivedData(db: Dictionary): Promise<DerivedData> {
     reversedKeys: SEARCH_COLUMNS.every((column) =>
       objects.has(`ix_bailly_${reversedColumn(column)}`)
     ),
-    definitionLength: objects.has("ix_bailly_definitionLength")
+    definitionLength: objects.has("ix_bailly_definitionLength"),
+    forms: objects.has("bailly_form")
   };
 }

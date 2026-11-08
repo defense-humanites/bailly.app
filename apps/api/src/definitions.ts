@@ -45,6 +45,9 @@ export type ApiLookupParams<K extends keyof QueryableFields> = Pick<
   | "limit"
   | "skipMorpheus"
 >;
+export type ApiFormParams<K extends keyof QueryableFields> =
+  & Pick<ApiParams<K>, "fields">
+  & { form: string };
 export type ApiRandomEntryParams<
   K extends keyof QueryableFields,
   S extends keyof QueryableFields = K
@@ -71,6 +74,10 @@ export type ApiRandomEntryResponse<
 
 export type ApiLookupResponse<K extends keyof QueryableFields> = Contract.ApiResponse<
   Contract.ApiLookupData<K>
+>;
+
+export type ApiFormResponse<K extends keyof QueryableFields> = Contract.ApiResponse<
+  Contract.ApiFormData<K>
 >;
 
 export type ExcerptEntry = Contract.ExcerptEntry;

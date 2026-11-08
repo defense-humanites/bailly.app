@@ -16,11 +16,12 @@ const cacheControl = async (path: string, init?: RequestInit, status = 200) => {
   return response.headers.get("Cache-Control");
 };
 
-test("Cache-Control: lookups, entries and excerpts are cacheable", async () => {
+test("Cache-Control: lookups, entries, excerpts and forms are cacheable", async () => {
   assertEquals(await cacheControl("/lookup/λογ"), CACHEABLE);
   assertEquals(await cacheControl("/lookup/logos?inputMode=transliteration&morphology=true"), CACHEABLE);
   assertEquals(await cacheControl("/entry/logos?siblings=true"), CACHEABLE);
   assertEquals(await cacheControl("/entries/excerpts?uris=logos,psuchê"), CACHEABLE);
+  assertEquals(await cacheControl(`/form/${encodeURIComponent("αἱ")}`), CACHEABLE);
 });
 
 test("Cache-Control: random entries, errors and unknown paths are not kept", async () => {

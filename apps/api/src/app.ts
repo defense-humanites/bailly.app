@@ -4,6 +4,7 @@ import { secureHeaders } from "hono/secure-headers";
 import type { Dictionary } from "./db/dictionary.ts";
 import { logger } from "./logger.ts";
 import { getEntry } from "./model/entry.ts";
+import { getForm } from "./model/form.ts";
 import {
   ExcerptsParamError,
   getExcerpts,
@@ -16,6 +17,7 @@ import {
   badRequest,
   batchBody,
   entryParams,
+  formParams,
   lookupParams,
   randomEntryParams
 } from "./params.ts";
@@ -114,6 +116,22 @@ export function createApp({
     c.header("Cache-Control", CACHEABLE);
 
     return c.json(excerpts);
+  });
+
+  // The entries a form may belong to, found by the dictionary's data (cf.
+  // `model/form.ts`): the front end's page of a form.
+  app.get("/form/:form", async (c) => {
+    const params = formParams(c.req.param("form"), c.req.query());
+    const form = await getForm(db, morpheus, params);
+
+    c.header("Cache-Control", CACHEABLE);
+
+    return c.json({
+      data: {
+        $query: params,
+        ...form.data
+      }
+    });
   });
 
   app.get("/lookup/:q", async (c) => {

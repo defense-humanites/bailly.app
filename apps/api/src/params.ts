@@ -10,6 +10,7 @@
 
 import {
   entryQuery,
+  formQuery,
   lookupQuery,
   randomEntryQuery
 } from "@bailly/api-types/params";
@@ -17,6 +18,7 @@ import { HTTPException } from "hono/http-exception";
 import type * as z from "zod/mini";
 import type {
   ApiEntryParams,
+  ApiFormParams,
   ApiLookupParams,
   ApiRandomEntryParams,
   GreekConversionFormatKey,
@@ -108,6 +110,15 @@ export function entryParams(q: unknown, query: Record<string, unknown>): ApiEntr
     ...(params.siblingsFields && {
       siblingsFields: fields(params.siblingsFields, "siblingsFields")
     })
+  };
+}
+
+/** `GET /form/:form`. */
+export function formParams(form: unknown, query: Record<string, unknown>): ApiFormParams<Field> {
+  const params = read(formQuery, query);
+  return {
+    form: readQueryParam(form),
+    fields: fields(params.fields)
   };
 }
 

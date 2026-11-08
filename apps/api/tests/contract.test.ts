@@ -89,3 +89,11 @@ test("Contract: GET /entries/excerpts", async () => {
     assert(entry.homonyms === undefined || typeof entry.homonyms === "number");
   }
 });
+
+test("Contract: GET /form/:form", async () => {
+  const data = await get(`/form/${encodeURIComponent("ἐρῶ")}?fields=word,uri`);
+  assertEquals(data.form, "ἐρῶ");
+  assert(data.entries.length > 0);
+  for (const entry of data.entries) assertEntry(entry, ["word", "uri"]);
+  assertEquals((await get("/form/hello")).entries, []);
+});

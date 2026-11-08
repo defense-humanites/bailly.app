@@ -11,7 +11,12 @@
  * `UPDATE … SET column = column || '…'`. The indexes are created after the data
  * (faster), and the tables are dropped first, so that the import can be replayed.
  *
- * Usage: `pnpm run d1:export [output.sql]` (default: the database path, `.sql`).
+ * `--tables=a,b` exports only these tables (and their indexes), e.g. a table added
+ * by a new revision whose other tables are unchanged (revision 6: `bailly_form`),
+ * imported into the current D1 database without replaying the whole revision.
+ *
+ * Usage: `pnpm run d1:export [--tables=a,b] [output.sql]` (default: the database
+ * path, `.sql`, or `<path>-<tables>.sql`).
  */
 
 import { createWriteStream } from "node:fs";
@@ -21,24 +26,31 @@ import { DATABASE } from "../src/defaults.ts";
 /** D1's limit is 100 KB per statement: keep a margin. */
 const STATEMENT_MAX_BYTES = 90_000;
 
-const outputPath = process.argv[2] ??
-  DATABASE.filePath.replace(/\.db$/, "") + ".sql";
+const args = process.argv.slice(2);
+const only = args.find((arg) => arg.startsWith("--tables="))
+  ?.slice("--tables=".length).split(",").filter(Boolean);
+const outputPath = args.find((arg) => !arg.startsWith("--")) ??
+  DATABASE.filePath.replace(/\.db$/, "") + (only ? `-${only.join("-")}` : "") + ".sql";
 
 const db = new DatabaseSync(`file:${DATABASE.filePath}?immutable=1`, {
   readOnly: true
 });
 
-const schema = db.prepare(
-  `SELECT type, name, sql FROM sqlite_master
+const schema = (db.prepare(
+  `SELECT type, name, tbl_name AS tableName, sql FROM sqlite_master
    WHERE sql IS NOT NULL AND tbl_name LIKE 'bailly%'
    ORDER BY CASE type WHEN 'table' THEN 0 ELSE 1 END, name`
-).all() as { type: string; name: string; sql: string }[];
+).all() as { type: string; name: string; tableName: string; sql: string }[])
+  .filter(({ tableName }) => !only || only.includes(tableName));
 
 const tables = schema.filter(({ type }) => type === "table");
 const indexes = schema.filter(({ type }) => type === "index");
 
-if (!tables.some(({ name }) => name === "bailly")) {
-  console.error(`❌ No \`bailly\` table in ${DATABASE.filePath}.`);
+const missing = (only ?? ["bailly"]).filter(
+  (table) => !tables.some(({ name }) => name === table)
+);
+if (missing.length) {
+  console.error(`❌ No ${missing.map((table) => `\`${table}\``).join(", ")} table in ${DATABASE.filePath}.`);
   process.exit(1);
 }
 

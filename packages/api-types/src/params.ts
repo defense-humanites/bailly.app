@@ -19,6 +19,7 @@ import {
   INPUT_MODES,
   type EntryField,
   type EntryParams,
+  type FormParams,
   type LookupParams,
   type RandomEntryParams
 } from "./index.ts";
@@ -77,6 +78,11 @@ export const randomEntryQuery = z.object({
   siblingsFields: z.optional(fieldsParam)
 });
 
+/** `GET /form/:form` (the form is in the path). */
+export const formQuery = z.object({
+  fields: z.optional(fieldsParam)
+});
+
 /** `GET /lookup/:q` (the query is in the path). */
 export const lookupQuery = z.object({
   fields: z.optional(fieldsParam),
@@ -93,6 +99,7 @@ export const lookupQuery = z.object({
 /** The parameters of the contract, as the schemas read them. */
 export type EntryQuery = z.output<typeof entryQuery>;
 export type RandomEntryQuery = z.output<typeof randomEntryQuery>;
+export type FormQuery = z.output<typeof formQuery>;
 export type LookupQuery = z.output<typeof lookupQuery>;
 
 /*
@@ -105,6 +112,7 @@ type Reads<P, Q> = Fits<Omit<P, "fields"> & { fields?: EntryField[] }, Q> & Fits
 const checks: [
   Reads<EntryParams<EntryField>, EntryQuery>,
   Reads<RandomEntryParams<EntryField>, RandomEntryQuery>,
+  Reads<FormParams<EntryField>, FormQuery>,
   Reads<LookupParams<EntryField>, LookupQuery>
-] = [true, true, true];
+] = [true, true, true, true];
 void checks;

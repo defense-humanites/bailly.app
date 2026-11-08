@@ -119,6 +119,11 @@ export type RandomEntryParams<F extends EntryField, S extends EntryField = F> = 
   siblingsFields?: S[];
 };
 
+/** `GET /form/:form` (the form is in the path). */
+export type FormParams<F extends EntryField> = {
+  fields: F[];
+};
+
 /** `GET /lookup/:q`. */
 export type LookupParams<F extends EntryField> = {
   fields: F[];
@@ -165,6 +170,19 @@ export type ApiRandomEntryData<F extends EntryField, S extends EntryField = F> =
   length: number;
   entry: Entry<F>;
   siblings?: Siblings<S>;
+};
+
+/**
+ * `GET /form/:form`: the entries a form may belong to, found by the dictionary's
+ * data, never by the request. A form linked to several entries in the definitions
+ * (`span[data-linked-entries]`) gets those entries, in their order there; another
+ * Greek word, the entries it matches as a whole word (headwords, from the strictest
+ * comparison to the loosest, or else the lemmas of its inflected form). An unknown
+ * form, or one that isn't a Greek word, gets no entries.
+ */
+export type ApiFormData<F extends EntryField> = {
+  form: string;
+  entries: Entry<F>[];
 };
 
 /** `GET /lookup/:q`. An invalid query gets an empty result. */

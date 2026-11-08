@@ -21,6 +21,10 @@
  *      a scan of the whole table.
  *   4. `definitionLength`: the length of `definition`, indexed, for the random entry
  *      with a `lengthRange`.
+ *   5. `bailly_form(form, uris)`: the forms linked to several entries in the
+ *      definitions (`span[data-linked-entries]`), with their URIs, for the page of a
+ *      form (`GET /form/:form`, cf. `src/model/form.ts`). A form must have the same
+ *      URIs wherever it is linked: the derivation fails otherwise.
  *
  * The result is a new revision file (`<source> → <output>`), the source being left
  * untouched; `bailly` keeps its rows and its columns. The same derivation belongs,
@@ -31,7 +35,12 @@
 
 import { copyFileSync, existsSync, rmSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
-import { reverseKey, SEARCH_COLUMNS, UNORDERED_MAX_ROWS } from "../src/model/derived.ts";
+import {
+  linkedForms,
+  reverseKey,
+  SEARCH_COLUMNS,
+  UNORDERED_MAX_ROWS
+} from "../src/model/derived.ts";
 
 const PREFIX_MAX_LENGTH = 4;
 
@@ -206,6 +215,50 @@ time("reversed keys and definition length", () => {
   db.exec("CREATE INDEX IF NOT EXISTS ix_bailly_definitionLength ON bailly (definitionLength)");
 
   db.exec("COMMIT");
+});
+
+// 5. Linked forms.
+db.exec("DROP TABLE IF EXISTS bailly_form");
+db.exec(`
+  CREATE TABLE bailly_form (
+    form TEXT NOT NULL PRIMARY KEY,
+    uris TEXT NOT NULL
+  ) WITHOUT ROWID
+`);
+
+time("bailly_form", () => {
+  const forms = new Map<string, string>();
+  const conflicts = new Map<string, Set<string>>();
+
+  for (
+    const { uri, html } of db.prepare(
+      `SELECT uri, htmlDefinition AS html FROM bailly
+       WHERE htmlDefinition LIKE '%data-linked-entries%' ORDER BY orderedID`
+    ).all() as { uri: string; html: string }[]
+  ) {
+    for (const { form, uris } of linkedForms(html)) {
+      const list = uris.join(",");
+      const known = forms.get(form);
+      if (known === undefined) forms.set(form, list);
+      else if (known !== list) {
+        conflicts.set(form, (conflicts.get(form) ?? new Set([known])).add(`${list} (${uri})`));
+      }
+    }
+  }
+
+  if (conflicts.size) {
+    console.error(`❌ ${conflicts.size} forms linked to different entries:`);
+    for (const [form, lists] of [...conflicts].slice(0, 20)) {
+      console.error(`    ${form}: ${[...lists].join(" | ")}`);
+    }
+    process.exit(1);
+  }
+
+  const insert = db.prepare("INSERT INTO bailly_form (form, uris) VALUES (?1, ?2)");
+  db.exec("BEGIN");
+  for (const [form, uris] of forms) insert.run(form, uris);
+  db.exec("COMMIT");
+  console.info(`    ${forms.size.toLocaleString("en")} forms.`);
 });
 
 time("VACUUM", () => {
