@@ -328,7 +328,7 @@ test.describe("without JavaScript", () => {
     const input = page.locator("header input[name=q]");
     await input.fill("po/leis");
     await input.press("Enter");
-    await expect(page).toHaveURL(/\/forme\/[^?]+\?q=/);
+    await expect(page).toHaveURL(new RegExp(`/forme/${encodeURIComponent("πόλεις")}$`));
   });
 
   test("an empty search goes back home; not a Greek word: not found", async ({ page }) => {

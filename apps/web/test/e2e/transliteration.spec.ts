@@ -35,7 +35,7 @@ test.describe("transliterated Greek", () => {
     await searchInput(page).pressSequentially("psuchê");
     await expect(searchInput(page)).toHaveValue("psuchē");
 
-    await goto(`/forme/${encodeURIComponent("αἱ")}?q=hai_(1),ho_(1)`, { waitUntil: "hydration" });
+    await goto(`/forme/${encodeURIComponent("αἱ")}`, { waitUntil: "hydration" });
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("hai");
     await expect(page.getByRole("heading", { level: 2 })).toHaveText(["hai", "ho"]);
   });

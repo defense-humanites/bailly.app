@@ -1,9 +1,9 @@
 import type { H3Event } from "h3";
 import { createError, sendRedirect } from "h3";
-import type { ApiLookupData, ApiResponse, LookupParams } from "#shared/types/api";
+import type { ApiFormData, ApiResponse, FormParams } from "#shared/types/api";
 import { toApiQuery } from "#shared/utils/api";
 import { apiBinding, createApiFetch, serverApiHost } from "#shared/utils/apiBinding";
-import { legacySearchLocation, resolveLegacySearch, type LegacyLookup } from "../lib/legacySearch";
+import { legacySearchLocation } from "../lib/legacySearch";
 
 /**
  * The page a searched form is not found on (or a path that isn't a search).
@@ -20,29 +20,21 @@ export function formNotFound(form: string | null) {
 /**
  * Redirects a search for a whole Greek form (cf. `searchForm`) to the entry
  * of the form, or to the form's page if several entries match (cf.
- * `server/lib/legacySearch.ts`). A 302: the answer depends on the
- * dictionary's data and on the search.
+ * `server/lib/legacySearch.ts`), as the API finds them (`GET /form/:form`,
+ * one request). A 302: the answer depends on the dictionary's data and on
+ * the search.
  */
 export async function redirectToForm(event: H3Event, form: string) {
   const apiHost = serverApiHost(useRuntimeConfig(event));
   // Through the API Worker's service binding on Cloudflare (cf. `apiBinding`).
   const api = createApiFetch(apiHost, apiBinding(event));
-  const lookup: LegacyLookup = async (query, options) => {
-    const { data } = await api<ApiResponse<ApiLookupData<"uri">>>(`lookup/${encodeURIComponent(`"${query}"`)}`, {
-      query: toApiQuery({
-        fields: ["uri"],
-        inputMode: "greek",
-        skipMorpheus: false,
-        limit: 30,
-        ...options,
-      } satisfies LookupParams<"uri">),
-    });
-    return data.entries;
-  };
 
   let uris: string[];
   try {
-    uris = await resolveLegacySearch(form, lookup);
+    const { data } = await api<ApiResponse<ApiFormData<"uri">>>(`form/${encodeURIComponent(form)}`, {
+      query: toApiQuery({ fields: ["uri"] } satisfies FormParams<"uri">),
+    });
+    uris = data.entries.map(entry => entry.uri);
   } catch {
     throw createError({ statusCode: 502, statusMessage: "Bad Gateway", message: "Le dictionnaire n'a pas pu être consulté." });
   }

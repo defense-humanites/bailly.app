@@ -9,27 +9,13 @@
   const route = useRoute();
 
   /**
-   * The entries the form may belong to (`?q=uri1,uri2`).
+   * The (ambiguous) form (`/forme/<forme>`), whose entries the API finds
+   * (cf. `useApiForm`): the address never tells them, nor makes any text a
+   * form (the former `?q=uri1,uri2`, ignored, did both).
    */
-  const uris = computed((): string[] => {
-    const query = route.query.q;
-    return (typeof query === "string" ? query : "")
-      .split(",")
-      .map(uri => uri.trim())
-      .filter(Boolean)
-      .slice(0, 30);
-  });
+  const form = computed((): string => String(route.params.forme ?? "").trim());
 
-  /**
-   * The (ambiguous) form (`/forme/<forme>`; none for the former links which
-   * didn't tell it).
-   */
-  const form = computed((): string | undefined => {
-    const value = route.params.forme;
-    return typeof value === "string" ? value.trim().slice(0, 50) || undefined : undefined;
-  });
-
-  const { data, error } = await useApiEntries(uris, {
+  const { data, error } = await useApiForm(form, {
     fields: ["word", "uri", "excerpt", "htmlDefinition"],
   });
 
@@ -40,11 +26,18 @@
     });
   }
 
-  const entries = computed(() => data.value?.entries ?? []);
-  const missing = computed(() => data.value?.missing ?? []);
+  const entries = computed(() => data.value ?? []);
 
-  // Nothing to choose for a single entry: its page.
-  if (entries.value.length === 1 && !missing.value.length) {
+  // An unknown form: no page (it isn't shown, even as a title).
+  if (!entries.value.length) {
+    throw createError({
+      status: 404,
+      message: "La page demandée n'existe pas.",
+    });
+  }
+
+  // Nothing to choose for a single entry (e.g. a former search link): its page.
+  if (entries.value.length === 1) {
     await navigateTo(entryRoute(entries.value[0]!.uri), { redirectCode: 302, replace: true });
   }
 
@@ -95,7 +88,7 @@
   usePreloadBoldFace();
 
   useSeoMeta({
-    title: () => (form.value ? `${form.value} (graphie ambiguë)` : "Plusieurs entrées"),
+    title: () => `${form.value} (graphie ambiguë)`,
     robots: "noindex",
   });
 
@@ -132,44 +125,11 @@
     -->
     <header class="mb-6 xl:absolute xl:start-full xl:top-0 xl:ms-12 xl:mb-0 xl:h-full xl:w-56">
       <div class="xl:sticky xl:top-[calc(var(--header-bottom)+1.5rem)]">
-        <h1
-          v-if="form"
-          class="font-serif text-2xl/9 font-bold"
-        >
+        <h1 class="font-serif text-2xl/9 font-bold">
           {{ greek.text(form) }}
         </h1>
-        <h1
-          v-else
-          class="text-2xl font-bold"
-        >
-          Plusieurs entrées
-        </h1>
-        <p
-          v-if="entries.length"
-          class="mt-1 text-muted"
-        >
-          <template v-if="form">
-            Graphie ambiguë · {{ countLabel }}
-          </template>
-          <template v-else>
-            {{ countLabel }}
-          </template>
-        </p>
-
-        <UAlert
-          v-if="missing.length"
-          class="mt-4"
-          color="error"
-          variant="subtle"
-          icon="i-lucide-circle-alert"
-          role="status"
-          :description="`${missing.length > 1 ? 'Entrées introuvables' : 'Entrée introuvable'}\u00a0: ${missing.join(', ')}.`"
-        />
-        <p
-          v-else-if="!entries.length"
-          class="mt-4 text-muted"
-        >
-          Aucune entrée à afficher.
+        <p class="mt-1 text-muted">
+          Graphie ambiguë · {{ countLabel }}
         </p>
 
         <!--
@@ -188,7 +148,7 @@
             >
               <NuxtLink
                 v-truncated-title
-                :to="{ query: route.query, hash: `#${id}` }"
+                :to="{ hash: `#${id}` }"
                 :aria-current="currentId === id ? 'location' : undefined"
                 class="block truncate rounded-md px-2.5 py-1.5 font-serif text-sm transition-colors focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)"
                 :class="currentId === id ? 'bg-(--app-page-active) font-semibold text-highlighted' : 'text-muted hover:bg-(--app-page-hover) hover:text-highlighted'"

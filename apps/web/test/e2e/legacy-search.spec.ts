@@ -23,9 +23,9 @@ test.describe("former search links", () => {
     await expect(page).toHaveURL(new RegExp(`/${encodeURIComponent("anêr")}$`));
   });
 
-  test("an inflected form with several lemmas leads to the reader", async ({ page }) => {
+  test("an inflected form with several lemmas leads to the form's page", async ({ page }) => {
     await page.goto(path("πόλεις"));
-    await expect(page).toHaveURL(/\/forme\/[^?]+\?q=/);
+    await expect(page).toHaveURL(new RegExp(`/forme/${encodeURIComponent("πόλεις")}$`));
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("πόλεις");
   });
 

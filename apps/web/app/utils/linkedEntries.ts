@@ -4,19 +4,19 @@
  * - `<a href="/uri">`: a link to a single entry;
  * - `<span data-linked-entries="uri1,uri2">`: an ambiguous form, which may
  *   belong to several entries: it is turned into a link to its page
- *   (`formRoute`);
+ *   (`formRoute`), whose entries the API finds from the form alone;
  * - `<span data-linked-self>`: a form of the current entry, left as is.
  */
 
 /**
- * The route of a form's page, which offers the entries it may belong to.
- * @param uris The URIs of the entries.
+ * The route of a form's page, which offers the entries it may belong to:
+ * the API finds them from the form (cf. `useApiForm`), the address never
+ * tells them (the former `?q=uri1,uri2` let anyone list any entry there).
  * @param form The (ambiguous) form whose link leads there.
- * @example formRoute(["hai_(1)", "ho_(1)"], "αἱ") // "/forme/%CE%B1%E1%BC%B1?q=hai_(1),ho_(1)"
+ * @example formRoute("αἱ") // "/forme/%CE%B1%E1%BC%B1"
  */
-export function formRoute(uris: string[], form?: string): string {
-  const query = uris.map(uri => encodeURIComponent(uri).replace(/%2C/gi, ",")).join(",");
-  return `/forme${form ? `/${encodeURIComponent(form)}` : ""}?q=${query}`;
+export function formRoute(form: string): string {
+  return `/forme/${encodeURIComponent(form)}`;
 }
 
 const LINKED_ENTRIES_SPAN = /<span\b([^>]*?)\sdata-linked-entries="([^"]*)"([^>]*)>/g;
@@ -65,11 +65,13 @@ export function linkDefinition(html: string, { links = true }: { links?: boolean
 
     const content = html.slice(contentStart, end - "</span>".length);
     const form = content.replace(/<[^>]*>/g, "").trim();
-    const href = formRoute(uris.split(",").filter(Boolean), form || undefined);
 
-    result += html.slice(position, match.index)
-      + `<a href="${escapeAttribute(href)}"${before} data-linked-entries="${uris}"${after}>${content}</a>`;
-    position = end;
+    // (A span without text has no form to lead to: left as is.)
+    if (form) {
+      result += html.slice(position, match.index)
+        + `<a href="${escapeAttribute(formRoute(form))}"${before} data-linked-entries="${uris}"${after}>${content}</a>`;
+      position = end;
+    }
     LINKED_ENTRIES_SPAN.lastIndex = end;
   }
 

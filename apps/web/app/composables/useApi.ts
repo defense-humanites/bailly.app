@@ -1,10 +1,12 @@
 import type {
   ApiEntryData,
+  ApiFormData,
   ApiLookupData,
   ApiResponse,
   Entry,
   EntryField,
   EntryParams,
+  FormParams,
   LookupEntry,
   LookupParams,
   MorphologyGroups,
@@ -50,33 +52,23 @@ export function useApiEntry<F extends EntryField, S extends EntryField = F>(
 }
 
 /**
- * Fetches several entries (reactive to `uris`), e.g. for the reader.
- * @param uris The entries' URIs.
+ * Fetches the entries a form may belong to (reactive to `form`), for the
+ * form's page: found by the dictionary's data (the entries of the form's
+ * links in the definitions, or those it matches as a whole word), never
+ * given by the page's address.
+ * @param form The form.
  * @param params The requested fields.
- * @returns The found entries, in the requested order, and the URIs of the
- * missing ones.
+ * @returns The entries (none for an unknown form), in the API's order.
  */
-export function useApiEntries<F extends EntryField>(
-  uris: MaybeRefOrGetter<string[]>,
-  params: Omit<EntryParams<F>, "siblings" | "siblingsFields">,
+export function useApiForm<F extends EntryField>(
+  form: MaybeRefOrGetter<string>,
+  params: FormParams<F>,
 ) {
-  const { $api } = useNuxtApp();
-
-  return useAsyncData(
-    () => `entries:${toValue(uris).join(",")}`,
-    async (): Promise<{ entries: Entry<F>[]; missing: string[] }> => {
-      const requested = toValue(uris);
-      const responses = await Promise.all(requested.map(uri =>
-        $api<ApiResponse<ApiEntryData<F>>>(`entry/${encodeURIComponent(uri)}`, { query: toApiQuery(params) }),
-      ));
-      // The API answers unknown entries with an empty object.
-      const entries = responses.map(({ data }) => Object.keys(data.entry).length ? data.entry as Entry<F> : null);
-      return {
-        entries: entries.filter((entry): entry is Entry<F> => entry !== null),
-        missing: requested.filter((_, index) => entries[index] === null),
-      };
-    },
-  );
+  return useFetch(() => `form/${encodeURIComponent(toValue(form))}`, {
+    $fetch: useNuxtApp().$api,
+    query: toApiQuery(params),
+    transform: ({ data }: ApiResponse<ApiFormData<F>>): Entry<F>[] => data.entries,
+  });
 }
 
 /**

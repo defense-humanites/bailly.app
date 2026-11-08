@@ -1,9 +1,5 @@
-import { describe, expect, test, vi } from "vitest";
-import { legacySearchForm, legacySearchLocation, resolveLegacySearch, type LegacyLookup, type LegacyLookupEntry } from "../../server/lib/legacySearch";
-
-const headword = (uri: string): LegacyLookupEntry => ({ uri, isExact: true, isMorpheus: false });
-const lemma = (uri: string): LegacyLookupEntry => ({ uri, isExact: true, isMorpheus: true });
-const other = (uri: string): LegacyLookupEntry => ({ uri, isExact: false, isMorpheus: false });
+import { describe, expect, test } from "vitest";
+import { legacySearchForm, legacySearchLocation } from "../../server/lib/legacySearch";
 
 describe("legacySearchForm", () => {
   test("reads the Greek form of a former search path", () => {
@@ -32,36 +28,6 @@ describe("legacySearchForm", () => {
   });
 });
 
-describe("resolveLegacySearch", () => {
-  test("the headwords of the strictest attempt win", async () => {
-    const lookup = vi.fn<LegacyLookup>().mockResolvedValue([headword("ana_(2)"), lemma("anax"), other("anabainô")]);
-    expect(await resolveLegacySearch("ἄνα", lookup)).toEqual(["ana_(2)"]);
-    expect(lookup).toHaveBeenCalledOnce();
-    expect(lookup).toHaveBeenCalledWith("ἄνα", { caseSensitive: true, diacriticSensitive: true });
-  });
-
-  test("looser attempts, until a headword is found", async () => {
-    const lookup = vi.fn<LegacyLookup>()
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([lemma("eimi_(1)")])
-      .mockResolvedValueOnce([headword("anêr")]);
-    expect(await resolveLegacySearch("ανηρ", lookup)).toEqual(["anêr"]);
-    expect(lookup).toHaveBeenLastCalledWith("ανηρ", { caseSensitive: false, diacriticSensitive: false });
-  });
-
-  test("without any headword, the lemmas of the first attempt that finds some", async () => {
-    const lookup = vi.fn<LegacyLookup>()
-      .mockResolvedValueOnce([lemma("polis"), lemma("polus"), other("poleis")])
-      .mockResolvedValueOnce([lemma("polis"), lemma("Polis"), lemma("polus")])
-      .mockResolvedValueOnce([]);
-    expect(await resolveLegacySearch("πόλεις", lookup)).toEqual(["polis", "polus"]);
-  });
-
-  test("nothing found", async () => {
-    expect(await resolveLegacySearch("ξξ", () => Promise.resolve([other("xenos")]))).toEqual([]);
-  });
-});
-
 describe("legacySearchLocation", () => {
   test("an entry: its page", () => {
     expect(legacySearchLocation("λόγος", ["logos"])).toBe("/logos");
@@ -72,8 +38,8 @@ describe("legacySearchLocation", () => {
     expect(legacySearchLocation("οὐδός", ["oudos#2"])).toBe("/oudos#2");
   });
 
-  test("several entries: the reader, titled with the form", () => {
-    expect(legacySearchLocation("χάρις", ["charis", "Charis"]))
-      .toBe(`/forme/${encodeURIComponent("χάρις")}?q=charis%2CCharis`);
+  test("several entries: the form's page, which finds them by itself", () => {
+    expect(legacySearchLocation("χαρις", ["charis", "Charis"]))
+      .toBe(`/forme/${encodeURIComponent("χαρις")}`);
   });
 });

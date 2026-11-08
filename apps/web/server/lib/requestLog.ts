@@ -4,7 +4,7 @@
  * visitor's address nor place (cf. `confidentialité.vue`, « Adresses IP »).
  * The invocation logs of Cloudflare stay off (`wrangler.jsonc`): they keep
  * all that. Cloudflare adds to each line the request's address, its query
- * redacted (`redact_query_string`, the searches of `/forme`).
+ * redacted (`redact_query_string`, the searches of `/recherche`).
  *
  * Kept: every error, every agent that is not a browser (declared robots,
  * scripts), and a sample of the apparent browsers (visitors, and robots

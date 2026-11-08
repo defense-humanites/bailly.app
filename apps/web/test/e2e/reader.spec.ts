@@ -2,7 +2,7 @@ import { expect, test } from "@nuxt/test-utils/playwright";
 
 const definition = "main .definition";
 
-const formUrl = `/forme/${encodeURIComponent("αἱ")}?q=hai_(1),ho_(1)`;
+const formUrl = `/forme/${encodeURIComponent("αἱ")}`;
 
 test.describe("links of the definitions", () => {
   test("discreet, and an ambiguous form leads to its page", async ({ page, goto }) => {
@@ -18,7 +18,7 @@ test.describe("links of the definitions", () => {
     // Followed within the application (no reload).
     await page.evaluate(() => ((window as unknown as { marker: boolean }).marker = true));
     await ambiguous.click();
-    await expect(page).toHaveURL(/\/forme\/[^?]+\?q=hai_\(1\),ho_\(1\)$/);
+    await expect(page).toHaveURL(new RegExp(`${formUrl}$`));
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("αἱ");
     expect(await page.evaluate(() => (window as unknown as { marker?: boolean }).marker)).toBe(true);
   });
@@ -74,21 +74,28 @@ test.describe("page of an ambiguous form", () => {
     ))).toBeLessThan(1);
   });
 
-  test("the former address (/lecteur) redirects to the form's page", async ({ page, goto }) => {
-    await goto(`/lecteur?q=hai_(1),ho_(1)&forme=${encodeURIComponent("αἱ")}`, { waitUntil: "hydration" });
-    await expect(page).toHaveURL(/\/forme\/[^?]+\?q=hai_\(1\),ho_\(1\)$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("αἱ");
+  test("the entries come from the dictionary, never from the address", async ({ page, goto }) => {
+    // The former `?q=` is ignored: it let anyone list any entry under a form.
+    await goto(`${formUrl}?q=hai_(1),ho_(1),logos`, { waitUntil: "hydration" });
+    await expect(page.getByRole("heading", { level: 2 })).toHaveText(["αἱ", "ὁ"]);
   });
 
-  test("the missing entries are reported", async ({ page, goto }) => {
-    await goto("/forme?q=hai_(1),introuvable", { waitUntil: "hydration" });
-    await expect(page.locator("main").getByRole("status")).toContainText("Entrée introuvable : introuvable.");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Plusieurs entrées");
-    await expect(page.getByRole("heading", { level: 2 })).toHaveText(["αἱ"]);
+  test("an unknown form, or none: not found (its text isn't shown)", async ({ page }) => {
+    const unknown = await page.goto(`/forme/${encodeURIComponent("Le professeur est nul")}`);
+    expect(unknown?.status()).toBe(404);
+    await expect(page.getByText("Le professeur est nul")).toHaveCount(0);
+    expect((await page.goto("/forme?q=hai_(1),ho_(1)"))?.status()).toBe(404);
+  });
+
+  test("the former address (/lecteur) redirects to the form's page; without a form, not found", async ({ page, goto }) => {
+    await goto(`/lecteur?q=hai_(1),ho_(1),logos&forme=${encodeURIComponent("αἱ")}`, { waitUntil: "hydration" });
+    await expect(page).toHaveURL(new RegExp(`${formUrl}$`));
+    await expect(page.getByRole("heading", { level: 2 })).toHaveText(["αἱ", "ὁ"]);
+    expect((await page.goto("/lecteur?q=hai_(1),ho_(1)"))?.status()).toBe(404);
   });
 
   test("a single entry: its page", async ({ page, goto }) => {
-    await goto("/forme?q=logotechnês", { waitUntil: "hydration" });
+    await goto(`/forme/${encodeURIComponent("λογοτέχνης")}`, { waitUntil: "hydration" });
     await expect(page).toHaveURL(/\/logotechn%C3%AAs$|\/logotechnês$/);
   });
 });
