@@ -24,7 +24,8 @@
     "@hono/node-server": "^2.1.6",
     "@humanities/greek-conversion": "catalog:",
     "@libmorpheus/wasm": "^0.1.2",
-    "hono": "^4.13.16"
+    "hono": "^4.13.16",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@libmorpheus/node": "^0.1.1",

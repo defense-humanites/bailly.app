@@ -83,13 +83,13 @@ test("GET /entry: `siblingsFields` without `word`, and wider than `fields`", asy
   );
 });
 
-test("GET /entry: invalid `siblingsFields` fall back to `fields`", async () => {
+test("GET /entry: invalid `siblingsFields` are refused (400)", async () => {
   for (const value of ["", "foo", "word,foo"]) {
-    const data = await getEntry(
-      "logos",
-      `fields=word,uri&siblings=true&siblingsFields=${value}`
+    const response = await app.request(
+      `/entry/logos?fields=word,uri&siblings=true&siblingsFields=${value}`
     );
-    assertSiblingsFields(data, ["word", "uri"]);
+    await response.body?.cancel();
+    assertEquals(response.status, 400, value);
   }
 });
 

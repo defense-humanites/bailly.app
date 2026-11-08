@@ -179,6 +179,9 @@ catalogs:
     wrangler:
       specifier: ^4.157.0
       version: 4.157.0
+    zod:
+      specifier: 4.6.7
+      version: 4.6.7
 
 importers:
 
@@ -201,6 +204,9 @@ importers:
       hono:
         specifier: ^4.13.16
         version: 4.13.16
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
     devDependencies:
       '@libmorpheus/node':
         specifier: ^0.1.1
@@ -322,6 +328,10 @@ importers:
         version: 4.157.0(@types/node@24.19.2)
 
   packages/api-types:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
     devDependencies:
       typescript:
         specifier: 'catalog:'

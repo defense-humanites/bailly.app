@@ -15,7 +15,7 @@ import { readFileSync } from "node:fs";
 import { getPlatformProxy } from "wrangler";
 import type { Dictionary, SqlStatement, SqlValue } from "../src/db/dictionary.ts";
 import type { QueryableFields } from "../src/definitions.ts";
-import { setParams } from "../src/helpers.ts";
+import { entryParams, lookupParams, randomEntryParams } from "../src/params.ts";
 import { getEntry } from "../src/model/entry.ts";
 import { getExcerpts, parseExcerptsUris } from "../src/model/excerpts.ts";
 import { getEntries } from "../src/model/lookup.ts";
@@ -86,14 +86,12 @@ async function run(path: string): Promise<void> {
 
   if (url.pathname.startsWith("/lookup/")) {
     const q = decodeURIComponent(url.pathname.slice("/lookup/".length));
-    await getEntries(db, morpheus, setParams({ ...query, q }) as never);
+    await getEntries(db, morpheus, lookupParams(q, query));
   } else if (url.pathname === "/entry/random") {
-    const params = setParams<Record<string, unknown>>({ ...query });
-    delete params.q;
-    await getRandomEntry(db, params as never);
+    await getRandomEntry(db, randomEntryParams(query));
   } else if (url.pathname.startsWith("/entry/")) {
     const q = decodeURIComponent(url.pathname.slice("/entry/".length));
-    await getEntry<Fields, Fields>(db, setParams({ ...query, q }) as never);
+    await getEntry<Fields, Fields>(db, entryParams(q, query) as never);
   } else if (url.pathname === "/entries/excerpts") {
     await getExcerpts(db, parseExcerptsUris(query.uris ?? ""));
   }

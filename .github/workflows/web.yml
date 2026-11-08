@@ -38,7 +38,7 @@ jobs:
           cache: pnpm
 
       # Also runs `nuxt prepare` (postinstall).
-      - run: pnpm install --frozen-lockfile --filter bailly-app
+      - run: pnpm install --frozen-lockfile --filter "bailly-app..."
 
       - name: Lint
         run: pnpm run lint
@@ -64,7 +64,7 @@ jobs:
           node-version-file: .node-version
           cache: pnpm
 
-      - run: pnpm install --frozen-lockfile --filter bailly-app
+      - run: pnpm install --frozen-lockfile --filter "bailly-app..."
 
       - name: Install the browsers
         run: pnpm exec playwright install --with-deps chromium

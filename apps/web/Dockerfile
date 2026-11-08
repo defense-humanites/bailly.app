@@ -14,7 +14,7 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .node-version ./
 COPY packages packages
 COPY apps/web apps/web
-RUN pnpm install --frozen-lockfile --filter bailly-app
+RUN pnpm install --frozen-lockfile --filter "bailly-app..."
 RUN pnpm --filter bailly-app run build
 
 FROM node:24-slim

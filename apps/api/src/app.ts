@@ -1,9 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { HTTPException } from "hono/http-exception";
 import { secureHeaders } from "hono/secure-headers";
 import type { Dictionary } from "./db/dictionary.ts";
-import { setParams } from "./helpers.ts";
 import { logger } from "./logger.ts";
 import { getEntry } from "./model/entry.ts";
 import {
@@ -14,13 +12,14 @@ import {
 import { getEntries } from "./model/lookup.ts";
 import { getRandomEntry } from "./model/randomEntry.ts";
 import type { Morpheus } from "./Morpheus.ts";
+import {
+  badRequest,
+  batchBody,
+  entryParams,
+  lookupParams,
+  randomEntryParams
+} from "./params.ts";
 import { Settings } from "./Settings.ts";
-import type {
-  ApiEntryParams,
-  ApiLookupParams,
-  ApiRandomEntryParams,
-  QueryableFields
-} from "./definitions.ts";
 
 /**
  * The `Cache-Control` of the responses that depend only on the request and on the
@@ -35,6 +34,11 @@ export const CACHEABLE = "public, max-age=86400, stale-while-revalidate=604800";
 export type AppDependencies = {
   dictionary: Dictionary;
   morpheus: Morpheus;
+  /**
+   * The batch routes (`POST /entry`, `POST /lookup`), used by the data converter
+   * against a local server: by default, in development only (`API_ENV`).
+   */
+  batches?: boolean;
 };
 
 /**
@@ -43,7 +47,11 @@ export type AppDependencies = {
  * dictionary and the analyzer of their platform. `Settings.configure()` must have
  * run before the first request.
  */
-export function createApp({ dictionary: db, morpheus }: AppDependencies): Hono {
+export function createApp({
+  dictionary: db,
+  morpheus,
+  batches = Settings.getSettings().isDevEnv
+}: AppDependencies): Hono {
   const app = new Hono();
 
   app.use(cors());
@@ -63,15 +71,7 @@ export function createApp({ dictionary: db, morpheus }: AppDependencies): Hono {
   });
 
   app.get("/entry/random", async (c) => {
-    // `setParams()` always sets `q`, which is irrelevant here.
-    const params = setParams<
-      ApiRandomEntryParams<keyof QueryableFields> & { q?: string }
-    >({
-      ...c.req.query()
-    });
-
-    delete params.q;
-
+    const params = randomEntryParams(c.req.query());
     const entry = await getRandomEntry(db, params);
 
     return c.json({
@@ -83,11 +83,7 @@ export function createApp({ dictionary: db, morpheus }: AppDependencies): Hono {
   });
 
   app.get("/entry/:uri", async (c) => {
-    const q = c.req.param("uri");
-    const params = setParams<ApiEntryParams<keyof QueryableFields>>({
-      ...c.req.query(),
-      q
-    });
+    const params = entryParams(c.req.param("uri"), c.req.query());
     const entry = await getEntry(db, params);
 
     c.header("Cache-Control", CACHEABLE);
@@ -100,36 +96,6 @@ export function createApp({ dictionary: db, morpheus }: AppDependencies): Hono {
     });
   });
 
-  // For batch requests.
-  app.post("/entry", async (c) => {
-    const settings = Settings.getSettings();
-    const params = setParams<ApiEntryParams<keyof QueryableFields>>(
-      await c.req.json()
-    );
-    const queries: string[] = params.q.split(",");
-
-    if (queries.length > 1) {
-      if (settings.isDevEnv) {
-        console.info(`🚀 Batching ${queries.length.toLocaleString()} queries...`);
-        console.info(queries);
-      }
-
-      if (queries.length > settings.queryMaxBatchSize) {
-        throw new HTTPException(400, { message: "Maximum batch size exceeded" });
-      }
-    }
-
-    const responses = await Promise.all(
-      queries.map((query) => getEntry(db, { ...params, q: query }))
-    );
-
-    return c.json({
-      $query: params,
-      count: responses.length,
-      queries: responses
-    });
-  });
-
   // Excerpts of a list of entries (e.g. synchronized bookmarks); fixed fields.
   app.get("/entries/excerpts", async (c) => {
     let uris: string[];
@@ -138,7 +104,7 @@ export function createApp({ dictionary: db, morpheus }: AppDependencies): Hono {
       uris = parseExcerptsUris(c.req.query("uris"));
     } catch (error) {
       if (error instanceof ExcerptsParamError) {
-        throw new HTTPException(400, { message: error.message });
+        throw badRequest(error.message);
       }
       throw error;
     }
@@ -151,11 +117,7 @@ export function createApp({ dictionary: db, morpheus }: AppDependencies): Hono {
   });
 
   app.get("/lookup/:q", async (c) => {
-    const q = c.req.param("q");
-    const params = setParams<ApiLookupParams<keyof QueryableFields>>({
-      ...c.req.query(),
-      q
-    });
+    const params = lookupParams(c.req.param("q"), c.req.query());
     const entries = await getEntries(db, morpheus, params);
 
     c.header("Cache-Control", CACHEABLE);
@@ -168,34 +130,39 @@ export function createApp({ dictionary: db, morpheus }: AppDependencies): Hono {
     });
   });
 
-  // For batch requests.
-  app.post("/lookup", async (c) => {
-    const settings = Settings.getSettings();
-    const params = setParams<ApiLookupParams<keyof QueryableFields>>(
-      await c.req.json()
-    );
-    const queries: string[] = params.q.split(",");
-
-    if (queries.length > 1) {
-      if (settings.isDevEnv) {
-        console.info(`🚀 Batching ${queries.length.toLocaleString()} queries...`);
-      }
-
+  // Batches (development only: the data converter, against a local server); a body
+  // like a query string (cf. `batchBody()`), `q` a list or a comma-separated string.
+  if (batches) {
+    const batch = (q: string): string[] => {
+      const queries = q.split(",");
+      const settings = Settings.getSettings();
+      console.info(`🚀 Batching ${queries.length.toLocaleString()} queries...`);
       if (queries.length > settings.queryMaxBatchSize) {
-        throw new HTTPException(400, { message: "Maximum batch size exceeded" });
+        throw badRequest("Maximum batch size exceeded.");
       }
-    }
+      return queries;
+    };
 
-    const responses = await Promise.all(
-      queries.map((query) => getEntries(db, morpheus, { ...params, q: query }))
-    );
+    app.post("/entry", async (c) => {
+      const { q, query } = batchBody(await c.req.json().catch(() => undefined));
+      const params = entryParams(q, query);
+      const responses = await Promise.all(
+        batch(params.q).map((query) => getEntry(db, { ...params, q: query }))
+      );
 
-    return c.json({
-      $query: params ?? {},
-      count: responses.length,
-      queries: responses
+      return c.json({ $query: params, count: responses.length, queries: responses });
     });
-  });
+
+    app.post("/lookup", async (c) => {
+      const { q, query } = batchBody(await c.req.json().catch(() => undefined));
+      const params = lookupParams(q, query);
+      const responses = await Promise.all(
+        batch(params.q).map((query) => getEntries(db, morpheus, { ...params, q: query }))
+      );
+
+      return c.json({ $query: params, count: responses.length, queries: responses });
+    });
+  }
 
   return app;
 }

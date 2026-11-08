@@ -25,6 +25,32 @@ la base et champs servis : `src/defaults.ts`) ; `process.env` (fichier `.env`
 facultatif, cf. `.env.example`) ou les `vars` de `wrangler.jsonc` ne servent qu'à s'en
 écarter.
 
+## Routes et paramètres
+
+Les paramètres sont lus par les schémas du contrat (`@bailly/api-types/params`, Zod
+Mini), puis par `src/params.ts` pour ce qui dépend des réglages. Une valeur mal formée
+est refusée (400), jamais remplacée ; les paramètres inconnus sont ignorés.
+
+| Route | Paramètres |
+|---|---|
+| `GET /lookup/:q` | `fields`, `inputMode` (`greek`, `betacode`, `transliteration`), `morphology`, `caseSensitive`, `diacriticSensitive`, `skipMorpheus`, `limit` (au plus `QUERY_MAX_ROWS`) |
+| `GET /entry/:uri` | `fields`, `siblings`, `siblingsFields` |
+| `GET /entry/random` | `fields`, `lengthRange` (`400,700`, ou une borne), `siblings`, `siblingsFields` |
+| `GET /entries/excerpts` | `uris` (1 à 100 URI, séparées par des virgules) |
+| `POST /entry`, `POST /lookup` | **en développement seulement** (`API_ENV=development` : le convertisseur des données, contre un serveur local) ; un corps JSON avec les mêmes paramètres, `q` une liste ou une chaîne séparée par des virgules |
+
+- `fields`, `siblingsFields` : des champs séparés par des virgules, parmi `word`,
+  `uri`, `htmlDefinition`, `definition`, `htmlExcerpt`, `excerpt` (ceux de
+  `QUERY_ALLOWED_FIELDS`) ; par défaut `word,uri,excerpt`.
+- Booléens : `true`, `false`, `1`, `0`, ou une valeur vide (`?morphology`, vrai).
+- Une recherche qui ne peut rien trouver (motif trop long, etc.) n'est pas une
+  erreur : sa réponse est vide.
+- Erreurs : 400, `Cache-Control: no-store`, un corps JSON :
+
+  ```json
+  { "error": { "message": "Invalid parameters.", "issues": [{ "path": "limit", "message": "Expected a positive integer." }] } }
+  ```
+
 ## Mise en route
 
 Prérequis : Node.js 24 ou plus récent, qui exécute directement les sources TypeScript,
@@ -82,9 +108,10 @@ le dépôt (les deux applications) dans ce dossier :
 - dossier racine : `apps/api` ; chemins surveillés : `apps/api/*`, `packages/*`,
   `pnpm-lock.yaml`, `pnpm-workspace.yaml` ;
 - variable de build `SKIP_DEPENDENCY_INSTALL=true`, l'installation étant faite par
-  la commande de build, pour cette seule application ;
-- commande de build : `pnpm install --frozen-lockfile --filter bailly-api && pnpm
-  run morpheus:data` (données de Morpheus téléchargées à chaque build, révision
+  la commande de build, pour cette seule application et ses paquets de l'espace de
+  travail (`...` : `@bailly/api-types` et ses dépendances, dont Zod) ;
+- commande de build : `pnpm install --frozen-lockfile --filter "bailly-api..." &&
+  pnpm run morpheus:data` (données de Morpheus téléchargées à chaque build, révision
   épinglée et empreintes vérifiées) ;
 - commande de déploiement : `pnpm exec wrangler deploy` ;
 - Node.js 24 (`.node-version`) ; placement par défaut (au plus près du visiteur).

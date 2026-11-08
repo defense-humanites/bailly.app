@@ -2,7 +2,8 @@
  * Compares the responses of two deployments of the API (e.g. Heroku and the Worker)
  * on the requests of the load test (`database/load-urls.json`, cf. `urls.ts`), random
  * entries excepted, and prints the differing paths. Sequential (one request at a
- * time to each API): not a load.
+ * time to each API): not a load. The `$query` of the responses (the parameters as
+ * the API read them, a diagnosis) is left out of the comparison.
  *
  * Usage: node scripts/load_test/compare.ts <base URL A> <base URL B> [sample size]
  */
@@ -35,11 +36,16 @@ const fetchJson = async (base: string, path: string) => {
   const response = await fetch(`${base}${path}`, {
     headers: { "User-Agent": "bailly-load-test" }
   });
-  return {
-    status: response.status,
-    body: await response.text(),
-    time: performance.now() - start
-  };
+  const text = await response.text();
+  let body = text;
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed?.data?.$query) delete parsed.data.$query;
+    body = JSON.stringify(parsed);
+  } catch {
+    // Not JSON: compared as it is.
+  }
+  return { status: response.status, body, time: performance.now() - start };
 };
 
 const differences: string[] = [];

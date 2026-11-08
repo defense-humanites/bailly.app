@@ -22,12 +22,12 @@ COPY apps/api apps/api
 # Morpheus's stem data (pinned revision, verified digests), acquired with the
 # development dependencies.
 FROM base AS morpheus
-RUN pnpm install --frozen-lockfile --filter bailly-api \
+RUN pnpm install --frozen-lockfile --filter "bailly-api..." \
   && pnpm --filter bailly-api run morpheus:data
 
 # The runtime dependencies only.
 FROM base AS dependencies
-RUN pnpm install --prod --frozen-lockfile --filter bailly-api
+RUN pnpm install --prod --frozen-lockfile --filter "bailly-api..."
 
 FROM node:24-slim
 ENV NODE_ENV=production PORT=3000
