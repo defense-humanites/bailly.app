@@ -18,6 +18,7 @@
    * Whether the popover is open.
    */
   const open = defineModel<boolean>("open", { default: false });
+  const { open: tooltipOpen, setOpen: setTooltipOpen, listeners: tooltipListeners } = useTriggerTooltip(open);
 
   /**
    * The swatches per row: two rows of five.
@@ -30,14 +31,15 @@
   const label = computed((): string => props.label ?? "Couleur");
 
   /**
-   * The trigger's attributes: its accessible name, and the selected color's
-   * palette for its icon (`text-tag-text`). A custom trigger (the `trigger`
-   * slot) binds them with `v-bind`.
+   * The trigger's attributes: its accessible name, the selected color's
+   * palette for its icon (`text-tag-text`), and its tooltip's listeners. A
+   * custom trigger (the `trigger` slot) binds them with `v-bind`.
    */
   const triggerAttrs = computed(() => ({
     "aria-label": `${label.value}\u00a0: ${colorNames[current.value]}`,
     "data-tag-color": current.value,
     "class": "text-tag-text",
+    ...tooltipListeners,
   }));
 
   /**
@@ -111,19 +113,31 @@
     :content="{ onOpenAutoFocus }"
     :ui="{ content: 'bg-(--app-panel-bg) p-3', arrow: 'fill-(--app-panel-bg)' }"
   >
-    <slot
-      name="trigger"
-      :icon="icon"
-      :attrs="triggerAttrs"
+    <!--
+      The trigger named by a tooltip too, by its action (cf.
+      `useTriggerTooltip`); its open state styled by `aria-expanded` (the
+      tooltip sets `data-state` too, to its own state).
+    -->
+    <UTooltip
+      text="Changer la couleur"
+      :open="tooltipOpen"
+      ignore-non-keyboard-focus
+      @update:open="setTooltipOpen"
     >
-      <UButton
+      <slot
+        name="trigger"
         :icon="icon"
-        color="neutral"
-        variant="outline"
-        v-bind="triggerAttrs"
-        :ui="{ base: 'shadow-none' }"
-      />
-    </slot>
+        :attrs="triggerAttrs"
+      >
+        <UButton
+          :icon="icon"
+          color="neutral"
+          variant="outline"
+          v-bind="triggerAttrs"
+          :ui="{ base: 'shadow-none' }"
+        />
+      </slot>
+    </UTooltip>
 
     <template #content>
       <div

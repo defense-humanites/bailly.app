@@ -19,6 +19,28 @@ test.describe("the tags of an entry", () => {
     expect(scripts).toEqual([]);
   });
 
+  test("its button named by a tooltip, not while the panel is open nor as the panel closes", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    const trigger = page.getByRole("button", { name: "Toutes les étiquettes" });
+    const tooltip = page.getByRole("tooltip", { name: "Toutes les étiquettes" });
+    await trigger.hover();
+    await expect(tooltip).toBeVisible();
+    await trigger.click();
+    await expect(allTags(page)).toBeVisible();
+    await expect(tooltip).toBeHidden();
+    // Closed by Escape, the pointer still over the button: the focus given
+    // back to it (a keyboard's) shows no tooltip.
+    await page.keyboard.press("Escape");
+    await expect(allTags(page)).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await page.waitForTimeout(1000);
+    await expect(tooltip).toBeHidden();
+    // The pointer back over the button: shown again.
+    await page.mouse.move(0, 0);
+    await trigger.hover();
+    await expect(tooltip).toBeVisible();
+  });
+
   test("closed when the page scrolls, the focus back on its button without scrolling back", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     const trigger = page.getByRole("button", { name: "Toutes les étiquettes" });

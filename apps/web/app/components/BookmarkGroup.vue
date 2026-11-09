@@ -660,7 +660,7 @@
                         variant="ghost"
                         color="neutral"
                         :ui="{
-                          base: 'h-8 w-9 md:w-10 justify-center rounded-l-lg rounded-r-none bg-transparent hover:bg-transparent active:bg-transparent data-[state=open]:bg-transparent focus-visible:outline-none hover:text-(--tag-500) active:text-(--tag-500) focus-visible:text-(--tag-500) data-[state=open]:text-(--tag-500)',
+                          base: 'h-8 w-9 md:w-10 justify-center rounded-l-lg rounded-r-none bg-transparent hover:bg-transparent active:bg-transparent aria-expanded:bg-transparent focus-visible:outline-none hover:text-(--tag-500) active:text-(--tag-500) focus-visible:text-(--tag-500) aria-expanded:text-(--tag-500)',
                           leadingIcon: 'size-5 md:size-6',
                         }"
                       />

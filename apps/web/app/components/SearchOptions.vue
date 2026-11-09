@@ -24,6 +24,7 @@
    * (`pointOut`).
    */
   const isOpen = ref(false);
+  const { open: tooltipOpen, setOpen: setTooltipOpen, listeners: tooltipListeners } = useTriggerTooltip(isOpen);
   const trigger = useTemplateRef<{ $el: HTMLElement }>("trigger");
   watch(useSearchOptionsPanel().request, () => {
     const button = trigger.value?.$el;
@@ -80,26 +81,35 @@
       has the focus, the button's ring takes its color, except on the left
       edge (a pseudo-element): the divider stays neutral. It stops 1px short
       of the top and bottom edges (`inset-y-px`), not to cut the ring there.
+      Named by a tooltip too (cf. `useTriggerTooltip`).
     -->
-    <UButton
-      ref="trigger"
-      color="neutral"
-      variant="outline"
-      size="lg"
-      class="relative w-12 shrink-0 [--card-highlight:var(--ui-primary)] justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border) hover:bg-(--search-hover) active:bg-(--search-active) data-[state=open]:bg-(--search-active) group-has-[input:focus-visible]/search:ring-primary"
-      aria-label="Options de recherche"
+    <UTooltip
+      text="Options de recherche"
+      :open="tooltipOpen"
+      ignore-non-keyboard-focus
+      @update:open="setTooltipOpen"
     >
-      <UChip
-        :show="!isDefault"
-        size="sm"
-        inset
+      <UButton
+        ref="trigger"
+        v-bind="tooltipListeners"
+        color="neutral"
+        variant="outline"
+        size="lg"
+        class="relative w-12 shrink-0 [--card-highlight:var(--ui-primary)] justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border) hover:bg-(--search-hover) active:bg-(--search-active) aria-expanded:bg-(--search-active) group-has-[input:focus-visible]/search:ring-primary"
+        aria-label="Options de recherche"
       >
-        <UIcon
-          name="i-lucide-list-filter"
-          class="size-5"
-        />
-      </UChip>
-    </UButton>
+        <UChip
+          :show="!isDefault"
+          size="sm"
+          inset
+        >
+          <UIcon
+            name="i-lucide-list-filter"
+            class="size-5"
+          />
+        </UChip>
+      </UButton>
+    </UTooltip>
 
     <!--
       Compact rows (label, control). The options first, then, below a line,

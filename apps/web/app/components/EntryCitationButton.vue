@@ -15,6 +15,7 @@
    * button on closing.
    */
   const open = shallowRef(false);
+  const { open: tooltipOpen, setOpen: setTooltipOpen, listeners: tooltipListeners } = useTriggerTooltip(open);
   const mounted = shallowRef(false);
   const button = useTemplateRef("button");
   const show = (): void => {
@@ -43,17 +44,26 @@
     data-citation
     class="rounded-lg [--card-highlight:var(--ui-primary)] border border-default bg-default shadow-xs"
   >
-    <UButton
-      ref="button"
-      icon="i-lucide-quote"
-      aria-label="Citer"
-      aria-haspopup="dialog"
-      :aria-expanded="open"
-      color="neutral"
-      variant="ghost"
-      class="rounded-md hover:bg-(--app-button-hover) active:bg-(--app-button-active) aria-expanded:bg-(--app-button-active)"
-      @click="show"
-    />
+    <!-- Named by a tooltip too (cf. `useTriggerTooltip`). -->
+    <UTooltip
+      text="Citer"
+      :open="tooltipOpen"
+      ignore-non-keyboard-focus
+      @update:open="setTooltipOpen"
+    >
+      <UButton
+        ref="button"
+        v-bind="tooltipListeners"
+        icon="i-lucide-quote"
+        aria-label="Citer"
+        aria-haspopup="dialog"
+        :aria-expanded="open"
+        color="neutral"
+        variant="ghost"
+        class="rounded-md hover:bg-(--app-button-hover) active:bg-(--app-button-active) aria-expanded:bg-(--app-button-active)"
+        @click="show"
+      />
+    </UTooltip>
     <UModal
       v-if="mounted"
       v-model:open="open"

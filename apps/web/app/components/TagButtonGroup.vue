@@ -144,6 +144,7 @@
     ];
   });
   const panelOpen = ref(false);
+  const { open: panelTooltipOpen, setOpen: setPanelTooltipOpen, listeners: panelTooltipListeners } = useTriggerTooltip(panelOpen);
 
   /**
    * The panel closed as soon as the page scrolls (cf. `usePageScrollDismiss`),
@@ -435,16 +436,29 @@
       :portal="pageScroller ?? true"
       :ui="{ content: 'z-30 bg-(--app-panel-bg)' }"
     >
-      <UButton
-        ref="trigger"
-        icon="i-lucide-tags"
-        color="neutral"
-        variant="ghost"
-        :class="[TOOLBAR_HOVER, 'data-[state=open]:bg-(--app-button-active)']"
-        aria-label="Toutes les étiquettes"
-        @pointerdown="onTriggerPointerDown"
-        @keydown="onTriggerKeydown"
-      />
+      <!--
+        Named by a tooltip too (an icon only), as the toolbar's other buttons
+        (cf. `useTriggerTooltip`). Its open state styled by `aria-expanded`:
+        the tooltip sets `data-state` too, to its own state.
+      -->
+      <UTooltip
+        text="Toutes les étiquettes"
+        :open="panelTooltipOpen"
+        ignore-non-keyboard-focus
+        @update:open="setPanelTooltipOpen"
+      >
+        <UButton
+          ref="trigger"
+          v-bind="panelTooltipListeners"
+          icon="i-lucide-tags"
+          color="neutral"
+          variant="ghost"
+          :class="[TOOLBAR_HOVER, 'aria-expanded:bg-(--app-button-active)']"
+          aria-label="Toutes les étiquettes"
+          @pointerdown="onTriggerPointerDown"
+          @keydown="onTriggerKeydown"
+        />
+      </UTooltip>
 
       <template #content>
         <div

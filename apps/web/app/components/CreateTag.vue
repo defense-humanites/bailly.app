@@ -142,7 +142,7 @@
                 color="neutral"
                 variant="ghost"
                 v-bind="attrs"
-                :ui="{ base: 'rounded-md shadow-none bg-transparent hover:bg-transparent active:bg-transparent data-[state=open]:bg-transparent hover:text-(--tag-500) active:text-(--tag-500) data-[state=open]:text-(--tag-500)' }"
+                :ui="{ base: 'rounded-md shadow-none bg-transparent hover:bg-transparent active:bg-transparent aria-expanded:bg-transparent hover:text-(--tag-500) active:text-(--tag-500) aria-expanded:text-(--tag-500)' }"
               />
             </template>
           </TagColorPicker>

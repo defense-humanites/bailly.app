@@ -25,6 +25,7 @@
   }) as PopoverProps["content"]);
 
   const open = ref(false);
+  const { open: tooltipOpen, setOpen: setTooltipOpen, listeners: tooltipListeners } = useTriggerTooltip(open);
   const confirmingClear = ref(false);
   const list = useTemplateRef<HTMLUListElement>("list");
 
@@ -90,15 +91,26 @@
     :content="popoverContent"
     :ui="{ content: 'search-surface search-panel w-(--reka-popover-trigger-width) max-h-[min(32rem,var(--reka-popover-content-available-height))] overflow-y-auto p-1' }"
   >
-    <!-- The same button as the options' one (cf. SearchOptions). -->
-    <UButton
-      color="neutral"
-      variant="outline"
-      size="lg"
-      icon="i-lucide-history"
-      class="relative w-12 shrink-0 justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border) hover:bg-(--search-hover) active:bg-(--search-active) data-[state=open]:bg-(--search-active) group-has-[input:focus-visible]/search:ring-primary"
-      aria-label="Entrées consultées récemment"
-    />
+    <!--
+      The same button as the options' one (cf. SearchOptions), named by a
+      tooltip too (cf. `useTriggerTooltip`).
+    -->
+    <UTooltip
+      text="Entrées consultées récemment"
+      :open="tooltipOpen"
+      ignore-non-keyboard-focus
+      @update:open="setTooltipOpen"
+    >
+      <UButton
+        v-bind="tooltipListeners"
+        color="neutral"
+        variant="outline"
+        size="lg"
+        icon="i-lucide-history"
+        class="relative w-12 shrink-0 justify-center before:absolute before:inset-y-px before:start-0 before:w-px before:bg-(--ui-border) hover:bg-(--search-hover) active:bg-(--search-active) aria-expanded:bg-(--search-active) group-has-[input:focus-visible]/search:ring-primary"
+        aria-label="Entrées consultées récemment"
+      />
+    </UTooltip>
 
     <template #content>
       <div @keydown="onKeydown">

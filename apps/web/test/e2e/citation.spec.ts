@@ -54,6 +54,13 @@ test.describe("citing an entry", () => {
     await expect(citation).toBeHidden();
     await expect(button).toBeFocused();
     await expect(button).toHaveAttribute("aria-expanded", "false");
+    // Named by a tooltip (an icon only), but not for the focus given back.
+    const tooltip = page.getByRole("tooltip", { name: "Citer" });
+    await page.waitForTimeout(1000);
+    await expect(tooltip).toBeHidden();
+    await page.mouse.move(0, 0);
+    await button.hover();
+    await expect(tooltip).toBeVisible();
     // Opened again, the window already mounted.
     await expect(await openCitation(page)).toBeVisible();
   });
