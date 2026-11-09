@@ -345,6 +345,22 @@
       border-radius: 2px;
     }
   }
+
+  /*
+   * The icon under the active tag's mark (cf. `TagIcon`): cut out by a disc
+   * of the mark's size (three quarters of the icon), centered on it (its box
+   * at -30 % from the top, 58.75 % from the left), so that the mark stands
+   * out whatever the background (a card's tint, a highlighted row). The disc
+   * a little smaller than its stop, for a smooth edge.
+   */
+  .active-mark-host {
+    --active-mark-cut: radial-gradient(37.5% 37.5% at 96.25% 7.5%, transparent 97%, #000 100%);
+
+    -webkit-mask-image: var(--svg), var(--active-mark-cut);
+    mask-image: var(--svg), var(--active-mark-cut);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
 }
 
 /*

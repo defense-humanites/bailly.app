@@ -86,7 +86,10 @@ test.describe("the tags of an entry", () => {
     // Few tags: no filter.
     await expect(allTags(page).getByRole("textbox")).toHaveCount(0);
     const options = list.getByRole("option");
-    await expect(options).toHaveText(["Cielactive", "Rouge", "Vert"]);
+    await expect(options).toHaveText(["Ciel, active", "Rouge", "Vert"]);
+    // The active tag's mark over its icon, as on its card: on it only.
+    await expect(list.locator("[data-active-mark]")).toHaveCount(1);
+    await expect(options.nth(0).locator("[data-active-mark]")).toBeVisible();
     await expect(options.nth(0)).toHaveAttribute("aria-selected", "false");
     await expect(options.nth(1)).toHaveAttribute("aria-selected", "false");
     await expect(options.nth(2)).toHaveAttribute("aria-selected", "true");
@@ -97,7 +100,7 @@ test.describe("the tags of an entry", () => {
     await expect(options.nth(2)).toHaveAttribute("aria-selected", "false");
     await expect.poll(() => tagNamesOf(page, "logos")).toEqual(["Rouge"]);
     // The order does not change while the panel is open.
-    await expect(options).toHaveText(["Cielactive", "Rouge", "Vert"]);
+    await expect(options).toHaveText(["Ciel, active", "Rouge", "Vert"]);
 
     // The current tag, from the panel or from its own button (named after it,
     // its state in aria-pressed, its action in a tooltip).
@@ -124,7 +127,7 @@ test.describe("the tags of an entry", () => {
     });
     await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
     const options = allTags(page).getByRole("option");
-    await expect(options).toHaveText(["Alphaactive", "Bêta", "Delta", "Gamma"]);
+    await expect(options).toHaveText(["Alpha, active", "Bêta", "Delta", "Gamma"]);
     // A pinned tag shows a pin (filled when the entry has it), the others a tag.
     await expect(options.nth(1).locator(".iconify.i-lucide\\:pin")).toBeVisible();
     await expect(options.nth(2).locator(".iconify.i-bailly\\:tag-filled")).toBeVisible();
@@ -149,7 +152,7 @@ test.describe("the tags of an entry", () => {
     await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
     const options = allTags(page).getByRole("option");
     // The latest created first (the default sorting), after the active one.
-    await expect(options).toHaveText(["Cielactive", "Vert", "Rouge"]);
+    await expect(options).toHaveText(["Ciel, active", "Vert", "Rouge"]);
 
     for (const [i, selected] of [[2, "true"], [2, "false"], [1, "true"], [2, "true"]] as const) {
       await options.nth(i).hover();

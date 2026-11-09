@@ -504,31 +504,25 @@
             <!--
               A tag, or a pin for a pinned tag (as in the bookmarks page's
               table of contents and active tag's menu): filled when the entry
-              has it.
+              has it; the active tag's marked, as on its card (cf.
+              `TagIcon`), « active » in its name for screen readers. A margin
+              for the mark, which overhangs the icon (the names aligned).
             -->
             <template #item-leading="{ item }">
-              <UIcon
+              <TagIcon
                 :name="item.pinned
                   ? (entryTagKeys.has(item.key) ? 'i-bailly-pin-filled' : 'i-lucide-pin')
                   : (entryTagKeys.has(item.key) ? 'i-bailly-tag-filled' : 'i-lucide-tag')"
+                :active="item.key === currentTag?.key"
                 :data-tag-color="item.color"
-                class="size-5 shrink-0 text-tag-text"
+                class="me-1.5 size-5 text-tag-text"
               />
             </template>
             <template #item-trailing="{ item }">
-              <!--
-                In the tag's colors (lightest tint, its text color): it stays
-                distinct from the row's hover background.
-              -->
-              <UBadge
+              <span
                 v-if="item.key === currentTag?.key"
-                label="active"
-                color="neutral"
-                variant="soft"
-                size="sm"
-                :data-tag-color="item.color"
-                class="bg-tag-100 text-tag-text ring ring-inset ring-tag-300/60"
-              />
+                class="sr-only"
+              >, active</span>
             </template>
             <template #empty>
               Aucune étiquette ne correspond.

@@ -587,30 +587,15 @@
             :class="{ invisible: editableEditMode }"
           >
             <!--
-              The active tag: its mark (⊙, the active tag's sign, as the
-              button that makes a tag active) over the top right corner of
-              the tag's or the pin's icon, three quarters as large, cut out
-              of it by a disc of the card's tint, a little lighter (75 %) to
-              stand out from it (the badge « active » after the name took a
-              line of its own on mobile). For screen readers,
-              « active » in the name.
+              The tag's icon, marked for the active tag (cf. `TagIcon`; the
+              badge « active » after the name took a line of its own on
+              mobile). For screen readers, « active » in the name.
             -->
-            <span class="relative mx-2 mt-1.5 size-5 shrink-0 md:mt-1 md:size-6">
-              <UIcon
-                :name="icon"
-                class="block size-full"
-              />
-              <span
-                v-if="isActive"
-                data-active-mark
-                class="absolute -top-[30%] left-[58.75%] flex size-3/4 rounded-full bg-[color-mix(in_srgb,var(--tag-200)_50%,var(--app-page-bg))]"
-              >
-                <UIcon
-                  name="i-bailly-active"
-                  class="size-full opacity-75"
-                />
-              </span>
-            </span>
+            <TagIcon
+              :name="icon"
+              :active="isActive"
+              class="mx-2 mt-1.5 size-5 md:mt-1 md:size-6"
+            />
             <span
               :id="nameHeadingId"
               role="heading"
