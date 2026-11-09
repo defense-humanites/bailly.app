@@ -339,11 +339,23 @@ test.describe("without JavaScript", () => {
 });
 
 // The results' headwords are bold: their face is fetched once the page is
-// interactive, before any search (cf. `readingFaces.client.ts`).
+// interactive, before any search (cf. `idleFaces.client.ts`).
 // (On a page without any bold serif text.)
 test("the reading font's bold face is fetched before any search", async ({ page, goto }) => {
   await goto(encodeURI("/confidentialité"), { waitUntil: "hydration" });
   await expect.poll(() => page.evaluate(() => [...document.fonts].some(face =>
     face.family.replace(/"/g, "") === "Bailly Book" && ["bold", "700"].includes(face.weight) && face.style === "normal" && face.status === "loaded",
   ))).toBe(true);
+});
+
+// Inter's italic too (its common characters), lest its text, first shown in
+// the fallback's italic, be laid out anew on its arrival: e.g. in the home
+// page's popover on the text's edition (not open, no italics on the page).
+test("Inter's italic face is fetched once the page is interactive", async ({ page, goto }) => {
+  await goto("/", { waitUntil: "hydration" });
+  const interItalics = () => page.evaluate(() => [...document.fonts]
+    .filter(face => face.family.replace(/"/g, "") === "Inter" && face.style === "italic")
+    .map(face => ({ common: face.unicodeRange.startsWith("U+0-17F"), status: face.status })));
+  await expect.poll(interItalics).toContainEqual({ common: true, status: "loaded" });
+  expect(await interItalics()).toContainEqual({ common: false, status: "unloaded" });
 });
