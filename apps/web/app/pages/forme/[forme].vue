@@ -15,9 +15,17 @@
    */
   const form = computed((): string => String(route.params.forme ?? "").trim());
 
+  /**
+   * The characters of text kept of each definition (of each group of
+   * homonyms): a card shows about 450 at the normal size, 550 at the
+   * smallest (cf. `guessClipped`), fewer in the indented senses; the rest,
+   * under the cut, would only weigh on the page (ὁ: 113 kB of HTML).
+   */
+  const DEFINITION_LENGTH = 1500;
+
   const { data, error } = await useApiForm(form, {
     fields: ["word", "uri", "excerpt", "htmlDefinition"],
-  });
+  }, { definitionLength: DEFINITION_LENGTH });
 
   if (error.value) {
     throw createError({

@@ -13,6 +13,7 @@ import type {
   Siblings,
 } from "#shared/types/api";
 import { sortLookupEntries, toApiQuery } from "#shared/utils/api";
+import { withDefinitionStart } from "~/utils/definitionStart";
 
 export type EntryResult<F extends EntryField, S extends EntryField = F> = {
   /** The entry, or `null` if it doesn't exist. */
@@ -58,16 +59,23 @@ export function useApiEntry<F extends EntryField, S extends EntryField = F>(
  * given by the page's address.
  * @param form The form.
  * @param params The requested fields.
+ * @param options.definitionLength Keep only the beginning of the
+ * definitions, this many characters of text (cf. `withDefinitionStart`):
+ * the page and its payload don't carry what isn't shown.
  * @returns The entries (none for an unknown form), in the API's order.
  */
 export function useApiForm<F extends EntryField>(
   form: MaybeRefOrGetter<string>,
   params: FormParams<F>,
+  { definitionLength }: { definitionLength?: number } = {},
 ) {
   return useFetch(() => `form/${encodeURIComponent(toValue(form))}`, {
     $fetch: useNuxtApp().$api,
     query: toApiQuery(params),
-    transform: ({ data }: ApiResponse<ApiFormData<F>>): Entry<F>[] => data.entries,
+    transform: ({ data }: ApiResponse<ApiFormData<F>>): Entry<F>[] =>
+      definitionLength === undefined
+        ? data.entries
+        : data.entries.map(entry => withDefinitionStart(entry, definitionLength)),
   });
 }
 

@@ -74,6 +74,16 @@ test.describe("page of an ambiguous form", () => {
     ))).toBeLessThan(1);
   });
 
+  test("only the beginning of each definition, the page light", async ({ page, goto }) => {
+    // ὁ's definition alone weighs 113 kB of HTML.
+    const response = await page.request.get(formUrl);
+    expect((await response.body()).length).toBeLessThan(100_000);
+    await goto(formUrl, { waitUntil: "hydration" });
+    const card = page.getByRole("link", { name: "Ouvrir l'entrée ὁ" });
+    await expect(card.locator("[data-clip]")).toHaveClass(/mask-b-from/);
+    await expect(card).toContainText("pronom démonstratif");
+  });
+
   test("the entries come from the dictionary, never from the address", async ({ page, goto }) => {
     // The former `?q=` is ignored: it let anyone list any entry under a form.
     await goto(`${formUrl}?q=hai_(1),ho_(1),logos`, { waitUntil: "hydration" });
