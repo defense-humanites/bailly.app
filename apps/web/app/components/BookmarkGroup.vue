@@ -574,7 +574,7 @@
       the edit field's text.
     -->
     <template #header>
-      <div class="flex min-h-8 w-full items-start gap-3">
+      <div class="flex min-h-8 w-full items-start">
         <!--
           The name and its field share one cell: in edit mode, the name stays
           in the layout, invisible, so that the card keeps its height (a long
@@ -594,7 +594,7 @@
               :id="nameHeadingId"
               role="heading"
               aria-level="2"
-              class="ml-1 min-w-0 grow py-0.5 pe-2 text-lg/7 font-bold wrap-break-word md:py-0 md:text-2xl/8"
+              class="ml-1 min-w-0 grow py-0.5 text-lg/7 font-semibold wrap-break-word md:py-0 md:text-2xl/8"
             >{{ tag.name }}<!--
               The active tag, marked after its name (as in an entry's panel), in
               the tag's colors inverted: it stands out.
@@ -677,7 +677,7 @@
                     :aria-describedby="nameErrorId"
                     :aria-invalid="!!nameError"
                     :maxlength="IdbTags.nameMaxLength"
-                    class="min-w-0 grow rounded-r-lg bg-transparent py-0.5 ps-1 pe-2 text-lg/7 font-bold text-tag-text focus:outline-none md:py-0 md:text-2xl/8"
+                    class="min-w-0 grow rounded-r-lg bg-transparent py-0.5 ps-1 pe-2 text-lg/7 font-semibold text-tag-text focus:outline-none md:py-0 md:text-2xl/8"
                   >
                 </div>
               </template>
@@ -900,7 +900,7 @@
     <!-- Content -->
     <template v-if="!entries.length">
       <!-- Aligned with the name (as the description). -->
-      <p class="ms-10 font-semibold text-tag-text md:ms-11">
+      <p class="ms-10 font-medium text-tag-text md:ms-11">
         <slot />
       </p>
     </template>
