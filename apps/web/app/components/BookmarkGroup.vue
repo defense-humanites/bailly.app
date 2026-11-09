@@ -586,26 +586,40 @@
             class="col-start-1 row-start-1 flex min-w-0 items-start"
             :class="{ invisible: editableEditMode }"
           >
-            <UIcon
-              :name="icon"
-              class="mx-2 mt-1.5 size-5 shrink-0 md:mt-1 md:size-6"
-            />
+            <!--
+              The active tag: its mark (⊙, the active tag's sign, as the
+              button that makes a tag active) over the top right corner of
+              the tag's or the pin's icon, three quarters as large, cut out
+              of it by a disc of the card's tint, a little lighter (75 %) to
+              stand out from it (the badge « active » after the name took a
+              line of its own on mobile). For screen readers,
+              « active » in the name.
+            -->
+            <span class="relative mx-2 mt-1.5 size-5 shrink-0 md:mt-1 md:size-6">
+              <UIcon
+                :name="icon"
+                class="block size-full"
+              />
+              <span
+                v-if="isActive"
+                data-active-mark
+                class="absolute -top-[30%] left-[58.75%] flex size-3/4 rounded-full bg-[color-mix(in_srgb,var(--tag-200)_50%,var(--app-page-bg))]"
+              >
+                <UIcon
+                  name="i-bailly-active"
+                  class="size-full opacity-75"
+                />
+              </span>
+            </span>
             <span
               :id="nameHeadingId"
               role="heading"
               aria-level="2"
               class="ml-1 min-w-0 grow py-0.5 text-lg/7 font-semibold wrap-break-word md:py-0 md:text-2xl/8"
-            >{{ tag.name }}<!--
-              The active tag, marked after its name (as in an entry's panel), in
-              the tag's colors inverted: it stands out.
-            --><UBadge
+            >{{ tag.name }}<span
               v-if="isActive"
-              label="active"
-              color="neutral"
-              variant="soft"
-              size="sm"
-              class="ms-2 -translate-y-0.5 bg-tag-text align-middle font-medium text-(--ui-bg)"
-            /></span>
+              class="sr-only"
+            >, active</span></span>
           </div>
 
           <!--

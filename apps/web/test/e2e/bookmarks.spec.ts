@@ -404,14 +404,18 @@ test.describe("bookmarks page", () => {
   test("the active tag: marked on its card, chosen from another card", async ({ page }) => {
     const vide = card(page, "Vide");
     const vocabulaire = card(page, "Vocabulaire homérique");
+    // The mark over the tag's icon, and « active » in the name for screen readers.
+    const marked = (group: typeof vide) => group.locator("[data-active-mark]");
     // The newest tag is the active one.
-    await expect(vocabulaire.getByText("active", { exact: true })).toBeVisible();
+    await expect(marked(vocabulaire)).toBeVisible();
+    await expect(vocabulaire.getByRole("heading", { name: /^Vocabulaire homérique et tragique ?, active$/ })).toBeVisible();
     await expect(vocabulaire.getByRole("button", { name: /^Rendre active/ })).toHaveCount(0);
-    await expect(vide.getByText("active", { exact: true })).toHaveCount(0);
+    await expect(marked(vide)).toHaveCount(0);
+    await expect(vide.getByRole("heading", { name: "Vide" })).toBeVisible();
 
     await vide.getByRole("button", { name: "Rendre active l'étiquette « Vide »" }).click();
-    await expect(vide.getByText("active", { exact: true })).toBeVisible();
-    await expect(vocabulaire.getByText("active", { exact: true })).toHaveCount(0);
+    await expect(marked(vide)).toBeVisible();
+    await expect(marked(vocabulaire)).toHaveCount(0);
     await expect(vocabulaire.getByRole("button", { name: "Rendre active l'étiquette « Vocabulaire homérique et tragique »" })).toBeAttached();
     // Not on the favorites.
     await expect(card(page, "Favoris").getByRole("button", { name: /^Rendre active/ })).toHaveCount(0);
@@ -421,7 +425,7 @@ test.describe("bookmarks page", () => {
     await expect(menu).toContainText("Vide");
     await menu.click();
     await page.getByRole("option", { name: "Vocabulaire homérique et tragique" }).click();
-    await expect(vocabulaire.getByText("active", { exact: true })).toBeVisible();
+    await expect(marked(vocabulaire)).toBeVisible();
     await expect(menu).toContainText("Vocabulaire homérique et tragique");
   });
 
@@ -656,7 +660,7 @@ test.describe("bookmarks page, quotas", () => {
 test.describe("bookmarks page, sorting and pinning", () => {
   // The cards' names, in order (the favorites first).
   const cardNames = (page: Page) => page.locator("main section > .group").evaluateAll(cards =>
-    cards.map(card => card.querySelector("[data-slot=header] span.font-bold")?.firstChild?.textContent?.trim() ?? "Favoris"));
+    cards.map(card => card.querySelector("[data-slot=header] [role=heading]")?.firstChild?.textContent?.trim() ?? "Favoris"));
 
   test("the tags sorted as chosen on the device, the pinned ones first", async ({ page, goto }) => {
     await goto("/signets", { waitUntil: "hydration" });
