@@ -567,7 +567,11 @@
     <!-- Tag data and actions -->
     <!--
       A long tag name wraps: the row grows (`min-h-8`), the icon and the
-      actions staying on its first line.
+      actions staying on its first line. On mobile, the name and its icon a
+      step smaller (18 and 20 px, against 24 from `md`): more of the name
+      on a line. The name 12 px from its icon; the description and the
+      content aligned with it at both sizes (40 px, 44 from `md`), as is
+      the edit field's text.
     -->
     <template #header>
       <div class="flex min-h-8 w-full items-start gap-3">
@@ -584,13 +588,13 @@
           >
             <UIcon
               :name="icon"
-              class="mx-2 mt-1 size-6 shrink-0"
+              class="mx-2 mt-1.5 size-5 shrink-0 md:mt-1 md:size-6"
             />
             <span
               :id="nameHeadingId"
               role="heading"
               aria-level="2"
-              class="ml-2 min-w-0 grow py-0.5 pe-2 text-xl/7 font-bold wrap-break-word md:py-0 md:text-2xl/8"
+              class="ml-1 min-w-0 grow py-0.5 pe-2 text-lg/7 font-bold wrap-break-word md:py-0 md:text-2xl/8"
             >{{ tag.name }}<!--
               The active tag, marked after its name (as in an entry's panel), in
               the tag's colors inverted: it stands out.
@@ -604,10 +608,17 @@
             /></span>
           </div>
 
-          <!-- Edit tag data -->
+          <!--
+            Edit tag data. The place of the actions is that of three buttons
+            (cf. below); with two (the description's field shown, no button
+            to add one), the field takes the third's (28 px and a gap of
+            12: the field then ends as far from the buttons as with three),
+            the cell, and the name in it, keeping their width.
+          -->
           <div
             v-show="editableEditMode"
             class="col-start-1 row-start-1 flex min-w-0 items-start"
+            :class="{ '-me-10': showsDescriptionField }"
           >
             <!--
               The color and the name, one field on one line (Enter validates),
@@ -650,7 +661,8 @@
                         variant="ghost"
                         color="neutral"
                         :ui="{
-                          base: 'h-8 w-10 justify-center rounded-l-lg rounded-r-none bg-transparent hover:bg-transparent active:bg-transparent data-[state=open]:bg-transparent focus-visible:outline-none hover:text-(--tag-500) active:text-(--tag-500) focus-visible:text-(--tag-500) data-[state=open]:text-(--tag-500)',
+                          base: 'h-8 w-9 md:w-10 justify-center rounded-l-lg rounded-r-none bg-transparent hover:bg-transparent active:bg-transparent data-[state=open]:bg-transparent focus-visible:outline-none hover:text-(--tag-500) active:text-(--tag-500) focus-visible:text-(--tag-500) data-[state=open]:text-(--tag-500)',
+                          leadingIcon: 'size-5 md:size-6',
                         }"
                       />
                     </template>
@@ -665,7 +677,7 @@
                     :aria-describedby="nameErrorId"
                     :aria-invalid="!!nameError"
                     :maxlength="IdbTags.nameMaxLength"
-                    class="min-w-0 grow rounded-r-lg bg-transparent px-2 py-0.5 text-xl/7 font-bold text-tag-text focus:outline-none md:py-0 md:text-2xl/8"
+                    class="min-w-0 grow rounded-r-lg bg-transparent py-0.5 ps-1 pe-2 text-lg/7 font-bold text-tag-text focus:outline-none md:py-0 md:text-2xl/8"
                   >
                 </div>
               </template>
@@ -789,7 +801,7 @@
       <p
         v-if="tagDescription && !showsDescriptionField"
         :id="descriptionId"
-        class="ms-10 mt-1 px-2 py-1 text-base/6 whitespace-pre-line wrap-break-word text-tag-text"
+        class="ms-8 mt-1 px-2 py-1 text-base/6 whitespace-pre-line wrap-break-word text-tag-text md:ms-9"
         v-text="tagDescription"
       />
       <!--
@@ -802,7 +814,7 @@
       -->
       <div
         v-else-if="showsDescriptionField"
-        class="ms-10 mt-1"
+        class="ms-8 mt-1 md:ms-9"
       >
         <UPopover
           :open="!!descriptionFailure || isDescriptionFocused"
@@ -888,7 +900,7 @@
     <!-- Content -->
     <template v-if="!entries.length">
       <!-- Aligned with the name (as the description). -->
-      <p class="ms-12 font-semibold text-tag-text">
+      <p class="ms-10 font-semibold text-tag-text md:ms-11">
         <slot />
       </p>
     </template>
