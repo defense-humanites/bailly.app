@@ -210,9 +210,10 @@
           {{ name }}
         </h2>
         <!--
-          The card, a link to the entry (its definition without links); the
-          arrow of the entries' links in its corner, where an entry's
-          toolbar would be.
+          The card, a link to the entry (its definition without links); in
+          its corner, where an entry's toolbar would be, « maximize »: the
+          whole text of the entry (not ↗, the mark of the links leaving the
+          site, cf. the `link` utility).
         -->
         <NuxtLink
           :to="entryRoute(entry.uri)"
@@ -232,7 +233,7 @@
             >
               <template #aside>
                 <UIcon
-                  name="i-lucide-arrow-up-right"
+                  name="i-lucide-maximize-2"
                   class="size-5 text-dimmed transition-colors group-hover:text-primary"
                 />
               </template>
