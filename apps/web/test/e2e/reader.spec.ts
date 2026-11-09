@@ -84,6 +84,15 @@ test.describe("page of an ambiguous form", () => {
     await expect(card).toContainText("pronom démonstratif");
   });
 
+  test("a group of homonyms: a card each, numbered, leading to the homonym", async ({ page, goto }) => {
+    await goto(`/forme/${encodeURIComponent("ἐρῶ")}`, { waitUntil: "hydration" });
+    await expect(page.locator("main header").first()).toContainText("Graphie ambiguë · 5 entrées");
+    await expect(page.getByRole("heading", { level: 2 })).toHaveText(["ἐράω-ῶ", "ἐρέω¹", "ἐρέω²", "ἐρῶ¹", "ἐρῶ²"]);
+    const card = page.getByRole("link", { name: "Ouvrir l'entrée ἐρέω²" });
+    await expect(card).toHaveAttribute("href", "/ereô#2");
+    await expect(card.locator("sup.homonym")).toHaveText("2");
+  });
+
   test("the entries come from the dictionary, never from the address", async ({ page, goto }) => {
     // The former `?q=` is ignored: it let anyone list any entry under a form.
     await goto(`${formUrl}?q=hai_(1),ho_(1),logos`, { waitUntil: "hydration" });

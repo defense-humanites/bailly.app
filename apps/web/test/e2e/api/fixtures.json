@@ -763,6 +763,69 @@
    ]
   }
  },
+ "/form/ἐρῶ?fields=word,uri,excerpt,htmlDefinition": {
+  "data": {
+   "$query": {
+    "form": "ἐρῶ",
+    "fields": [
+     "word",
+     "uri",
+     "excerpt",
+     "htmlDefinition"
+    ]
+   },
+   "version": "2023-02-28",
+   "form": "ἐρῶ",
+   "entries": [
+    {
+     "word": "ἐράω-ῶ",
+     "uri": "eraô-ô",
+     "excerpt": "ἐράω-ῶ (seul. prés. et impf. ἤρων) 1 aimer d’amour, être épris de : τινος, Hdt. 9, 108, etc. Xén. Cyr. 5, 1, 10, etc. qqn ; ὁ ἐρῶν, Pd. O. 1, 80 ; Xé…",
+     "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">ἐράω-ῶ</span></span> (<span class=\"ital\">seul.</span>\n<span class=\"ital\">prés. et impf.</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"aroô-ô,ear,êra_(1),êrôn\">ἤρων</span></span>)\n<div class=\"pp\"><span class=\"ppa\">1</span> aimer d’amour, être\népris de : <span class=\"grec\"><a href=\"/tis_(2)\">τινος</a>,</span> <span class=\"aut\">Hdt.</span> <span class=\"refch\">9, 108,</span> <span class=\"ital\">etc.</span> <span class=\"aut\">Xén.</span> <span class=\"oeuv\">Cyr.</span> <span class=\"refch\">5, 1, 10,</span>\n<span class=\"ital\">etc.</span> qqn ; <span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a>\n<span data-linked-self data-linked-alternatives=\"ereô,erô_(2)\">ἐρῶν</span>,</span> <span class=\"aut\">Pd.</span> <span class=\"oeuv\">O.</span> <span class=\"refch\">1, 80 ;</span> <span class=\"aut\">Xén.</span> <span class=\"oeuv\">Conv.</span> <span class=\"refch\">4, 63,</span> l’amant ; <span class=\"grec\"><a href=\"/ho_(1)\">ὁ</a>\n<span data-linked-self>ἐρώμενος</span>,</span> <span class=\"aut\">Xén.</span> <span class=\"oeuv\">Conv.</span> <span class=\"refch\">8, 36 ;</span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phædr.</span> <span class=\"refpa\">239</span><span class=\"refpb\">a</span>, l’homme aimé ;\n<span class=\"grec\"><span data-linked-entries=\"hê_(1),ho_(1)\">ἡ</span> <span data-linked-self>ἐρωμένη</span>,</span> <span class=\"aut\">Hdt.</span>\n<span class=\"refch\">3, 36,</span> la femme aimée ||</div>\n<div class=\"pp\"><span class=\"ppa\">2</span> <span class=\"ital\">p.\next.</span> aimer passionnément, <span class=\"ital\">mais sans idée\nd’amour, p. opp. à</span> <span class=\"grec\"><a href=\"/phileô\">φιλέω</a>,</span>\n<span class=\"ital\">gén.</span> <span class=\"aut\">Plat.</span>\n<span class=\"oeuv\">Lys.</span> <span class=\"refpa\">222</span><span class=\"refpb\">a</span> ; <span class=\"ital\">au pass.</span> <span class=\"aut\">Xén.</span> <span class=\"oeuv\">Hier.</span> <span class=\"refch\">11, 11 ;</span>\n<span class=\"aut\">Plut.</span> <span class=\"oeuv\">Brut.</span>\n<span class=\"refch\">29</span> ||</div>\n<div class=\"pp\"><span class=\"ppa\">3</span> <span class=\"ital\">p.\nsuite,</span> désirer vivement, souhaiter, <span class=\"ital\">gén.</span> <span class=\"aut\">Eschl.</span> <span class=\"oeuv\">Sept.</span> <span class=\"refch\">392 ;</span> <span class=\"aut\">Soph.</span> <span class=\"oeuv\">Ant.</span> <span class=\"refch\">90 ;</span> <span class=\"aut\">Xén.</span> <span class=\"oeuv\">Ages.</span> <span class=\"refch\">10, 4 ;</span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phædr.</span> <span class=\"refpa\">257</span><span class=\"refpb\">e</span> ; <span class=\"ital\">avec l’inf.</span> <span class=\"aut\">Soph.</span>\n<span class=\"oeuv\">Ant.</span> <span class=\"refch\">220 ;</span>\n<span class=\"aut\">Xén.</span> <span class=\"oeuv\">Hell.</span>\n<span class=\"refch\">7, 5, 16 ;</span> <span class=\"aut\">Plat.</span> <span class=\"oeuv\">Phil.</span> <span class=\"refpa\">34</span><span class=\"refpb\">a</span> ||</div>\n<div class=\"sect\"><span class=\"secta\">Moy.</span> (<span class=\"ital\">seul.</span> <span class=\"ital\">prés.</span>) aimer d’amour,\nêtre épris de, <span class=\"aut\">Il.</span> <span class=\"refch\">16,\n208</span> ||</div>\n<div class=\"fleche\"><span class=\"flechea\">E</span> <span class=\"ital\">Act. prés. ion.</span> <span class=\"grec\"><span data-linked-entries=\"ereô,erô_(2)\">ἐρέω</span>,</span>\n<span class=\"aut\">Archil.</span> <span class=\"refch\">21,\n68 ;</span> <span class=\"ital\">3 pl. dor.</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"ereô\">ἐρῶντι</span></span> <span class=\"ital\">ou</span> <span class=\"grec\"><span data-linked-self>ἐρᾶντι</span>,</span> <span class=\"aut\">Thcr.</span> <span class=\"oeuv\">Idyl.</span> <span class=\"refch\">7, 97 ;</span> <span class=\"ital\">sbj. 2 sg. éol.</span> <span class=\"grec\">ἔρῃς,</span>\n<span class=\"aut\">Thcr.</span> <span class=\"oeuv\">Idyl.</span>\n<span class=\"refch\">29, 20</span> <span class=\"ital\">conj.</span> —\n<span class=\"ital\">Moy. impf. 2 pl. épq.</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"eramai\">ἐράασθε</span>,</span> <span class=\"ital\">p.</span> <span class=\"grec\"><span data-linked-self>ἐρᾶσθε</span></span> (<span class=\"ital\">p.</span> <span class=\"grec\">*ἠράεσθε</span>) <span class=\"aut\">Il.</span> <span class=\"refch\">16, 208</span>.</div>\n<div class=\"etymrev\"><span class=\"etiqetymrev\">Étym.</span>\n<span class=\"ital\">Étymol. inconnue</span>.</div>\n"
+    },
+    {
+     "word": "ἐρέω",
+     "uri": "ereô",
+     "excerpt": "",
+     "htmlDefinition": "",
+     "children": [
+      {
+       "word": "ἐρέω",
+       "uri": "ereô#1",
+       "excerpt": "ἐρέω (seul. prés. et impf. ion. ἤρεον) dire, Hpc. 3, 88 Littré. Étym. cf. εἶπον. ",
+       "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">ἐρέω</span></span> (<span class=\"ital\">seul. prés. et impf.\nion.</span> <span class=\"grec\"><span data-linked-self>ἤρεον</span></span>) dire, <span class=\"aut\">Hpc.</span> <span class=\"refch\">3, 88 Littré</span>.\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"ital\">cf.</span> <span class=\"grec\"><span data-linked-entries=\"eipon,eipos\">εἶπον</span></span>.</div>\n"
+      },
+      {
+       "word": "ἐρέω",
+       "uri": "ereô#2",
+       "excerpt": "ἐρέω (seul. aux formes ci-dessous) demander : τι, Il. 7, 128 ; Od. 21, 31, qqe ch. ; τινα, Il. 1, 62 ; Od. 4, 192 ; 11, 229, interroger qqn || E Act.…",
+       "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">ἐρέω</span></span> (<span class=\"ital\">seul. aux formes\nci-dessous</span>) demander : <span class=\"grec\"><a href=\"/tis_(2)\">τι</a>,</span>\n<span class=\"aut\">Il.</span> <span class=\"refch\">7, 128 ;</span>\n<span class=\"aut\">Od.</span> <span class=\"refch\">21, 31,</span> qqe\nch. ; <span class=\"grec\"><a href=\"/tis_(2)\">τινα</a>,</span> <span class=\"aut\">Il.</span>\n<span class=\"refch\">1, 62 ;</span> <span class=\"aut\">Od.</span>\n<span class=\"refch\">4, 192 ;</span> <span class=\"refch\">11,\n229,</span> interroger qqn ||\n<div class=\"fleche\"><span class=\"flechea\">E</span> <span class=\"ital\">Act. prés. sbj. 1 pl. épq.</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"ereiomen,rheô\">ἐρείομεν</span></span> (<span class=\"ital\">p.</span> <span class=\"grec\"><span data-linked-self>ἐρέωμεν</span></span>) <span class=\"aut\">Il.</span> <span class=\"refch\">1, 62 ;</span> <span class=\"ital\">opt. 1 sg.</span>\n<span class=\"grec\"><span data-linked-self data-linked-alternatives=\"erô_(2)\">ἐρέοιμι</span>,</span> <span class=\"aut\">Od.</span>\n<span class=\"refch\">11, 229 ;</span> <span class=\"ital\">1\npl.</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"erô_(2)\">ἐρέοιμεν</span>,</span> <span class=\"aut\">Od.</span> <span class=\"refch\">4, 192 ;</span> <span class=\"ital\">part.</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"erô_(2)\">ἐρέων</span>,</span> <span class=\"aut\">Il.</span> <span class=\"refch\">7, 128</span>. <span class=\"ital\">Moy. prés.</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"ereomai,eromai,erô_(2)\">*ἐρέομαι</span>,</span>\n<span class=\"ital\">d’où sbj.</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"ereomai,eromai\">ἐρέωμαι</span>,</span> <span class=\"aut\">Od.</span> <span class=\"refch\">17, 509 ;</span> <span class=\"ital\">inf.</span>\n<span class=\"grec\"><span data-linked-self data-linked-alternatives=\"ereomai,eromai,erô_(2)\">ἐρέεσθαι</span>,</span> <span class=\"aut\">Od.</span>\n<span class=\"refch\">6, 298,</span> <span class=\"ital\">etc. ;</span>\n<span class=\"ital\">impf. 3 pl. poét.</span> <span class=\"grec\"><span data-linked-self data-linked-alternatives=\"ereomai,eromai\">ἐρέοντο</span>,</span> <span class=\"aut\">Il.</span> <span class=\"refch\">1, 332 ;</span> <span class=\"refch\">8, 445 ;</span>\n<span class=\"refch\">9, 671 ;</span> <span class=\"aut\">Od.</span>\n<span class=\"refch\">10, 63,</span> <span class=\"ital\">etc.</span></div>\n<div class=\"etymor\"><span class=\"etiqetymor\">Étym.</span>\n<span class=\"ital\">cf.</span> <span class=\"grec\"><a href=\"/eromai\">*ἔρομαι</a></span>\n<span class=\"ital\">et</span> <span class=\"grec\"><span data-linked-entries=\"eiromai,eirô,eromai\">εἴρομαι</span></span>.</div>\n"
+      }
+     ]
+    },
+    {
+     "word": "ἐρῶ",
+     "uri": "erô_(2)",
+     "excerpt": "",
+     "htmlDefinition": "",
+     "children": [
+      {
+       "word": "ἐρῶ",
+       "uri": "erô_(2)#1",
+       "excerpt": "ἐρῶ, fut. d’εἴρω 2.",
+       "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">ἐρῶ,</span></span> <span class=\"ital\">fut. d’</span><span class=\"grec\"><a href=\"/eirô\">εἴρω</a> 2</span>."
+      },
+      {
+       "word": "ἐρῶ",
+       "uri": "erô_(2)#2",
+       "excerpt": "ἐρῶ, contr. d’ἐράω.",
+       "htmlDefinition": "<span class=\"entreea\"><span class=\"grec\">ἐρῶ,</span></span> <span class=\"ital\">contr. d’</span><span class=\"grec\"><a href=\"/eraô-ô\">ἐράω</a></span>."
+      }
+     ]
+    }
+   ]
+  }
+ },
  "/form/λόγος?fields=uri": {
   "data": {
    "$query": {

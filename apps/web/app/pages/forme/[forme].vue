@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { citedLemma } from "~/utils/citation";
   import { entryRoute } from "~/utils/entryUri";
   import { definitionLength } from "~/utils/definitionLength";
 
@@ -71,8 +72,18 @@
     return length > 450 * SIZE_SCALE[readingSize.value] ** 2;
   };
 
-  const sections = computed(() => entries.value.map((entry, index) => ({ id: `entree-${index + 1}`, entry })));
-  const countLabel = computed(() => `${entries.value.length} ${entries.value.length > 1 ? "entrées" : "entrée"}`);
+  /**
+   * A card per entry, and per homonym for a group (`x#1`, `x#2`…): the
+   * dictionary's links lead to the group, never to one of its homonyms, and
+   * this page is where they are told apart. Each homonym has its own cut
+   * (in a single card, the first one hid the others: 565 forms) and leads
+   * to its anchor in the entry's page; its number follows its headword
+   * (cf. `EntryCard`, `citedLemma`).
+   */
+  const sections = computed(() => entries.value
+    .flatMap(entry => entry.children?.length ? entry.children : [entry])
+    .map((entry, index) => ({ id: `entree-${index + 1}`, entry, name: greek.text(citedLemma(entry)) })));
+  const countLabel = computed(() => `${sections.value.length} ${sections.value.length > 1 ? "entrées" : "entrée"}`);
 
   const measured = ref<Record<string, boolean>>({});
   const clipped = (id: string, entry: (typeof entries.value)[number]): boolean => measured.value[id] ?? guessClipped(entry);
@@ -119,7 +130,7 @@
   /**
    * The headwords' table of contents below `xl` (cf. `BookmarksToc`).
    */
-  const toc = computed(() => sections.value.map(({ id, entry }) => ({ key: id, id, name: greek.text(entry.word), serif: true })));
+  const toc = computed(() => sections.value.map(({ id, name }) => ({ key: id, id, name, serif: true })));
 </script>
 
 <template>
@@ -151,7 +162,7 @@
         >
           <ul class="space-y-1">
             <li
-              v-for="{ id, entry } in sections"
+              v-for="{ id, name } in sections"
               :key="id"
             >
               <NuxtLink
@@ -161,7 +172,7 @@
                 class="block truncate rounded-md px-2.5 py-1.5 font-serif text-sm transition-colors focus-visible:outline-2 focus-visible:outline-(--ui-border-inverted)"
                 :class="currentId === id ? 'bg-(--app-page-active) font-semibold text-highlighted' : 'text-muted hover:bg-(--app-page-hover) hover:text-highlighted'"
                 @click="pointOut(id)"
-              >{{ greek.text(entry.word) }}</NuxtLink>
+              >{{ name }}</NuxtLink>
             </li>
           </ul>
         </nav>
@@ -186,7 +197,7 @@
       class="space-y-6"
     >
       <section
-        v-for="{ id, entry } in sections"
+        v-for="{ id, entry, name } in sections"
         :id="id"
         :key="id"
         :aria-labelledby="`${id}-titre`"
@@ -196,7 +207,7 @@
           :id="`${id}-titre`"
           class="sr-only"
         >
-          {{ greek.text(entry.word) }}
+          {{ name }}
         </h2>
         <!--
           The card, a link to the entry (its definition without links); the
@@ -205,7 +216,7 @@
         -->
         <NuxtLink
           :to="entryRoute(entry.uri)"
-          :aria-label="`Ouvrir l'entrée ${greek.text(entry.word)}`"
+          :aria-label="`Ouvrir l'entrée ${name}`"
           class="group block rounded-lg bg-default ring ring-default transition-shadow hover:shadow-md hover:ring-accented focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           <div
