@@ -231,11 +231,20 @@
               no-anchors
               :ui="{ root: 'bg-transparent shadow-none ring-0' }"
             >
+              <!--
+                The icon at the definition's text size (the reading size,
+                1.125 em), centered on its first line (a line of the
+                definition being 1.8 em high, cf. `.definition`): fixed
+                (20 px), it looked large beside a small text and stood above
+                a large one.
+              -->
               <template #aside>
-                <UIcon
-                  name="i-lucide-maximize-2"
-                  class="size-5 text-dimmed transition-colors group-hover:text-primary"
-                />
+                <span class="flex h-[calc(var(--reading-font-size)*1.8)] items-center">
+                  <UIcon
+                    name="i-lucide-maximize-2"
+                    class="size-[calc(var(--reading-font-size)*1.125)] text-dimmed transition-colors group-hover:text-primary"
+                  />
+                </span>
               </template>
             </EntryCard>
           </div>

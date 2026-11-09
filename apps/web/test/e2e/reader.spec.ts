@@ -84,6 +84,21 @@ test.describe("page of an ambiguous form", () => {
     await expect(card).toContainText("pronom démonstratif");
   });
 
+  test("the cards' icon at the reading size, centered on the first line", async ({ page, goto }) => {
+    await goto(formUrl, { waitUntil: "hydration" });
+    for (const [size, px] of [["small", 14], ["larger", 18.5]] as const) {
+      await page.evaluate((value) => {
+        document.documentElement.setAttribute("data-reading-size", value);
+      }, size);
+      const card = page.getByRole("link", { name: "Ouvrir l'entrée ὁ" });
+      const icon = await card.locator("[class*='maximize']").boundingBox();
+      const line = await card.locator(".definition").boundingBox();
+      expect(icon!.width).toBeCloseTo(px * 1.125, 0);
+      // The icon's middle at the first line's (1.8 em high).
+      expect(icon!.y + icon!.height / 2).toBeCloseTo(line!.y + px * 0.9, 0);
+    }
+  });
+
   test("a group of homonyms: a card each, numbered, leading to the homonym", async ({ page, goto }) => {
     await goto(`/forme/${encodeURIComponent("ἐρῶ")}`, { waitUntil: "hydration" });
     await expect(page.locator("main header").first()).toContainText("Graphie ambiguë · 5 entrées");
