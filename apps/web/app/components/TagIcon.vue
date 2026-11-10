@@ -5,8 +5,9 @@
    * active) over the top right corner: three quarters as large, cut out of
    * the icon (`.active-mark-host`, a mask: whatever the background, a card's
    * tint or a highlighted row), a little lighter (75 %) to stand out from it.
-   * Sized by its class; « active » is for the caller to say to screen
-   * readers.
+   * Sized by its class, as is the mark (`--mark-size`, `--mark-top`,
+   * `--mark-left`, in percents of the icon; by default 75 %, -30 %,
+   * 58.75 %); « active » is for the caller to say to screen readers.
    */
   defineProps<{
     /** The icon. */
@@ -17,7 +18,10 @@
 </script>
 
 <template>
-  <span class="relative inline-block shrink-0">
+  <span
+    data-tag-icon
+    class="relative inline-block shrink-0"
+  >
     <UIcon
       :name
       class="block size-full"
@@ -27,7 +31,7 @@
       v-if="active"
       name="i-bailly-active"
       data-active-mark
-      class="absolute -top-[30%] left-[58.75%] block size-3/4 opacity-75"
+      class="absolute top-(--mark-top,-30%) left-(--mark-left,58.75%) block size-(--mark-size,75%) opacity-75"
     />
   </span>
 </template>

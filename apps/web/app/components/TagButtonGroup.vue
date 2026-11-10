@@ -544,7 +544,9 @@
               table of contents and active tag's menu): filled when the entry
               has it; the active tag's marked, as on its card (cf.
               `TagIcon`), « active » in its name for screen readers. A margin
-              for the mark, which overhangs the icon (the names aligned).
+              for the mark, which overhangs the icon (the names aligned); the
+              mark a little smaller (70 %) and lower (from -20 %), clear of
+              the highlighted row's top (6 px above the icon).
             -->
             <template #item-leading="{ item }">
               <TagIcon
@@ -553,7 +555,7 @@
                   : (entryTagKeys.has(item.key) ? 'i-bailly-tag-filled' : 'i-lucide-tag')"
                 :active="item.key === currentTag?.key"
                 :data-tag-color="item.color"
-                class="me-1.5 size-5 text-tag-text"
+                class="me-1.5 size-5 text-tag-text [--mark-left:60%] [--mark-size:70%] [--mark-top:-20%]"
               />
             </template>
             <template #item-trailing="{ item }">
