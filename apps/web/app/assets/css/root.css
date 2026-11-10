@@ -30,7 +30,10 @@
 
   --ui-border: var(--ui-color-neutral-200);
   --ui-border-muted: var(--ui-color-neutral-200);
-  --ui-border-accented: var(--ui-color-neutral-300);
+  /* The outline buttons' and fields' borders (Nuxt UI's `ring-accented`,
+     the bookmarks' bar): between marble 300 and 200 (the cards'), set
+     apart from the cards without standing out (10 November 2026). */
+  --ui-border-accented: color-mix(in oklab, var(--ui-color-neutral-300) 50%, var(--ui-color-neutral-200));
   --ui-border-inverted: var(--ui-color-neutral-900);
 
   /* The page (the cards, panels and fields are on `--ui-bg`, lighter). */
@@ -98,7 +101,7 @@
      `bubble.ts`): a shade darker than the cards and the page (marble 200),
      a clear border (marble 300), set apart from the panels (raised). */
   --app-bubble-bg: var(--ui-color-neutral-200);
-  --app-bubble-ring: var(--ui-border-accented);
+  --app-bubble-ring: var(--ui-color-neutral-300);
   /* The fields of the bookmarks' bar (cf. `FIELD_BACKGROUND`): raised
      (lighter) as surfaces, hovered or focused, unlike its buttons. */
   --app-field-bg: var(--ui-bg);
@@ -145,7 +148,9 @@
      marble 800 stood out more (1.39:1, and 1.71:1 on the page). */
   --ui-border: color-mix(in oklab, var(--ui-color-neutral-800) 65%, var(--ui-color-neutral-900));
   --ui-border-muted: var(--ui-border);
-  --ui-border-accented: var(--ui-color-neutral-700);
+  /* The outline buttons' and fields' borders: between marble 700 and 800,
+     as in the light theme (cf. `:root`). */
+  --ui-border-accented: color-mix(in oklab, var(--ui-color-neutral-700) 50%, var(--ui-color-neutral-800));
   --ui-border-inverted: var(--ui-color-neutral-100);
 
   --app-page-bg: var(--color-vernis);
