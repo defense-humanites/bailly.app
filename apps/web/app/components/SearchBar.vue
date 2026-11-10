@@ -87,13 +87,12 @@
   });
 
   /**
-   * Whether the results are shown: as the input asks (typing, focus,
-   * Escape…), as long as there is something to look up (not for an empty
-   * input, nor a lone pending diacritic or capital mark).
+   * Whether the results are asked for (typing, focus, Escape…), and whether
+   * there is something to look up (not for an empty input, nor a lone
+   * pending diacritic or capital mark); cf. `shown`.
    */
   const open = ref(false);
   const searchable = computed((): boolean => lookupQuery.value !== "");
-  const shown = computed((): boolean => open.value && searchable.value);
 
   /**
    * Whether the input method is composing.
@@ -269,11 +268,33 @@
   const hasQuery = computed((): boolean => query.value.trim() !== "");
 
   /**
-   * The results, in their groups (cf. `searchResultGroups`): none for an
-   * empty input (no stale results). They change with the result (and not as
-   * letters are typed): the list is only rendered again then.
+   * Whether a search was answered (its results, or its failure) since the
+   * input was last empty: until then, there is nothing to show, neither the
+   * results of an earlier search nor a « Recherche… » (e.g. at the first
+   * search); a slow search is told by the bar's count (cf. `slow`). After
+   * that, the results of the previous letters remain until the next ones
+   * come.
    */
-  const groups = computed(() => (hasQuery.value ? searchResultGroups(result.value?.entries ?? []) : []));
+  const answered = ref(hasQuery.value && result.value !== null);
+  watch(hasQuery, (has) => {
+    if (!has) answered.value = false;
+  });
+  watch([result, status], ([, value]) => {
+    if (hasQuery.value && (value === "success" || value === "error")) answered.value = true;
+  });
+
+  /**
+   * Whether the results are shown: asked for, something to look up, and an
+   * answer to show (cf. `answered`).
+   */
+  const shown = computed((): boolean => open.value && searchable.value && answered.value);
+
+  /**
+   * The results, in their groups (cf. `searchResultGroups`): none until a
+   * search is answered (cf. `answered`). They change with the result (and
+   * not as letters are typed): the list is only rendered again then.
+   */
+  const groups = computed(() => (answered.value ? searchResultGroups(result.value?.entries ?? []) : []));
   const results = computed((): SearchResultItem[] => groups.value.flatMap(group => group.items));
 
   const hasMorpheusResults = computed((): boolean =>
@@ -296,11 +317,13 @@
     return `${formatCount(others)} ${others === 1 ? "autre résultat" : "autres résultats"}\u00a0: précisez votre recherche.`;
   });
 
-  /** What the panel says without results. */
+  /**
+   * What the panel says without results: about the search answered last
+   * (`resultQuery`), the next one pending meanwhile (cf. `answered`).
+   */
   const emptyText = computed((): string => {
-    if (pending.value) return "Recherche…";
     if (status.value === "error") return "La recherche a échoué. Veuillez réessayer.";
-    return `Aucun résultat pour «\u00a0${query.value}\u00a0».`;
+    return `Aucun résultat pour «\u00a0${resultQuery.value}\u00a0».`;
   });
 
   /**
@@ -494,7 +517,7 @@
         class="absolute inset-y-0 end-0 flex items-center pe-3"
       >
         <UBadge
-          v-if="query && (slow || result)"
+          v-if="query && (slow || (answered && result))"
           color="neutral"
           variant="soft"
           size="sm"

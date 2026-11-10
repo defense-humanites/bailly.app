@@ -195,6 +195,29 @@ test.describe("search bar", () => {
     await expect(spinner).toHaveCount(0, { timeout: 3000 });
   });
 
+  test("opens with the first results, not with a wait (the bar's count tells it)", async ({ page }) => {
+    await page.route("**/lookup/**", async (route) => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await route.continue();
+    });
+    const input = searchInput(page);
+    await input.click();
+    await input.pressSequentially("log");
+    await page.waitForTimeout(600);
+    await expect(searchResults(page)).toHaveCount(0);
+    await expect(page.locator("header [data-slot=trailing] .animate-spin")).toHaveCount(1);
+    await expect(searchResults(page).getByRole("option").first()).toBeVisible({ timeout: 3000 });
+    // A letter more: the results of « λογ » remain until the next ones.
+    await input.pressSequentially("o");
+    await page.waitForTimeout(300);
+    await expect(searchResults(page).getByRole("option").first()).toBeVisible();
+    // Emptied, then typed again: no earlier results meanwhile.
+    await input.fill("");
+    await input.pressSequentially("a");
+    await page.waitForTimeout(300);
+    await expect(searchResults(page)).toHaveCount(0);
+  });
+
   test("closes on Escape and reopens on focus", async ({ page }) => {
     const input = searchInput(page);
     await input.fill("logos");
