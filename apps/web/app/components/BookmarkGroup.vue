@@ -559,7 +559,9 @@
     :ui="{
       // The tint of the tag, opaque (mixed with the page's background, as it
       // was seen through): the page's motif no longer shows under the text.
-      root: 'bg-[color-mix(in_srgb,var(--tag-200)_50%,var(--app-page-bg))] border-tag-300/50',
+      // Its border lighter in the dark theme (where the tints are deeper):
+      // as marked as in the light one.
+      root: 'bg-[color-mix(in_srgb,var(--tag-200)_50%,var(--app-page-bg))] border-tag-300/50 dark:border-tag-300/35',
       header: 'flex flex-col !px-3 pb-0',
       body: '@container !p-3 text-default',
     }"

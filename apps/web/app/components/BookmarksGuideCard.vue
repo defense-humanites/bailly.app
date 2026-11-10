@@ -17,13 +17,14 @@
 
   /**
    * The surface, as the news' asides (the survey's, the contact's): tinted,
-   * a pale background and a border of the color; neutral, the bookmarks'
-   * cards' (the variant's).
+   * a pale background and a border of the color (lighter in the dark theme,
+   * where the colors are brighter: as marked as in the light one); neutral,
+   * the bookmarks' cards' (the variant's).
    */
   const SURFACE = {
     neutral: "",
-    primary: "bg-primary/5 border-primary/15",
-    secondary: "bg-secondary/5 border-secondary/20",
+    primary: "bg-primary/5 border-primary/15 dark:border-primary/10",
+    secondary: "bg-secondary/5 border-secondary/20 dark:border-secondary/14",
   };
   /**
    * The close button's ring and cross: in the card's color, as the buttons

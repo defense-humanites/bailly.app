@@ -140,8 +140,11 @@
   --ui-bg-accented: var(--ui-color-neutral-700);
   --ui-bg-inverted: var(--ui-color-neutral-100);
 
-  --ui-border: var(--ui-color-neutral-800);
-  --ui-border-muted: var(--ui-color-neutral-800);
+  /* The cards' borders (and the dividers) between marble 800 and 900 (65 %),
+     as far from the cards as in the light theme (1.27:1, 1.23:1 there):
+     marble 800 stood out more (1.39:1, and 1.71:1 on the page). */
+  --ui-border: color-mix(in oklab, var(--ui-color-neutral-800) 65%, var(--ui-color-neutral-900));
+  --ui-border-muted: var(--ui-border);
   --ui-border-accented: var(--ui-color-neutral-700);
   --ui-border-inverted: var(--ui-color-neutral-100);
 
