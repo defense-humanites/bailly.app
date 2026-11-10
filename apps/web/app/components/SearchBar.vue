@@ -114,6 +114,33 @@
   let composing = false;
 
   /**
+   * The query typed, set once the letter is painted (with the results to
+   * open, if any): rendering the results again (the input menu renders its
+   * whole list at each letter) then happens after the paint that answers
+   * the keystroke, in a task of its own, rather than delaying it (the INP
+   * of the search bar, on mobile). Several letters within a frame set the
+   * last one. `flushQuery` sets it at once, before what reads it (Enter).
+   */
+  let pendingQuery: { value: string; open: boolean } | null = null;
+  const flushQuery = (): void => {
+    if (!pendingQuery) return;
+    const { value, open: opens } = pendingQuery;
+    pendingQuery = null;
+    query.value = value;
+    if (opens) open.value = true;
+  };
+  const setQueryAfterPaint = (value: string, opens = false): void => {
+    const scheduled = pendingQuery !== null;
+    pendingQuery = { value, open: opens || (pendingQuery?.open ?? false) };
+    if (scheduled) return;
+    requestAnimationFrame(() => {
+      const channel = new MessageChannel();
+      channel.port1.onmessage = flushQuery;
+      channel.port2.postMessage(null);
+    });
+  };
+
+  /**
    * Whether the input may be converted while the input method composes: when
    * it has Beta Code (Latin letters, diacritics `/\=()+|`, capital mark
    * `*`; it being converted as it is typed, only what was just typed). The
@@ -139,7 +166,7 @@
     if (typeof value !== "string") return;
 
     if (composing && !transliterating.value && !convertibleWhileComposing(value)) {
-      query.value = value;
+      setQueryAfterPaint(value);
       return;
     }
 
@@ -148,7 +175,7 @@
     const caret = input?.selectionStart ?? value.length;
     const converted = convert(value);
 
-    query.value = converted;
+    setQueryAfterPaint(converted);
 
     if (converted !== value) {
       syncInputText(converted, caret === value.length ? converted.length : convert(value.slice(0, caret)).length);
@@ -177,7 +204,8 @@
     if (event.target !== input) return;
     composing = true;
     onInput(input.value);
-    open.value = true;
+    if (pendingQuery) pendingQuery.open = true;
+    else open.value = true;
   };
 
   /**
@@ -208,6 +236,7 @@
   });
 
   const clear = (): void => {
+    pendingQuery = null;
     query.value = "";
     (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
   };
@@ -432,6 +461,7 @@
    */
   const onKeydown = (event: KeyboardEvent): void => {
     if (event.target !== menu.value?.inputRef || event.isComposing || highlightChosen.value) return;
+    flushQuery();
 
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       if (!items.value.length) return;
