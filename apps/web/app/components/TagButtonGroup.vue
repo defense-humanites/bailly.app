@@ -13,6 +13,15 @@
    */
   const TOOLBAR_HOVER = "hover:bg-(--app-button-hover) active:bg-(--app-button-active)";
 
+  /**
+   * The toggle buttons (the active tag, the star): pressed, their icon
+   * filled, at once in the tag's or the favorites' color, without a
+   * transition of the text color (only of the background). On a touch
+   * screen, without a hover that has already given it that color, the
+   * filled icon flashed in the text's color (black in the light theme).
+   */
+  const TOGGLE = "aria-pressed:transition-[background-color]";
+
   const bookmarksStore = useBookmarksStore();
   const { currentTag, initialized, tags } = storeToRefs(bookmarksStore);
 
@@ -434,7 +443,7 @@
         :aria-pressed="taggedAsCurrent"
         :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
         :data-tag-color="currentTag.color"
-        :class="[TOOLBAR_HOVER, taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text', fadeCurrentTag && 'animate-[fade-in_200ms_ease-out] motion-reduce:animate-none']"
+        :class="[TOOLBAR_HOVER, TOGGLE, taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text', fadeCurrentTag && 'animate-[fade-in_200ms_ease-out] motion-reduce:animate-none']"
         :ui="{ label: 'max-w-36 truncate text-xs tracking-tight sm:max-w-56' }"
         color="neutral"
         variant="ghost"
@@ -626,7 +635,7 @@
             :aria-pressed="starred"
             color="neutral"
             variant="ghost"
-            :class="[TOOLBAR_HOVER, starred ? 'text-favorite' : 'hover:text-favorite']"
+            :class="[TOOLBAR_HOVER, TOGGLE, starred ? 'text-favorite' : 'hover:text-favorite']"
             @click="toggleStar"
           />
         </UTooltip>
