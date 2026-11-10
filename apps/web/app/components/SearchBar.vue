@@ -1,46 +1,24 @@
 <script setup lang="ts">
-  import type { InputMenuItem } from "@nuxt/ui";
-  import type { LookupEntry } from "#shared/types/api";
   import { InputMode } from "~/enums";
-  import { splitExcerpt } from "~/helpers";
-  import type { SearchField } from "~/composables/useEntrySearch";
-  import { entryRoute, homonymAnchor } from "~/utils/entryUri";
+  import { entryRoute } from "~/utils/entryUri";
   import { formatCount } from "~/utils/numbers";
   import { takeSearchHandoff } from "~/utils/searchHandoff";
   import { convertSearchInput, hasWildcards, toLookupQuery, toSearchGreek, toSearchQuery, toTransliteratedInput } from "~/utils/searchInput";
+  import { searchResultGroups, type SearchResultItem } from "~/utils/searchResults";
 
-  // (The input text is 16px on every screen (`text-base/6`, and `fixed`: no
-  // `md:text-sm`): large enough to check the Greek diacritics as they are
-  // typed, and, on mobile, the size below which iOS Safari zooms in when the
-  // input gets the focus. The bar is thus 40px high, its buttons with it, in
-  // the header (56px on mobile, `--header-height` from `md`).)
-
-  type ResultItem = InputMenuItem & {
-    /** The entry excerpt (or headword, for homonyms). */
-    label: string;
-    /** The excerpt, split around its headword. */
-    parts?: ReturnType<typeof splitExcerpt>;
-    /**
-     * The item value: the current input text, which selecting the item thus
-     * leaves unchanged (in `autocomplete` mode, the selected value becomes the
-     * input text).
-     */
-    text?: string;
-    isMorpheus?: boolean;
-    /** The entry's URI (for its tags). */
-    uri?: string;
-    /** Whether the entry is a homonym, under its common headword. */
-    nested?: boolean;
-    /** A homonym's number (e.g. `oudos#2` → `2`), after its headword. */
-    homonym?: string;
-  };
+  // (The input text is 16px on every screen (`text-base/6`): large enough to
+  // check the Greek diacritics as they are typed, and, on mobile, the size
+  // below which iOS Safari zooms in when the input gets the focus. The bar is
+  // thus 40px high, its buttons with it, in the header (56px on mobile,
+  // `--header-height` from `md`).)
 
   const { query, result, resultQuery, status, pending } = useEntrySearch();
   const { position, diacriticSensitive, inputMode, placeholder, isDefault: defaultOptions, reset: resetOptions } = useSearchOptions();
 
   const transliterating = computed((): boolean => inputMode.value === InputMode.Transliteration);
 
-  const menu = useTemplateRef("menu");
+  const input = useTemplateRef<HTMLInputElement>("input");
+  const field = useTemplateRef<HTMLElement>("field");
 
   /**
    * The whole bar (input and options button): the results are positioned
@@ -49,24 +27,23 @@
   const group = useTemplateRef("group");
   const groupElement = computed((): HTMLElement | undefined => group.value?.$el as HTMLElement | undefined);
 
+  /** The results' list box (the input's `aria-controls`). */
+  const listId = useId();
+
   /**
-   * Makes the input show `text` (the query just set), with the caret at
-   * `caret` (by default, where it is).
-   * @remarks When the query doesn't change (e.g. `α` + `)` → `α`), or while
-   * the input has the focus, the input menu doesn't render its text again: it
-   * is then updated here, and the input event keeps the input menu's own
-   * search term in sync.
+   * Makes the input show `text` (the query just set, or being set), with the
+   * caret at `caret` (by default, where it is). The input isn't bound to the
+   * query (its text is the user's while typing, the query following it once
+   * painted, cf. `setQueryAfterPaint`): the query set otherwise (cleared,
+   * converted, handed over) is written here.
    */
   const syncInputText = (text: string, caret?: number): void => {
-    const input = menu.value?.inputRef as HTMLInputElement | undefined;
-    if (!input) return;
+    const element = input.value;
+    if (!element) return;
 
     void nextTick(() => {
-      if (input.value !== text) {
-        input.value = text;
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-      if (caret !== undefined) input.setSelectionRange(caret, caret);
+      if (element.value !== text) element.value = text;
+      if (caret !== undefined) element.setSelectionRange(caret, caret);
     });
   };
 
@@ -92,7 +69,8 @@
    * wildcards, above the results (e.g. « Entrées finissant par « λογος » ·
    * diacritiques respectés »).
    */
-  const optionsSummary = computed((): string => {
+  const optionsSummary = computed((): string | undefined => {
+    if ((defaultOptions.value && !wildcards.value) || !toSearchQuery(query.value)) return undefined;
     const term = `«\u00a0${toSearchQuery(query.value)}\u00a0»`;
     const parts = [
       {
@@ -109,17 +87,26 @@
   });
 
   /**
+   * Whether the results are asked for (typing, focus, Escape…), and whether
+   * there is something to look up (not for an empty input, nor a lone
+   * pending diacritic or capital mark); cf. `shown`.
+   */
+  const open = ref(false);
+  const searchable = computed((): boolean => lookupQuery.value !== "");
+
+  /**
    * Whether the input method is composing.
    */
   let composing = false;
 
   /**
    * The query typed, set once the letter is painted (with the results to
-   * open, if any): rendering the results again (the input menu renders its
-   * whole list at each letter) then happens after the paint that answers
-   * the keystroke, in a task of its own, rather than delaying it (the INP
-   * of the search bar, on mobile). Several letters within a frame set the
-   * last one. `flushQuery` sets it at once, before what reads it (Enter).
+   * open, if any): what it changes (the results shown again, the panel
+   * opened at the first letter, the bar's count and buttons) then happens
+   * after the paint that answers the keystroke, in a task of its own, rather
+   * than delaying it (the INP of the search bar, on mobile). Several letters
+   * within a frame set the last one. `flushQuery` sets it at once, before
+   * what reads it (Enter, the arrow keys).
    */
   let pendingQuery: { value: string; open: boolean } | null = null;
   const flushQuery = (): void => {
@@ -129,7 +116,7 @@
     query.value = value;
     if (opens) open.value = true;
   };
-  const setQueryAfterPaint = (value: string, opens = false): void => {
+  const setQueryAfterPaint = (value: string, opens: boolean): void => {
     const scheduled = pendingQuery !== null;
     pendingQuery = { value, open: opens || (pendingQuery?.open ?? false) };
     if (scheduled) return;
@@ -142,8 +129,7 @@
 
   /**
    * Whether the input may be converted while the input method composes: when
-   * it has Beta Code (Latin letters, diacritics `/\=()+|`, capital mark
-   * `*`; it being converted as it is typed, only what was just typed). The
+   * it has Beta Code (Latin letters, diacritics `/\=()+|`, capital mark `*`):
    * keyboards of Android compose whole words (ended by a space or a
    * suggestion, never in a search): their Beta Code is converted character
    * by character (rewriting the input ends the composition; the keyboard
@@ -158,24 +144,24 @@
    * where it was; transliterated, only the circumflex of eta and omega into
    * a macron (cf. `toTransliteratedInput`), the rest converted when looked
    * up (cf. `toLookupQuery`), at once even while composing (an Android
-   * keyboard's word; a dead key's lone mark has nothing to convert).
-   * @remarks In `autocomplete` mode, the model is the input text (selecting a
-   * result navigates by itself, cf. `onSelect`).
+   * keyboard's word; a dead key's lone mark has nothing to convert). The
+   * results open (as typing asks).
    */
-  const onInput = (value: unknown): void => {
-    if (typeof value !== "string") return;
+  const onInput = (): void => {
+    const element = input.value;
+    if (!element) return;
+    const value = element.value;
 
     if (composing && !transliterating.value && !convertibleWhileComposing(value)) {
-      setQueryAfterPaint(value);
+      setQueryAfterPaint(value, true);
       return;
     }
 
     const convert = transliterating.value ? toTransliteratedInput : toSearchGreek;
-    const input = menu.value?.inputRef as HTMLInputElement | undefined;
-    const caret = input?.selectionStart ?? value.length;
+    const caret = element.selectionStart ?? value.length;
     const converted = convert(value);
 
-    setQueryAfterPaint(converted);
+    setQueryAfterPaint(converted, true);
 
     if (converted !== value) {
       syncInputText(converted, caret === value.length ? converted.length : convert(value.slice(0, caret)).length);
@@ -186,26 +172,14 @@
     composing = true;
   };
 
-  const onCompositionEnd = (event: CompositionEvent): void => {
-    composing = false;
-    onInput((event.target as HTMLInputElement).value);
-  };
-
   /**
-   * The input typed while the input method composes: the input menu passes
-   * it on only on Android, as its browser says (not Samsung Internet, e.g.,
-   * whose compositions don't tell their text), and otherwise waits for the
-   * end of the composition. It is converted here meanwhile, and shows the
-   * results as typing does.
+   * The composition ended: its text converted as a whole (a dead key's mark
+   * with its letter; what a browser that doesn't tell the text composed,
+   * e.g. Samsung Internet, typed meanwhile).
    */
-  const onComposedInput = (event: Event): void => {
-    if (!(event instanceof InputEvent) || !(event.isComposing || composing)) return;
-    const input = menu.value?.inputRef as HTMLInputElement | undefined;
-    if (event.target !== input) return;
-    composing = true;
-    onInput(input.value);
-    if (pendingQuery) pendingQuery.open = true;
-    else open.value = true;
+  const onCompositionEnd = (): void => {
+    composing = false;
+    onInput();
   };
 
   /**
@@ -238,8 +212,15 @@
   const clear = (): void => {
     pendingQuery = null;
     query.value = "";
-    (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
+    syncInputText("");
+    input.value?.focus();
   };
+
+  // The query of a search bar mounted again (the entry's layout, once
+  // hydrated): its text in the input.
+  onMounted(() => {
+    if (query.value && input.value) input.value.value = query.value;
+  });
 
   // What was typed in the server's search bar, before the page was
   // interactive (cf. `SearchBarStatic`): converted as typing does, the caret
@@ -247,10 +228,9 @@
   onMounted(() => {
     const handoff = takeSearchHandoff();
     if (!handoff) return;
-    const input = menu.value?.inputRef as HTMLInputElement | undefined;
 
     if (handoff.focused) {
-      input?.focus({ preventScroll: true });
+      input.value?.focus({ preventScroll: true });
       open.value = true;
     }
     handoff.keeper?.remove();
@@ -269,9 +249,10 @@
   const onFocusRequest = (): void => {
     const request = searchFocus.take();
     if (!request || (request.ifEmpty && hasQuery.value)) return;
-    (menu.value?.inputRef as HTMLInputElement | undefined)?.focus();
+    input.value?.focus();
     // A search to type (converted as typing does), its results shown.
     if (request.text) {
+      pendingQuery = null;
       query.value = transliterating.value ? toTransliteratedInput(request.text) : toSearchGreek(request.text);
       syncInputText(query.value, query.value.length);
       open.value = true;
@@ -280,97 +261,41 @@
   watch(searchFocus.request, onFocusRequest);
   onMounted(onFocusRequest);
 
-  // The results' Greek may be transliterated (a preference).
-  const greek = useGreek();
-
-  const toItem = (
-    entry: Pick<LookupEntry<SearchField>, SearchField> & { isMorpheus?: boolean },
-    nested = false,
-  ): ResultItem => ({
-    nested,
-    homonym: nested ? homonymAnchor(entry.uri) : undefined,
-    label: entry.excerpt,
-    parts: splitExcerpt(entry.word, entry.excerpt),
-    text: query.value,
-    isMorpheus: entry.isMorpheus,
-    uri: entry.uri,
-    // A homonym leads to its anchor in the entry page (e.g. `oudos#2`).
-    onSelect: () => void navigateTo(entryRoute(entry.uri)),
-  });
-
-  /**
-   * An entry, or its homonyms under their common headword (which leads to the
-   * whole entry page).
-   */
-  const toItems = (entry: LookupEntry<SearchField>): ResultItem[] =>
-    entry.children?.length
-      ? [
-        {
-          label: entry.word,
-          parts: { word: entry.word, rest: "" },
-          text: query.value,
-          isMorpheus: entry.isMorpheus,
-          uri: entry.uri,
-          onSelect: () => void navigateTo(entryRoute(entry.uri)),
-        },
-        // The homonyms are indented under their headword (cf. `ui.item`).
-        ...entry.children.map(child => toItem(child, true)),
-      ]
-      : [toItem(entry)];
-
-  /**
-   * How many results are rendered while typing: about as many as the
-   * results panel shows (above the keyboard on mobile, and 32rem high).
-   * The input menu renders all its results again at each letter typed
-   * (twice: Nuxt UI renders its whole list again with any change, and each
-   * of Reka's items depends on the input text), the 30 results costing
-   * most of the interaction on mobile.
-   */
-  const TYPING_RESULTS = 12;
-
-  /**
-   * Delay (in ms) without typing after which all the results are rendered:
-   * longer than the time between two letters typed on a phone.
-   */
-  const TYPING_PAUSE = 500;
-
-  /**
-   * Whether all the results are rendered (cf. `TYPING_RESULTS`): once typing
-   * pauses, or the user chooses a result (arrow keys, pointer).
-   */
-  const allRendered = ref(false);
-
-  /**
-   * Two groups: exact matches (the API sorts those found through their
-   * inflected form last), then the other entries; only the first results
-   * while typing (cf. `allRendered`).
-   */
-  const items = computed((): ResultItem[][] => {
-    // (No stale results for an empty input; an item value can't be empty either.)
-    if (!query.value.trim()) return [];
-
-    const entries = result.value?.entries ?? [];
-    const exact = entries.filter(entry => entry.isExact);
-    const others = entries.filter(entry => !entry.isExact);
-
-    const groups = [
-      exact.length ? [{ type: "label", label: "Correspondances exactes" }, ...exact.flatMap(toItems)] : [],
-      others.length ? [{ type: "label", label: exact.length ? "Autres entrées" : "Entrées" }, ...others.flatMap(toItems)] : [],
-    ].filter(group => group.length) as ResultItem[][];
-    if (allRendered.value) return groups;
-
-    // (The results have a URI, the group labels don't.)
-    let left = TYPING_RESULTS;
-    return groups
-      .map(group => group.filter(item => item.uri === undefined || left-- > 0))
-      .filter(group => group.some(item => item.uri !== undefined));
-  });
-
   /**
    * Whether the input isn't empty: the results then show up again when the
    * input gets the focus (or is clicked, e.g. after closing them with Escape).
    */
   const hasQuery = computed((): boolean => query.value.trim() !== "");
+
+  /**
+   * Whether a search was answered (its results, or its failure) since the
+   * input was last empty: until then, there is nothing to show, neither the
+   * results of an earlier search nor a « Recherche… » (e.g. at the first
+   * search); a slow search is told by the bar's count (cf. `slow`). After
+   * that, the results of the previous letters remain until the next ones
+   * come.
+   */
+  const answered = ref(hasQuery.value && result.value !== null);
+  watch(hasQuery, (has) => {
+    if (!has) answered.value = false;
+  });
+  watch([result, status], ([, value]) => {
+    if (hasQuery.value && (value === "success" || value === "error")) answered.value = true;
+  });
+
+  /**
+   * Whether the results are shown: asked for, something to look up, and an
+   * answer to show (cf. `answered`).
+   */
+  const shown = computed((): boolean => open.value && searchable.value && answered.value);
+
+  /**
+   * The results, in their groups (cf. `searchResultGroups`): none until a
+   * search is answered (cf. `answered`). They change with the result (and
+   * not as letters are typed): the list is only rendered again then.
+   */
+  const groups = computed(() => (answered.value ? searchResultGroups(result.value?.entries ?? []) : []));
+  const results = computed((): SearchResultItem[] => groups.value.flatMap(group => group.items));
 
   const hasMorpheusResults = computed((): boolean =>
     Boolean(result.value?.entries.some(entry => entry.isMorpheus)),
@@ -381,49 +306,65 @@
    */
   const morpheusWarningDismissed = useDismissed("morpheusWarning");
 
-  const hasMoreResults = computed(
-    (): boolean => (result.value?.countAll ?? 0) > (result.value?.count ?? 0),
-  );
-
   /**
-   * Whether the highlighted result was chosen by the user (arrow keys,
-   * pointer). The input menu highlights the first result by itself: that
-   * highlight isn't shown, and Enter doesn't open it (cf. `onKeydown`).
+   * Below the results shown (the API's first ones, `count`), how many others
+   * were found (`countAll` beyond them), which a more precise search brings:
+   * on one line on a phone (from 360 px or so).
    */
-  const highlightChosen = ref(false);
-
-  watch(query, () => {
-    allRendered.value = false;
-  });
-
-  watchDebounced(query, () => {
-    allRendered.value = true;
-  }, { debounce: TYPING_PAUSE });
-
-  watch(highlightChosen, (chosen) => {
-    if (chosen) allRendered.value = true;
+  const footer = computed((): string | undefined => {
+    const others = (result.value?.countAll ?? 0) - (result.value?.count ?? 0);
+    if (others <= 0) return undefined;
+    return `${formatCount(others)} ${others === 1 ? "autre résultat" : "autres résultats"}\u00a0: précisez votre recherche.`;
   });
 
   /**
-   * Whether the results are shown: as requested by the input menu (typing,
-   * focus, Escape…), as long as there is something to look up (not for an
-   * empty input, nor a lone pending diacritic or capital mark).
+   * What the panel says without results: about the search answered last
+   * (`resultQuery`), the next one pending meanwhile (cf. `answered`).
    */
-  const open = ref(false);
-  const searchable = computed((): boolean => lookupQuery.value !== "");
+  const emptyText = computed((): string => {
+    if (status.value === "error") return "La recherche a échoué. Veuillez réessayer.";
+    return `Aucun résultat pour «\u00a0${resultQuery.value}\u00a0».`;
+  });
+
+  /**
+   * The highlighted result (its index; -1: none), chosen by the user (arrow
+   * keys, pointer): none for new results, Enter then following `onEnter`.
+   */
+  const highlighted = ref(-1);
+
+  watch([query, result], () => {
+    highlighted.value = -1;
+  });
 
   /**
    * Whether Enter was pressed before the results of the query came.
    */
   let enterPending = false;
 
-  watch([query, result], () => {
-    highlightChosen.value = false;
-  });
-
   watch(query, () => {
     enterPending = false;
   });
+
+  /**
+   * Opens a result: its entry page (a homonym, its anchor in it), the results
+   * closed and the input left (the blur closes a mobile keyboard; the
+   * results remain, shown again as the input gets the focus).
+   */
+  const openResult = (uri: string): void => {
+    open.value = false;
+    input.value?.blur();
+    void navigateTo(entryRoute(uri));
+  };
+
+  const select = (index: number): void => {
+    const item = results.value[index];
+    if (item) openResult(item.uri);
+  };
+
+  /** A result pointed at: highlighted. */
+  const point = (index: number): void => {
+    highlighted.value = index;
+  };
 
   /**
    * Enter without a chosen result: the only exact match (an entry, or
@@ -432,16 +373,11 @@
    */
   const onEnter = (): void => {
     const exact = result.value?.entries.filter(entry => entry.isExact) ?? [];
-    const input = menu.value?.inputRef as HTMLInputElement | undefined;
 
     if (exact.length === 1) {
-      // The results don't close when the input loses the focus (the header
-      // remains, unless the layout changes); the blur closes the mobile keyboard.
-      open.value = false;
-      input?.blur();
-      void navigateTo(entryRoute(exact[0]!.uri));
-    } else if (items.value.length) {
-      highlightChosen.value = true;
+      openResult(exact[0]!.uri);
+    } else if (results.value.length) {
+      highlighted.value = 0;
     }
   };
 
@@ -455,116 +391,106 @@
   });
 
   /**
-   * Handles the keys typed in the input before the input menu (capture): the
-   * first arrow key shows the highlighted (first) result rather than moving
-   * past it, and Enter without a chosen result follows `onEnter`.
+   * The keys of a combobox (APG): the arrows open the results, or move
+   * through them (the first press highlights the first result), without
+   * wrapping; Enter opens the highlighted result, or follows `onEnter`;
+   * Escape closes the results. The other keys are the input's (Home and End
+   * move the caret).
    */
   const onKeydown = (event: KeyboardEvent): void => {
-    if (event.target !== menu.value?.inputRef || event.isComposing || highlightChosen.value) return;
+    if (event.isComposing) return;
     flushQuery();
 
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-      if (!items.value.length) return;
       event.preventDefault();
-      event.stopPropagation();
-      highlightChosen.value = true;
+      if (!shown.value) {
+        if (!hasQuery.value) return;
+        open.value = true;
+      }
+      if (!results.value.length) return;
+      const step = event.key === "ArrowDown" ? 1 : -1;
+      highlighted.value = highlighted.value < 0 ? 0 : Math.min(results.value.length - 1, Math.max(0, highlighted.value + step));
     } else if (event.key === "Enter" && !event.ctrlKey && !event.metaKey && !event.altKey) {
       event.preventDefault();
-      event.stopPropagation();
-      if (pending.value || resultQuery.value !== query.value) enterPending = true;
+      if (shown.value && highlighted.value >= 0) select(highlighted.value);
+      else if (pending.value || resultQuery.value !== query.value) enterPending = true;
       else onEnter();
+    } else if (event.key === "Escape" && shown.value) {
+      event.preventDefault();
+      event.stopPropagation();
+      open.value = false;
     }
   };
 
-  // A pointer moving over the results highlights them (the results are in a
-  // portal: the list is found through the input's `aria-controls`).
-  useEventListener(import.meta.client ? document : undefined, "pointermove", (event: PointerEvent) => {
-    if (highlightChosen.value) return;
-    const listId = (menu.value?.inputRef as HTMLInputElement | undefined)?.getAttribute("aria-controls");
-    if (listId && (event.target as Element | null)?.closest(`#${CSS.escape(listId)}`)) {
-      highlightChosen.value = true;
-    }
-  }, { passive: true });
+  /** The results shown again as the input gets the focus, or is clicked. */
+  const reopen = (): void => {
+    if (hasQuery.value) open.value = true;
+  };
 
-  /**
-   * The results' highlight is hidden until the user chooses one (cf.
-   * `highlightChosen`), from the results container: the items aren't
-   * rendered again when only their class changes. The results are exactly
-   * as wide as the bar (cf. `groupElement`).
-   */
-  const contentClass = computed((): string => [
-    "search-surface search-panel w-(--reka-combobox-trigger-width) max-h-[min(32rem,var(--reka-combobox-content-available-height))]",
-    highlightChosen.value ? "" : "[&_[data-highlighted]]:before:bg-transparent! [&_[data-highlighted]]:text-default!",
-  ].join(" "));
+  /** The highlighted result, for screen readers. */
+  const activeDescendant = computed((): string | undefined =>
+    shown.value && highlighted.value >= 0 ? `${listId}-${highlighted.value}` : undefined,
+  );
 </script>
 
 <template>
   <!--
-    The options button is attached to the input, not in its trailing slot:
-    Nuxt UI renders that slot in a button (the menu trigger), where another
-    button would be invalid.
-  -->
-  <!--
-    The focus halo (outline) and ring of the input surround the whole bar,
-    options button included: the input's own halo would stop short of it.
-    The input isn't raised when focused (unlike in other field groups), so
-    that the button's neutral left edge remains the divider (cf. SearchOptions).
+    The options button is attached to the input. The focus halo (outline)
+    and ring of the input surround the whole bar, options button included:
+    the input's own halo would stop short of it. The input isn't raised when
+    focused (unlike in other field groups), so that the button's neutral
+    left edge remains the divider (cf. SearchOptions).
+
+    The field and its results: a combobox (APG), the focus staying in the
+    input, the highlighted result told by `aria-activedescendant`; drawn as
+    Nuxt UI's input menu drew them (its classes, kept in step with
+    `SearchBarStatic`), which this replaces, with the results in a panel of
+    their own (cf. `SearchResults`).
   -->
   <UFieldGroup
     ref="group"
     role="search"
     class="search-bar group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
-    @keydown.capture="onKeydown"
-    @input.capture="onComposedInput"
   >
-    <UInputMenu
-      ref="menu"
-      :open="open && searchable"
-      class="w-full"
-      :model-value="query"
-      mode="autocomplete"
-      :open-on-focus="hasQuery"
-      :open-on-click="hasQuery"
-      value-key="text"
-      :items="items"
-      ignore-filter
-      icon="i-lucide-search"
-      :placeholder="placeholder"
-      :aria-label="`Rechercher une entrée (${transliterating ? 'translittération' : 'beta code'} ou grec)`"
-      size="lg"
-      fixed
-      autocapitalize="off"
-      autocomplete="off"
-      autocorrect="off"
-      spellcheck="false"
-      enterkeyhint="search"
-      :lang="transliterating ? 'grc-Latn' : 'grc'"
-      :content="{ align: 'start', collisionPadding: 8, reference: groupElement }"
-      :ui="{
-        root: 'has-focus-visible:z-auto',
-        // Without its native appearance: Safari on iOS 16 drew its own field
-        // over the ring (a bar without its border, buttons aside).
-        // The halo is the whole bar's (cf. `UFieldGroup`), not the input's:
-        // its outline transparent at rest too, not only once focused, or its
-        // color faded out from Nuxt UI's (`transition-colors`), a halo
-        // flashing over the input.
-        base: 'appearance-none shadow-xs text-base/6 outline-transparent',
-        content: contentClass,
-        // The homonyms' indent comes from their label (`data-nested`), not from
-        // an item class: the input menu reuses its items by position without
-        // updating their class, which then stuck to the next results.
-        item: 'items-start has-[[data-nested]]:ps-5 data-highlighted:not-data-disabled:before:bg-(--app-highlight)',
-        itemLabel: 'whitespace-normal line-clamp-2',
-        itemTrailingIcon: 'hidden',
-        label: 'text-xs uppercase tracking-wide text-muted',
-      }"
-      @update:open="open = $event"
-      @update:model-value="onInput"
-      @compositionstart="onCompositionStart"
-      @compositionend="onCompositionEnd"
+    <div
+      ref="field"
+      class="group relative inline-flex w-full items-center has-focus-visible:z-auto"
     >
+      <!--
+        Without its native appearance: Safari on iOS 16 drew its own field
+        over the ring (a bar without its border, buttons aside). The halo is
+        the whole bar's (cf. `UFieldGroup`), not the input's: its outline
+        transparent at rest too, not only once focused, or its color faded
+        out (`transition-colors`), a halo flashing over the input.
+      -->
+      <input
+        ref="input"
+        type="text"
+        role="combobox"
+        aria-autocomplete="list"
+        :aria-expanded="shown"
+        :aria-controls="listId"
+        :aria-activedescendant="activeDescendant"
+        :aria-label="`Rechercher une entrée (${transliterating ? 'translittération' : 'beta code'} ou grec)`"
+        :lang="transliterating ? 'grc-Latn' : 'grc'"
+        :placeholder="placeholder"
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        enterkeyhint="search"
+        class="w-full appearance-none rounded-full border-0 bg-default py-2 ps-10 pe-10 text-base/6 text-highlighted shadow-xs ring ring-accented outline-transparent transition-colors ring-inset placeholder:text-dimmed group-not-only:group-first:rounded-e-none group-not-only:group-last:rounded-s-none group-not-last:group-not-first:rounded-none focus-visible:ring-primary focus-visible:outline-3"
+        @input="onInput"
+        @compositionstart="onCompositionStart"
+        @compositionend="onCompositionEnd"
+        @keydown="onKeydown"
+        @focus="reopen"
+        @click="reopen"
+      >
       <!-- The clear button replaces the search icon once the input isn't empty. -->
-      <template #leading>
+      <span
+        class="absolute inset-y-0 start-0 flex items-center ps-3"
+      >
         <UButton
           v-if="query"
           icon="i-lucide-x"
@@ -581,123 +507,53 @@
           name="i-lucide-search"
           class="size-5 shrink-0 text-dimmed"
         />
-      </template>
-
+      </span>
       <!--
-        The result count (instead of the menu chevron), or a loading indicator
-        when the lookup is slow. The previous count remains meanwhile. The
-        wrapper is always rendered: an empty slot would fall back to the chevron.
+        The result count, or a loading indicator when the lookup is slow. The
+        previous count remains meanwhile.
       -->
-      <template #trailing>
-        <span class="flex items-center">
-          <UBadge
-            v-if="query && (slow || result)"
-            color="neutral"
-            variant="soft"
-            size="sm"
-            class="min-w-6 justify-center"
-            :aria-label="slow ? 'Recherche en cours' : undefined"
-          >
-            <UIcon
-              v-if="slow"
-              name="i-lucide-loader-circle"
-              class="size-3.5 animate-spin"
-            />
-            <template v-else>
-              {{ formatCount(result?.countAll ?? 0) }}
-            </template>
-          </UBadge>
-        </span>
-      </template>
-
-      <template #content-top>
-        <p
-          v-if="(!defaultOptions || wildcards) && toSearchQuery(query)"
-          class="flex shrink-0 items-center gap-2 px-2.5 pt-2 text-xs text-muted"
-        >
-          <UIcon
-            name="i-lucide-list-filter"
-            class="size-3.5 shrink-0"
-          />
-          <span class="grow">{{ optionsSummary }}</span>
-          <UButton
-            v-if="!defaultOptions"
-            label="Réinitialiser"
-            color="neutral"
-            variant="link"
-            size="xs"
-            class="p-0"
-            @click="resetOptions"
-          />
-        </p>
-        <!--
-          In gold, as the sparkles marking these results; its text in the
-          alert's color mixed with the text's, as the notice of the
-          application installed on iOS (`InstalledOnIosNotice`).
-        -->
-        <UAlert
-          v-if="hasMorpheusResults && !morpheusWarningDismissed"
-          class="m-1.5 w-auto shrink-0"
-          icon="i-lucide-sparkles"
-          color="warning"
+      <span
+        data-slot="trailing"
+        class="absolute inset-y-0 end-0 flex items-center pe-3"
+      >
+        <UBadge
+          v-if="query && (slow || (answered && result))"
+          color="neutral"
           variant="soft"
-          :ui="{ description: 'text-[color-mix(in_oklab,var(--ui-warning)_55%,var(--ui-text-highlighted))] opacity-100' }"
-          description="Les résultats issus de l'analyse morphologique, signalés par une icône scintillante, peuvent être lacunaires."
-          close
-          @update:open="morpheusWarningDismissed = true"
-        />
-      </template>
-
-      <template #item-label="{ item }">
-        <span
-          v-if="item.parts"
-          class="font-serif text-sm/6"
-          :data-nested="item.nested || undefined"
-        ><!-- A homonym's number after its headword, as in its definition. --><span class="font-semibold">{{ greek.text(item.parts.word) }}<sup
-          v-if="item.homonym"
-          class="ms-px"
-        >{{ item.homonym }}</sup></span>{{ greek.text(item.parts.rest) }}</span>
-        <template v-else>
-          {{ greek.text(item.label) }}
-        </template>
-      </template>
-
-      <!-- The entry's tags, and whether it was found by the morphological analysis. -->
-      <template #item-trailing="{ item }">
-        <span class="flex items-center gap-2">
-          <EntryBookmarkIndicator
-            v-if="item.uri"
-            :uri="item.uri"
-          />
-          <UIcon
-            v-if="item.isMorpheus"
-            name="i-lucide-sparkles"
-            class="size-4 shrink-0 text-primary"
-            aria-label="Trouvé par l'analyse morphologique"
-          />
-        </span>
-      </template>
-
-      <template #empty="{ searchTerm }">
-        <span v-if="pending">Recherche…</span>
-        <span v-else-if="status === 'error'">La recherche a échoué. Veuillez réessayer.</span>
-        <span v-else>Aucun résultat pour «&nbsp;{{ searchTerm }}&nbsp;».</span>
-      </template>
-
-      <!--
-        Below the results shown, the API's first ones (`count`), how many
-        were found in all (`countAll`).
-      -->
-      <template #content-bottom>
-        <p
-          v-if="hasMoreResults"
-          class="shrink-0 border-t border-default p-2 text-center text-sm text-muted"
+          size="sm"
+          class="min-w-6 justify-center"
+          :aria-label="slow ? 'Recherche en cours' : undefined"
         >
-          {{ result?.count }} résultats affichés sur {{ formatCount(result?.countAll ?? 0) }}. Précisez votre recherche.
-        </p>
-      </template>
-    </UInputMenu>
+          <UIcon
+            v-if="slow"
+            name="i-lucide-loader-circle"
+            class="size-3.5 animate-spin"
+          />
+          <template v-else>
+            {{ formatCount(result?.countAll ?? 0) }}
+          </template>
+        </UBadge>
+      </span>
+    </div>
     <SearchHistory :reference="groupElement" />
     <SearchOptions :wildcards="wildcards" />
+    <SearchResults
+      :open="shown"
+      :anchor="groupElement"
+      :field="field ?? undefined"
+      :list-id="listId"
+      :groups="groups"
+      :highlighted="highlighted"
+      :summary="optionsSummary"
+      :resettable="!defaultOptions"
+      :warning="hasMorpheusResults && !morpheusWarningDismissed"
+      :empty="emptyText"
+      :footer="footer"
+      @point="point"
+      @select="select"
+      @dismiss="open = false"
+      @reset="resetOptions"
+      @dismiss-warning="morpheusWarningDismissed = true"
+    />
   </UFieldGroup>
 </template>

@@ -88,17 +88,60 @@ test.describe("search bar", () => {
     await expect(page.locator("header [data-slot=trailing]")).toHaveText(/\d+/);
   });
 
-  test("renders the first results while typing, all of them once typing pauses", async ({ page }) => {
-    // « λογο »: 30 results, 12 rendered until typing pauses (500 ms).
+  test("renders the results as they come, not again as letters are typed", async ({ page }) => {
+    // « λογο »: 30 results, all rendered at once.
     const options = searchResults(page).getByRole("option");
-    await searchInput(page).fill("logo");
-    await expect(options).toHaveCount(12);
-    await expect.poll(() => options.count(), { timeout: 3000 }).toBeGreaterThanOrEqual(30);
-    // A letter typed: the first results again.
-    await searchInput(page).press("Backspace");
-    await expect(searchInput(page)).toHaveValue("λογ");
-    await expect(options).toHaveCount(12);
-    await expect.poll(() => options.count(), { timeout: 3000 }).toBeGreaterThan(12);
+    const input = searchInput(page);
+    await input.click();
+    await input.pressSequentially("logo");
+    await expect(options).toHaveCount(30);
+    // A result's element kept while the next letter is typed (until its
+    // results come).
+    await page.route("**/lookup/**", async (route) => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await route.continue();
+    });
+    await options.first().evaluate((option) => {
+      (option as HTMLElement & { kept?: boolean }).kept = true;
+    });
+    await input.pressSequentially("s");
+    await expect(input).toHaveValue("λογος");
+    await page.waitForTimeout(300);
+    expect(await options.first().evaluate(option => (option as HTMLElement & { kept?: boolean }).kept)).toBe(true);
+  });
+
+  test("a combobox: the focus in the input, the result chosen told by aria-activedescendant", async ({ page }) => {
+    const input = searchInput(page);
+    await input.click();
+    await input.pressSequentially("log");
+    const options = searchResults(page).getByRole("option");
+    await expect(options.first()).toBeVisible();
+    await expect(input).toHaveAttribute("aria-expanded", "true");
+    await expect(searchResults(page).getByRole("listbox")).toHaveAttribute("id", (await input.getAttribute("aria-controls"))!);
+    // None chosen yet (the first one highlighted, not shown).
+    await expect(input).not.toHaveAttribute("aria-activedescendant");
+    await expect(searchResults(page).getByRole("option", { selected: true })).toHaveCount(0);
+    await input.press("ArrowDown");
+    await input.press("ArrowDown");
+    const second = options.nth(1);
+    await expect(input).toHaveAttribute("aria-activedescendant", (await second.getAttribute("id"))!);
+    await expect(second).toHaveAttribute("aria-selected", "true");
+    await expect(input).toBeFocused();
+    // Home and End are the input's: they move the caret, not the highlight.
+    await input.press("Home");
+    expect(await input.evaluate(element => (element as HTMLInputElement).selectionStart)).toBe(0);
+    await expect(second).toHaveAttribute("aria-selected", "true");
+    // A result clicked opens its entry.
+    await options.nth(2).click();
+    await expect(page).not.toHaveURL(/\/$/);
+    await expect(searchResults(page)).toBeHidden();
+  });
+
+  test("below the results, how many others a more precise search brings", async ({ page }) => {
+    // « οι »: 30 results shown out of 528.
+    await searchInput(page).fill("οι");
+    await expect(searchResults(page).getByRole("option").first()).toBeVisible();
+    await expect(searchResults(page).locator("p.border-t")).toHaveText("498 autres résultats : précisez votre recherche.");
   });
 
   test("lists the results exactly as wide as the bar", async ({ page }) => {
@@ -150,6 +193,29 @@ test.describe("search bar", () => {
     await expect(spinner).toHaveCount(0);
     await expect(spinner).toHaveCount(1);
     await expect(spinner).toHaveCount(0, { timeout: 3000 });
+  });
+
+  test("opens with the first results, not with a wait (the bar's count tells it)", async ({ page }) => {
+    await page.route("**/lookup/**", async (route) => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await route.continue();
+    });
+    const input = searchInput(page);
+    await input.click();
+    await input.pressSequentially("log");
+    await page.waitForTimeout(600);
+    await expect(searchResults(page)).toHaveCount(0);
+    await expect(page.locator("header [data-slot=trailing] .animate-spin")).toHaveCount(1);
+    await expect(searchResults(page).getByRole("option").first()).toBeVisible({ timeout: 3000 });
+    // A letter more: the results of « λογ » remain until the next ones.
+    await input.pressSequentially("o");
+    await page.waitForTimeout(300);
+    await expect(searchResults(page).getByRole("option").first()).toBeVisible();
+    // Emptied, then typed again: no earlier results meanwhile.
+    await input.fill("");
+    await input.pressSequentially("a");
+    await page.waitForTimeout(300);
+    await expect(searchResults(page)).toHaveCount(0);
   });
 
   test("closes on Escape and reopens on focus", async ({ page }) => {

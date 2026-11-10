@@ -24,9 +24,9 @@ export async function rootLength(page: Page, name: string): Promise<number> {
 export const searchBar = (page: Page) => page.locator("header .group\\/search");
 
 /**
- * The results list of the search bar (once open).
+ * The results panel of the search bar (once open), with its list box.
  */
-export const searchResults = (page: Page) => page.locator("[role=listbox]");
+export const searchResults = (page: Page) => page.locator("[data-search-results]");
 
 /**
  * The horizontal extent of the results popup, once its opening animation (a
@@ -34,9 +34,8 @@ export const searchResults = (page: Page) => page.locator("[role=listbox]");
  */
 export async function resultsExtent(page: Page): Promise<[number, number]> {
   return searchResults(page).evaluate(async (element) => {
-    const content = element.closest("[data-slot=content]") ?? element;
-    await Promise.all(content.getAnimations({ subtree: true }).map(animation => animation.finished));
-    const { left, right } = content.getBoundingClientRect();
+    await Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished));
+    const { left, right } = element.getBoundingClientRect();
     return [Math.round(left * 10) / 10, Math.round(right * 10) / 10];
   });
 }
