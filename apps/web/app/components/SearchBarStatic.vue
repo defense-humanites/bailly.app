@@ -5,7 +5,7 @@
   /**
    * The search bar as the server renders it, until the page is interactive
    * (cf. `AppNavHorizontal`): the markup and classes of `SearchBar` (Nuxt
-   * UI's field group, input menu and buttons) written out, without their
+   * UI's field group and buttons, its own input) written out, without their
    * components, which were a large part of every page's server render (cf.
    * `audit-rendu-serveur.md`). Keep them in step with `SearchBar` (checked by
    * `test/e2e/search.spec.ts`).

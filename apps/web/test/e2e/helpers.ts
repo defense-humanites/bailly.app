@@ -24,9 +24,9 @@ export async function rootLength(page: Page, name: string): Promise<number> {
 export const searchBar = (page: Page) => page.locator("header .group\\/search");
 
 /**
- * The results list of the search bar (once open).
+ * The results panel of the search bar (once open), with its list box.
  */
-export const searchResults = (page: Page) => page.locator("[role=listbox]");
+export const searchResults = (page: Page) => page.locator("[data-search-results]");
 
 /**
  * The horizontal extent of the results popup, once its opening animation (a
