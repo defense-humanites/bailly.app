@@ -14,10 +14,14 @@
  *   just opened (the home page's « édition du texte », a title in italics).
  *   Its common characters only (the file of the rare ones, cf. `fonts.css`,
  *   is left to the text needing it).
+ *
+ * Not where the document has no font loading API (`document.fonts`): the
+ * unit tests' DOM (happy-dom), where the fetch, after a test, threw.
  */
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.hook("app:suspense:resolve", () => {
     const fetchFaces = (): void => {
+      if (!("fonts" in document)) return;
       const family = readingFamily();
       if (family) {
         for (const weight of [readingTextWeight(), "bold"]) {
