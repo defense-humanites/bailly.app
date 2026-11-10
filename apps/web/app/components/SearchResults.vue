@@ -43,8 +43,10 @@
   /**
    * The panel's place: fixed, 8 px below the bar, exactly as wide, at most
    * 32 rem high and within the visible viewport (above a phone's keyboard),
-   * 8 px from its bottom. Measured as it opens, then as the viewport or the
-   * bar change (the header's height changes on small screens), once a frame.
+   * 8 px from its bottom. In the body: the header, which holds the bar,
+   * hides what overflows it (cf. `AppNavHorizontal`). Measured as it opens,
+   * then as the viewport or the bar change, once a frame (the header is
+   * fixed and the window never scrolls: the bar only moves with them).
    */
   const SIDE_OFFSET = 8;
   const COLLISION_PADDING = 8;
@@ -69,7 +71,6 @@
   };
   const target = import.meta.client ? window : undefined;
   useEventListener(target, "resize", remeasure, { passive: true });
-  useEventListener(target, "scroll", remeasure, { passive: true, capture: true });
   useEventListener(import.meta.client ? window.visualViewport : undefined, "resize", remeasure, { passive: true });
   useResizeObserver(() => props.anchor, remeasure);
   watch(() => props.open, (open) => {
@@ -104,19 +105,15 @@
   }, { capture: true });
 
   /**
-   * The highlighted result kept in view (the arrow keys), the list alone
-   * scrolled (`scroll-py-1`: 4 px from its edges); the list at its top for
-   * new results.
+   * The highlighted result kept in view (the arrow keys; `scroll-py-1`: 4 px
+   * from the list's edges; the panel is fixed: only the list scrolls), the
+   * first one with its group's label; the list at its top for new results.
    */
   watch(() => props.highlighted, async (index) => {
+    if (index < 0) return;
     await nextTick();
-    const list = viewport.value;
-    const option = index < 0 ? null : list?.querySelector<HTMLElement>(`#${CSS.escape(`${props.listId}-${index}`)}`);
-    if (!list || !option) return;
-    const top = option.offsetTop - 4;
-    const bottom = option.offsetTop + option.offsetHeight + 4;
-    if (top < list.scrollTop) list.scrollTop = top;
-    else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight;
+    if (index === 0 && viewport.value) viewport.value.scrollTop = 0;
+    else document.getElementById(`${props.listId}-${index}`)?.scrollIntoView({ block: "nearest" });
   });
   watch(() => props.groups, () => {
     if (viewport.value) viewport.value.scrollTop = 0;
@@ -161,9 +158,8 @@
       <div
         v-if="open && panelStyle"
         ref="panel"
-        data-slot="content"
         data-search-results
-        class="search-surface search-panel fixed z-auto flex origin-top-left flex-col overflow-hidden rounded-md bg-default shadow-lg ring ring-default"
+        class="search-surface search-panel fixed flex origin-top-left flex-col overflow-hidden rounded-md bg-default shadow-lg ring ring-default"
         :style="panelStyle"
         @pointerdown.prevent
       >
@@ -205,7 +201,6 @@
         <div
           v-if="!groups.length"
           role="status"
-          data-slot="empty"
           class="p-3 text-center text-sm text-muted"
         >
           {{ empty }}
@@ -215,7 +210,6 @@
           ref="viewport"
           role="listbox"
           aria-label="Résultats"
-          data-slot="viewport"
           class="relative flex-1 scroll-py-1 divide-y divide-default overflow-y-auto"
           @pointermove="onPointerMove"
           @click="onClick"

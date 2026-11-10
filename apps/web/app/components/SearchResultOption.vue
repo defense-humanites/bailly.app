@@ -25,7 +25,7 @@
     :aria-selected="highlighted"
     :data-highlighted="highlighted || undefined"
     :data-index="item.index"
-    class="group relative flex w-full items-start gap-2 p-2 text-sm text-default transition-colors outline-none select-none before:absolute before:inset-px before:z-[-1] before:rounded-md before:transition-colors data-highlighted:text-highlighted data-highlighted:before:bg-(--app-highlight)"
+    class="relative flex w-full items-start gap-2 p-2 text-sm text-default transition-colors outline-none select-none before:absolute before:inset-px before:z-[-1] before:rounded-md before:transition-colors data-highlighted:text-highlighted data-highlighted:before:bg-(--app-highlight)"
     :class="{ 'ps-5': item.nested }"
   >
     <span class="flex min-w-0 flex-1 flex-col">

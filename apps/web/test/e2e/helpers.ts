@@ -34,9 +34,8 @@ export const searchResults = (page: Page) => page.locator("[data-search-results]
  */
 export async function resultsExtent(page: Page): Promise<[number, number]> {
   return searchResults(page).evaluate(async (element) => {
-    const content = element.closest("[data-slot=content]") ?? element;
-    await Promise.all(content.getAnimations({ subtree: true }).map(animation => animation.finished));
-    const { left, right } = content.getBoundingClientRect();
+    await Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished));
+    const { left, right } = element.getBoundingClientRect();
     return [Math.round(left * 10) / 10, Math.round(right * 10) / 10];
   });
 }

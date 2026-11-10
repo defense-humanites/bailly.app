@@ -304,17 +304,13 @@
   });
 
   /**
-   * The highlighted result: the first one, until the user chooses another
-   * (arrow keys, pointer). That first highlight isn't shown, and Enter
-   * doesn't open it (cf. `onKeydown`): `highlightChosen`.
+   * The highlighted result (its index; -1: none), chosen by the user (arrow
+   * keys, pointer): none for new results, Enter then following `onEnter`.
    */
-  const highlightedIndex = ref(0);
-  const highlightChosen = ref(false);
-  const shownHighlight = computed((): number => (highlightChosen.value ? highlightedIndex.value : -1));
+  const highlighted = ref(-1);
 
   watch([query, result], () => {
-    highlightedIndex.value = 0;
-    highlightChosen.value = false;
+    highlighted.value = -1;
   });
 
   /**
@@ -342,10 +338,9 @@
     if (item) openResult(item.uri);
   };
 
-  /** A result pointed at: highlighted, and shown so. */
+  /** A result pointed at: highlighted. */
   const point = (index: number): void => {
-    highlightedIndex.value = index;
-    highlightChosen.value = true;
+    highlighted.value = index;
   };
 
   /**
@@ -359,7 +354,7 @@
     if (exact.length === 1) {
       openResult(exact[0]!.uri);
     } else if (results.value.length) {
-      highlightChosen.value = true;
+      highlighted.value = 0;
     }
   };
 
@@ -374,10 +369,10 @@
 
   /**
    * The keys of a combobox (APG): the arrows open the results, or move
-   * through them (the first press shows the first result, highlighted
-   * without being shown, rather than moving past it), without wrapping;
-   * Enter opens the chosen result, or follows `onEnter`; Escape closes the
-   * results. The other keys are the input's (Home and End move the caret).
+   * through them (the first press highlights the first result), without
+   * wrapping; Enter opens the highlighted result, or follows `onEnter`;
+   * Escape closes the results. The other keys are the input's (Home and End
+   * move the caret).
    */
   const onKeydown = (event: KeyboardEvent): void => {
     if (event.isComposing) return;
@@ -388,19 +383,13 @@
       if (!shown.value) {
         if (!hasQuery.value) return;
         open.value = true;
-        if (results.value.length) highlightChosen.value = true;
-        return;
       }
       if (!results.value.length) return;
-      if (!highlightChosen.value) {
-        highlightChosen.value = true;
-        return;
-      }
       const step = event.key === "ArrowDown" ? 1 : -1;
-      highlightedIndex.value = Math.min(results.value.length - 1, Math.max(0, highlightedIndex.value + step));
+      highlighted.value = highlighted.value < 0 ? 0 : Math.min(results.value.length - 1, Math.max(0, highlighted.value + step));
     } else if (event.key === "Enter" && !event.ctrlKey && !event.metaKey && !event.altKey) {
       event.preventDefault();
-      if (shown.value && highlightChosen.value) select(highlightedIndex.value);
+      if (shown.value && highlighted.value >= 0) select(highlighted.value);
       else if (pending.value || resultQuery.value !== query.value) enterPending = true;
       else onEnter();
     } else if (event.key === "Escape" && shown.value) {
@@ -415,9 +404,9 @@
     if (hasQuery.value) open.value = true;
   };
 
-  /** The highlighted result, for screen readers (only once shown). */
+  /** The highlighted result, for screen readers. */
   const activeDescendant = computed((): string | undefined =>
-    shown.value && shownHighlight.value >= 0 ? `${listId}-${shownHighlight.value}` : undefined,
+    shown.value && highlighted.value >= 0 ? `${listId}-${highlighted.value}` : undefined,
   );
 </script>
 
@@ -442,8 +431,6 @@
   >
     <div
       ref="field"
-      dir="ltr"
-      data-slot="root"
       class="group relative inline-flex w-full items-center has-focus-visible:z-auto"
     >
       <!--
@@ -469,8 +456,7 @@
         autocorrect="off"
         spellcheck="false"
         enterkeyhint="search"
-        data-slot="base"
-        class="w-full appearance-none rounded-full border-0 bg-default px-3 py-2 ps-10 pe-10 text-base/6 text-highlighted shadow-xs ring ring-accented outline-transparent transition-colors ring-inset placeholder:text-dimmed group-not-only:group-first:rounded-e-none group-not-only:group-last:rounded-s-none group-not-last:group-not-first:rounded-none focus-visible:ring-primary focus-visible:outline-3"
+        class="w-full appearance-none rounded-full border-0 bg-default py-2 ps-10 pe-10 text-base/6 text-highlighted shadow-xs ring ring-accented outline-transparent transition-colors ring-inset placeholder:text-dimmed group-not-only:group-first:rounded-e-none group-not-only:group-last:rounded-s-none group-not-last:group-not-first:rounded-none focus-visible:ring-primary focus-visible:outline-3"
         @input="onInput"
         @compositionstart="onCompositionStart"
         @compositionend="onCompositionEnd"
@@ -480,7 +466,6 @@
       >
       <!-- The clear button replaces the search icon once the input isn't empty. -->
       <span
-        data-slot="leading"
         class="absolute inset-y-0 start-0 flex items-center ps-3"
       >
         <UButton
@@ -535,7 +520,7 @@
       :field="field ?? undefined"
       :list-id="listId"
       :groups="groups"
-      :highlighted="shownHighlight"
+      :highlighted="highlighted"
       :summary="optionsSummary"
       :resettable="!defaultOptions"
       :warning="hasMorpheusResults && !morpheusWarningDismissed"
