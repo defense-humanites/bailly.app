@@ -22,7 +22,7 @@
     warning?: boolean;
     /** What the panel says without results (searching, failed, none). */
     empty?: string;
-    /** Below the results, how many are shown out of all (if not all). */
+    /** Below the results, how many others were found (if any). */
     footer?: string;
   }>();
 
@@ -242,10 +242,7 @@
             />
           </div>
         </div>
-        <!--
-          Below the results shown, the API's first ones (`count`), how many
-          were found in all (`countAll`).
-        -->
+        <!-- Below the results, how many others were found (cf. `SearchBar`). -->
         <p
           v-if="footer"
           class="shrink-0 border-t border-default p-2 text-center text-sm text-muted"

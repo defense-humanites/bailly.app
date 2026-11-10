@@ -286,13 +286,14 @@
   const morpheusWarningDismissed = useDismissed("morpheusWarning");
 
   /**
-   * Below the results shown, the API's first ones (`count`), how many were
-   * found in all (`countAll`).
+   * Below the results shown (the API's first ones, `count`), how many others
+   * were found (`countAll` beyond them), which a more precise search brings:
+   * on one line on a phone (from 360 px or so).
    */
   const footer = computed((): string | undefined => {
-    const shownCount = result.value?.count ?? 0;
-    const countAll = result.value?.countAll ?? 0;
-    return countAll > shownCount ? `${shownCount} résultats affichés sur ${formatCount(countAll)}. Précisez votre recherche.` : undefined;
+    const others = (result.value?.countAll ?? 0) - (result.value?.count ?? 0);
+    if (others <= 0) return undefined;
+    return `${formatCount(others)} ${others === 1 ? "autre résultat" : "autres résultats"}\u00a0: précisez votre recherche.`;
   });
 
   /** What the panel says without results. */
