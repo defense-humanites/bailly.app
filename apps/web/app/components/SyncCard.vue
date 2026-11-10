@@ -19,14 +19,14 @@
    * A light Aegean blue, as the button of the bookmarks page (`secondary`),
    * in the top right corner only, around the card background (a rounded
    * shape, from the bottom left corner): told apart from the settings. Its
-   * border and dividers tinted with it, as marked as the settings' in the
-   * light theme (its palest shade; translucent, it stood out); translucent
-   * in the dark one (as marked as theirs).
+   * border and dividers tinted with it, translucent: 12 % in the light theme
+   * (20 % stood out from the settings'), 20 % in the dark one (as marked as
+   * theirs).
    */
   const ui = computed(() => ({
     ...props.ui,
-    root: "[--sync-tint:color-mix(in_oklab,var(--ui-bg)_88%,var(--ui-color-secondary-500))] dark:[--sync-tint:color-mix(in_oklab,var(--ui-bg)_80%,var(--ui-color-secondary-500))] bg-default bg-[radial-gradient(ellipse_at_bottom_left,var(--ui-bg)_70%,var(--sync-tint))] ring-(--ui-color-secondary-100) divide-(--ui-color-secondary-100) dark:ring-secondary/20 dark:divide-secondary/20",
-    body: `${props.ui.body ?? ""} divide-(--ui-color-secondary-100) dark:divide-secondary/20`,
+    root: "[--sync-tint:color-mix(in_oklab,var(--ui-bg)_88%,var(--ui-color-secondary-500))] dark:[--sync-tint:color-mix(in_oklab,var(--ui-bg)_80%,var(--ui-color-secondary-500))] bg-default bg-[radial-gradient(ellipse_at_bottom_left,var(--ui-bg)_70%,var(--sync-tint))] ring-secondary/12 divide-secondary/12 dark:ring-secondary/20 dark:divide-secondary/20",
+    body: `${props.ui.body ?? ""} divide-secondary/12 dark:divide-secondary/20`,
   }));
 
   const syncStore = useSyncStore();
