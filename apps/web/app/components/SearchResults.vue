@@ -120,6 +120,17 @@
   });
 
   /**
+   * The panel scaled in as it opens, and out as it closes (as Nuxt UI's
+   * panels): its state, on which its animation depends, is that of Reka's
+   * panels; it leaves once its animation ends.
+   */
+  const onLeave = (element: Element, done: () => void): void => {
+    (element as HTMLElement).dataset.state = "closed";
+    element.addEventListener("animationend", done, { once: true });
+    setTimeout(done, 150);
+  };
+
+  /**
    * The result under the pointer (its index, -1 if none): the list handles
    * the pointer for its results, rendered again only when they change.
    */
@@ -152,14 +163,15 @@
 <template>
   <Teleport to="body">
     <Transition
-      enter-active-class="animate-[scale-in_100ms_var(--ease-out)]"
-      leave-active-class="animate-[scale-out_100ms_var(--ease-out)]"
+      :css="false"
+      @leave="onLeave"
     >
       <div
         v-if="open && panelStyle"
         ref="panel"
         data-search-results
-        class="search-surface search-panel fixed flex origin-top-left flex-col overflow-hidden rounded-md bg-default shadow-lg ring ring-default"
+        data-state="open"
+        class="search-surface search-panel fixed flex data-[state=closed]:animate-[scale-out_100ms_var(--ease-out)] data-[state=open]:animate-[scale-in_100ms_var(--ease-out)] origin-top-left flex-col overflow-hidden rounded-md bg-default shadow-lg ring ring-default"
         :style="panelStyle"
         @pointerdown.prevent
       >
