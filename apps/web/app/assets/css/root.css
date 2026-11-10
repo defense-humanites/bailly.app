@@ -380,11 +380,12 @@
 }
 
 /*
- * At rest, the buttons' hover as in use. The separators as the field's border,
- * and the results' count a notch darker, as in the dark theme.
+ * At rest, the buttons' hover as in use. The separators as the field's border
+ * (that of the fields and outline buttons, cf. `--ui-border-accented`), and
+ * the results' count a notch darker, as in the dark theme.
  */
 .search-bar {
-  --ui-border: var(--ui-color-neutral-300);
+  --ui-border: var(--ui-border-accented);
   --ui-bg-elevated: var(--ui-color-neutral-200);
   --search-hover: color-mix(in oklab, var(--ui-color-neutral-100) 50%, var(--ui-bg));
   --search-active: var(--search-hover);
@@ -392,14 +393,18 @@
 
 /*
  * In the dark theme, the bar's borders, separators, count and text keep their
- * colors whether at rest or in use (a shade lighter than elsewhere): only its
- * background changes, so that the transition stays smooth.
+ * colors whether at rest or in use (its count and text a shade lighter than
+ * elsewhere; its border and separators those of the fields and outline
+ * buttons): only its background changes, so that the transition stays
+ * smooth. The panels' dividers a shade lighter than elsewhere.
  */
+.dark .search-surface {
+  --ui-border: var(--ui-color-neutral-700);
+}
+
 .dark .search-bar,
 .dark .search-surface {
   --ui-bg-elevated: var(--ui-color-neutral-700);
-  --ui-border: var(--ui-color-neutral-700);
-  --ui-border-accented: var(--ui-color-neutral-700);
   --ui-text: var(--ui-color-neutral-100); /* 11.3:1 in use */
   --ui-text-muted: var(--ui-color-neutral-300); /* 8.3:1 */
   --ui-text-dimmed: var(--ui-color-neutral-400); /* 6.2:1 */
