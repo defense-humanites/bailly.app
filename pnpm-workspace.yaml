@@ -17,7 +17,9 @@ allowBuilds:
   vue-demi: true
   workerd: true
 
-# libmorpheus's packages (Antoine's) installed as soon as published, without
-# waiting for pnpm's minimum release age (a day).
+# The packages Antoine publishes (libmorpheus, greek-conversion, the search
+# key) installed as soon as published, without waiting for pnpm's minimum
+# release age (a day).
 minimumReleaseAgeExclude:
+  - "@humanities/*"
   - "@libmorpheus/*"
