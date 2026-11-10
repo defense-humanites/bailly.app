@@ -187,6 +187,18 @@
   --link-mark-secondary: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 16 16' fill='none' stroke='%2386b6e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
 }
 
+/*
+ * In the dark theme, the panels over the interface (popovers, menus,
+ * lists: Reka's, raised, cf. `--app-panel-bg`) keep their separators (and
+ * their ring) as marked as in the light theme (1.26:1 on the panel, 1.24:1
+ * there): the cards' softer borders (cf. `.dark`) nearly vanished on them
+ * (1.06:1; marble 800 before, 1.20:1).
+ */
+.dark [data-reka-popper-content-wrapper] {
+  --ui-border: color-mix(in oklab, var(--ui-color-neutral-700) 10%, var(--ui-color-neutral-800));
+  --ui-border-muted: var(--ui-border);
+}
+
 :root {
 
   /*
