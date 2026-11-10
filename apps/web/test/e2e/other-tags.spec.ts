@@ -41,6 +41,26 @@ test.describe("the tags of an entry", () => {
     await expect(tooltip).toBeVisible();
   });
 
+  test("closed as another window opens over it, the focus left there", async ({ page, goto }) => {
+    await goto("/logos", { waitUntil: "hydration" });
+    await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
+    await expect(allTags(page)).toBeVisible();
+    // A click without a pointer down before it: as Reka sees a touch,
+    // dismissing the panel on its click, once the window opened above it.
+    const cite = page.locator("main button[aria-label='Citer']").first();
+    await cite.evaluate((button) => {
+      (button as HTMLButtonElement).click();
+    });
+    const citation = page.getByRole("dialog", { name: "Citer" });
+    await expect(citation).toBeVisible();
+    // (By its attributes: the page is hidden from the accessibility tree.)
+    await expect(page.locator("[role=dialog]:has(h2:text-is('Étiquettes'))")).toHaveCount(0);
+    await expect(citation.getByRole("button", { name: "Fermer" })).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(citation).toBeHidden();
+    await expect(cite).toBeFocused();
+  });
+
   test("closed when the page scrolls, the focus back on its button without scrolling back", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     const trigger = page.getByRole("button", { name: "Toutes les étiquettes" });

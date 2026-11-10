@@ -192,6 +192,12 @@
     scroller.scrollTop += box.top - (area.top + padding.value.top);
   };
   function restoreFocus(event: Event): void {
+    if (focusedAway) {
+      // The focus left for another panel: kept there.
+      focusedAway = false;
+      event.preventDefault();
+      return;
+    }
     if (!scrollDismiss.closedByScroll()) return;
     event.preventDefault();
     (trigger.value?.$el as HTMLElement | undefined)?.focus({ preventScroll: true });
@@ -206,6 +212,24 @@
    * in the room left.
    */
   const panelBody = useTemplateRef<HTMLElement>("panelBody");
+
+  /**
+   * The panel closed as soon as the focus goes elsewhere, the focus kept
+   * there: also into another layer, which Reka doesn't (its panel stays
+   * open under it), e.g. the citation's window, opened by a touch (Reka
+   * dismisses the panel on the touch's click, after the window opened and
+   * stacked above it): the panel closed abruptly as the window did, the
+   * focus coming back to the citation's button.
+   */
+  let focusedAway = false;
+  useEventListener(document, "focusin", (event) => {
+    if (!panelOpen.value || !(event.target instanceof Node)) return;
+    const panel = panelBody.value?.closest("[role=dialog]");
+    const button = trigger.value?.$el as HTMLElement | undefined;
+    if (panel?.contains(event.target) || button?.contains(event.target)) return;
+    focusedAway = true;
+    panelOpen.value = false;
+  });
   let openedByTouch = false;
   const onTriggerPointerDown = (event: PointerEvent): void => {
     openedByTouch = event.pointerType === "touch";
