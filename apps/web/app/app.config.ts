@@ -109,12 +109,15 @@ export default defineAppConfig({
      * The selects open a list, as the bars' buttons open a menu: their
      * states (`--app-button-hover`, `--app-button-active`, cf. `root.css`),
      * a shade darker when hovered, two when pressed or open, as every
-     * button.
+     * button. Their list opening with the chosen item highlighted, even
+     * without the focus (Reka's highlight follows it): on a touch screen,
+     * the focus did not stay on that item once the list was open. Until
+     * another item is highlighted (pointed at, or reached by the keyboard).
      */
     select: {
       slots: {
         content: "bg-(--app-panel-bg)",
-        item: "data-highlighted:not-data-disabled:before:bg-(--app-panel-highlight)",
+        item: "data-highlighted:not-data-disabled:before:bg-(--app-panel-highlight) [[role=listbox]:not(:has([data-highlighted]))_&]:data-[state=checked]:before:bg-(--app-panel-highlight)",
       },
       variants: {
         variant: {
