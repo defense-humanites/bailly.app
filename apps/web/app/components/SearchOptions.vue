@@ -24,6 +24,13 @@
    * (`pointOut`).
    */
   const isOpen = ref(false);
+  // It opens once the search results, if shown, are gone (cf.
+  // `closeSearchResultsKey`).
+  const closeSearchResults = useCloseSearchResults();
+  const setOpen = async (value: boolean): Promise<void> => {
+    if (value) await closeSearchResults();
+    isOpen.value = value;
+  };
   const { open: tooltipOpen, setOpen: setTooltipOpen, listeners: tooltipListeners } = useTriggerTooltip(isOpen);
   const trigger = useTemplateRef<{ $el: HTMLElement }>("trigger");
   watch(useSearchOptionsPanel().request, () => {
@@ -71,9 +78,10 @@
 
 <template>
   <UPopover
-    v-model:open="isOpen"
+    :open="isOpen"
     :content="popoverContent"
     :ui="{ content: 'search-surface search-panel' }"
+    @update:open="setOpen"
   >
     <!--
       A dot on the button when an option isn't the default one; a background

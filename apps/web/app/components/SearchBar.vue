@@ -290,6 +290,33 @@
   const shown = computed((): boolean => open.value && searchable.value && answered.value);
 
   /**
+   * The results closed for a panel of the bar's buttons, which opens once
+   * they are gone (cf. `closeSearchResultsKey`): their panel in the page
+   * while shown or closing (`present`), the panels waiting for it to go
+   * (at most 250 ms: its animation lasts 100).
+   */
+  const present = ref(false);
+  watch(shown, (value) => {
+    if (value) present.value = true;
+  }, { immediate: true });
+  let resultsGone: (() => void)[] = [];
+  const onResultsClosed = (): void => {
+    present.value = false;
+    for (const resolve of resultsGone.splice(0)) resolve();
+  };
+  provide(closeSearchResultsKey, (): Promise<void> => {
+    if (!present.value) return Promise.resolve();
+    open.value = false;
+    return new Promise((resolve) => {
+      resultsGone.push(resolve);
+      setTimeout(() => {
+        resultsGone = resultsGone.filter(waiting => waiting !== resolve);
+        resolve();
+      }, 250);
+    });
+  });
+
+  /**
    * The results, in their groups (cf. `searchResultGroups`): none until a
    * search is answered (cf. `answered`). They change with the result (and
    * not as letters are typed): the list is only rendered again then.
@@ -552,6 +579,7 @@
       @point="point"
       @select="select"
       @dismiss="open = false"
+      @closed="onResultsClosed"
       @reset="resetOptions"
       @dismiss-warning="morpheusWarningDismissed = true"
     />

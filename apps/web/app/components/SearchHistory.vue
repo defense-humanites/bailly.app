@@ -24,7 +24,16 @@
     "aria-label": "Entrées consultées récemment",
   }) as PopoverProps["content"]);
 
+  /**
+   * The panel opens once the search results, if shown, are gone (cf.
+   * `closeSearchResultsKey`).
+   */
   const open = ref(false);
+  const closeSearchResults = useCloseSearchResults();
+  const setOpen = async (value: boolean): Promise<void> => {
+    if (value) await closeSearchResults();
+    open.value = value;
+  };
   const { open: tooltipOpen, setOpen: setTooltipOpen, listeners: tooltipListeners } = useTriggerTooltip(open);
   const confirmingClear = ref(false);
   const list = useTemplateRef<HTMLUListElement>("list");
@@ -104,9 +113,10 @@
 
 <template>
   <UPopover
-    v-model:open="open"
+    :open="open"
     :content="popoverContent"
     :ui="{ content: 'search-surface search-panel w-(--reka-popover-trigger-width) max-h-[min(32rem,var(--reka-popover-content-available-height))] overflow-y-auto p-1' }"
+    @update:open="setOpen"
   >
     <!--
       The same button as the options' one (cf. SearchOptions), named by a
