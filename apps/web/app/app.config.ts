@@ -250,11 +250,15 @@ export default defineAppConfig({
      * The tooltips, as the bubbles that inform (cf. `bubble.ts`): a shade
      * below the page with a clear border, in both themes
      * (`--app-bubble-bg`, `--app-bubble-ring`, cf. `root.css`); a shadow,
-     * and a slightly toned text (not the content's).
+     * and a slightly toned text (not the content's). Above the panels
+     * (`z-40`; the toolbar's, `z-30`; the search bar's, in the page's
+     * order): a tooltip came in the page before the panels of the buttons
+     * after its own (the search history's under the options'), Vue's
+     * teleports keeping their place; below the header (`z-[99]`).
      */
     tooltip: {
       slots: {
-        content: "bg-(--app-bubble-bg) ring-(--app-bubble-ring) shadow-md text-toned",
+        content: "z-40 bg-(--app-bubble-bg) ring-(--app-bubble-ring) shadow-md text-toned",
       },
     },
     toaster: {
