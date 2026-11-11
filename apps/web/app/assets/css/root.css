@@ -530,14 +530,6 @@
   --app-button-active: var(--app-card-active);
 }
 
-.dark /*
- * A panel of the search bar giving way to another (cf. `SearchPanels`):
- * its closing shortened, from 100 to 60 ms.
- */
-[data-search-switching] .search-panel[data-state="closed"] {
-  animation-duration: 60ms;
-}
-
-.search-panel {
+.dark .search-panel {
   box-shadow: 0 18px 40px -10px rgb(0 0 0 / 0.7), 0 4px 12px -4px rgb(0 0 0 / 0.4);
 }
