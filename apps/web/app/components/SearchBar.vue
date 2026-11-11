@@ -355,7 +355,7 @@
   const footer = computed((): string | undefined => {
     const others = (result.value?.countAll ?? 0) - (result.value?.count ?? 0);
     if (others <= 0) return undefined;
-    return `${formatCount(others)} ${others === 1 ? "autre résultat" : "autres résultats"}\u00a0: précisez votre recherche.`;
+    return `+ ${formatCount(others)} ${others === 1 ? "autre résultat" : "autres résultats"} (affinez votre recherche)`;
   });
 
   /**

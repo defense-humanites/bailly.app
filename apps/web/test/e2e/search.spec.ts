@@ -141,7 +141,7 @@ test.describe("search bar", () => {
     // « οι »: 30 results shown out of 528.
     await searchInput(page).fill("οι");
     await expect(searchResults(page).getByRole("option").first()).toBeVisible();
-    await expect(searchResults(page).locator("p.border-t")).toHaveText("498 autres résultats : précisez votre recherche.");
+    await expect(searchResults(page).locator("p.border-t")).toHaveText("+ 498 autres résultats (affinez votre recherche)");
   });
 
   test("lists the results exactly as wide as the bar", async ({ page }) => {
