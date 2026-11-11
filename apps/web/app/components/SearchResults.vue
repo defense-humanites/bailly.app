@@ -89,18 +89,28 @@
 
   /**
    * A pointer down outside the panel and the field dismisses it; a touch,
-   * on its click only (not when it scrolls the page).
+   * on its click only (not when it scrolls the page). On the bar's buttons
+   * (history, options), whose panels open in its place, on their click too
+   * (as their panel opens) and without its animation (cf. `onLeave`): the
+   * two panels, one fading out over the other fading in, were mixed up.
    */
   const outside = (target: EventTarget | null): boolean =>
     target instanceof Node && !panel.value?.contains(target) && !props.field?.contains(target);
+  const onBar = (target: EventTarget | null): boolean => target instanceof Node && !!props.anchor?.contains(target);
+  let instantLeave = false;
+  watch(() => props.open, (open) => {
+    if (open) instantLeave = false;
+  });
   useEventListener(import.meta.client ? document : undefined, "pointerdown", (event: PointerEvent) => {
     if (!props.open || !outside(event.target)) return;
-    if (event.pointerType !== "touch") {
+    if (event.pointerType !== "touch" && !onBar(event.target)) {
       emit("dismiss");
       return;
     }
     document.addEventListener("click", (click) => {
-      if (outside(click.target)) emit("dismiss");
+      if (!outside(click.target)) return;
+      instantLeave = onBar(click.target);
+      emit("dismiss");
     }, { once: true, capture: true });
   }, { capture: true });
 
@@ -122,9 +132,15 @@
   /**
    * The panel scaled in as it opens, and out as it closes (as Nuxt UI's
    * panels): its state, on which its animation depends, is that of Reka's
-   * panels; it leaves once its animation ends.
+   * panels; it leaves once its animation ends, at once for another panel of
+   * the bar (cf. `dismiss`).
    */
   const onLeave = (element: Element, done: () => void): void => {
+    if (instantLeave) {
+      instantLeave = false;
+      done();
+      return;
+    }
     (element as HTMLElement).dataset.state = "closed";
     element.addEventListener("animationend", done, { once: true });
     setTimeout(done, 150);
