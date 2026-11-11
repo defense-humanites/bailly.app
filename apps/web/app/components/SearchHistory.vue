@@ -39,16 +39,33 @@
   })));
 
   /**
-   * The history is read when the panel opens (it changes on every entry
-   * page), then the focus goes to the newest entry: the panel only had its
-   * own focus so far.
+   * The history read once the page is idle (cf. `idleFaces`): the panel
+   * opens at its height, its entries shown, even the first time (read as
+   * it opened, it grew from its title during its animation). Kept up to
+   * date as entries are viewed (cf. the store's `add`).
+   */
+  onMounted(() => {
+    if (historyStore.loaded) return;
+    const read = (): void => {
+      if (!historyStore.loaded) historyStore.load().catch(() => {});
+    };
+    if ("requestIdleCallback" in window) requestIdleCallback(read, { timeout: 2000 });
+    else setTimeout(read, 200);
+  });
+
+  /**
+   * The history read again when the panel opens (another tab may have
+   * changed it), in the background once read (waited for otherwise), then
+   * the focus goes to the newest entry: the panel only had its own focus so
+   * far.
    */
   watch(open, async (isOpen: boolean) => {
     if (!isOpen) {
       confirmingClear.value = false;
       return;
     }
-    await historyStore.load();
+    if (historyStore.loaded) historyStore.load().catch(() => {});
+    else await historyStore.load();
     await nextTick();
     list.value?.querySelector<HTMLElement>("a")?.focus();
   });
