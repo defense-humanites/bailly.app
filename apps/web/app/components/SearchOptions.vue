@@ -24,13 +24,8 @@
    * (`pointOut`).
    */
   const isOpen = ref(false);
-  // It opens once the search results, if shown, are gone (cf.
-  // `closeSearchResultsKey`).
-  const closeSearchResults = useCloseSearchResults();
-  const setOpen = async (value: boolean): Promise<void> => {
-    if (value) await closeSearchResults();
-    isOpen.value = value;
-  };
+  // It opens once the bar's panel open, if any, is gone (cf. `SearchPanels`).
+  const { setOpen, onGone } = useSearchPanel("options", isOpen);
   const { open: tooltipOpen, setOpen: setTooltipOpen, listeners: tooltipListeners } = useTriggerTooltip(isOpen);
   const trigger = useTemplateRef<{ $el: HTMLElement }>("trigger");
   watch(useSearchOptionsPanel().request, () => {
@@ -38,7 +33,7 @@
     if (!button) return;
     button.focus();
     pointOut(button);
-    isOpen.value = true;
+    void setOpen(true);
   });
 
   const lemmatizable = computed((): boolean => isLemmatizable(position.value, props.wildcards));
@@ -100,6 +95,7 @@
       <UButton
         ref="trigger"
         v-bind="tooltipListeners"
+        data-search-panel="options"
         color="neutral"
         variant="outline"
         size="lg"
@@ -129,6 +125,7 @@
       <form
         class="@container w-[min(22rem,calc(var(--app-width)-2rem))] space-y-2.5 p-3 text-sm"
         @submit.prevent
+        @vue:unmounted="onGone"
       >
         <div class="flex h-5 items-center justify-between">
           <span class="text-xs font-semibold uppercase tracking-wide text-muted">Options</span>

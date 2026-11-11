@@ -25,15 +25,11 @@
   }) as PopoverProps["content"]);
 
   /**
-   * The panel opens once the search results, if shown, are gone (cf.
-   * `closeSearchResultsKey`).
+   * The panel opens once the bar's panel open, if any, is gone (cf.
+   * `SearchPanels`).
    */
   const open = ref(false);
-  const closeSearchResults = useCloseSearchResults();
-  const setOpen = async (value: boolean): Promise<void> => {
-    if (value) await closeSearchResults();
-    open.value = value;
-  };
+  const { setOpen, onGone } = useSearchPanel("history", open);
   const { open: tooltipOpen, setOpen: setTooltipOpen, listeners: tooltipListeners } = useTriggerTooltip(open);
   const confirmingClear = ref(false);
   const list = useTemplateRef<HTMLUListElement>("list");
@@ -130,6 +126,7 @@
     >
       <UButton
         v-bind="tooltipListeners"
+        data-search-panel="history"
         color="neutral"
         variant="outline"
         size="lg"
@@ -140,7 +137,10 @@
     </UTooltip>
 
     <template #content>
-      <div @keydown="onKeydown">
+      <div
+        @keydown="onKeydown"
+        @vue:unmounted="onGone"
+      >
         <h2
           id="search-history-title"
           class="p-2 text-xs font-semibold uppercase tracking-wide text-muted"

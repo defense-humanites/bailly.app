@@ -284,37 +284,51 @@
   });
 
   /**
-   * Whether the results are shown: asked for, something to look up, and an
-   * answer to show (cf. `answered`).
+   * The bar's panels (results, history, options), one giving way to another
+   * (cf. `SearchPanels`): the results, asked for while another panel is in
+   * the page, wait for it to be gone (`allowed`). Their panel in the page
+   * while shown or closing (`present`).
    */
-  const shown = computed((): boolean => open.value && searchable.value && answered.value);
+  const panels = createSearchPanels();
+  provide(searchPanelsKey, panels);
+  const present = ref(false);
+  const close = (): void => {
+    open.value = false;
+  };
+  panels.register("results", { present, close });
+  const onResultsClosed = (): void => {
+    present.value = false;
+    panels.gone("results");
+  };
+  const allowed = ref(true);
+  const wanted = computed((): boolean => open.value && searchable.value && answered.value);
+  watch(wanted, async (want) => {
+    if (!want || !panels.othersPresent("results")) return;
+    allowed.value = false;
+    await panels.switchTo("results");
+    allowed.value = true;
+  }, { flush: "sync" });
 
   /**
-   * The results closed for a panel of the bar's buttons, which opens once
-   * they are gone (cf. `closeSearchResultsKey`): their panel in the page
-   * while shown or closing (`present`), the panels waiting for it to go
-   * (at most 250 ms: its animation lasts 100).
+   * Whether the results are shown: asked for, something to look up, an
+   * answer to show (cf. `answered`), and no other panel in their place.
    */
-  const present = ref(false);
+  const shown = computed((): boolean => wanted.value && allowed.value);
   watch(shown, (value) => {
     if (value) present.value = true;
   }, { immediate: true });
-  let resultsGone: (() => void)[] = [];
-  const onResultsClosed = (): void => {
-    present.value = false;
-    for (const resolve of resultsGone.splice(0)) resolve();
+
+  /**
+   * A pointer down on the bar for another panel than the one open (the
+   * field for the results, a button for its panel): a switch, the closing
+   * shortened from the start (the open panel closes on the pointer down).
+   */
+  const onBarPointerDown = (event: PointerEvent): void => {
+    const target = event.target as Element | null;
+    const button = target?.closest<HTMLElement>("[data-search-panel]");
+    const name = (button?.dataset.searchPanel ?? (field.value?.contains(target) ? "results" : undefined)) as SearchPanelName | undefined;
+    if (name && panels.othersPresent(name)) panels.markSwitch();
   };
-  provide(closeSearchResultsKey, (): Promise<void> => {
-    if (!present.value) return Promise.resolve();
-    open.value = false;
-    return new Promise((resolve) => {
-      resultsGone.push(resolve);
-      setTimeout(() => {
-        resultsGone = resultsGone.filter(waiting => waiting !== resolve);
-        resolve();
-      }, 250);
-    });
-  });
 
   /**
    * The results, in their groups (cf. `searchResultGroups`): none until a
@@ -478,6 +492,7 @@
     ref="group"
     role="search"
     class="search-bar group/search rounded-full outline-primary/25 has-[input:focus-visible]:outline-3"
+    @pointerdown.capture="onBarPointerDown"
   >
     <div
       ref="field"
