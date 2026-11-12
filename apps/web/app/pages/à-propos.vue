@@ -242,10 +242,12 @@
       collapse; its content scales with the window height (the logo, larger on
       a tall phone; from `md`, the title and subtitle a notch smaller on a
       short window, as the figures are left out), and the frame grows rather
-      than letting it overflow (e.g. a phone in landscape).
+      than letting it overflow (e.g. a phone in landscape). Above the screen's
+      bottom safe area (e.g. the iPhone's home indicator, the page's padding,
+      cf. `layouts/default.vue`): its bottom margin then above it.
     -->
     <div class="p-4 md:px-16 md:pt-0 md:pb-16">
-      <section class="flex min-h-[calc(100svh-(6.5rem+1px)-2rem)] flex-col items-center rounded-xl border-2 border-terracotta-700 px-3 pt-[clamp(1rem,3svh,3rem)] pb-[clamp(0.25rem,1svh,1rem)] text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[calc(100svh-var(--header-height)-4rem)] md:px-8 dark:border-terracotta-700 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)]">
+      <section class="flex min-h-[calc(100svh-(6.5rem+1px)-2rem-var(--safe-inset-bottom,env(safe-area-inset-bottom,0px)))] flex-col items-center rounded-xl border-2 border-terracotta-700 px-3 pt-[clamp(1rem,3svh,3rem)] pb-[clamp(0.25rem,1svh,1rem)] text-center shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)] md:min-h-[calc(100svh-var(--header-height)-4rem-var(--safe-inset-bottom,env(safe-area-inset-bottom,0px)))] md:px-8 dark:border-terracotta-700 dark:shadow-[inset_0_0_0_5px_var(--app-page-bg),inset_0_0_0_6px_var(--color-terracotta-700)]">
         <div class="my-auto flex w-full flex-col items-center">
           <UIcon
             name="i-bailly-bailly"
