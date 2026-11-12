@@ -1017,7 +1017,8 @@
   text-shadow: 0 1px 0 rgb(255 255 255 / 0.35);
 
   &:hover,
-  &:active {
+  &:active,
+  &[data-pressed] {
     background: linear-gradient(#f5e8b6, #ecd17c 55%, #d6af4a);
   }
 }

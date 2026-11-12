@@ -112,3 +112,11 @@
   --color-bar: var(--app-bar-bg);
   --color-favorite: var(--app-favorite);
 }
+
+/*
+ * The pressed state: the `:active` pseudo-class, or `data-pressed`, set on
+ * a pointer down and kept for a minimum time (cf. `pressed.client.ts`): a
+ * tap, a fraction of a second on a touch screen, shows it too. Every
+ * `active:` class (ours, Nuxt UI's) follows it.
+ */
+@custom-variant active (&:active, &[data-pressed]);

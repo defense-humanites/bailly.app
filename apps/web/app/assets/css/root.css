@@ -533,3 +533,12 @@
 .dark .search-panel {
   box-shadow: 0 18px 40px -10px rgb(0 0 0 / 0.7), 0 4px 12px -4px rgb(0 0 0 / 0.4);
 }
+
+/*
+ * Pressed (cf. `pressed.client.ts`), an element takes its pressed colors at
+ * once, and loses them with its transition: a tap's pressed state, short,
+ * shows at its full shade.
+ */
+[data-pressed] {
+  transition-duration: 0s;
+}

@@ -50,7 +50,7 @@
       text-shadow: 0 1px 0 color-mix(in srgb, white 20%, transparent);
     }
 
-    &:active:not(:disabled, [aria-disabled="true"]),
+    &:is(:active, [data-pressed]):not(:disabled, [aria-disabled="true"]),
     &[aria-expanded="true"] {
       background-image: none;
       box-shadow:
