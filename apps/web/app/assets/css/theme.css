@@ -88,6 +88,20 @@
     "Times New Roman", Times, serif;
 
   --animate-rise: rise 0.25s ease-out;
+  /* A toggle button's icon turned on by the user (cf. `useToggleFeedback`). */
+  --animate-toggle-pop: toggle-pop 280ms ease-out;
+
+  @keyframes toggle-pop {
+    0% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(1.20);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
 
   @keyframes rise {
     0% {

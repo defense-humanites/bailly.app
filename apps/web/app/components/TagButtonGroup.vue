@@ -14,13 +14,17 @@
   const TOOLBAR_HOVER = "hover:bg-(--app-button-hover) active:bg-(--app-button-active)";
 
   /**
-   * The toggle buttons (the active tag, the star): pressed, their icon
-   * filled, at once in the tag's or the favorites' color, without a
-   * transition of the text color (only of the background). On a touch
-   * screen, without a hover that has already given it that color, the
-   * filled icon flashed in the text's color (black in the light theme).
+   * The toggle buttons (the active tag, the star): on, their icon filled, at
+   * once in the tag's or the favorites' color, without a transition of the
+   * text color (only of the background). On a touch screen, without a hover
+   * that has already given it that color, the filled icon flashed in the
+   * text's color (black in the light theme). Their state shown in step with
+   * their pressed state, their icon popping when turned on (cf.
+   * `useToggleFeedback`).
    */
-  const TOGGLE = "aria-pressed:transition-[background-color]";
+  const toggleClass = (on: boolean): string | false => on && "transition-[background-color]";
+  const TOGGLE_ICON = "motion-reduce:animate-none";
+  const POP = "animate-toggle-pop";
 
   const bookmarksStore = useBookmarksStore();
   const { currentTag, initialized, tags } = storeToRefs(bookmarksStore);
@@ -45,6 +49,14 @@
     currentTag.value !== null
     && bookmarksStore.tagKeysOf(props.entry.uri).includes(currentTag.value.key),
   );
+
+  // Their states as shown, in step with their buttons' pressed state.
+  const currentTagButton = useTemplateRef<ComponentPublicInstance>("currentTagButton");
+  const starButton = useTemplateRef<ComponentPublicInstance>("starButton");
+  const taggedFeedback = useToggleFeedback(() => currentTagButton.value?.$el as HTMLElement | undefined, taggedAsCurrent);
+  const starFeedback = useToggleFeedback(() => starButton.value?.$el as HTMLElement | undefined, starred);
+  const { shown: taggedShown, pop: taggedPop } = taggedFeedback;
+  const { shown: starShown, pop: starPop } = starFeedback;
 
   /**
    * Whether the current tag's button fades in: when it comes in after the
@@ -343,6 +355,7 @@
   const handleTagChange = async (): Promise<void> => {
     const currentTagKey = currentTag.value?.key;
     if (currentTagKey === undefined) return;
+    taggedFeedback.act();
 
     if (taggedAsCurrent.value) {
       await bookmarksStore.untagEntry(props.entry.uri, currentTagKey);
@@ -362,7 +375,6 @@
   const starIntroShown = useDismissed("starIntro");
   const starIntroOpen = ref(false);
   const starIntroDismiss = usePageScrollDismiss(starIntroOpen);
-  const starButton = useTemplateRef<ComponentPublicInstance>("starButton");
   const starIntroTitle = useId();
 
   const starIntroContent = computed((): PopoverProps["content"] => ({
@@ -391,6 +403,7 @@
   };
 
   const toggleStar = async (): Promise<void> => {
+    starFeedback.act();
     if (starred.value) {
       starIntroOpen.value = false;
       await bookmarksStore.unstarEntry(props.entry.uri);
@@ -432,16 +445,18 @@
       :text="taggedAsCurrent ? `Retirer de «\u00a0${currentTag.name}\u00a0»` : `Ajouter à «\u00a0${currentTag.name}\u00a0»`"
     >
       <UButton
+        ref="currentTagButton"
         :label="currentTag.name"
         :aria-label="`Étiquette active\u00a0: ${currentTag.name}`"
         :aria-pressed="taggedAsCurrent"
-        :icon="taggedAsCurrent ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
+        :icon="taggedShown ? 'i-bailly-tag-filled' : 'i-lucide-tag'"
         :data-tag-color="currentTag.color"
-        :class="[TOOLBAR_HOVER, TOGGLE, taggedAsCurrent ? 'text-tag-text' : 'hover:text-tag-text', fadeCurrentTag && 'animate-[fade-in_200ms_ease-out] motion-reduce:animate-none']"
-        :ui="{ label: 'max-w-36 truncate text-xs tracking-tight sm:max-w-56' }"
+        :class="[TOOLBAR_HOVER, toggleClass(taggedShown), taggedShown ? 'text-tag-text' : 'hover:text-tag-text', fadeCurrentTag && 'animate-[fade-in_200ms_ease-out] motion-reduce:animate-none']"
+        :ui="{ label: 'max-w-36 truncate text-xs tracking-tight sm:max-w-56', leadingIcon: [TOGGLE_ICON, taggedPop && POP] }"
         color="neutral"
         variant="ghost"
         @click="handleTagChange"
+        @animationend="taggedFeedback.popped"
       />
     </UTooltip>
 
@@ -622,13 +637,15 @@
         >
           <UButton
             ref="starButton"
-            :icon="starred ? 'i-bailly-star-filled' : 'i-lucide-star'"
+            :icon="starShown ? 'i-bailly-star-filled' : 'i-lucide-star'"
             aria-label="Favori"
             :aria-pressed="starred"
             color="neutral"
             variant="ghost"
-            :class="[TOOLBAR_HOVER, TOGGLE, starred ? 'text-favorite' : 'hover:text-favorite']"
+            :class="[TOOLBAR_HOVER, toggleClass(starShown), starShown ? 'text-favorite' : 'hover:text-favorite']"
+            :ui="{ leadingIcon: [TOGGLE_ICON, starPop && POP] }"
             @click="toggleStar"
+            @animationend="starFeedback.popped"
           />
         </UTooltip>
       </template>
