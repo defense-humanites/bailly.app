@@ -49,6 +49,7 @@
 
   // The input text follows the input mode (e.g. `λόγος` ⇄ `lógos`).
   watch(inputMode, (mode) => {
+    finishTyping();
     if (!query.value) return;
     query.value = convertSearchInput(query.value, mode);
     syncInputText(query.value);
@@ -209,7 +210,65 @@
     clearTimeout(slowTimer);
   });
 
+  /**
+   * A search handed over by a home page's tip (`useSearchFocus`), typed in
+   * the field letter by letter, a keystroke every `TYPING_STEP` ms (its
+   * conversion included: `lo/` shows « λό »), at once if motion is reduced.
+   * Only the input's text is animated: the query is set at once (a single
+   * lookup, of the whole word: no partial forms looked up, nor analyzed),
+   * the results and their count shown once it is typed (`typing`). A key,
+   * a pointer down in the field, or another request ends it: the whole
+   * text then shows, the caret at its end.
+   */
+  const TYPING_STEP = 80;
+  const reducedMotion = usePreferredReducedMotion();
+  const typing = ref(false);
+  let typingTimer: ReturnType<typeof setTimeout> | undefined;
+  const cancelTyping = (): void => {
+    clearTimeout(typingTimer);
+    typing.value = false;
+  };
+  const finishTyping = (): void => {
+    if (!typing.value) return;
+    cancelTyping();
+    const element = input.value;
+    if (!element) return;
+    element.value = query.value;
+    element.setSelectionRange(query.value.length, query.value.length);
+  };
+  const typeSearch = (text: string): void => {
+    cancelTyping();
+    pendingQuery = null;
+    const convert = (value: string): string => transliterating.value ? toTransliteratedInput(value) : toSearchGreek(value);
+    query.value = convert(text);
+    open.value = true;
+    const element = input.value;
+    if (!element || reducedMotion.value === "reduce") {
+      syncInputText(query.value, query.value.length);
+      return;
+    }
+    // What the field shows after each keystroke (a diacritic changes its
+    // letter), the last one the query.
+    const steps: string[] = [];
+    for (let end = 1; end <= text.length; end++) {
+      const shown = end === text.length ? query.value : convert(text.slice(0, end));
+      if (shown !== steps.at(-1)) steps.push(shown);
+    }
+    typing.value = true;
+    let step = 0;
+    const next = (): void => {
+      const value = steps[step++] ?? query.value;
+      element.value = value;
+      element.setSelectionRange(value.length, value.length);
+      if (step < steps.length) typingTimer = setTimeout(next, TYPING_STEP);
+      else typing.value = false;
+    };
+    next();
+  };
+  onBeforeUnmount(cancelTyping);
+
   const clear = (): void => {
+    cancelTyping();
     pendingQuery = null;
     query.value = "";
     syncInputText("");
@@ -251,12 +310,7 @@
     if (!request || (request.ifEmpty && hasQuery.value)) return;
     input.value?.focus();
     // A search to type (converted as typing does), its results shown.
-    if (request.text) {
-      pendingQuery = null;
-      query.value = transliterating.value ? toTransliteratedInput(request.text) : toSearchGreek(request.text);
-      syncInputText(query.value, query.value.length);
-      open.value = true;
-    }
+    if (request.text) typeSearch(request.text);
   };
   watch(searchFocus.request, onFocusRequest);
   onMounted(onFocusRequest);
@@ -301,7 +355,7 @@
     panels.gone("results");
   };
   const allowed = ref(true);
-  const wanted = computed((): boolean => open.value && searchable.value && answered.value);
+  const wanted = computed((): boolean => open.value && searchable.value && answered.value && !typing.value);
   watch(wanted, async (want) => {
     if (!want || !panels.othersPresent("results")) return;
     allowed.value = false;
@@ -311,7 +365,8 @@
 
   /**
    * Whether the results are shown: asked for, something to look up, an
-   * answer to show (cf. `answered`), and no other panel in their place.
+   * answer to show (cf. `answered`), a tip's search typed (cf.
+   * `typeSearch`), and no other panel in their place.
    */
   const shown = computed((): boolean => wanted.value && allowed.value);
   watch(shown, (value) => {
@@ -439,6 +494,7 @@
    * move the caret).
    */
   const onKeydown = (event: KeyboardEvent): void => {
+    finishTyping();
     if (event.isComposing) return;
     flushQuery();
 
@@ -524,6 +580,7 @@
         class="w-full appearance-none rounded-full border-0 bg-default py-2 ps-10 pe-10 text-base/6 text-highlighted shadow-xs ring ring-accented outline-transparent transition-colors ring-inset placeholder:text-dimmed group-not-only:group-first:rounded-e-none group-not-only:group-last:rounded-s-none group-not-last:group-not-first:rounded-none focus-visible:ring-primary focus-visible:outline-3"
         @input="onInput"
         @compositionstart="onCompositionStart"
+        @pointerdown="finishTyping"
         @compositionend="onCompositionEnd"
         @keydown="onKeydown"
         @focus="reopen"
@@ -559,7 +616,7 @@
         class="absolute inset-y-0 end-0 flex items-center pe-3"
       >
         <UBadge
-          v-if="query && (slow || (answered && result))"
+          v-if="query && !typing && (slow || (answered && result))"
           color="neutral"
           variant="soft"
           size="sm"

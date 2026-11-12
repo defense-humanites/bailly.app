@@ -15,7 +15,8 @@ export function useSearchFocus() {
      * @param options.ifEmpty Only if the field is empty (not when it holds a
      * search, whose results the focus would open again).
      * @param options.text A search to type in the field, as if typed there
-     * (e.g. a home page's tip, `lo/gos`), its results then shown.
+     * (e.g. a home page's tip, `lo/gos`), letter by letter (cf. the search
+     * bar's `typeSearch`), its results then shown.
      */
     focus: (options: { ifEmpty?: boolean; text?: string } = {}): void => {
       request.value = { count: request.value.count + 1, ifEmpty: options.ifEmpty ?? false, text: options.text };

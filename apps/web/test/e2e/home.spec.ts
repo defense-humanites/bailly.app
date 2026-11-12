@@ -131,6 +131,50 @@ test.describe("home page", () => {
     await expect(tip).toHaveCount(0);
   });
 
+  test("a tip's search is typed letter by letter, its results shown once typed", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    // Drawn as the third of the tips (beta code, with a fine pointer).
+    await page.addInitScript(() => {
+      Math.random = () => 0.3;
+    });
+    await goto("/", { waitUntil: "hydration" });
+    const steps = page.evaluate(() => new Promise<{ value: string; panel: boolean }[]>((resolve) => {
+      const input = document.querySelector<HTMLInputElement>(".search-bar input")!;
+      const seen: { value: string; panel: boolean }[] = [];
+      const tick = (): void => {
+        const step = { value: input.value, panel: document.querySelector("[data-search-results]") !== null };
+        const last = seen.at(-1);
+        if (step.value && (last?.value !== step.value || last.panel !== step.panel)) seen.push(step);
+        if (step.panel) resolve(seen);
+        else requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }));
+    await page.getByRole("button", { name: "Rechercher « lo/gos »" }).click();
+    // Each keystroke converted (`lo/` shows « λό »), the results with the last.
+    expect((await steps).map(({ value }) => value)).toEqual(["λ", "λο", "λό", "λόγ", "λόγο", "λόγος"]);
+    expect((await steps).filter(({ panel }) => panel).map(({ value }) => value)).toEqual(["λόγος"]);
+  });
+
+  test("a tip's search typed: a key ends it, the whole text then shown; at once with reduced motion", async ({ page, goto }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.addInitScript(() => {
+      Math.random = () => 0.3;
+    });
+    await goto("/", { waitUntil: "hydration" });
+    const tip = page.getByRole("button", { name: "Rechercher « lo/gos »" });
+    await tip.click();
+    await page.keyboard.press("End");
+    expect(await searchInput(page).inputValue()).toBe("λόγος");
+    await expect(page.getByRole("listbox")).toBeVisible();
+
+    await page.keyboard.press("Escape");
+    await searchInput(page).fill("");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await tip.click();
+    expect(await searchInput(page).inputValue()).toBe("λόγος");
+  });
+
   test("the citation's tip points out the random entry's citation button, then opens it", async ({ page, goto }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     // Drawn as the first of the tips.
