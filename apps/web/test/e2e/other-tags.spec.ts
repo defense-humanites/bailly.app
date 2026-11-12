@@ -110,9 +110,10 @@ test.describe("the tags of an entry", () => {
     expect(await gap()).toBeCloseTo(before, 0);
   });
 
-  test("every tag, the current one first (active), then in their order, selected if the entry has it", async ({ page, goto }) => {
+  test("every tag, in their order (the current one in its place, active), selected if the entry has it", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
-    // In their order (by name): Ciel, Rouge, Vert; the current tag is Ciel.
+    // In their order (the latest created first, the default): Rouge, Ciel,
+    // Vert; the current tag, Ciel, in its place.
     await seedBookmarks(page, {
       tags: [
         { name: "Vert", color: "Green", entries: [logos] },
@@ -128,25 +129,26 @@ test.describe("the tags of an entry", () => {
     // Few tags: no filter.
     await expect(allTags(page).getByRole("textbox")).toHaveCount(0);
     const options = list.getByRole("option");
-    await expect(options).toHaveText(["Ciel, active", "Rouge", "Vert"]);
+    await expect(options).toHaveText(["Rouge", "Ciel, active", "Vert"]);
+    const [rouge, ciel, vert] = [options.nth(0), options.nth(1), options.nth(2)];
     // The active tag's mark over its icon, as on its card: on it only.
     await expect(list.locator("[data-active-mark]")).toHaveCount(1);
-    await expect(options.nth(0).locator("[data-active-mark]")).toBeVisible();
-    await expect(options.nth(0)).toHaveAttribute("aria-selected", "false");
-    await expect(options.nth(1)).toHaveAttribute("aria-selected", "false");
-    await expect(options.nth(2)).toHaveAttribute("aria-selected", "true");
+    await expect(ciel.locator("[data-active-mark]")).toBeVisible();
+    await expect(rouge).toHaveAttribute("aria-selected", "false");
+    await expect(ciel).toHaveAttribute("aria-selected", "false");
+    await expect(vert).toHaveAttribute("aria-selected", "true");
 
-    await options.nth(1).click();
-    await expect(options.nth(1)).toHaveAttribute("aria-selected", "true");
-    await options.nth(2).click();
-    await expect(options.nth(2)).toHaveAttribute("aria-selected", "false");
+    await rouge.click();
+    await expect(rouge).toHaveAttribute("aria-selected", "true");
+    await vert.click();
+    await expect(vert).toHaveAttribute("aria-selected", "false");
     await expect.poll(() => tagNamesOf(page, "logos")).toEqual(["Rouge"]);
     // The order does not change while the panel is open.
-    await expect(options).toHaveText(["Ciel, active", "Rouge", "Vert"]);
+    await expect(options).toHaveText(["Rouge", "Ciel, active", "Vert"]);
 
     // The current tag, from the panel or from its own button (named after it,
     // its state in aria-pressed, its action in a tooltip).
-    await options.nth(0).click();
+    await ciel.click();
     await expect.poll(() => tagNamesOf(page, "logos")).toEqual(["Ciel", "Rouge"]);
     await page.keyboard.press("Escape");
     await expect(allTags(page)).toBeHidden();
@@ -159,7 +161,7 @@ test.describe("the tags of an entry", () => {
     await expect.poll(() => tagNamesOf(page, "logos")).toEqual(["Rouge"]);
   });
 
-  test("the tags in the bookmarks page's order, in the panel (the active one first) and the active tag's menu", async ({ page, goto }) => {
+  test("the tags in the bookmarks page's order, in the panel (the active one in its place) and the active tag's menu", async ({ page, goto }) => {
     await goto("/logos", { waitUntil: "hydration" });
     // Created in this order: by latest addition (the default), Delta, Gamma,
     // Bêta, Alpha, but Bêta pinned first; Alpha active.
@@ -169,12 +171,12 @@ test.describe("the tags of an entry", () => {
     });
     await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
     const options = allTags(page).getByRole("option");
-    await expect(options).toHaveText(["Alpha, active", "Bêta", "Delta", "Gamma"]);
+    await expect(options).toHaveText(["Bêta", "Delta", "Gamma", "Alpha, active"]);
     // A pinned tag shows a pin (filled when the entry has it), the others a tag.
-    await expect(options.nth(1).locator(".iconify.i-lucide\\:pin")).toBeVisible();
-    await expect(options.nth(2).locator(".iconify.i-bailly\\:tag-filled")).toBeVisible();
-    await options.nth(1).click();
-    await expect(options.nth(1).locator(".iconify.i-bailly\\:pin-filled")).toBeVisible();
+    await expect(options.nth(0).locator(".iconify.i-lucide\\:pin")).toBeVisible();
+    await expect(options.nth(1).locator(".iconify.i-bailly\\:tag-filled")).toBeVisible();
+    await options.nth(0).click();
+    await expect(options.nth(0).locator(".iconify.i-bailly\\:pin-filled")).toBeVisible();
     await page.keyboard.press("Escape");
 
     await goto("/signets", { waitUntil: "hydration" });
@@ -193,10 +195,10 @@ test.describe("the tags of an entry", () => {
     });
     await page.getByRole("button", { name: "Toutes les étiquettes" }).click();
     const options = allTags(page).getByRole("option");
-    // The latest created first (the default sorting), after the active one.
-    await expect(options).toHaveText(["Ciel, active", "Vert", "Rouge"]);
+    // The latest created first (the default sorting), the active one in its place.
+    await expect(options).toHaveText(["Vert", "Rouge", "Ciel, active"]);
 
-    for (const [i, selected] of [[2, "true"], [2, "false"], [1, "true"], [2, "true"]] as const) {
+    for (const [i, selected] of [[1, "true"], [1, "false"], [0, "true"], [1, "true"]] as const) {
       await options.nth(i).hover();
       await options.nth(i).click();
       await expect(options.nth(i)).toHaveAttribute("aria-selected", selected);

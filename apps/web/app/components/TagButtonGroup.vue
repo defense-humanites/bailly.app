@@ -145,13 +145,7 @@
    * entries) from under the pointer.
    */
   const tagSort = useTagSort();
-  const orderedTags = computed(() => {
-    const sorted = sortTags(tags.value, tagSort.value, bookmarksStore.entriesOf);
-    return [
-      ...sorted.filter(tag => tag.key === currentTag.value?.key),
-      ...sorted.filter(tag => tag.key !== currentTag.value?.key),
-    ];
-  });
+  const orderedTags = computed(() => sortTags(tags.value, tagSort.value, bookmarksStore.entriesOf));
   const panelOpen = ref(false);
   const { open: panelTooltipOpen, setOpen: setPanelTooltipOpen, listeners: panelTooltipListeners } = useTriggerTooltip(panelOpen);
 
@@ -500,9 +494,7 @@
           :style="placed && { maxHeight: `${placed.height}px` }"
           @focusin="onPanelFocusIn"
         >
-          <h2
-            class="shrink-0 px-2 pt-1.5 pb-1 text-xs uppercase tracking-wide text-muted"
-          >
+          <h2 class="shrink-0 px-2 pt-1.5 pb-1 text-xs uppercase tracking-wide text-muted">
             Étiquettes
           </h2>
 
