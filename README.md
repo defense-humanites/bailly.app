@@ -1,47 +1,52 @@
 <p align="center">
-  <br><br><img width="192" height="192" src="apps/web/app/assets/icons/bailly.svg" alt="Logo de l'application Bailly">
+  <br><img width="192" height="192" src="apps/web/app/assets/icons/bailly.svg" alt="Logo de l'application Bailly">
+</p>
+
+<h1 align="center">Application Bailly</h1>
+
+<p align="center">
+  <strong>Le dictionnaire grec-français d’Anatole Bailly, librement accessible en ligne.</strong>
 </p>
 
 <p align="center">
-  <strong>Uɴᴇ ᴀᴘᴘʟɪᴄᴀᴛɪᴏɴ ᴡᴇʙ ᴘᴏᴜʀ ʀᴇɴᴅʀᴇ ᴀᴄᴄᴇssɪʙʟᴇ ᴀ̀ ᴛᴏᴜs<br>
-  ʟᴇ ᴅɪᴄᴛɪᴏɴɴᴀɪʀᴇ ɢʀᴇᴄ-ꜰʀᴀɴᴄ̧ᴀɪs ᴅᴇ ʀᴇ́ꜰᴇ́ʀᴇɴᴄᴇ ᴅ'Aɴᴀᴛᴏʟᴇ Bᴀɪʟʟʏ.</strong><br><br>
+  <a href="https://bailly.app"><strong>Consulter le dictionnaire sur bailly.app&nbsp;→</strong></a>
 </p>
 
-## Organisation du dépôt
+<br>
 
-Ce dépôt réunit les deux applications qui, combinées, animent [bailly.app](https://bailly.app) :
+> Vous êtes sur la page qui héberge le code source de l'application. Pour
+> consulter le dictionnaire, rendez-vous sur [bailly.app](https://bailly.app).
+> Cette page présente le projet, ses licences et la manière de nous signaler
+> une erreur.
 
-- `apps/web` : le client (Nuxt), qui sert `bailly.app` ;
-- `apps/api` : l'API (Hono), qui sert `api.bailly.app`, cf. [son README](apps/api/README.md) ;
-- `packages/api-types` : le contrat de l'API (types des requêtes et des réponses,
-  constantes communes), partagé par les deux applications, cf. [son
-  README](packages/api-types/README.md).
+<br>
 
-## Mise en route
+## Le projet
 
-Prérequis : Node.js 24 (`.node-version`) et [pnpm](https://pnpm.io), dont la
-version est fixée par `packageManager` (`package.json`).
+L'application Bailly rend consultable partout ou presque le *Dictionnaire grec-français*
+d'Anatole Bailly (1895), dans l'édition numérique revue et corrigée par Gérard
+Gréco et son équipe, le *Bailly 2020 Hugo Chávez*. Nous ne modifions pas ce
+texte : nous le rendons facile à chercher et agréable à lire, sur ordinateur,
+tablette et téléphone.
 
-```sh
-pnpm install            # les dépendances des deux applications
-pnpm dev                # l'API (port 3000) et le client (port 4321), ensemble
-pnpm dev:web            # le client seul, avec l'API de production
-pnpm dev:api            # l'API seule (Node.js)
-pnpm lint
-pnpm typecheck
-```
+Le Bailly en ligne est accessible gratuitement, sans compte ni publicité, et propose :
 
-`pnpm dev` demande la base du dictionnaire, qui n'est pas distribuée (placer
-`apps/api/database/bailly-revN.db`, cf. [le README de l'API](apps/api/README.md)), et
-les données de Morpheus (`pnpm --filter bailly-api run morpheus:data`, une fois) ;
-sans la base, `pnpm dev:web` fait tourner le client avec l'API de production. Les
-réglages ont des valeurs par défaut : aucun fichier `.env` n'est nécessaire, il ne
-sert qu'à s'en écarter (`apps/web/.env.example`, `apps/api/.env.example`).
+- **la recherche des entrées** : en caractères grecs, en beta code ou en
+  translittération, y compris à partir d'une forme fléchie (*λόγου* mène à
+  *λόγος*) grâce à l'analyse morphologique ;
+- **un système de signets** : des favoris et des étiquettes personnalisées pour constituer vos listes de mots, synchronisables entre vos appareils ;
+- **des réglages de lecture** : translittération du grec, choix de la police, de la taille et de la graisse du texte, thème clair
+  ou sombre ;
+- **la citation d'une entrée** dans plusieurs formats bibliographiques.
 
-Les commandes de chaque application se lancent depuis son dossier (`pnpm test`
-dans `apps/web`), ou depuis la racine avec `--filter` (`pnpm --filter bailly-api
-test`). Les versions partagées (TypeScript, Vitest, Wrangler…) sont fixées dans
-le catalogue de `pnpm-workspace.yaml`.
+## Signaler une erreur
+
+- **Une erreur dans le texte du dictionnaire** (une coquille, une référence
+  fautive) : écrivez à l'équipe de Gérard Gréco, qui édite le texte, à
+  [numerisation.gaffiot@hotmail.fr](mailto:numerisation.gaffiot@hotmail.fr), en
+  précisant l'entrée concernée.
+- **Un problème dans l'application**, ou une suggestion : écrivez-nous à
+  [contact@bailly.app](mailto:contact@bailly.app).
 
 ## Licence
 
@@ -67,7 +72,7 @@ sous-ensemble renommé de
 que la fonte
 [IFAOGrec](https://www.ifao.egnet.net/publications/outils/polices/#grec)
 (Jean-Luc Fournet, Ralph Hancock & Adam Bülow-Jacobsen), qui est libre de tous
-droits, pour rendre les caractères les plus spécifiques. 
+droits, pour rendre les caractères les plus spécifiques.
 
 Gentium et
 Inter sont servies en sous-ensembles (`apps/web/scripts/subset-fonts.sh`) ; « Gentium »
@@ -114,3 +119,42 @@ PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License along
 with this program. If not, see https://www.gnu.org/licenses/agpl-3.0.fr.html.
+
+## Pour les développeurs
+
+### Organisation du dépôt
+
+Ce dépôt réunit les deux applications qui, combinées, animent [bailly.app](https://bailly.app) :
+
+- `apps/web` : le client (Nuxt), qui sert `bailly.app` ;
+- `apps/api` : l'API (Hono), qui sert `api.bailly.app`, cf. [son README](apps/api/README.md) ;
+- `packages/api-types` : le contrat de l'API (types des requêtes et des réponses,
+  constantes communes), partagé par les deux applications, cf. [son
+  README](packages/api-types/README.md).
+
+### Mise en route
+
+Prérequis : Node.js 24 (`.node-version`) et [pnpm](https://pnpm.io), dont la
+version est fixée par `packageManager` (`package.json`).
+
+```sh
+pnpm install            # les dépendances des deux applications
+pnpm dev                # l'API (port 3000) et le client (port 4321), ensemble
+pnpm dev:web            # le client seul, avec l'API de production
+pnpm dev:api            # l'API seule (Node.js)
+pnpm lint
+pnpm typecheck
+```
+
+`pnpm dev` demande la base du dictionnaire, qui n'est pas distribuée (placer
+`apps/api/database/bailly-revN.db`, cf. [le README de l'API](apps/api/README.md)), et
+les données de Morpheus (`pnpm --filter bailly-api run morpheus:data`, une fois) ;
+sans la base, `pnpm dev:web` fait tourner le client avec l'API de production. Les
+réglages ont des valeurs par défaut : aucun fichier `.env` n'est nécessaire, il ne
+sert qu'à s'en écarter (`apps/web/.env.example`, `apps/api/.env.example`).
+
+Les commandes de chaque application se lancent depuis son dossier (`pnpm test`
+dans `apps/web`), ou depuis la racine avec `--filter` (`pnpm --filter bailly-api
+test`). Les versions partagées (TypeScript, Vitest, Wrangler…) sont fixées dans
+le catalogue de `pnpm-workspace.yaml`.
+
