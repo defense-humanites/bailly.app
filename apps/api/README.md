@@ -121,14 +121,11 @@ le dépôt (les deux applications) dans ce dossier :
 Le front (`bailly.app`) appelle l'API par un service binding (`API`) pour les pages
 qu'il rend ; il doit donc toujours trouver le Worker `bailly-api` déployé.
 
-`api.bailly.app` est servi par une route du Worker (`routes` de `wrangler.jsonc`) :
-l'enregistrement DNS reste celui de l'ancienne origine (Heroku), à laquelle le Worker
-répond à la place. Retour arrière immédiat : supprimer la route dans le tableau de bord
-(Settings > Domains & Routes), puis la retirer de `wrangler.jsonc`, sans quoi le
-déploiement suivant la recréerait. Le Worker n'a pas d'adresse `workers.dev`
-(`workers_dev: false`) : l'API n'est joignable que par `api.bailly.app`, derrière les
-règles de la zone (Bot Fight Mode, règles personnalisées), et par le service binding
-du front.
+`api.bailly.app` est un domaine personnalisé du Worker (`routes` de `wrangler.jsonc`,
+`custom_domain: true`) : Cloudflare en gère l'enregistrement DNS et le certificat.
+Le Worker n'a pas d'adresse `workers.dev` (`workers_dev: false`) : l'API n'est joignable
+que par `api.bailly.app`, derrière les règles de la zone (Bot Fight Mode, règles
+personnalisées), et par le service binding du front.
 
 **Cache** : les recherches, les entrées et les extraits ne dépendent que de la requête
 et de la base ; leurs réponses portent `Cache-Control: public, max-age=86400,

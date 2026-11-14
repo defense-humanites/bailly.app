@@ -140,7 +140,7 @@ docker compose logs -f api web
    réessaient plus tard.
 2. Exporter `bailly-sync` et l'importer (§ 3), comptes identiques.
 3. Donner au tunnel les noms de production (`bailly.app`, `api.bailly.app`), après les
-   avoir retirés des Workers (domaine du Worker du client, route du Worker de l'API) ;
+   avoir retirés des Workers (domaines personnalisés des Workers du client et de l'API) ;
    activer la règle de cache.
 4. Vérifier (§ 6), puis **lever le gel**. Avant cette étape, revenir en arrière ne
    demande que de rendre les noms aux Workers ; après, les écritures reçues par le

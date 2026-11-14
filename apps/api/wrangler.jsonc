@@ -9,12 +9,12 @@
       "invocation_logs": false
     }
   },
-  // `api.bailly.app`: the Worker answers in place of the origin (the DNS record, still
-  // proxied to Heroku, stays as it is). Removing the route gives the origin back.
+  // `api.bailly.app`: a custom domain of the Worker (Cloudflare manages its DNS record
+  // and certificate; no origin behind it).
   "routes": [
     {
-      "pattern": "api.bailly.app/*",
-      "zone_name": "bailly.app"
+      "pattern": "api.bailly.app",
+      "custom_domain": true
     }
   ],
   // No `workers.dev` address nor version URLs: the API is only reached through
